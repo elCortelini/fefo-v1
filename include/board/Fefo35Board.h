@@ -7,8 +7,8 @@
 namespace fefo::board {
 
 inline constexpr char kBoardName[] = "FEFO-35-V0";
-inline constexpr char kBleName[] = "FEFO_V001";
-inline constexpr char kFirmwareVersion[] = "0.0.1";
+inline constexpr char kBleName[] = "FEFO_V002";
+inline constexpr char kFirmwareVersion[] = "0.0.2";
 inline constexpr char kProtocolVersion[] = "0.1";
 
 // TFT SPI 480x320. O driver exato será importado da configuração funcional

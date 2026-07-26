@@ -26,7 +26,11 @@ bool DisplayService::begin() {
   tft_.fillRect(barWidth * 2, 1, tft_.width() - barWidth * 2 - 1, 8, TFT_BLUE);
   tft_.setTextDatum(MC_DATUM);
   tft_.setTextColor(TFT_CYAN, TFT_BLACK);
-  tft_.drawString("FEFO V0.0.1", tft_.width() / 2, tft_.height() / 2 - 22, 4);
+  char firmwareTitle[32];
+  snprintf(firmwareTitle, sizeof(firmwareTitle), "FEFO V%s",
+           board::kFirmwareVersion);
+  tft_.drawString(firmwareTitle, tft_.width() / 2,
+                  tft_.height() / 2 - 22, 4);
   tft_.setTextColor(TFT_WHITE, TFT_BLACK);
   tft_.drawString("FASE 0 - SELF TEST", tft_.width() / 2,
                   tft_.height() / 2 + 18, 2);
@@ -49,9 +53,11 @@ void DisplayService::showSystemState(SystemState state, bool storageAvailable) {
   tft_.drawString(systemStateName(state), tft_.width() / 2,
                   tft_.height() - 55, 4);
   tft_.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft_.drawString(storageAvailable ? "SD: OK  |  BLE: FEFO_V001"
-                                   : "SD: FALHA  |  BLE: FEFO_V001",
-                  tft_.width() / 2, tft_.height() - 25, 2);
+  char serviceStatus[64];
+  snprintf(serviceStatus, sizeof(serviceStatus), "SD: %s  |  BLE: %s",
+           storageAvailable ? "OK" : "FALHA", board::kBleName);
+  tft_.drawString(serviceStatus, tft_.width() / 2,
+                  tft_.height() - 25, 2);
 }
 
 void DisplayService::beginVuMeter(bool microphoneAvailable,

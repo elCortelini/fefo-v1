@@ -8,7 +8,8 @@ namespace fefo {
 
 void DiagnosticsService::printBootReport(SystemState state,
                                          bool storageAvailable) const {
-  Serial.println("\n========== FEFO V0.0.1 / FASE 0 ==========");
+  Serial.printf("\n========== FEFO V%s / DESENVOLVIMENTO ==========\n",
+                board::kFirmwareVersion);
   Serial.printf("Placa: %s\n", board::kBoardName);
   Serial.printf("Estado: %s\n", systemStateName(state));
   Serial.printf("Chip: %s rev.%u, %u cores, %u MHz\n", ESP.getChipModel(),
@@ -25,4 +26,3 @@ void DiagnosticsService::printBootReport(SystemState state,
 }
 
 }  // namespace fefo
-

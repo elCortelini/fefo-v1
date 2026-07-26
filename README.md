@@ -1,8 +1,11 @@
-# FEFO PET V0.0.1
+# FEFO PET V0.0.2 — em desenvolvimento
 
 Firmware modular do FEFO para ESP32, tela TFT SPI de 3,5 polegadas 480x320,
 microSD, áudio integrado NS8002D, 15 NeoPixels, motor de vibração, microfone
 MAX9814 e BLE.
+
+A tag `v0.0.1` preserva o checkpoint funcional da Fase 0. O código na branch
+`main` inicia agora o desenvolvimento da V0.0.2.
 
 ## Checkpoint V0.0.1
 
