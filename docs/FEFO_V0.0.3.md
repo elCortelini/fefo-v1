@@ -132,3 +132,31 @@ somente garante GPIO21 LOW depois que o ESP32 começa a executar o `setup()`.
 .\.venv\Scripts\pio.exe run --project-dir diagnostics\led_patterns --target upload --upload-port COM7
 .\.venv\Scripts\pio.exe device monitor --port COM7 --baud 115200
 ```
+
+## Decisões acertivas da Fase 0
+
+- Manter o diagnóstico NeoPixel completamente isolado do firmware principal.
+- Preservar `main.cpp` mínimo e tratar `AppController` como orquestrador único.
+- Concentrar pinos, parâmetros e limites físicos em `include/board/Fefo35Board.h`.
+- Centralizar a máquina de estados de pânico em `PanicService`, mantendo `VibrationService`
+  e `AudioService` como drivers genéricos.
+- Bloquear a OTA BLE nesta fase e manter `UpdateService` como placeholder.
+- Priorizar investigação elétrica de GPIO22/DIN antes de adotar qualquer novo
+  driver NeoPixel no firmware principal.
+
+## O que ainda precisa ser feito antes de avançar para a Fase 1 prevista
+
+- Confirmar a causa da falha dos 15 NeoPixels em GPIO22 (hardware vs. software).
+- Estabilizar a reprodução de áudio e validar execução de WAV longo via microSD.
+- Implementar watchdog e `watchdogFeed()` para garantir reset seguro em travamentos.
+- Documentar e validar os padrões obrigatórios de Fase 0: tarefas, SD mutex,
+  comunicação entre cores, respostas BLE e regra de uso de LEDs.
+- Formalizar as 11 decisões de arquitetura que sustentam a Fase 0.
+- Completar a infraestrutura técnica de OTA/Browser e rota `/status` se a Fase 1
+  prevista mantiver esses requisitos.
+- Rodar testes BLE prolongados, observar heap e registrar estabilidade de runtime.
+- Adicionar testes automatizados para módulos críticos antes da migração.
+- Verificar o tamanho do binário e manter `Flash < 50%` para a próxima fase.
+
+> Estes itens formam a base para avançar com segurança para a Fase 1 prevista,
+> mantendo a flexibilidade para ajustar o escopo se necessário.

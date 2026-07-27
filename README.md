@@ -107,3 +107,38 @@ Para compilar somente o teste isolado de LEDs:
 
 O backup integral da flash anterior está em `backup/cyd-original-4mb.bin` e é
 ignorado pelo Git.
+
+## Versão atual: v0.0.3
+
+- Firmware principal documentado como `0.0.3`.
+- BLE identificado como `FEFO_V003`.
+- Esta versão é um checkpoint diagnóstico da Fase 0, com o modo pânico ativo e
+  o teste isolado de NeoPixels mantido fora do firmware principal.
+- A estratégia acertiva foi manter o firmware principal focado em:
+  - `AppController` como orquestrador central;
+  - `main.cpp` mínimo com apenas `setup()` e `loop()`;
+  - perfil elétrico e constantes centralizados em `include/board/Fefo35Board.h`;
+  - `PanicService` coordenando motor e áudio sem acoplamento eletrônico;
+  - diagnóstico NeoPixel isolado em `diagnostics/led_patterns`.
+
+## O que ainda precisa ser feito antes de partir para a Fase 1 prevista
+
+- Confirmar se a ausência de resposta dos 15 NeoPixels em GPIO22 é causada por
+  falha elétrica/hardware ou por transporte/protocolo.
+- Validar a reprodução de áudio sem estalos e testar WAV longos a partir do
+  microSD.
+- Implementar a rotina de watchdog e `watchdogFeed()` para garantir recuperação
+  de travamentos e safe mode.
+- Formalizar os padrões de Fase 0 e registrar as decisões de design para
+  arquitetura, comunicação, SD, BLE e LEDs.
+- Criar ou completar o módulo de comunicação/OTA técnico, incluindo rota
+  `/status` e proteção de sistema antes de considerar transição para Fase 1.
+- Executar testes BLE prolongados, monitorar heap e confirmar estabilidade do
+  firmware em operação contínua.
+- Adicionar testes unitários e validações isoladas para `PanicService`, BLE,
+  áudio, SD e display.
+- Verificar o tamanho final do binário para garantir `Flash < 50%` e partições
+  OTA OK.
+
+> Esta lista define a transição segura para a Fase 1 prevista, mas pode ser
+> ajustada conforme o resultado dos testes elétricos e dos ajustes de áudio.
