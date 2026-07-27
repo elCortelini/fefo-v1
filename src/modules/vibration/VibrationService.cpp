@@ -5,6 +5,11 @@
 #include "board/Fefo35Board.h"
 
 namespace fefo {
+namespace {
+
+constexpr uint8_t kSelfTestDuty = 150;
+
+}  // namespace
 
 bool VibrationService::begin() {
   // Arduino-ESP32 2.x usa canal LEDC explícito. Esta configuração equivale ao
@@ -27,7 +32,7 @@ bool VibrationService::begin() {
 void VibrationService::selfTest() {
   Serial.println("[VIBRATION] Autoteste GPIO 21: dois pulsos PWM 150/255.");
   for (uint8_t pulse = 0; pulse < 2; ++pulse) {
-    writeOutput(board::kMotorActivationDuty);
+    writeOutput(kSelfTestDuty);
     delay(400);
     writeOutput(0);
     delay(300);
@@ -37,31 +42,43 @@ void VibrationService::selfTest() {
   Serial.println("[VIBRATION] Autoteste concluido; motor desligado.");
 }
 
-bool VibrationService::start(uint8_t duty) {
-  if (!initialized_ || safetyLockout_) return false;
-  if (active_) return true;
+bool VibrationService::start(uint8_t duty, uint32_t maxDurationMs) {
+  if (!initialized_ || safetyLockout_ || maxDurationMs == 0) return false;
+  // Não informa sucesso para uma segunda solicitação que seria ignorada. Isso
+  // evita que outro módulo suponha ter substituído o prazo já em andamento.
+  if (active_) return false;
 
   const uint32_t nowMs = millis();
   if (nowMs - stoppedAtMs_ < board::kMotorCooldownMs) return false;
 
   duty = constrain(duty, static_cast<uint8_t>(1),
                    static_cast<uint8_t>(255));
+  if (maxDurationMs > board::kMotorAbsoluteMaxDurationMs) {
+    Serial.printf(
+        "[VIBRATION] Prazo solicitado (%lu ms) limitado ao teto fisico de "
+        "%lu ms.\n",
+        static_cast<unsigned long>(maxDurationMs),
+        static_cast<unsigned long>(board::kMotorAbsoluteMaxDurationMs));
+    maxDurationMs = board::kMotorAbsoluteMaxDurationMs;
+  }
   writeOutput(duty);
   active_ = true;
   startedAtMs_ = nowMs;
-  Serial.printf("[VIBRATION] Motor ligado: PWM %u/255.\n", duty);
+  maxDurationMs_ = maxDurationMs;
+  Serial.printf("[VIBRATION] Motor ligado: PWM %u/255, limite %lu ms.\n", duty,
+                static_cast<unsigned long>(maxDurationMs_));
   return true;
 }
 
 void VibrationService::update(uint32_t nowMs) {
-  if (!active_ || nowMs - startedAtMs_ < board::kMotorMaxDurationMs) return;
+  if (!active_ || nowMs - startedAtMs_ < maxDurationMs_) return;
 
   writeOutput(0);
   active_ = false;
   safetyLockout_ = true;
   stoppedAtMs_ = nowMs;
   Serial.printf("[VIBRATION] Limite de seguranca de %lu ms atingido.\n",
-                static_cast<unsigned long>(board::kMotorMaxDurationMs));
+                static_cast<unsigned long>(maxDurationMs_));
 }
 
 void VibrationService::stop() {

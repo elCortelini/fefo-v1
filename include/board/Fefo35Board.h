@@ -7,12 +7,12 @@
 namespace fefo::board {
 
 inline constexpr char kBoardName[] = "FEFO-35-V0";
-inline constexpr char kBleName[] = "FEFO_V002";
-inline constexpr char kFirmwareVersion[] = "0.0.2";
+inline constexpr char kBleName[] = "FEFO_V003";
+inline constexpr char kFirmwareVersion[] = "0.0.3";
 inline constexpr char kProtocolVersion[] = "0.1";
 
-// TFT SPI 480x320. O driver exato será importado da configuração funcional
-// usada pelo FEFO 190 antes de habilitar a renderização nesta base.
+// TFT SPI ILI9488 480x320 validada no protótipo com a configuração funcional
+// derivada do FEFO 190. O touch permanece separado e desabilitado nesta fase.
 inline constexpr uint16_t kDisplayWidth = 480;
 inline constexpr uint16_t kDisplayHeight = 320;
 inline constexpr int kTftMiso = 12;
@@ -32,7 +32,8 @@ inline constexpr int kTouchMiso = 39;
 inline constexpr int kTouchIrq = 36;
 inline constexpr bool kTouchEnabled = false;
 
-// Cartão microSD em VSPI.
+// Cartão microSD no controlador HSPI, remapeado para a pinagem abaixo. O TFT
+// usa o outro controlador SPI e pode operar sem reconfigurar este barramento.
 inline constexpr int kSdCs = 5;
 inline constexpr int kSdMosi = 23;
 inline constexpr int kSdMiso = 19;
@@ -53,17 +54,12 @@ inline constexpr int kLedRed = 17;
 inline constexpr int kLedGreen = 4;
 inline constexpr int kLedBlue = 16;
 
-// Limites físicos obrigatórios, compartilhados pelos módulos de segurança.
-// No modo pânico, motor e áudio podem permanecer ativos por no máximo 10 s.
-inline constexpr uint32_t kMotorMaxDurationMs = 10000;
+// Proteções físicas independentes das regras de qualquer atividade. Mesmo que
+// um módulo solicite outro valor, o driver nunca ultrapassará este teto.
+inline constexpr uint32_t kMotorAbsoluteMaxDurationMs = 10000;
+// Intervalo mínimo de repouso do motor entre dois acionamentos.
 inline constexpr uint32_t kMotorCooldownMs = 2000;
-inline constexpr uint8_t kMotorActivationDuty = 150;
 inline constexpr uint8_t kVuSegmentCount = 20;
-inline constexpr uint8_t kNoiseTriggerSegments = 16;
-inline constexpr uint8_t kNoiseTriggerPercent =
-    kNoiseTriggerSegments * 100 / kVuSegmentCount;
-inline constexpr uint32_t kNoiseQualificationMs = 2000;
-inline constexpr uint32_t kNoiseReleaseMs = 3000;
 inline constexpr uint8_t kDefaultMaxVolumePercent = 70;
 
 // Sirene gerada pelo DAC interno no GPIO 26. A frequência percorre o intervalo
@@ -79,9 +75,10 @@ inline constexpr uint16_t kSirenAttackMs = 120;
 inline constexpr uint16_t kSirenReleaseMs = 60;
 
 inline constexpr uint8_t kDefaultMaxLedBrightness = 76;
-// Diagnóstico temporário da V0.0.2: usa pulsos diretos, sem RMT/biblioteca,
-// enquanto TFT, VU, BLE, SD e motor continuam em execução.
-inline constexpr bool kNeoPixelBitBangDiagnosticEnabled = true;
+// O diagnóstico legado permanece disponível para comparação, mas fica
+// desabilitado no firmware principal. Os ensaios de GPIO22 pertencem ao projeto
+// isolado diagnostics/led_patterns.
+inline constexpr bool kNeoPixelBitBangDiagnosticEnabled = false;
 inline constexpr uint32_t kNeoPixelDiagnosticStepMs = 3000;
 
 }  // namespace fefo::board

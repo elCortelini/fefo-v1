@@ -77,7 +77,7 @@ void AppController::update() {
           "panico=%s motor=%s sirene=%s%s\n",
           reading.levelPercent, activeSegments, board::kVuSegmentCount,
           reading.peakPercent, reading.rms, reading.peakToPeak, reading.bias,
-          noiseResponseStateName(panic_.state()),
+          panicStateName(panic_.state()),
           motorActive ? "ON" : "OFF", sirenState,
           reading.clipping ? " SATURADO" : "");
     }

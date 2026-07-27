@@ -3,15 +3,22 @@
 #include <cstdint>
 
 #include "modules/audio/AudioService.h"
-#include "modules/noise/NoiseResponseController.h"
 #include "modules/vibration/VibrationService.h"
 
 namespace fefo {
 
-// Coordena o modo pânico sem assumir a implementação dos periféricos. A
-// detecção permanece no controlador de ruído, o motor no serviço de vibração e
-// o alerta sonoro no serviço de áudio. Futuramente, AudioService poderá trocar
-// a sirene sintetizada por um arquivo do microSD sem alterar esta interface.
+// Estados públicos do modo pânico. Eles permitem que tela, BLE e diagnóstico
+// observem a rotina sem conhecer seus temporizadores internos.
+enum class PanicState : uint8_t {
+  kIdle,
+  kQualifying,
+  kActive,
+  kReleaseDelay,
+  kSafetyLockout,
+};
+
+// Módulo completo do modo pânico. Ele contém apenas a política: recebe o nível
+// já calculado pelo MAX9814 e coordena serviços independentes de motor e áudio.
 class PanicService {
  public:
   bool begin();
@@ -19,10 +26,21 @@ class PanicService {
               VibrationService& vibration, AudioService& audio);
 
   bool enabled() const { return true; }
-  NoiseResponseState state() const { return noiseResponse_.state(); }
+  bool active() const {
+    return state_ == PanicState::kActive ||
+           state_ == PanicState::kReleaseDelay;
+  }
+  bool aboveThreshold() const { return aboveThreshold_; }
+  PanicState state() const { return state_; }
 
  private:
-  NoiseResponseController noiseResponse_;
+  void transitionTo(PanicState nextState, uint32_t nowMs);
+
+  PanicState state_{PanicState::kIdle};
+  uint32_t stateStartedAtMs_{0};
+  bool aboveThreshold_{false};
 };
+
+const char* panicStateName(PanicState state);
 
 }  // namespace fefo

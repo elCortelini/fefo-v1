@@ -3,12 +3,13 @@
 #include <Arduino.h>
 
 #include "board/Fefo35Board.h"
+#include "modules/panic/PanicConfig.h"
 
 namespace fefo {
 
 void DiagnosticsService::printBootReport(SystemState state,
                                          bool storageAvailable) const {
-  Serial.printf("\n========== FEFO V%s / DESENVOLVIMENTO ==========\n",
+  Serial.printf("\n======= FEFO V%s / CHECKPOINT DIAGNOSTICO =======\n",
                 board::kFirmwareVersion);
   Serial.printf("Placa: %s\n", board::kBoardName);
   Serial.printf("Estado: %s\n", systemStateName(state));
@@ -21,7 +22,7 @@ void DiagnosticsService::printBootReport(SystemState state,
   Serial.printf("PSRAM: %s\n", psramFound() ? "presente" : "ausente");
   Serial.printf("microSD: %s\n", storageAvailable ? "pronto" : "indisponivel");
   Serial.printf("Pânico: ativo (ruido + vibracao + sirene, maximo %lu ms)\n",
-                static_cast<unsigned long>(board::kMotorMaxDurationMs));
+                static_cast<unsigned long>(panic::kMaxActiveMs));
   Serial.println("OTA BLE: interface bloqueada na Fase 0");
   Serial.println("===========================================\n");
 }

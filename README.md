@@ -1,32 +1,43 @@
-# FEFO PET V0.0.2 — em desenvolvimento
+# FEFO PET V0.0.3 — checkpoint de diagnóstico
 
 Firmware modular do FEFO para ESP32, tela TFT SPI de 3,5 polegadas 480x320,
 microSD, áudio integrado NS8002D, 15 NeoPixels, motor de vibração, microfone
 MAX9814 e BLE.
 
-A tag `v0.0.1` preserva o checkpoint funcional da Fase 0. O código na branch
-`main` inicia agora o desenvolvimento da V0.0.2.
+A tag `v0.0.2` preserva o último firmware aprovado no protótipo, com VU, modo
+pânico, motor e sirene. A tag de pré-versão `v0.0.3-diagnostic` preserva este
+checkpoint diagnóstico; os LEDs continuam sem aprovação física e não são
+declarados funcionais.
 
-## Estado atual da V0.0.2
+## Estado atual da V0.0.3
 
-- ruído acima de 16 das 20 barras por 2 segundos aciona o motor;
-- o motor desliga 3 segundos depois de o nível retornar ao limite seguro;
-- o VU fica vermelho durante a vibração;
-- este conjunto forma o modo pânico: detecção acústica, vibração e sirene;
-- o modo pânico possui limite total de 10 segundos e rearme seguro;
-- uma sirene DMA de 650 a 1150 Hz acompanha exclusivamente o acionamento do
-  motor, com volume limitado a 70% e rampas antiestalo;
-- os 15 NeoPixels funcionam pelo transmissor direto do GPIO 22, mantendo TFT,
-  VU, BLE, SD, microfone e motor em execução.
+- toda a política do modo pânico foi concentrada em `modules/panic`;
+- limiar, qualificação, liberação, duração máxima, PWM e caminho futuro do áudio
+  ficam centralizados em `PanicConfig.h`;
+- motor e áudio continuam como drivers independentes e reutilizáveis;
+- o firmware principal mantém o diagnóstico legado de LEDs desabilitado;
+- foi criado um laboratório isolado com TFT e cinco transportes no GPIO 22;
+- Adafruit, FastLED, NeoPixelBus/I2S1, SPI codificado e bit-bang são comparados;
+- cada transporte executa cinco padrões de dois segundos e o conjunto repete
+  em loop infinito, sem reiniciar o ESP32;
+- a tela identifica método, padrão, temporização e os 15 valores RGB esperados.
 
-Os testes isolados de 27/07/2026 não produziram luz com Adafruit NeoPixel
-1.15.2 em nenhum dos backends RMT comparados. O teste integrado sem RMT acendeu
-corretamente a sequência vermelho, verde, azul, branco e apagado, confirmando o
-GPIO 22, a alimentação e os 15 LEDs. A falha ficou isolada no transporte RMT;
-o transmissor direto permanece ativo enquanto é definida a abstração final.
+O diagnóstico está em `diagnostics/led_patterns`. O Serial confirmou uma volta
+pelos cinco métodos e o início de uma segunda volta, inclusive nova
+inicialização do I2S1, sem reset ou travamento. A placa conectada está executando
+esse firmware de teste, não o firmware principal.
 
-Em uma versão futura, a sirene sintetizada do modo pânico será substituída por
-um arquivo de áudio carregado do microSD, preservando a mesma interface modular.
+## Checkpoint V0.0.2
+
+A V0.0.2 funcional pode ser restaurada pela tag `v0.0.2` ou pelo commit
+`3e7c138`. Ela contém:
+
+- MAX9814 e VU meter em tempo real;
+- modo pânico acima de 80%, com qualificação de 2 segundos;
+- vibração e sirene sincronizadas, com limite absoluto de 10 segundos;
+- desligamento após 3 segundos em nível seguro e rearme protegido;
+- transporte NeoPixel experimental no GPIO 22, ainda sem aprovação física;
+- TFT, microSD e BLE funcionais.
 
 ## Checkpoint V0.0.1
 
@@ -67,16 +78,24 @@ examples/
   cyd_diagnostic/      diagnóstico de inventário preservado
 diagnostics/
   led_isolated/        comparação reproduzível dos backends NeoPixel
+  led_patterns/        laboratório de cinco drivers e cinco padrões da V0.0.3
 docs/
   FASE_0.md            validações e pendências reais
   CHANGELOG.md         histórico de checkpoints
   FEFO_V0.0.1_ESPECIFICACAO.md
+  FEFO_V0.0.3.md       arquitetura e teste de LEDs da versão atual
 ```
 
 ## Compilar
 
 ```powershell
 .\.venv\Scripts\pio.exe run
+```
+
+Para compilar somente o teste isolado de LEDs:
+
+```powershell
+.\.venv\Scripts\pio.exe run --project-dir diagnostics\led_patterns
 ```
 
 ## Gravar e monitorar

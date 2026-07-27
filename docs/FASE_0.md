@@ -55,31 +55,33 @@ desligamento no hardware. Ruídos curtos posteriores foram rejeitados sem ligar
 o motor.
 
 O diagnóstico `diagnostics/led_isolated` reproduziu o azul progressivo do FEFO
-190 e uma alternativa de 400 kHz, usando apenas Serial e Adafruit NeoPixel. O
-usuário confirmou ausência total de luz nos quatro casos comparados:
+190 e solicitou uma alternativa de 400 kHz, usando apenas Serial e Adafruit
+NeoPixel. O usuário confirmou ausência total de luz nas duas versões de core.
+Entretanto, a biblioteca no core 3 ignora a seleção de frequência e transmite
+ambas as fases em aproximadamente 800 kHz:
 
 | Framework/backend | 800 kHz azul | 400 kHz magenta |
 |---|---:|---:|
 | Arduino 2.0.17 / IDF 4.4.7 / RMT legado | Falhou | Falhou |
-| Arduino 3.3.7 / IDF 5.5.2 / RMT novo | Falhou | Falhou |
+| Arduino 3.3.7 / IDF 5.5.2 / backend novo | Falhou | Não testado: opção ignorada |
 
-Isso descarta como causa única o fluxo que mantinha o buffer apagado, a troca
-de backend RMT e a seleção 800/400 kHz. O próximo teste deve usar transporte
-independente de RMT e, se também falhar, medir o sinal no GPIO 22 e na entrada
-do primeiro LED.
+Isso descarta como causa única o fluxo que mantinha o buffer apagado e a troca
+de backend. A falha em 400 kHz só foi comprovada no core 2; o laboratório da
+V0.0.3 passou a gerar 400 kHz diretamente, sem depender dessa opção da
+biblioteca, além de medir o estado lento no GPIO22 e no DIN.
 
 O teste seguinte substituiu completamente o RMT por pulsos temporizados nos
-registradores do GPIO 22. A sequência vermelho, verde, azul, branco e apagado
-funcionou no firmware integrado, conforme confirmação visual do usuário. Isso
-aprova o caminho elétrico e os 15 LEDs e localiza a falha nos transportes RMT
-testados, não na pinagem ou na alimentação da fita.
+registradores do GPIO 22. O Serial confirmou a execução da sequência, mas o
+teste visual dedicado da V0.0.3 mostrou a tela correta sem qualquer resposta
+da fita. Portanto, o registro anterior de aprovação visual foi retirado: esse
+transporte também falhou e o caminho elétrico ainda não está aprovado.
 
 A sirene da V0.0.2 usa I2S0/DMA persistente em uma tarefa dedicada, portanto
 não bloqueia display, MAX9814, BLE nem o timeout do motor. Ela varre de 650 a
 1150 Hz, usa 70% do nível máximo e aplica rampas de 120 ms ao ligar e 60 ms ao
 desligar. O log confirmou que a solicitação da sirene ocorreu no mesmo ciclo do
-acionamento real do motor. A qualidade sonora e a possível realimentação da
-sirene no MAX9814 ainda exigem confirmação física.
+acionamento real do motor. A qualidade sonora foi aprovada pelo usuário; o áudio
+futuro será lido do microSD sem alterar o contrato do modo pânico.
 
 Na validação do MAX9814, o ADC apresentou bias próximo de 1397, sinal variável
 e resposta visual confirmada pelo usuário. O firmware de teste permaneceu em
@@ -87,14 +89,16 @@ e resposta visual confirmada pelo usuário. O firmware de teste permaneceu em
 
 ## Estado seguro do checkpoint
 
-O firmware não executa automaticamente testes de motor, LED ou áudio. Motor e
-NeoPixels são desligados após a inicialização, e o DAC permanece em zero. O
-modo ativo deste checkpoint é o VU meter do MAX9814.
+O firmware V0.0.2 mantém motor desligado até o modo pânico e o DAC em zero até a
+sirene, mas inicia automaticamente a sequência bit-bang de diagnóstico no
+GPIO22. Essa sequência percorre vermelho, verde, azul, branco e apagado, embora
+os LEDs físicos não tenham respondido. A interface ativa permanece sendo o VU
+meter do MAX9814.
 
-## Pendências para a V0.0.2
+## Próximas etapas após a V0.0.2
 
-1. Transformar o transmissor NeoPixel direto já aprovado em serviço de efeitos
-   definitivo, preservando os demais periféricos.
+1. Medir GPIO22 e DIN e comparar Adafruit, FastLED, I2S1, SPI codificado e
+   variações de bit-bang antes de escolher o transporte definitivo.
 2. Validar os ciclos da sirene sem estalos e medir a realimentação acústica no
    MAX9814; depois validar reprodução WAV longa pelo microSD.
 3. Provisionar identificador, lote e revisão de hardware em NVS.
