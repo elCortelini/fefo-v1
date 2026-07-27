@@ -14,7 +14,8 @@ class DisplayService {
   void showSystemState(SystemState state, bool storageAvailable);
   void beginVuMeter(bool microphoneAvailable, uint16_t noiseFloorRms);
   void showVuMeter(uint8_t levelPercent, uint8_t peakPercent, uint16_t rms,
-                   uint16_t bias, uint16_t peakToPeak, bool clipping);
+                   uint16_t bias, uint16_t peakToPeak, bool clipping,
+                   bool motorActive);
   bool available() const { return available_; }
 
  private:

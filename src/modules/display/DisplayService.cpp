@@ -93,12 +93,13 @@ void DisplayService::beginVuMeter(bool microphoneAvailable,
 
 void DisplayService::showVuMeter(uint8_t levelPercent, uint8_t peakPercent,
                                  uint16_t rms, uint16_t bias,
-                                 uint16_t peakToPeak, bool clipping) {
+                                 uint16_t peakToPeak, bool clipping,
+                                 bool motorActive) {
   if (!available_ || !vuMeterReady_) return;
 
   constexpr int kMeterX = 40;
   constexpr int kMeterY = 118;
-  constexpr int kSegments = 20;
+  constexpr int kSegments = board::kVuSegmentCount;
   constexpr int kSegmentPitch = 20;
   constexpr int kSegmentWidth = 16;
   constexpr int kSegmentHeight = 46;
@@ -106,11 +107,19 @@ void DisplayService::showVuMeter(uint8_t levelPercent, uint8_t peakPercent,
   const int peakSegment = min(kSegments - 1, peakPercent * kSegments / 101);
 
   for (int segment = 0; segment < kSegments; ++segment) {
-    uint16_t color = TFT_DARKGREY;
+    // Quando o motor está ligado, os segmentos vazios ficam em vermelho
+    // escuro e os ativos em vermelho vivo. Assim o medidor inteiro continua
+    // vermelho mesmo durante os três segundos finais de silêncio.
+    uint16_t color = motorActive ? TFT_MAROON : TFT_DARKGREY;
     if (segment < activeSegments) {
-      color = segment < 13 ? TFT_GREEN : (segment < 17 ? TFT_YELLOW : TFT_RED);
+      color = motorActive
+                  ? TFT_RED
+                  : (segment < 13 ? TFT_GREEN
+                                  : (segment < 17 ? TFT_YELLOW : TFT_RED));
     }
-    if (segment == peakSegment && peakPercent > 0) color = TFT_WHITE;
+    if (!motorActive && segment == peakSegment && peakPercent > 0) {
+      color = TFT_WHITE;
+    }
     tft_.fillRect(kMeterX + segment * kSegmentPitch, kMeterY,
                   kSegmentWidth, kSegmentHeight, color);
   }
@@ -119,7 +128,7 @@ void DisplayService::showVuMeter(uint8_t levelPercent, uint8_t peakPercent,
   snprintf(levelText, sizeof(levelText), "%3u%%", levelPercent);
   tft_.fillRect(140, 178, 200, 42, TFT_BLACK);
   tft_.setTextDatum(MC_DATUM);
-  tft_.setTextColor(clipping ? TFT_RED : TFT_CYAN, TFT_BLACK);
+  tft_.setTextColor(motorActive || clipping ? TFT_RED : TFT_CYAN, TFT_BLACK);
   tft_.drawString(levelText, tft_.width() / 2, 198, 4);
 
   char details[80];
@@ -128,8 +137,9 @@ void DisplayService::showVuMeter(uint8_t levelPercent, uint8_t peakPercent,
   tft_.fillRect(25, 230, 430, 48, TFT_BLACK);
   tft_.setTextColor(TFT_WHITE, TFT_BLACK);
   tft_.drawString(details, tft_.width() / 2, 242, 2);
-  tft_.setTextColor(clipping ? TFT_RED : TFT_GREEN, TFT_BLACK);
-  tft_.drawString(clipping ? "SATURACAO" : "SINAL OK",
+  tft_.setTextColor(motorActive || clipping ? TFT_RED : TFT_GREEN, TFT_BLACK);
+  tft_.drawString(motorActive ? "MOTOR ATIVO"
+                              : (clipping ? "SATURACAO" : "SINAL OK"),
                   tft_.width() / 2, 268, 2);
 }
 

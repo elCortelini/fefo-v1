@@ -20,7 +20,8 @@ void DiagnosticsService::printBootReport(SystemState state,
                 ESP.getMinFreeHeap());
   Serial.printf("PSRAM: %s\n", psramFound() ? "presente" : "ausente");
   Serial.printf("microSD: %s\n", storageAvailable ? "pronto" : "indisponivel");
-  Serial.println("Pânico: isolado/desabilitado");
+  Serial.printf("Pânico: ativo (ruido + vibracao + sirene, maximo %lu ms)\n",
+                static_cast<unsigned long>(board::kMotorMaxDurationMs));
   Serial.println("OTA BLE: interface bloqueada na Fase 0");
   Serial.println("===========================================\n");
 }

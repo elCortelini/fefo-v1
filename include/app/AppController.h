@@ -37,6 +37,7 @@ class AppController {
   bool microphoneReady_{false};
   uint32_t lastMicrophoneUpdateMs_{0};
   uint32_t lastMicrophoneLogMs_{0};
+  uint8_t latestMicrophoneLevelPercent_{0};
 };
 
 }  // namespace fefo
