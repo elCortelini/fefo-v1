@@ -24,8 +24,15 @@ class PanicService {
   bool begin();
   void update(uint8_t levelPercent, uint32_t nowMs,
               VibrationService& vibration, AudioService& audio);
+  bool triggerManual(uint32_t nowMs, VibrationService& vibration,
+                     AudioService& audio);
 
-  bool enabled() const { return true; }
+  bool enabled() const { return enabled_; }
+  void setEnabled(bool enabled);
+  void setTriggerPercent(uint8_t percent);
+  void setIdleDelayMs(uint32_t idleDelayMs) { idleDelayMs_ = idleDelayMs; }
+  uint8_t triggerPercent() const { return triggerPercent_; }
+  uint32_t idleDelayMs() const { return idleDelayMs_; }
   bool active() const {
     return state_ == PanicState::kActive ||
            state_ == PanicState::kReleaseDelay;
@@ -39,6 +46,10 @@ class PanicService {
   PanicState state_{PanicState::kIdle};
   uint32_t stateStartedAtMs_{0};
   bool aboveThreshold_{false};
+  bool enabled_{true};
+  bool manualTrigger_{false};
+  uint8_t triggerPercent_{0};
+  uint32_t idleDelayMs_{0};
 };
 
 const char* panicStateName(PanicState state);

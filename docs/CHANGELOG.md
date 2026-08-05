@@ -1,70 +1,112 @@
-# Histórico de versões
+# Changelog FEFO
 
-## V0.0.3 — 27/07/2026 (checkpoint diagnóstico)
+> As entradas antigas abaixo registram as fases iniciais. A situação canônica está em `STATUS_ATUAL.md`; as compilações recentes são resumidas aqui porque nem todas receberam uma entrada individual.
 
-- checkpoint funcional V0.0.2 salvo no commit `3e7c138` e tag `v0.0.2`;
-- checkpoint atual identificado pela tag de pré-versão `v0.0.3-diagnostic`;
-- versão do firmware e nome BLE atualizados para `0.0.3` e `FEFO_V003`;
-- política completa do modo pânico movida para `modules/panic`;
-- criado `PanicConfig.h` com limiar, tempos, PWM e caminho de áudio futuro;
-- removido o controlador intermediário `modules/noise`; sua máquina de estados
-  passou a pertencer diretamente ao `PanicService`;
-- `VibrationService` voltou a ser genérico e recebe duração por acionamento;
-- criado `diagnostics/led_patterns`, sem BLE, SD, mic, touch, áudio ou motor;
-- desativado o diagnóstico bit-bang automático no firmware principal; os testes
-  do GPIO22 passam a ocorrer somente no laboratório isolado;
-- adicionados cinco padrões LED de 2 segundos em loop infinito;
-- TFT mostra nome, descrição, progresso e simulação numerada dos 15 LEDs;
-- primeira rodada visual confirmou a tela, mas nenhum LED físico respondeu;
-- diagnóstico ampliado para comparar Adafruit, FastLED, NeoPixelBus/I2S1, SPI
-  codificado e bit-bang com cinco perfis de tempo;
-- incluído teste HIGH/LOW do GPIO22, pulls internos desligados e drive mínimo
-  durante a prova; o drive máximo é usado somente pelos transportes;
-- firmware principal e diagnóstico compilados com sucesso;
-- diagnóstico gravado na COM7 e ciclo 1→2→3→4→5→1 confirmado pelo Serial.
+## App v041 — 2026-08-02
 
-## V0.0.2 — 27/07/2026
+- download, instalação, atualização, OTA e exclusão usam o mesmo cartão de progresso;
+- exclusão mostra somente a barra e o estado `Deletando`;
+- conclusão solicita reconexão Bluetooth e retorna à tela inicial.
+- tocar no nome do áudio apenas abre seus controles; a reprodução começa somente no botão Play.
+- ao sair de uma página de Jukebox, pelo app ou pelo Android, qualquer áudio em reprodução é interrompido.
 
-- próxima etapa após o checkpoint de fundação;
-- criada regra modular de resposta a ruído sustentado do MAX9814;
-- limiar em mais de 16/20 barras por 2 segundos;
-- motor mantido por 3 segundos após o ruído cessar;
-- VU vermelho enquanto o motor está ativo;
-- fluxo definido como modo pânico: ruído sustentado, vibração e sirene;
-- limite total do modo pânico reduzido de 20 para 10 segundos;
-- dois ciclos de acionamento e desligamento confirmados pelo log no hardware;
-- criado diagnóstico NeoPixel independente do firmware principal;
-- no Arduino 2.0.17/IDF 4, os NeoPixels falharam em 800 e 400 kHz;
-- no Arduino 3.3.7/IDF 5, as duas fases falharam, mas a biblioteca ignorou a
-  seleção de 400 kHz e transmitiu ambas em aproximadamente 800 kHz;
-- transmissor direto sem RMT executou pelo Serial, mas a aprovação visual
-  registrada inicialmente foi retirada após o teste dedicado da V0.0.3;
-- sirene I2S/DMA não bloqueante de 650 a 1150 Hz ligada ao estado real do
-  motor, com volume de 70% e envelope antiestalo;
-- acionamento simultâneo de motor e sirene confirmado pelo log serial;
-- `PanicService` passa a coordenar detector, vibração e áudio sem incorporar as
-  implementações desses módulos;
-- substituição futura da sirene por áudio do microSD registrada na arquitetura;
-- sirene aprovada fisicamente pelo usuário; comandos BLE de diagnóstico e áudio
-  futuro pelo microSD continuam no escopo.
+## Firmware 0.0.71 / App v040 — 2026-08-02
 
-## V0.0.1 — 26/07/2026
+- exclusão permanece na tela da Jukebox, com progresso abaixo do próprio áudio;
+- queda temporária do BLE não substitui a lista pela tela de desconectado;
+- app tenta finalizar a sessão Wi-Fi mesmo quando ocorre erro;
+- firmware encerra AP abandonado após 45 segundos sem requisições e reinicia, restaurando o BLE;
+- retorno à tela inicial ocorre somente depois do término ou da falha informada.
 
-Primeiro checkpoint funcional da nova arquitetura FEFO.
+## App v039 — 2026-08-02
 
-### Validado
+- Jukebox mantém a tela de andamento durante exclusão por Wi-Fi, mesmo após a desconexão BLE esperada;
+- mensagem explica que a queda do BLE é temporária;
+- falhas de exclusão são exibidas ao usuário;
+- após sucesso ou falha, o app retorna à tela inicial para reconexão e sincronização.
 
-- estrutura PlatformIO modular;
-- ESP32, flash, partições OTA e boot seguro;
-- TFT ILI9488 480x320;
-- microSD e estrutura compacta de arquivos;
-- BLE NimBLE com conexão;
-- motor no GPIO 21;
-- MAX9814 no GPIO 35 e VU meter;
-- silêncio seguro do NS8002D quando inativo.
+## Firmware 0.0.70 — 2026-08-02
 
-### Pendências conhecidas
+- removido o transporte legado `WIFI PULL`; permanece o fluxo celular → FEFO (`WIFI PUSH`);
+- removida da compilação a OTA por BLE; OTA por Wi-Fi permanece ativa;
+- fontes embarcadas limitadas às realmente usadas (1, 2 e 4);
+- nível de log do framework reduzido para release;
+- capacidades BLE atualizadas para anunciar `OTA_WIFI` e `WIFI_PUSH`.
 
-- NeoPixels no GPIO 22 sem resposta no firmware novo;
-- áudio reproduz, mas apresenta estalos;
-- touch, pânico e OTA BLE ainda desabilitados.
+## Firmware 0.0.69 / App v038 — 2026-08-02
+
+- reconhecimento de faces `.raw` no inventário do microSD;
+- persistência do modo Faces e do ciclo aleatório;
+- app considera `APP FACE` na comparação de conteúdo instalado;
+- página de Faces lista somente itens presentes no SD;
+- downloads de faces ficam exclusivamente no Catálogo Online;
+- BIN e APK registrados em `releases/`.
+
+## Firmware 0.0.54–0.0.68 / App v013–v037 — resumo
+
+- áudio WAV e menus dinâmicos por `fefo.json`;
+- catálogo no Google Drive, tamanhos, checksums e seleção múltipla;
+- transferência por Wi-Fi temporário controlado pelo BLE;
+- progresso na CYD e no app;
+- OTA por Wi-Fi e filtro de versões iguais/anteriores;
+- instalação/exclusão de conteúdo, espaço do cartão e interface de faces.
+
+## Firmware 0.0.48–0.0.53 / App v010–v014 — resumo
+
+- identificação conjunta de firmware e app;
+- filtro de descoberta BLE;
+- correções de reinício durante áudio e conexão;
+- menus gerados a partir do catálogo local;
+- base para atualização de conteúdo.
+
+Histórico resumido. Para a linha do tempo detalhada, consulte:
+
+```text
+docs/VERSION_HISTORY.md
+```
+
+## v0.0.47 — Fase 4 fechada no firmware
+
+- Adicionado perfil para app:
+  - `APP HELLO`
+  - `APP CAPS`
+  - `APP STATE`
+  - `APP SYNC`
+  - `APP PROFILE`
+- Roadmap reescrito como guia vivo do projeto.
+- Firmware atual: `FEFO_BLE_V047`.
+
+## v0.0.46 — OTA BLE real iniciado
+
+- `UpdateService` passa a usar `Update`.
+- `OTA BEGIN`, `OTA DATA`, `OTA END`, `OTA CANCEL`, `OTA STATUS`, `OTA REBOOT`.
+- Script `tools/ble_ota_commands.py`.
+
+## v0.0.45 — Fase 3 fechada
+
+- Upload de áudio via BLE validado.
+- `DIAG ON/OFF` controla painel fixo ou retorno ao modo normal.
+- Checkpoint da Fase 3.
+
+## v0.0.38 a v0.0.44 — Gestão de conteúdo
+
+- Upload de áudio para `/usr/a`.
+- Delete seguro.
+- Catálogo JSON.
+- Protocolo `FX`.
+- Script `tools/ble_pcm_commands.py`.
+
+## v0.0.30 a v0.0.37 — BLE e controle
+
+- Comandos BLE principais.
+- Configuração persistente.
+- Logs.
+- Estado do dispositivo.
+- Controle de áudio, LED, motor, brilho, faces e pânico.
+
+## v0.0.1 a v0.0.29 — Base e diagnóstico
+
+- Hardware base.
+- Tela, SD, áudio, motor, LEDs e microfone.
+- Primeira lógica de pânico.
+- Testes e correções de BLE.

@@ -1,0 +1,1454 @@
+// lib/managers/bluetooth_manager.dart
+//
+// Gerenciador BLE do FEFO.
+//
+// A placa usa BLE no padrão Nordic UART Service:
+// - RX: característica onde o app escreve comandos.
+// - TX: característica onde a placa notifica respostas/status.
+
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io'
+    show
+        Platform,
+        HttpClient,
+        HttpException,
+        HttpServer,
+        HttpStatus,
+        InternetAddress,
+        SocketException;
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:developer' as developer;
+
+class FefoAudioItem {
+  final int id;
+  final String path;
+  final String catalogTitle;
+  final String catalogGroup;
+  final String checksum;
+
+  const FefoAudioItem({
+    required this.id,
+    required this.path,
+    this.catalogTitle = '',
+    this.catalogGroup = '',
+    this.checksum = '',
+  });
+
+  String get fileName {
+    final parts = path.split('/').where((part) => part.isNotEmpty).toList();
+    return parts.isEmpty ? path : parts.last;
+  }
+
+  String get token {
+    final point = fileName.lastIndexOf('.');
+    if (point <= 0) return fileName;
+    return fileName.substring(0, point);
+  }
+
+  String get title {
+    if (catalogTitle.trim().isNotEmpty) return catalogTitle.trim();
+    final noExtension = token;
+    return noExtension
+        .replaceAll('_', ' ')
+        .replaceAll('-', ' ')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+  }
+
+  String get group {
+    if (catalogGroup.trim().isNotEmpty) return catalogGroup.trim();
+    if (path.toLowerCase().startsWith('/usr/a/')) {
+      return 'Jukebox do Fefo';
+    }
+    final parts = path.split('/').where((part) => part.isNotEmpty).toList();
+    if (parts.length >= 3) {
+      return _normalizarGrupo(parts[parts.length - 2]);
+    }
+    if (parts.length == 2) {
+      return _normalizarGrupo(parts.first);
+    }
+    return 'Áudios do FEFO';
+  }
+
+  static String _normalizarGrupo(String raw) {
+    switch (raw.toLowerCase()) {
+      case 'a':
+      case 'audio':
+      case 'audios':
+        return 'Áudios do FEFO';
+      case 'sys':
+      case 'usr':
+        return 'Sistema';
+      case 'jb':
+      case 'jukeb':
+        return 'Jukebox';
+      case 'relax':
+        return 'Relaxamento';
+      case 'seg':
+        return 'Aventuras seguras';
+      case 'corpo':
+        return 'Meu corpo';
+      default:
+        return raw
+            .replaceAll('_', ' ')
+            .replaceAll('-', ' ')
+            .replaceAll(RegExp(r'\s+'), ' ')
+            .trim();
+    }
+  }
+
+  factory FefoAudioItem.fromJson(Map<String, dynamic> json) {
+    final rawId = json['id'];
+    final parsedId = rawId is num
+        ? rawId.toInt()
+        : int.tryParse(
+              rawId?.toString().replaceAll(RegExp(r'[^0-9]'), '') ?? '',
+            ) ??
+            0;
+    return FefoAudioItem(
+      id: parsedId,
+      path: (json['path'] ?? json['arquivo'])?.toString() ?? '',
+      catalogTitle: (json['title'] ?? json['titulo'])?.toString() ?? '',
+      catalogGroup: (json['group'] ?? json['menu'])?.toString() ?? '',
+      checksum: json['checksum']?.toString() ?? '',
+    );
+  }
+}
+
+class FefoCatalogItem {
+  final int id;
+  final String name;
+  final String command;
+  final String path;
+  final String checksum;
+
+  const FefoCatalogItem({
+    required this.id,
+    this.name = '',
+    this.command = '',
+    this.path = '',
+    this.checksum = '',
+  });
+
+  factory FefoCatalogItem.fromJson(Map<String, dynamic> json) {
+    final rawId = json['id'];
+    final parsedId = rawId is num
+        ? rawId.toInt()
+        : int.tryParse(
+              rawId?.toString().replaceAll(RegExp(r'[^0-9]'), '') ?? '',
+            ) ??
+            0;
+    return FefoCatalogItem(
+      id: parsedId,
+      name: (json['name'] ?? json['titulo'])?.toString() ?? '',
+      command: json['command']?.toString() ?? '',
+      path: (json['path'] ?? json['arquivo'])?.toString() ?? '',
+      checksum: json['checksum']?.toString() ?? '',
+    );
+  }
+}
+
+class BluetoothManager extends ChangeNotifier {
+  static final Guid _serviceUuid = Guid('6e400001-b5a3-f393-e0a9-e50e24dcca9e');
+  static final Guid _rxUuid = Guid('6e400002-b5a3-f393-e0a9-e50e24dcca9e');
+  static final Guid _txUuid = Guid('6e400003-b5a3-f393-e0a9-e50e24dcca9e');
+  static const String _bleNamePrefix = 'FEFO_BLE_V';
+  static const MethodChannel _wifiChannel = MethodChannel('fefo/wifi');
+
+  static const String _prefKeyId = 'fefo_ble_id';
+  static const String _prefKeyNome = 'fefo_nome';
+
+  BluetoothDevice? _connectedDevice;
+  BluetoothCharacteristic? _rxCharacteristic;
+  BluetoothCharacteristic? _txCharacteristic;
+
+  StreamSubscription<List<ScanResult>>? _scanSubscription;
+  StreamSubscription<List<int>>? _txSubscription;
+  StreamSubscription<BluetoothConnectionState>? _connectionSubscription;
+
+  bool _isConnecting = false;
+  bool _isScanning = false;
+  String? _caminhoAudioAtivo;
+  String? _audioSelecionado;
+  String _statusMensagem = 'Desconectado';
+  String? _ultimoComandoEnviado;
+  String? _ultimaRespostaRecebida;
+  String? _firmwareVersion;
+  String? _protocolVersion;
+  String? _lastUpdateResult;
+  bool? _panicEnabled;
+  bool _recebendoCatalogo = false;
+  final List<String> _catalogoJsonLines = [];
+  final List<ScanResult> _devicesList = [];
+  final List<String> _mensagensRecebidas = [];
+  final List<FefoAudioItem> _audioItems = [];
+  final List<FefoCatalogItem> _ledEffects = [];
+  final List<FefoCatalogItem> _vibrationEffects = [];
+  final List<FefoCatalogItem> _faces = [];
+  bool _uploading = false;
+  double _uploadProgress = 0;
+  String? _uploadCurrentPath;
+  String? _operationPath;
+  double _uploadItemProgress = 0;
+  double _audioProgress = 0;
+  int _audioVolume = 50;
+  String _audioControlState = 'idle';
+  bool _audioPaused = false;
+  bool _faceModeEnabled = false;
+  bool _faceRandomEnabled = true;
+  String? _currentFacePath;
+  Timer? _audioProgressTimer;
+  bool? _lastTransferSucceeded;
+  int? _sdTotalBytes;
+  int? _sdUsedBytes;
+  int? _sdFreeBytes;
+  final List<Completer<String>> _lineWaiters = [];
+
+  bool get isConnected => _connectedDevice != null && _rxCharacteristic != null;
+  bool get isConnecting => _isConnecting;
+  bool get isScanning => _isScanning;
+  BluetoothDevice? get connectedDevice => _connectedDevice;
+  String? get caminhoAudioAtivo => _caminhoAudioAtivo;
+  String? get audioSelecionado => _audioSelecionado;
+  List<ScanResult> get devicesList => List.unmodifiable(_devicesList);
+  String get statusMensagem => _statusMensagem;
+  String? get ultimoComandoEnviado => _ultimoComandoEnviado;
+  String? get ultimaRespostaRecebida => _ultimaRespostaRecebida;
+  String? get firmwareVersion => _firmwareVersion;
+  String? get protocolVersion => _protocolVersion;
+  String? get lastUpdateResult => _lastUpdateResult;
+  bool? get panicEnabled => _panicEnabled;
+  bool get recebendoCatalogo => _recebendoCatalogo;
+  List<String> get mensagensRecebidas => List.unmodifiable(_mensagensRecebidas);
+  List<FefoAudioItem> get audioItems => List.unmodifiable(_audioItems);
+  List<FefoCatalogItem> get ledEffects => List.unmodifiable(_ledEffects);
+  List<FefoCatalogItem> get vibrationEffects =>
+      List.unmodifiable(_vibrationEffects);
+  List<FefoCatalogItem> get faces => List.unmodifiable(_faces);
+  bool get uploading => _uploading;
+  double get uploadProgress => _uploadProgress;
+  String? get uploadCurrentPath => _uploadCurrentPath;
+  String? get operationPath => _operationPath;
+  double get uploadItemProgress => _uploadItemProgress;
+  double get audioProgress => _audioProgress;
+  int get audioVolume => _audioVolume;
+  bool get audioPaused => _audioPaused;
+  bool get audioPlaying => _audioControlState == 'playing';
+  bool get audioStopped => _audioControlState == 'stopped';
+  bool get faceModeEnabled => _faceModeEnabled;
+  bool get faceRandomEnabled => _faceRandomEnabled;
+  String? get currentFacePath => _currentFacePath;
+  bool? get lastTransferSucceeded => _lastTransferSucceeded;
+  bool get aguardandoReconexao =>
+      _lastTransferSucceeded == true && !isConnected && !_uploading;
+  int? get sdTotalBytes => _sdTotalBytes;
+  int? get sdUsedBytes => _sdUsedBytes;
+  int? get sdFreeBytes => _sdFreeBytes;
+
+  Map<String, List<FefoAudioItem>> get audioGroups {
+    final groups = <String, List<FefoAudioItem>>{};
+    for (final item in _audioItems) {
+      groups.putIfAbsent(item.group, () => []).add(item);
+    }
+    return groups;
+  }
+
+  void _setStatus(String msg) {
+    _statusMensagem = msg;
+    developer.log(msg, name: 'BluetoothManager');
+    notifyListeners();
+  }
+
+  String nomeDoDispositivo(ScanResult result) {
+    final advName = result.advertisementData.advName;
+    if (advName.isNotEmpty) return advName;
+
+    final platformName = result.device.platformName;
+    if (platformName.isNotEmpty) return platformName;
+
+    return 'FEFO BLE (${result.device.remoteId})';
+  }
+
+  Future<bool> solicitarPermissoes() async {
+    final permissions = <Permission>[
+      Permission.bluetoothScan,
+      Permission.bluetoothConnect,
+      Permission.locationWhenInUse,
+    ];
+
+    final statuses = await permissions.request();
+    return statuses.values.every(
+      (status) => status.isGranted || status.isLimited,
+    );
+  }
+
+  Future<void> carregarDispositivosPareados() async {
+    if (!await solicitarPermissoes()) {
+      _setStatus('Permissões de Bluetooth necessárias.');
+      return;
+    }
+
+    if (!await FlutterBluePlus.isSupported) {
+      _setStatus('Este aparelho não suporta BLE.');
+      return;
+    }
+
+    _isScanning = true;
+    _devicesList.clear();
+    _setStatus('Buscando FEFO por BLE...');
+
+    try {
+      if (!kIsWeb && Platform.isAndroid) {
+        await FlutterBluePlus.turnOn();
+      }
+
+      await _scanSubscription?.cancel();
+      _scanSubscription = FlutterBluePlus.onScanResults.listen((results) {
+        final unicos = <String, ScanResult>{};
+        for (final result in results.where(_isFefoScanResult)) {
+          final id = result.device.remoteId.toString();
+          final anterior = unicos[id];
+          if (anterior == null || result.rssi > anterior.rssi) {
+            unicos[id] = result;
+          }
+        }
+        final encontrados = unicos.values.toList()
+          ..sort((a, b) => b.rssi.compareTo(a.rssi));
+
+        _devicesList
+          ..clear()
+          ..addAll(encontrados);
+
+        notifyListeners();
+      });
+
+      await FlutterBluePlus.startScan(timeout: const Duration(seconds: 10));
+      await FlutterBluePlus.isScanning
+          .where((scanning) => scanning == false)
+          .first;
+
+      _setStatus(
+        _devicesList.isEmpty
+            ? 'Nenhum FEFO BLE encontrado.'
+            : 'FEFO encontrado. Toque para conectar.',
+      );
+    } catch (e) {
+      _setStatus('Erro ao buscar BLE: $e');
+    } finally {
+      _isScanning = false;
+      notifyListeners();
+    }
+  }
+
+  bool _isFefoScanResult(ScanResult result) {
+    final name = nomeDoDispositivo(result).toUpperCase();
+    final services = result.advertisementData.serviceUuids;
+    return name.startsWith(_bleNamePrefix) && services.contains(_serviceUuid);
+  }
+
+  Future<void> connectToDevice(ScanResult result) async {
+    if (_isConnecting) return;
+
+    await disconnectFromDevice();
+
+    final device = result.device;
+    _isConnecting = true;
+    _setStatus('Conectando ao ${nomeDoDispositivo(result)}...');
+
+    try {
+      await device.connect(
+        license: License.nonprofit,
+        timeout: const Duration(seconds: 15),
+        autoConnect: false,
+      );
+
+      _connectedDevice = device;
+      _connectionSubscription = device.connectionState.listen((state) {
+        if (state == BluetoothConnectionState.disconnected) {
+          _setStatus('Desconectado.');
+          _cleanup();
+        }
+      });
+
+      if (!kIsWeb && Platform.isAndroid) {
+        await device.requestMtu(512);
+      }
+
+      await _discoverUartCharacteristics(device);
+      await _setupNotifications();
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_prefKeyId, device.remoteId.toString());
+      await prefs.setString(_prefKeyNome, nomeDoDispositivo(result));
+
+      _setStatus('Conectado por BLE. Pronto para comandos.');
+      await enviarComando('APP SYNC');
+      await enviarComando('CATALOG GET');
+      await setVolume(50);
+    } catch (e) {
+      _setStatus('Falha ao conectar BLE: $e');
+      await disconnectFromDevice();
+    } finally {
+      _isConnecting = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> _discoverUartCharacteristics(BluetoothDevice device) async {
+    final services = await device.discoverServices();
+
+    for (final service in services) {
+      if (service.uuid != _serviceUuid) continue;
+
+      for (final characteristic in service.characteristics) {
+        if (characteristic.uuid == _rxUuid) {
+          _rxCharacteristic = characteristic;
+        } else if (characteristic.uuid == _txUuid) {
+          _txCharacteristic = characteristic;
+        }
+      }
+    }
+
+    if (_rxCharacteristic == null || _txCharacteristic == null) {
+      throw Exception('Serviço UART FEFO não encontrado.');
+    }
+  }
+
+  Future<void> _setupNotifications() async {
+    if (_txCharacteristic == null) return;
+
+    await _txSubscription?.cancel();
+    _txSubscription = _txCharacteristic!.onValueReceived.listen((value) {
+      final texto = utf8.decode(value, allowMalformed: true);
+      for (final line in const LineSplitter().convert(texto)) {
+        _processarLinhaRecebida(line.trim());
+      }
+    });
+
+    await _txCharacteristic!.setNotifyValue(true);
+  }
+
+  void _processarLinhaRecebida(String texto) {
+    if (texto.isEmpty) return;
+
+    _ultimaRespostaRecebida = texto;
+    _mensagensRecebidas.add(texto);
+    for (final waiter in List<Completer<String>>.from(_lineWaiters)) {
+      if (!waiter.isCompleted) waiter.complete(texto);
+    }
+    _lineWaiters.clear();
+    if (_mensagensRecebidas.length > 80) {
+      _mensagensRecebidas.removeAt(0);
+    }
+
+    _interpretarLinhaDeCatalogo(texto);
+    _setStatus('FEFO: $texto');
+  }
+
+  void _interpretarLinhaDeCatalogo(String texto) {
+    if (texto.startsWith('OK SD ')) {
+      _sdTotalBytes = int.tryParse(_extrairCampo(texto, 'TOTAL') ?? '');
+      _sdUsedBytes = int.tryParse(_extrairCampo(texto, 'USED') ?? '');
+      _sdFreeBytes = int.tryParse(_extrairCampo(texto, 'FREE') ?? '');
+      notifyListeners();
+      return;
+    }
+    if (texto.startsWith('UPDATE LAST ')) {
+      _lastUpdateResult = texto.substring(12).trim();
+      notifyListeners();
+      return;
+    }
+    if (texto.startsWith('BEGIN APP SYNC')) {
+      _firmwareVersion = _extrairCampo(texto, 'FW') ?? _firmwareVersion;
+      _protocolVersion = _extrairCampo(texto, 'PROTO') ?? _protocolVersion;
+      _audioItems.clear();
+      _faces.clear();
+      notifyListeners();
+      return;
+    }
+
+    if (texto.startsWith('STATE MIC=') || texto.startsWith('OK STATUS')) {
+      final panic = _extrairCampo(texto, 'PANIC_EN');
+      if (panic != null) {
+        _panicEnabled = panic.toUpperCase() == 'ON';
+        notifyListeners();
+      }
+      return;
+    }
+
+    if (texto.startsWith('OK AUDIO ')) {
+      final state = _extrairCampo(texto, 'STATE')?.toUpperCase();
+      final position = int.tryParse(_extrairCampo(texto, 'POS') ?? '') ?? 0;
+      final size = int.tryParse(_extrairCampo(texto, 'SIZE') ?? '') ?? 0;
+      _audioVolume =
+          int.tryParse(_extrairCampo(texto, 'VOL') ?? '') ?? _audioVolume;
+      _audioPaused = state == 'PAUSED';
+      if (size > 0) {
+        _audioProgress = (position / size).clamp(0.0, 1.0);
+      }
+      if (state == 'IDLE') {
+        _caminhoAudioAtivo = null;
+        _audioProgress = 0;
+        _audioPaused = false;
+        _audioProgressTimer?.cancel();
+      }
+      notifyListeners();
+      return;
+    }
+
+    if (texto.startsWith('OK VOL ')) {
+      _audioVolume =
+          int.tryParse(_extrairCampo(texto, 'VOL') ?? texto.split(' ').last) ??
+              _audioVolume;
+      notifyListeners();
+      return;
+    }
+
+    if (texto.startsWith('OK FACE MODE=')) {
+      _faceModeEnabled = _extrairCampo(texto, 'MODE') == 'ON';
+      _faceRandomEnabled = _extrairCampo(texto, 'RANDOM') == 'ON';
+      final current = _extrairCampo(texto, 'CURRENT');
+      _currentFacePath = current == '-' ? null : current;
+      notifyListeners();
+      return;
+    }
+
+    if (texto == 'OK MODE FACES') {
+      _faceModeEnabled = true;
+      notifyListeners();
+      return;
+    }
+    if (texto == 'OK MODE BLE') {
+      _faceModeEnabled = false;
+      notifyListeners();
+      return;
+    }
+    if (texto == 'OK FACE RANDOM ON' || texto == 'OK FACE RANDOM OFF') {
+      _faceRandomEnabled = texto.endsWith('ON');
+      notifyListeners();
+      return;
+    }
+
+    if (texto.startsWith('OK PANIC')) {
+      if (texto.contains(' EN=ON') || texto.endsWith(' ON')) {
+        _panicEnabled = true;
+      } else if (texto.contains(' EN=OFF') || texto.endsWith(' OFF')) {
+        _panicEnabled = false;
+      }
+      notifyListeners();
+      return;
+    }
+
+    if (texto.startsWith('APP AUDIO ')) {
+      final match = RegExp(r'^APP AUDIO\s+(\d+)\s+(.+)$').firstMatch(texto);
+      if (match != null) {
+        _adicionarAudioCatalogo(
+          FefoAudioItem(
+            id: int.tryParse(match.group(1) ?? '') ?? _audioItems.length + 1,
+            path: match.group(2)?.trim() ?? '',
+          ),
+        );
+      }
+      return;
+    }
+
+    if (texto.startsWith('APP FACE ')) {
+      final match = RegExp(r'^APP FACE\s+(\d+)\s+(.+)$').firstMatch(texto);
+      if (match != null) {
+        final path = match.group(2)?.trim() ?? '';
+        if (path.isNotEmpty && !_faces.any((face) => face.path == path)) {
+          _faces.add(
+            FefoCatalogItem(
+              id: int.tryParse(match.group(1) ?? '') ?? _faces.length + 1,
+              path: path,
+            ),
+          );
+          notifyListeners();
+        }
+      }
+      return;
+    }
+
+    if (texto == 'BEGIN CATALOG') {
+      _recebendoCatalogo = true;
+      _catalogoJsonLines.clear();
+      notifyListeners();
+      return;
+    }
+
+    if (texto.startsWith('END CATALOG')) {
+      _recebendoCatalogo = false;
+      _aplicarCatalogoJson(_catalogoJsonLines.join('\n'));
+      _catalogoJsonLines.clear();
+      notifyListeners();
+      return;
+    }
+
+    if (_recebendoCatalogo) {
+      _catalogoJsonLines.add(texto);
+      return;
+    }
+
+    if (texto == 'ERR CATALOG NOT_FOUND') {
+      Future.microtask(() async {
+        await enviarComando('CATALOG BUILD');
+        await enviarComando('CATALOG GET');
+      });
+      return;
+    }
+  }
+
+  String? _extrairCampo(String texto, String campo) {
+    final match = RegExp('$campo=([^\\s]+)').firstMatch(texto);
+    return match?.group(1);
+  }
+
+  void _aplicarCatalogoJson(String rawJson) {
+    try {
+      final decoded = jsonDecode(rawJson);
+      if (decoded is! Map<String, dynamic>) return;
+
+      // APP SYNC informa a versao realmente em execucao. O manifesto do
+      // SDCard pode ser antigo e nao deve sobrescrever esse valor.
+      _firmwareVersion ??= decoded['firmware']?.toString();
+      _protocolVersion = decoded['protocol']?.toString() ?? _protocolVersion;
+
+      final audios = decoded['audios'] ?? decoded['audio'];
+      if (audios is List) {
+        _audioItems.clear();
+        for (final audio in audios) {
+          if (audio is Map<String, dynamic>) {
+            _adicionarAudioCatalogo(FefoAudioItem.fromJson(audio));
+          } else if (audio is Map) {
+            _adicionarAudioCatalogo(
+              FefoAudioItem.fromJson(Map<String, dynamic>.from(audio)),
+            );
+          }
+        }
+      }
+
+      _lerItensCatalogo(decoded['led_effects'], _ledEffects);
+      _lerItensCatalogo(decoded['vibration_effects'], _vibrationEffects);
+      _lerItensCatalogo(decoded['faces'], _faces);
+      _garantirEfeitosPadrao();
+      notifyListeners();
+    } catch (e) {
+      developer.log('Erro ao ler fefo.json: $e', name: 'BluetoothManager');
+    }
+  }
+
+  void _garantirEfeitosPadrao() {
+    if (_ledEffects.isEmpty) {
+      _ledEffects.addAll(List.generate(10, (index) {
+        const names = [
+          'Vermelho',
+          'Verde',
+          'Azul',
+          'Pisca branco',
+          'Ponto laranja',
+          'Roxo alternado',
+          'Arco-íris',
+          'Respiração azul',
+          'Polícia',
+          'Rastro laranja',
+        ];
+        final id = index + 1;
+        return FefoCatalogItem(id: id, name: names[index], command: 'LED $id');
+      }));
+    }
+    if (_vibrationEffects.isEmpty) {
+      _vibrationEffects.addAll(List.generate(5, (index) {
+        const names = ['Leve', 'Curta', 'Média', 'Longa', 'Forte'];
+        final id = index + 1;
+        return FefoCatalogItem(
+          id: id,
+          name: names[index],
+          command: 'VIBRA $id',
+        );
+      }));
+    }
+  }
+
+  void _lerItensCatalogo(dynamic raw, List<FefoCatalogItem> destino) {
+    if (raw is! List) return;
+    destino
+      ..clear()
+      ..addAll(
+        raw.whereType<Map>().map(
+              (item) => FefoCatalogItem.fromJson(
+                Map<String, dynamic>.from(item),
+              ),
+            ),
+      );
+  }
+
+  Future<void> atualizarCatalogo() async {
+    await enviarComando('CATALOG BUILD');
+    await Future<void>.delayed(const Duration(milliseconds: 250));
+    await enviarComando('CATALOG GET');
+  }
+
+  Future<void> enviarArquivo(
+    String destino,
+    List<int> bytes,
+  ) async {
+    if (!isConnected || bytes.isEmpty || _uploading) return;
+    _uploading = true;
+    _uploadProgress = 0;
+    _uploadCurrentPath = null;
+    _uploadItemProgress = 0;
+    notifyListeners();
+
+    try {
+      await enviarComando('FILE BEGIN $destino ${bytes.length}');
+      await Future<void>.delayed(const Duration(milliseconds: 180));
+      const chunkSize = 80;
+      var sequence = 0;
+      for (var offset = 0; offset < bytes.length; offset += chunkSize) {
+        final end = (offset + chunkSize).clamp(0, bytes.length).toInt();
+        final chunk = bytes.sublist(offset, end);
+        final hex = chunk
+            .map((value) => value.toRadixString(16).padLeft(2, '0'))
+            .join()
+            .toUpperCase();
+        final checksum =
+            chunk.fold<int>(0, (sum, value) => (sum + value) & 0xFF);
+        await enviarComando(
+          'FX $sequence $hex ${checksum.toRadixString(16).padLeft(2, '0').toUpperCase()}',
+        );
+        sequence++;
+        _uploadProgress = end / bytes.length;
+        notifyListeners();
+        await Future<void>.delayed(const Duration(milliseconds: 55));
+      }
+      await enviarComando('FILE END');
+      await Future<void>.delayed(const Duration(milliseconds: 350));
+      await atualizarCatalogo();
+    } finally {
+      _uploading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<String> _aguardarLinha(bool Function(String) aceita,
+      {Duration timeout = const Duration(seconds: 12)}) async {
+    final limite = DateTime.now().add(timeout);
+    while (DateTime.now().isBefore(limite)) {
+      final completer = Completer<String>();
+      _lineWaiters.add(completer);
+      final restante = limite.difference(DateTime.now());
+      final line =
+          await completer.future.timeout(restante, onTimeout: () => '');
+      _lineWaiters.remove(completer);
+      if (line.isNotEmpty && aceita(line)) return line;
+    }
+    throw TimeoutException('O FEFO nao respondeu ao inicio do Wi-Fi.');
+  }
+
+  Future<void> enviarArquivosPorWifi(Map<String, List<int>> arquivos,
+      {Map<String, String> checksums = const {},
+      List<String> excluir = const []}) async {
+    if (!isConnected || arquivos.isEmpty || _uploading) return;
+    _uploading = true;
+    _lastTransferSucceeded = null;
+    _uploadProgress = 0;
+    notifyListeners();
+    String? recoveryIp;
+    String? recoveryToken;
+    try {
+      final respostaFuture = _aguardarLinha((line) =>
+          line.startsWith('OK WIFI PUSH ') || line.startsWith('ERR WIFI'));
+      await enviarComando('WIFI PUSH START');
+      final resposta = await respostaFuture;
+      if (!resposta.startsWith('OK ')) throw Exception(resposta);
+      final ssid = _extrairCampo(resposta, 'SSID');
+      final pass = _extrairCampo(resposta, 'PASS');
+      final ip = _extrairCampo(resposta, 'IP');
+      final token = _extrairCampo(resposta, 'TOKEN');
+      if ([ssid, pass, ip, token].any((v) => v == null || v.isEmpty)) {
+        throw Exception('Dados da rede FEFO incompletos.');
+      }
+      recoveryIp = ip;
+      recoveryToken = token;
+      await _wifiChannel.invokeMethod<bool>('connect', {
+        'ssid': ssid,
+        'password': pass,
+      });
+      _setStatus('Wi-Fi conectado. Aguardando o servidor do FEFO...');
+      await _aguardarServidorWifi(ip!, token!);
+      _setStatus('Wi-Fi do FEFO conectado. Iniciando gravação no SDCard...');
+      for (final path in excluir) {
+        final deleteClient = HttpClient();
+        try {
+          final request =
+              await deleteClient.deleteUrl(Uri.parse('http://$ip/file'));
+          request.headers.set('X-Fefo-Token', token);
+          request.headers.set('X-Fefo-Path', path);
+          final response = await request.close();
+          final body = await utf8.decoder.bind(response).join();
+          if (response.statusCode != 200 && response.statusCode != 404) {
+            throw HttpException('$body (${response.statusCode})');
+          }
+        } finally {
+          deleteClient.close();
+        }
+      }
+      final total =
+          arquivos.values.fold<int>(0, (sum, bytes) => sum + bytes.length);
+      var enviados = 0;
+      for (final entry in arquivos.entries) {
+        _uploadCurrentPath = entry.key;
+        _uploadItemProgress = 0;
+        _setStatus('Gravando ${entry.key} no FEFO...');
+        final client = HttpClient()
+          ..connectionTimeout = const Duration(seconds: 10);
+        try {
+          final request = await client.putUrl(Uri.parse('http://$ip/file'));
+          request.headers.set('X-Fefo-Token', token);
+          request.headers.set('X-Fefo-Path', entry.key);
+          final checksum = checksums[entry.key] ?? '';
+          if (checksum.isNotEmpty) {
+            request.headers
+                .set('X-Fefo-Sha256', checksum.replaceFirst('sha256:', ''));
+          }
+          request.contentLength = entry.value.length;
+          const block = 64 * 1024;
+          for (var offset = 0; offset < entry.value.length; offset += block) {
+            final end = (offset + block).clamp(0, entry.value.length).toInt();
+            request.add(entry.value.sublist(offset, end));
+            await request.flush();
+            _uploadProgress = (enviados + end) / total;
+            _uploadItemProgress = end / entry.value.length;
+            notifyListeners();
+          }
+          final response = await request.close();
+          final body = await utf8.decoder.bind(response).join();
+          if (response.statusCode != 200) {
+            throw HttpException('$body (${response.statusCode})');
+          }
+          enviados += entry.value.length;
+        } finally {
+          client.close();
+        }
+      }
+      final finishClient = HttpClient();
+      try {
+        final finish =
+            await finishClient.postUrl(Uri.parse('http://$ip/finish'));
+        finish.headers.set('X-Fefo-Token', token);
+        finish.contentLength = 0;
+        try {
+          await (await finish.close()).drain<void>();
+        } on SocketException {
+          // O FEFO reinicia logo após aceitar /finish e pode encerrar o socket
+          // antes de o Android receber o fim da resposta.
+        } on HttpException {
+          // Todos os arquivos já foram confirmados individualmente neste ponto.
+          // Uma conexão abortada aqui significa que o reboot foi iniciado.
+        }
+      } finally {
+        finishClient.close();
+      }
+      await _wifiChannel.invokeMethod<bool>('disconnect');
+      _lastTransferSucceeded = true;
+      _setStatus('Concluído. Reconecte o Bluetooth.');
+    } catch (_) {
+      _lastTransferSucceeded = false;
+      await _finalizarSessaoWifi(recoveryIp, recoveryToken);
+      rethrow;
+    } finally {
+      try {
+        await _wifiChannel.invokeMethod<bool>('disconnect');
+      } catch (_) {}
+      _uploading = false;
+      _uploadCurrentPath = null;
+      _uploadItemProgress = 0;
+      notifyListeners();
+    }
+  }
+
+  Future<void> _finalizarSessaoWifi(String? ip, String? token) async {
+    if (ip == null || token == null) return;
+    final client = HttpClient()..connectionTimeout = const Duration(seconds: 2);
+    try {
+      final request = await client.postUrl(Uri.parse('http://$ip/finish'));
+      request.headers.set('X-Fefo-Token', token);
+      request.contentLength = 0;
+      await (await request.close()).drain<void>();
+    } catch (_) {
+      // Se o servidor não estiver acessível, o firmware v071 encerrará o AP
+      // automaticamente após o prazo de inatividade e reiniciará.
+    } finally {
+      client.close(force: true);
+    }
+  }
+
+  Future<void> _aguardarServidorWifi(String ip, String token) async {
+    Object? lastError;
+    for (var attempt = 1; attempt <= 15; attempt++) {
+      final client = HttpClient()
+        ..connectionTimeout = const Duration(seconds: 2);
+      try {
+        final request = await client.getUrl(Uri.parse('http://$ip/ping'));
+        request.headers.set('X-Fefo-Token', token);
+        await (await request.close()).drain<void>();
+        return;
+      } catch (error) {
+        lastError = error;
+        _setStatus('Aguardando servidor do FEFO ($attempt/15)...');
+        await Future<void>.delayed(const Duration(milliseconds: 700));
+      } finally {
+        client.close(force: true);
+      }
+    }
+    throw HttpException('Servidor Wi-Fi do FEFO inacessível: $lastError');
+  }
+
+  Future<void> enviarArquivosViaHotspot(Map<String, List<int>> arquivos,
+      {Map<String, String> checksums = const {},
+      List<String> excluir = const []}) async {
+    if (!isConnected || arquivos.isEmpty || _uploading) return;
+    _uploading = true;
+    _uploadProgress = 0;
+    notifyListeners();
+    HttpServer? server;
+    try {
+      _setStatus('Criando rede temporária no celular...');
+      final hotspot =
+          await _wifiChannel.invokeMapMethod<String, dynamic>('startHotspot');
+      final ssid = hotspot?['ssid']?.toString() ?? '';
+      final password = hotspot?['password']?.toString() ?? '';
+      final securityType = hotspot?['securityType'] as int? ?? 1;
+      if (ssid.isEmpty || password.isEmpty) {
+        throw Exception('O Android não forneceu as credenciais do hotspot.');
+      }
+      if (securityType != 1 && securityType != 2) {
+        throw Exception(
+            'O Android criou um hotspot WPA3 incompatível com este FEFO (tipo $securityType).');
+      }
+      const port = 8080;
+      final token = DateTime.now().microsecondsSinceEpoch.toRadixString(16);
+      server =
+          await HttpServer.bind(InternetAddress.anyIPv4, port, shared: true);
+      final entries = arquivos.entries.toList();
+      final total = entries.fold<int>(0, (sum, e) => sum + e.value.length);
+      var enviados = 0;
+      final completed = Completer<bool>();
+      server.listen((request) async {
+        try {
+          if (request.uri.queryParameters['token'] != token) {
+            request.response.statusCode = HttpStatus.forbidden;
+          } else if (request.uri.path == '/plan') {
+            final lines = <String>[
+              ...excluir.map((path) => 'DELETE $path'),
+              for (var i = 0; i < entries.length; i++)
+                'FILE ${entries[i].key} ${entries[i].value.length} '
+                    '${(checksums[entries[i].key] ?? '-').replaceFirst('sha256:', '')} /file/$i',
+            ];
+            request.response.write('${lines.join('\n')}\n');
+          } else if (request.uri.path.startsWith('/file/')) {
+            final index = int.tryParse(request.uri.path.substring(6));
+            if (index == null || index < 0 || index >= entries.length) {
+              request.response.statusCode = HttpStatus.notFound;
+            } else {
+              final entry = entries[index];
+              request.response.contentLength = entry.value.length;
+              const block = 64 * 1024;
+              for (var offset = 0;
+                  offset < entry.value.length;
+                  offset += block) {
+                final end =
+                    (offset + block).clamp(0, entry.value.length).toInt();
+                request.response.add(entry.value.sublist(offset, end));
+                await request.response.flush();
+                _uploadProgress = (enviados + end) / total;
+                _setStatus('Enviando ${entry.key} ao FEFO...');
+              }
+              enviados += entry.value.length;
+            }
+          } else if (request.uri.path == '/complete') {
+            final ok = request.uri.queryParameters['ok'] == '1';
+            if (!completed.isCompleted) completed.complete(ok);
+            request.response.write(ok ? 'OK' : 'FAILED');
+          } else {
+            request.response.statusCode = HttpStatus.notFound;
+          }
+        } finally {
+          await request.response.close();
+        }
+      });
+      final respostaFuture = _aguardarLinha((line) =>
+          line.startsWith('OK WIFI PULL') || line.startsWith('ERR WIFI'));
+      await enviarComando('WIFI PULL START $ssid|$password|$port|$token');
+      final resposta = await respostaFuture;
+      if (!resposta.startsWith('OK ')) throw Exception(resposta);
+      _setStatus('FEFO conectando ao hotspot do celular...');
+      final ok = await completed.future.timeout(const Duration(seconds: 50));
+      if (!ok) throw Exception('O FEFO rejeitou a atualização.');
+      _setStatus('Atualização concluída. O FEFO está reiniciando...');
+    } finally {
+      await server?.close(force: true);
+      try {
+        await _wifiChannel.invokeMethod<bool>('stopHotspot');
+      } catch (_) {}
+      _uploading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> removerArquivo(String path) async {
+    if (!isConnected || path.isEmpty) return false;
+    final start = _mensagensRecebidas.length;
+    await enviarComando('DELETE AUDIO $path');
+    for (var attempt = 0; attempt < 30; attempt++) {
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+      final novas = _mensagensRecebidas.skip(start);
+      for (final line in novas) {
+        final match =
+            RegExp(r'^CONFIRM DELETE AUDIO .+ CODE=(\d+)$').firstMatch(line);
+        if (match == null) continue;
+        await enviarComando('DELETE CONFIRM ${match.group(1)}');
+        await Future<void>.delayed(const Duration(milliseconds: 350));
+        await atualizarCatalogo();
+        return true;
+      }
+    }
+    return false;
+  }
+
+  Future<void> removerAudioPorWifi(String path) async {
+    if (path.isEmpty) {
+      throw ArgumentError('Caminho do áudio inválido.');
+    }
+    if (!isConnected) {
+      throw StateError('Conecte novamente ao FEFO antes de excluir.');
+    }
+    _operationPath = path;
+    notifyListeners();
+    final manifest = <String, dynamic>{
+      'schema': 1,
+      'firmware': _firmwareVersion ?? '0.0.66',
+      'audio': _audioItems
+          .where((item) => item.path != path)
+          .map((item) => {
+                'id': item.id,
+                'titulo': item.title,
+                'menu': item.group,
+                'arquivo': item.path,
+                'checksum': item.checksum,
+              })
+          .toList(),
+      'faces': _faces
+          .map((item) => {
+                'id': item.id,
+                'titulo': item.name,
+                'arquivo': item.path,
+                'checksum': item.checksum,
+              })
+          .toList(),
+      'led_effects': _ledEffects
+          .map((item) => {
+                'id': item.id,
+                'name': item.name,
+                'command': item.command,
+              })
+          .toList(),
+      'vibration_effects': _vibrationEffects
+          .map((item) => {
+                'id': item.id,
+                'name': item.name,
+                'command': item.command,
+              })
+          .toList(),
+    };
+    final bytes =
+        utf8.encode(const JsonEncoder.withIndent(' ').convert(manifest));
+    try {
+      await enviarArquivosPorWifi(
+        {'/fefo.json': bytes},
+        excluir: [path],
+      );
+    } finally {
+      _operationPath = null;
+      notifyListeners();
+    }
+  }
+
+  Future<void> instalarFacePorWifi({
+    required int id,
+    required String title,
+    required String path,
+    required String checksum,
+    required List<int> fileBytes,
+  }) async {
+    if (!isConnected || path.isEmpty || fileBytes.isEmpty) return;
+    final faces = [
+      ..._faces.where((item) => item.path != path).map((item) => {
+            'id': item.id,
+            'titulo': item.name,
+            'arquivo': item.path,
+            'checksum': item.checksum,
+          }),
+      {
+        'id': id,
+        'titulo': title,
+        'arquivo': path,
+        'tamanho': fileBytes.length,
+        'checksum': checksum,
+      },
+    ];
+    final manifest = _manifestoAtual(faces: faces);
+    await enviarArquivosPorWifi(
+      {
+        path: fileBytes,
+        '/fefo.json': utf8.encode(
+          const JsonEncoder.withIndent(' ').convert(manifest),
+        ),
+      },
+      checksums: {path: checksum},
+    );
+  }
+
+  Future<void> removerFacePorWifi(String path) async {
+    if (!isConnected || path.isEmpty) return;
+    _operationPath = path;
+    notifyListeners();
+    final faces = _faces
+        .where((item) => item.path != path)
+        .map((item) => {
+              'id': item.id,
+              'titulo': item.name,
+              'arquivo': item.path,
+              'checksum': item.checksum,
+            })
+        .toList();
+    final manifest = _manifestoAtual(faces: faces);
+    try {
+      await enviarArquivosPorWifi(
+        {
+          '/fefo.json': utf8.encode(
+            const JsonEncoder.withIndent(' ').convert(manifest),
+          ),
+        },
+        excluir: [path],
+      );
+    } finally {
+      _operationPath = null;
+      notifyListeners();
+    }
+  }
+
+  Map<String, dynamic> _manifestoAtual({
+    required List<Map<String, dynamic>> faces,
+  }) {
+    return {
+      'schema': 1,
+      'firmware': _firmwareVersion ?? '0.0.68',
+      'audio': _audioItems
+          .map((item) => {
+                'id': item.id,
+                'titulo': item.title,
+                'menu': item.group,
+                'arquivo': item.path,
+                'checksum': item.checksum,
+              })
+          .toList(),
+      'faces': faces,
+      'led_effects': _ledEffects
+          .map((item) => {
+                'id': item.id,
+                'name': item.name,
+                'command': item.command,
+              })
+          .toList(),
+      'vibration_effects': _vibrationEffects
+          .map((item) => {
+                'id': item.id,
+                'name': item.name,
+                'command': item.command,
+              })
+          .toList(),
+    };
+  }
+
+  void _adicionarAudioCatalogo(FefoAudioItem item) {
+    if (item.path.isEmpty) return;
+    if (_audioItems.any((audio) => audio.path == item.path)) return;
+    _audioItems.add(item);
+  }
+
+  Future<void> enviarComando(String comando) async {
+    await _enviarComandoNormalizado(
+      _normalizarComando(comando),
+      origemParaEstado: comando,
+    );
+  }
+
+  Future<void> playAudio(String audioRef) async {
+    _audioSelecionado = audioRef;
+    await _enviarComandoNormalizado(
+      _comandoPlayParaAudio(audioRef),
+      origemParaEstado: audioRef,
+    );
+    _audioProgress = 0;
+    _audioPaused = false;
+    _audioControlState = 'playing';
+    _audioProgressTimer?.cancel();
+    _audioProgressTimer =
+        Timer.periodic(const Duration(milliseconds: 500), (_) {
+      if (!isConnected || _caminhoAudioAtivo == null) {
+        _audioProgressTimer?.cancel();
+        return;
+      }
+      enviarComando('AUDIO STATUS');
+    });
+  }
+
+  void selecionarAudio(String audioRef) {
+    _audioSelecionado = audioRef;
+    _audioControlState = 'idle';
+    notifyListeners();
+  }
+
+  Future<void> stopAudio() async {
+    await _enviarComandoNormalizado('STOP');
+    _audioProgressTimer?.cancel();
+    _audioProgress = 0;
+    _audioPaused = false;
+    _audioControlState = 'stopped';
+    notifyListeners();
+  }
+
+  Future<void> pauseAudio() async {
+    await _enviarComandoNormalizado('PAUSE');
+    _audioPaused = true;
+    _audioControlState = 'paused';
+    notifyListeners();
+  }
+
+  Future<void> resumeAudio() async {
+    await _enviarComandoNormalizado('RESUME');
+    _audioPaused = false;
+    _audioControlState = 'playing';
+    notifyListeners();
+  }
+
+  Future<void> setVolume(int volume) async {
+    _audioVolume = volume.clamp(0, 100);
+    notifyListeners();
+    await _enviarComandoNormalizado('VOL ${volume.clamp(0, 100)}');
+  }
+
+  Future<void> enviarComandoDeVolume(int volume) async => setVolume(volume);
+
+  Future<void> refreshFaceStatus() async => enviarComando('FACE?');
+
+  Future<void> setFaceMode(bool enabled) async {
+    if (enabled) await enviarComando('DIAG OFF');
+    final responseFuture = _aguardarLinha(
+      (line) => line.startsWith('OK MODE ') || line.startsWith('ERR MODE '),
+    );
+    await enviarComando(enabled ? 'MODE FACES' : 'MODE BLE');
+    final response = await responseFuture;
+    _faceModeEnabled = response == 'OK MODE FACES';
+    notifyListeners();
+    if (response.startsWith('OK ')) await enviarComando('CONFIG SAVE');
+    await refreshFaceStatus();
+  }
+
+  Future<void> setFaceRandom(bool enabled) async {
+    final responseFuture = _aguardarLinha(
+      (line) =>
+          line == 'OK FACE RANDOM ON' ||
+          line == 'OK FACE RANDOM OFF' ||
+          line.startsWith('ERR FACE '),
+    );
+    await enviarComando(enabled ? 'FACE RANDOM ON' : 'FACE RANDOM OFF');
+    final response = await responseFuture;
+    if (response.startsWith('OK ')) {
+      _faceRandomEnabled = enabled;
+      await enviarComando('CONFIG SAVE');
+    }
+    notifyListeners();
+  }
+
+  Future<void> showFace(String path) async {
+    await enviarComando('DIAG OFF');
+    if (!_faceModeEnabled) await enviarComando('MODE FACES');
+    await enviarComando('FACE $path');
+    _faceModeEnabled = true;
+    _faceRandomEnabled = false;
+    _currentFacePath = path;
+    notifyListeners();
+  }
+
+  Future<void> setBrightness(int brightness) async {
+    await _enviarComandoNormalizado('BRILHO ${brightness.clamp(0, 100)}');
+  }
+
+  Future<void> setLedPattern(int pattern) async {
+    await _enviarComandoNormalizado('LED ${pattern.clamp(1, 10)}');
+  }
+
+  Future<void> vibrar(int pattern) async {
+    await _enviarComandoNormalizado('VIBRA ${pattern.clamp(1, 5)}');
+  }
+
+  Future<void> setPanicEnabled(bool enabled) async {
+    await _enviarComandoNormalizado(enabled ? 'PANIC ON' : 'PANIC OFF');
+    _panicEnabled = enabled;
+    notifyListeners();
+  }
+
+  Future<void> refreshPanicStatus() async {
+    await _enviarComandoNormalizado('PANIC STATUS');
+  }
+
+  Future<void> _enviarComandoNormalizado(
+    String comandoNormalizado, {
+    String? origemParaEstado,
+  }) async {
+    if (!isConnected || _rxCharacteristic == null) {
+      _setStatus('FEFO não conectado.');
+      return;
+    }
+
+    try {
+      _ultimoComandoEnviado = comandoNormalizado;
+      await _rxCharacteristic!.write(
+        utf8.encode('$comandoNormalizado\n'),
+        withoutResponse: false,
+      );
+
+      _atualizarEstadoLocalAposComando(
+        origemParaEstado ?? comandoNormalizado,
+        comandoNormalizado,
+      );
+      _setStatus('Enviado: $comandoNormalizado');
+    } catch (e) {
+      _setStatus('Erro ao enviar comando: $e');
+      await disconnectFromDevice();
+    }
+  }
+
+  String _normalizarComando(String comandoOriginal) {
+    final comando = comandoOriginal.trim();
+    final lower = comando.toLowerCase();
+
+    if (comando.isEmpty) return 'STATUS';
+
+    if (lower.startsWith('volume:')) {
+      final valor = lower.split(':').last;
+      return 'VOL $valor';
+    }
+
+    if (lower == 'stop') return 'STOP';
+    if (lower == 'pause') return 'PAUSE';
+    if (lower == 'resume' || lower == 'play') return 'RESUME';
+    if (lower == 'rxready') return 'APP SYNC';
+    if (lower == 'wifi-on') return 'APP SYNC';
+
+    if (lower.startsWith('vibracao')) {
+      final numero = int.tryParse(lower.replaceAll(RegExp(r'[^0-9]'), ''));
+      return 'VIBRA ${(numero ?? 1).clamp(1, 5)}';
+    }
+
+    // O firmware atual não possui VIBRA 0/STOP VIBRA; os padrões têm duração
+    // curta e param sozinhos. Mantemos STATUS como fallback seguro.
+    if (lower == 'stopvib') return 'STATUS';
+
+    if (lower.startsWith('efeitoluz')) {
+      final numero = int.tryParse(lower.replaceAll(RegExp(r'[^0-9]'), ''));
+      return 'LED ${((numero ?? 0) + 1).clamp(1, 10)}';
+    }
+
+    if (lower == '/luz/off') return 'BRILHO 0';
+
+    if (lower.startsWith('/luz/')) {
+      return _converterComandoDeLuzAntigo(lower);
+    }
+
+    if (comando.startsWith('/')) {
+      return _comandoPlayParaAudio(comando);
+    }
+
+    return comando;
+  }
+
+  String _comandoPlayParaAudio(String audioRef) {
+    final ref = audioRef.trim();
+    if (ref.isEmpty) return 'STATUS';
+
+    final upper = ref.toUpperCase();
+    if (upper.startsWith('P:') || upper.startsWith('PLAY ')) return ref;
+
+    // O app usa tokens curtos para o firmware resolver no índice do SDCard.
+    // Ex.: /rotina/rotina01.wav -> P:rotina01
+    return 'P:${_extrairNomeSemExtensao(ref)}';
+  }
+
+  String _extrairNomeSemExtensao(String caminho) {
+    final arquivo = caminho.split('/').where((parte) => parte.isNotEmpty).last;
+    final ponto = arquivo.lastIndexOf('.');
+    if (ponto <= 0) return arquivo;
+    return arquivo.substring(0, ponto);
+  }
+
+  String _converterComandoDeLuzAntigo(String comando) {
+    final numero = int.tryParse(comando.replaceAll(RegExp(r'[^0-9]'), ''));
+    return 'LED ${(numero ?? 1).clamp(1, 10)}';
+  }
+
+  void _atualizarEstadoLocalAposComando(
+    String comandoOriginal,
+    String comandoNormalizado,
+  ) {
+    final upper = comandoNormalizado.toUpperCase();
+
+    if (comandoOriginal.startsWith('/')) {
+      _caminhoAudioAtivo = comandoOriginal;
+    } else if (upper.startsWith('PLAY ')) {
+      _caminhoAudioAtivo = comandoNormalizado.substring(5).trim();
+    } else if (upper.startsWith('P:')) {
+      _caminhoAudioAtivo = comandoOriginal;
+    } else if (upper == 'STOP') {
+      _caminhoAudioAtivo = null;
+    }
+
+    notifyListeners();
+  }
+
+  Future<void> disconnectFromDevice() async {
+    final device = _connectedDevice;
+    _cleanup();
+    await device?.disconnect();
+  }
+
+  void _cleanup() {
+    _rxCharacteristic = null;
+    _txCharacteristic = null;
+    _connectedDevice = null;
+    _caminhoAudioAtivo = null;
+    _audioSelecionado = null;
+    _audioProgressTimer?.cancel();
+    _audioProgress = 0;
+    _audioPaused = false;
+    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _scanSubscription?.cancel();
+    _txSubscription?.cancel();
+    _connectionSubscription?.cancel();
+    _audioProgressTimer?.cancel();
+    _connectedDevice?.disconnect();
+    super.dispose();
+  }
+}

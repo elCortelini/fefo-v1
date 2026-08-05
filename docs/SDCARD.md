@@ -1,38 +1,38 @@
 # Estrutura do microSD
 
-A pasta `sdcard/` na raiz do projeto é o modelo que deve ser copiado para a raiz de um cartão FAT32.
+Referência atual: firmware v069. A pasta `sdcard/` é a imagem-modelo que deve ser copiada para a raiz de um cartão FAT32.
 
 ```text
 sdcard/
-├── fefo.json       catálogo enviado ao aplicativo
+├── fefo.json       títulos, menus e metadados locais
 ├── sys/
 │   ├── a/          áudios protegidos do sistema
-│   └── f/          faces protegidas do sistema
+│   ├── f/          faces protegidas do sistema
+│   ├── c/          configuração persistente criada pelo firmware
+│   ├── db/         índices internos criados pelo firmware
+│   └── log/        log interno criado pelo firmware
 ├── usr/
 │   ├── a/          áudios instaláveis pelo usuário
 │   └── f/          faces instaláveis pelo usuário
-├── act/             atividades declarativas
-├── cfg/             configurações de conteúdo
-├── log/             logs técnicos
-└── tmp/             transferências ainda não validadas
+├── act/             atividades declarativas futuras
+├── cfg/             configuração de conteúdo
+├── log/             registros auxiliares
+└── tmp/             transferências temporárias
 ```
 
-## Convenção de nomes
+Arquivos de usuário válidos:
 
-- áudio: `a0001.wav`;
-- face: `f0001.raw`;
-- atividade: `x0001.json`;
-- apenas letras ASCII minúsculas, números e sublinhado;
-- comandos BLE usam somente o ID (`a0001`, `f0001` ou `x0001`), nunca o caminho completo.
+- áudio: `/usr/a/aNNNN.wav`, WAV PCM mono, 16 bits, 22.050 Hz;
+- face: `/usr/f/fNNNN.raw`, RGB565 little-endian, 480×320, 307.200 bytes.
 
-## Como copiar
+Use nomes físicos ASCII curtos. Título e menu amigáveis ficam em `fefo.json`. O campo `menu` controla em qual Jukebox o app mostra o áudio. O estado instalado, porém, é determinado pelo inventário dos arquivos reais enviado pelo FEFO; o JSON fornece nomes e organização.
 
-1. Insira o microSD em um leitor conectado ao computador.
-2. Confirme a letra, capacidade e conteúdo da unidade antes de copiar.
-3. Abra a pasta `sdcard/` deste projeto.
-4. Selecione todo o conteúdo dentro dela, não a pasta `sdcard` em si.
-5. Copie para a raiz do cartão.
+## Preparar um cartão manualmente
 
-O resultado correto é `X:\\fefo.json`, e não `X:\\sdcard\\fefo.json`.
+1. Formate em FAT32.
+2. Copie o conteúdo de `sdcard/` para a raiz, não a pasta `sdcard`.
+3. Confirme `X:\fefo.json` e `X:\usr\a\...`.
+4. Ejete com segurança e insira no FEFO desligado.
+5. Ligue, conecte pelo app e confira o inventário.
 
-Pastas vazias existem no workspace para facilitar a cópia, mas futuramente o `StorageService` também deverá recriá-las automaticamente.
+Nunca retire o cartão durante reprodução, transferência ou atualização de catálogo.

@@ -1,144 +1,64 @@
-# FEFO PET V0.0.3 — checkpoint de diagnóstico
+# FEFO Pet — firmware, aplicativo e catálogo
 
-Firmware modular do FEFO para ESP32, tela TFT SPI de 3,5 polegadas 480x320,
-microSD, áudio integrado NS8002D, 15 NeoPixels, motor de vibração, microfone
-MAX9814 e BLE.
+Projeto do FEFO Pet para a placa CYD ESP32 de 3,5 polegadas. Este repositório reúne o firmware embarcado, o aplicativo Android, o modelo do cartão microSD, o catálogo remoto e as ferramentas de preparação de conteúdo.
 
-A tag `v0.0.2` preserva o último firmware aprovado no protótipo, com VU, modo
-pânico, motor e sirene. A tag de pré-versão `v0.0.3-diagnostic` preserva este
-checkpoint diagnóstico; os LEDs continuam sem aprovação física e não são
-declarados funcionais.
+## Versões atuais
 
-## Estado atual da V0.0.3
+| Componente | Versão no código | Artefato local |
+|---|---:|---|
+| Firmware CYD | `0.0.71` / BLE `FEFO_BLE_V071` | `releases/FEFO_Firmware_v071.bin` |
+| Aplicativo Android | `1.0.41+41` (App v041) | `releases/FEFO_App_v041.apk` |
+| Catálogo remoto | schema 1, revisão 6 | `repository/catalog.json` |
+| Catálogo do cartão | schema 1, revisão 3 | `sdcard/fefo.json` |
 
-- toda a política do modo pânico foi concentrada em `modules/panic`;
-- limiar, qualificação, liberação, duração máxima, PWM e caminho futuro do áudio
-  ficam centralizados em `PanicConfig.h`;
-- motor e áudio continuam como drivers independentes e reutilizáveis;
-- o firmware principal mantém o diagnóstico legado de LEDs desabilitado;
-- foi criado um laboratório isolado com TFT e cinco transportes no GPIO 22;
-- Adafruit, FastLED, NeoPixelBus/I2S1, SPI codificado e bit-bang são comparados;
-- cada transporte executa cinco padrões de dois segundos e o conjunto repete
-  em loop infinito, sem reiniciar o ESP32;
-- a tela identifica método, padrão, temporização e os 15 valores RGB esperados.
+## Estado resumido
 
-O diagnóstico está em `diagnostics/led_patterns`. O Serial confirmou uma volta
-pelos cinco métodos e o início de uma segunda volta, inclusive nova
-inicialização do I2S1, sem reset ou travamento. A placa conectada está executando
-esse firmware de teste, não o firmware principal.
+O protótipo funcional já oferece controle por BLE, áudio WAV pelo microSD, LEDs, vibração, pânico, catálogo online, transferência temporária por Wi-Fi, atualização OTA e faces RGB565. A base está implementada, mas ainda não deve ser tratada como uma versão de produção: faltam testes automatizados, regressão completa em hardware, recuperação robusta de atualização interrompida e redução do uso da flash.
 
-## Checkpoint V0.0.2
+Consulte [Status atual](docs/STATUS_ATUAL.md) para a matriz completa do que está pronto, do que foi apenas implementado e do que ainda falta.
 
-A V0.0.2 funcional pode ser restaurada pela tag `v0.0.2` ou pelo commit
-`3e7c138`. Ela contém:
-
-- MAX9814 e VU meter em tempo real;
-- modo pânico acima de 80%, com qualificação de 2 segundos;
-- vibração e sirene sincronizadas, com limite absoluto de 10 segundos;
-- desligamento após 3 segundos em nível seguro e rearme protegido;
-- transporte NeoPixel experimental no GPIO 22, ainda sem aprovação física;
-- TFT, microSD e BLE funcionais.
-
-## Checkpoint V0.0.1
-
-A V0.0.1 estabelece uma base compilável e validada no protótipo físico:
-
-- placa ESP32-D0WD-V3, 4 MB de flash e sem PSRAM;
-- TFT ILI9488 em 480x320;
-- microSD em barramento SPI dedicado;
-- BLE NimBLE com advertising e conexão confirmados;
-- motor via MOSFET no GPIO 21;
-- MAX9814 no GPIO 35 com VU meter em tempo real;
-- DAC/NS8002D no GPIO 26 em silêncio seguro quando inativo;
-- perfil elétrico centralizado e módulos independentes;
-- duas partições de aplicação preparadas para OTA futuro.
-
-Pendências conhecidas deste checkpoint:
-
-- os 15 NeoPixels no GPIO 22 não responderam no firmware novo, embora tenham
-  funcionado no FEFO 190;
-- a reprodução de áudio funciona, mas ainda apresenta estalos e precisa de
-  investigação antes de entrar no fluxo normal;
-- touch, pânico e OTA por BLE permanecem desabilitados.
-
-## Estrutura
+## Estrutura do repositório
 
 ```text
-include/
-  app/                 contrato do controlador central
-  board/               perfil elétrico FEFO 3,5
-  core/                estados e tipos compartilhados
-  modules/             contratos dos serviços
-src/
-  app/                 coordenação do firmware
-  core/                máquina de estados
-  modules/             implementações por periférico
-sdcard/                modelo pronto para copiar ao cartão
-examples/
-  cyd_diagnostic/      diagnóstico de inventário preservado
-diagnostics/
-  led_isolated/        comparação reproduzível dos backends NeoPixel
-  led_patterns/        laboratório de cinco drivers e cinco padrões da V0.0.3
-docs/
-  FASE_0.md            validações e pendências reais
-  CHANGELOG.md         histórico de checkpoints
-  FEFO_V0.0.1_ESPECIFICACAO.md
-  FEFO_V0.0.3.md       arquitetura e teste de LEDs da versão atual
+app_android/       aplicativo Flutter para Android
+src/ e include/    firmware ESP32/CYD
+sdcard/            imagem-modelo do cartão microSD
+repository/        catálogo público e manifesto de atualização
+releases/          APKs e binários compilados
+tools/             conversão e preparação de conteúdo
+audiosFEFO/        arquivos-fonte de áudio
+assets/            fontes de áudio e faces
+diagnostics/       projetos isolados de diagnóstico
+docs/              documentação técnica e registros históricos
 ```
 
-## Compilar
+## Documentação oficial
+
+- [Status e fases](docs/STATUS_ATUAL.md)
+- [Arquitetura atual](docs/ARQUITETURA_ATUAL.md)
+- [Guia de desenvolvimento e publicação](docs/GUIA_DESENVOLVIMENTO.md)
+- [Guia de operação e testes](docs/GUIA_OPERACAO.md)
+- [Estrutura do microSD](docs/SDCARD.md)
+- [Protocolo BLE](docs/PROTOCOLO_BLE_FEFO.md)
+- [Histórico](docs/CHANGELOG.md)
+
+Documentos de fases e checkpoints antigos permanecem em `docs/` como registro histórico. Quando houver divergência, os quatro documentos “atual”, “arquitetura”, “desenvolvimento” e “operação” acima são a referência.
+
+## Início rápido
+
+Firmware:
 
 ```powershell
 .\.venv\Scripts\pio.exe run
+.\.venv\Scripts\pio.exe run -t upload
 ```
 
-Para compilar somente o teste isolado de LEDs:
+Aplicativo:
 
 ```powershell
-.\.venv\Scripts\pio.exe run --project-dir diagnostics\led_patterns
+cd app_android
+flutter pub get
+flutter build apk --release
 ```
 
-## Gravar e monitorar
-
-```powershell
-.\.venv\Scripts\pio.exe run --target upload --upload-port COM7
-.\.venv\Scripts\pio.exe device monitor --port COM7
-```
-
-O backup integral da flash anterior está em `backup/cyd-original-4mb.bin` e é
-ignorado pelo Git.
-
-## Versão atual: v0.0.3
-
-- Firmware principal documentado como `0.0.3`.
-- BLE identificado como `FEFO_V003`.
-- Esta versão é um checkpoint diagnóstico da Fase 0, com o modo pânico ativo e
-  o teste isolado de NeoPixels mantido fora do firmware principal.
-- A estratégia acertiva foi manter o firmware principal focado em:
-  - `AppController` como orquestrador central;
-  - `main.cpp` mínimo com apenas `setup()` e `loop()`;
-  - perfil elétrico e constantes centralizados em `include/board/Fefo35Board.h`;
-  - `PanicService` coordenando motor e áudio sem acoplamento eletrônico;
-  - diagnóstico NeoPixel isolado em `diagnostics/led_patterns`.
-
-## O que ainda precisa ser feito antes de partir para a Fase 1 prevista
-
-- Confirmar se a ausência de resposta dos 15 NeoPixels em GPIO22 é causada por
-  falha elétrica/hardware ou por transporte/protocolo.
-- Validar a reprodução de áudio sem estalos e testar WAV longos a partir do
-  microSD.
-- Implementar a rotina de watchdog e `watchdogFeed()` para garantir recuperação
-  de travamentos e safe mode.
-- Formalizar os padrões de Fase 0 e registrar as decisões de design para
-  arquitetura, comunicação, SD, BLE e LEDs.
-- Criar ou completar o módulo de comunicação/OTA técnico, incluindo rota
-  `/status` e proteção de sistema antes de considerar transição para Fase 1.
-- Executar testes BLE prolongados, monitorar heap e confirmar estabilidade do
-  firmware em operação contínua.
-- Adicionar testes unitários e validações isoladas para `PanicService`, BLE,
-  áudio, SD e display.
-- Verificar o tamanho final do binário para garantir `Flash < 50%` e partições
-  OTA OK.
-
-> Esta lista define a transição segura para a Fase 1 prevista, mas pode ser
-> ajustada conforme o resultado dos testes elétricos e dos ajustes de áudio.
+Antes de publicar qualquer versão, altere a versão correspondente, compile, teste na CYD e no Android e só então atualize `repository/catalog.json`.
