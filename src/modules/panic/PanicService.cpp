@@ -29,6 +29,10 @@ bool PanicService::begin() {
   state_ = PanicState::kIdle;
   stateStartedAtMs_ = millis();
   aboveThreshold_ = false;
+  enabled_ = true;
+  manualTrigger_ = false;
+  triggerPercent_ = panic::kTriggerPercent;
+  idleDelayMs_ = board::kMicrophoneIdleEnableMs;
 
   Serial.printf(
       "[PANIC] Ativo: >%u%% (> %u/%u barras) por %lu ms; motor %u/255; "
@@ -44,9 +48,18 @@ bool PanicService::begin() {
 
 void PanicService::update(uint8_t levelPercent, uint32_t nowMs,
                           VibrationService& vibration, AudioService& audio) {
+  if (!enabled_) {
+    aboveThreshold_ = false;
+    vibration.update(nowMs);
+    if (vibration.active()) vibration.stop();
+    audio.setSirenActive(false);
+    if (state_ != PanicState::kIdle) transitionTo(PanicState::kIdle, nowMs);
+    return;
+  }
+
   // Mais de 16 das 20 barras significa 81% ou mais. Exatamente 80% ainda não
   // inicia a contagem, conforme a definição validada na V0.0.2.
-  aboveThreshold_ = levelPercent > panic::kTriggerPercent;
+  aboveThreshold_ = manualTrigger_ || levelPercent > triggerPercent_;
 
   // O serviço genérico do motor aplica o prazo solicitado por este módulo.
   vibration.update(nowMs);
@@ -71,6 +84,7 @@ void PanicService::update(uint8_t levelPercent, uint32_t nowMs,
 
     case PanicState::kActive:
       if (!vibration.active()) {
+        manualTrigger_ = false;
         transitionTo(vibration.safetyLockout()
                          ? PanicState::kSafetyLockout
                          : PanicState::kIdle,
@@ -108,7 +122,11 @@ void PanicService::update(uint8_t levelPercent, uint32_t nowMs,
 
   // A saída real do motor é a fonte de verdade: falha, cooldown ou timeout
   // nunca podem deixar o áudio ligado sozinho.
-  audio.setSirenActive(vibration.active());
+  if (board::kAudioEnabled) {
+    audio.setSirenActive(vibration.active());
+  } else {
+    audio.setSirenActive(false);
+  }
 }
 
 void PanicService::transitionTo(PanicState nextState, uint32_t nowMs) {
@@ -117,6 +135,37 @@ void PanicService::transitionTo(PanicState nextState, uint32_t nowMs) {
                 panicStateName(nextState));
   state_ = nextState;
   stateStartedAtMs_ = nowMs;
+}
+
+void PanicService::setEnabled(bool enabled) {
+  enabled_ = enabled;
+  if (!enabled_) {
+    manualTrigger_ = false;
+    aboveThreshold_ = false;
+    transitionTo(PanicState::kIdle, millis());
+  }
+  Serial.printf("[PANIC] %s.\n", enabled_ ? "Habilitado" : "Desabilitado");
+}
+
+bool PanicService::triggerManual(uint32_t nowMs, VibrationService& vibration,
+                                 AudioService& audio) {
+  setEnabled(true);
+  manualTrigger_ = true;
+  aboveThreshold_ = true;
+  if (!vibration.start(panic::kMotorDuty, panic::kMaxActiveMs)) {
+    manualTrigger_ = false;
+    return false;
+  }
+  audio.setSirenLocked(false);
+  audio.setSirenActive(true);
+  transitionTo(PanicState::kActive, nowMs);
+  return true;
+}
+
+void PanicService::setTriggerPercent(uint8_t percent) {
+  if (percent > 100) percent = 100;
+  triggerPercent_ = percent;
+  Serial.printf("[PANIC] Limiar ajustado para >%u%%.\n", triggerPercent_);
 }
 
 }  // namespace fefo

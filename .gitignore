@@ -9,3 +9,9 @@
 *.code-workspace
 backup/*.bin
 debug.log
+build/
+FEFO_novos_conteudos/audio/*
+!FEFO_novos_conteudos/audio/.gitkeep
+FEFO_novos_conteudos/faces/*
+!FEFO_novos_conteudos/faces/.gitkeep
+

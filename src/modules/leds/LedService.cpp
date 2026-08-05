@@ -1,6 +1,7 @@
 #include "modules/leds/LedService.h"
 
 #include <Arduino.h>
+#include <cmath>
 
 #include <esp_attr.h>
 #include <freertos/FreeRTOS.h>
@@ -78,13 +79,216 @@ bool LedService::begin() {
   digitalWrite(board::kNeoPixel, LOW);
   delayMicroseconds(300);
   strip_.begin();
+  brightnessPercent_ = (board::kDefaultMaxLedBrightness * 100 + 127) / 255;
   strip_.setBrightness(board::kDefaultMaxLedBrightness);
   strip_.clear();
   strip_.show();
+  panicActive_ = false;
+  ledPhase_ = 0;
+  lastLedUpdateMs_ = millis();
   Serial.printf("[LEDS] GPIO %d reservado; %u NeoPixels em brilho %u/255.\n",
                 board::kNeoPixel, board::kNeoPixelCount,
                 board::kDefaultMaxLedBrightness);
   return true;
+}
+
+namespace {
+
+uint32_t wheelColor(uint8_t position) {
+  if (position < 85) {
+    return ((uint32_t)position * 3 << 16) |
+           ((uint32_t)(255 - position * 3) << 8) | 0;
+  }
+  if (position < 170) {
+    position -= 85;
+    return ((uint32_t)(255 - position * 3) << 16) | 0 |
+           ((uint32_t)(position * 3));
+  }
+  position -= 170;
+  return 0 | ((uint32_t)(position * 3) << 8) |
+         ((uint32_t)(255 - position * 3));
+}
+
+uint32_t scaleColor(uint32_t color, uint8_t scale) {
+  const uint8_t red = static_cast<uint8_t>((color >> 16) & 0xFF);
+  const uint8_t green = static_cast<uint8_t>((color >> 8) & 0xFF);
+  const uint8_t blue = static_cast<uint8_t>(color & 0xFF);
+  return (static_cast<uint32_t>((red * scale) / 255) << 16) |
+         (static_cast<uint32_t>((green * scale) / 255) << 8) |
+         static_cast<uint32_t>((blue * scale) / 255);
+}
+
+}  // namespace
+
+void LedService::update(uint32_t nowMs, bool panicActive, bool audioActive,
+                        uint8_t audioLevelPercent) {
+  if (bitBangDiagnosticActive_) {
+    updateBitBangDiagnostic(nowMs);
+    return;
+  }
+
+  const uint32_t intervalMs = audioActive ? 45u : (panicActive ? 120u : 140u);
+  if (nowMs - lastLedUpdateMs_ < intervalMs) return;
+  lastLedUpdateMs_ = nowMs;
+
+  if (audioActive) {
+    panicActive_ = false;
+    showAudioVu(audioLevelPercent);
+  } else if (panicActive) {
+    if (!panicActive_) {
+      ledPhase_ = 0;
+    }
+    panicActive_ = true;
+
+    switch (ledPhase_ % 4) {
+      case 0:
+        strip_.fill(strip_.Color(255, 0, 0));
+        break;
+      case 1:
+        strip_.fill(strip_.Color(0, 0, 0));
+        break;
+      case 2:
+        for (uint16_t pixel = 0; pixel < board::kNeoPixelCount; ++pixel) {
+          const bool even = (pixel % 2) == 0;
+          strip_.setPixelColor(pixel,
+                               strip_.Color(even ? 255 : 120,
+                                            even ? 0 : 0,
+                                            even ? 0 : 0));
+        }
+        break;
+      default:
+        for (uint16_t pixel = 0; pixel < board::kNeoPixelCount; ++pixel) {
+          const uint8_t hue = static_cast<uint8_t>(
+              (pixel * 255 / board::kNeoPixelCount + ledPhase_ * 8) & 0xFF);
+          const uint32_t color = wheelColor(hue);
+          strip_.setPixelColor(pixel, color);
+        }
+        break;
+    }
+  } else {
+    panicActive_ = false;
+    if (selectedPattern_ > 0) {
+      showSelectedPattern(nowMs);
+    } else {
+      showCalm(nowMs);
+    }
+  }
+
+  strip_.show();
+  ++ledPhase_;
+}
+
+void LedService::setBrightnessPercent(uint8_t percent) {
+  if (percent > 100) percent = 100;
+  brightnessPercent_ = percent;
+  const uint8_t brightness =
+      static_cast<uint8_t>((static_cast<uint16_t>(percent) * 255 + 50) / 100);
+  strip_.setBrightness(brightness);
+  strip_.show();
+  Serial.printf("[LEDS] Brilho ajustado para %u%%.\n", brightnessPercent_);
+}
+
+bool LedService::setPattern(uint8_t pattern) {
+  if (pattern > 10) return false;
+  selectedPattern_ = pattern;
+  ledPhase_ = 0;
+  lastLedUpdateMs_ = 0;
+  Serial.printf("[LEDS] Padrao selecionado: LED %u.\n", selectedPattern_);
+  return true;
+}
+
+void LedService::showAudioVu(uint8_t levelPercent) {
+  const uint8_t activePixels = static_cast<uint8_t>(
+      constrain((levelPercent * board::kNeoPixelCount + 99) / 100, 1,
+                static_cast<int>(board::kNeoPixelCount)));
+  for (uint16_t pixel = 0; pixel < board::kNeoPixelCount; ++pixel) {
+    if (pixel >= activePixels) {
+      strip_.setPixelColor(pixel, 0);
+      continue;
+    }
+
+    const uint8_t zonePercent =
+        static_cast<uint8_t>((pixel * 100) / max<uint16_t>(1, board::kNeoPixelCount - 1));
+    if (zonePercent < 60) {
+      strip_.setPixelColor(pixel, strip_.Color(0, 180, 30));
+    } else if (zonePercent < 84) {
+      strip_.setPixelColor(pixel, strip_.Color(180, 110, 0));
+    } else {
+      strip_.setPixelColor(pixel, strip_.Color(220, 0, 0));
+    }
+  }
+}
+
+void LedService::showCalm(uint32_t nowMs) {
+  const uint8_t hue = static_cast<uint8_t>((nowMs / 90) & 0xFF);
+  const uint8_t breath = static_cast<uint8_t>(18 + ((sin(nowMs / 900.0F) + 1.0F) * 18.0F));
+  const uint32_t color = scaleColor(wheelColor(hue), breath);
+  strip_.fill(color);
+}
+
+void LedService::showSelectedPattern(uint32_t nowMs) {
+  switch (selectedPattern_) {
+    case 1:
+      strip_.fill(strip_.Color(255, 0, 0));
+      break;
+    case 2:
+      strip_.fill(strip_.Color(0, 255, 0));
+      break;
+    case 3:
+      strip_.fill(strip_.Color(0, 0, 255));
+      break;
+    case 4:
+      strip_.fill((ledPhase_ % 2) == 0 ? strip_.Color(255, 255, 255) : 0);
+      break;
+    case 5:
+      for (uint16_t pixel = 0; pixel < board::kNeoPixelCount; ++pixel) {
+        strip_.setPixelColor(pixel,
+                             pixel == (ledPhase_ % board::kNeoPixelCount)
+                                 ? strip_.Color(255, 120, 0)
+                                 : 0);
+      }
+      break;
+    case 6:
+      for (uint16_t pixel = 0; pixel < board::kNeoPixelCount; ++pixel) {
+        const bool on = ((pixel + ledPhase_) % 3) == 0;
+        strip_.setPixelColor(pixel, on ? strip_.Color(80, 0, 255) : 0);
+      }
+      break;
+    case 7:
+      for (uint16_t pixel = 0; pixel < board::kNeoPixelCount; ++pixel) {
+        const uint8_t hue = static_cast<uint8_t>(
+            (pixel * 255 / board::kNeoPixelCount + ledPhase_ * 8) & 0xFF);
+        strip_.setPixelColor(pixel, wheelColor(hue));
+      }
+      break;
+    case 8: {
+      const uint8_t breath =
+          static_cast<uint8_t>(24 + ((sin(nowMs / 500.0F) + 1.0F) * 90.0F));
+      strip_.fill(scaleColor(strip_.Color(0, 180, 255), breath));
+      break;
+    }
+    case 9:
+      for (uint16_t pixel = 0; pixel < board::kNeoPixelCount; ++pixel) {
+        const bool left = pixel < board::kNeoPixelCount / 2;
+        const bool blink = (ledPhase_ % 2) == 0;
+        strip_.setPixelColor(pixel,
+                             left == blink ? strip_.Color(255, 0, 0)
+                                           : strip_.Color(0, 0, 255));
+      }
+      break;
+    case 10:
+      for (uint16_t pixel = 0; pixel < board::kNeoPixelCount; ++pixel) {
+        const uint8_t distance = abs(static_cast<int>(pixel) -
+                                     static_cast<int>(ledPhase_ % board::kNeoPixelCount));
+        const uint8_t intensity =
+            distance == 0 ? 255 : (distance == 1 ? 90 : (distance == 2 ? 25 : 0));
+        strip_.setPixelColor(pixel, strip_.Color(intensity, intensity / 3, 0));
+      }
+      break;
+    default:
+      showCalm(nowMs);
+      break;
+  }
 }
 
 void LedService::selfTest() {

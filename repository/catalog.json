@@ -1,0 +1,223 @@
+﻿{
+    "schema":  1,
+    "catalogVersion":  6,
+    "repository":  "FEFO Google Drive",
+    "firmware":  {
+                     "version":  "0.0.69",
+                     "board":  "FEFO_CYD_ESP32",
+                     "arquivo":  "FEFO_Firmware_v069.bin",
+                     "tamanho":  1914672,
+                     "checksum":  "31aca534a264e37270f8f5225cf6eab5ff7242f4fac998e98556ac210a69dc07",
+                     "url":  "https://drive.google.com/uc?export=download&id=11gQzFq8QgqXoN4X2kJx8uQ65LxHFrvK0",
+                     "obrigatorio":  false,
+                     "notas":  "Reconhecimento de faces RAW no SDCard e persistência do modo Faces após reiniciar."
+                 },
+    "audio":  [
+                  {
+                      "id":  "au001",
+                      "titulo":  "AS CORES",
+                      "menu":  "Jukebox do Fefo",
+                      "arquivo":  "/usr/a/a0001.wav",
+                      "tamanho":  3765156,
+                      "checksum":  "4fd6d660627bd031b498e3dcd1b9d4392c0806c145de4d27d1d3910dbb37c8e2",
+                      "tipo":  "audio",
+                      "url":  "https://drive.google.com/uc?export=download\u0026id=14Oekv-mgHU5Wz-5NoYzzXLSUvA7dpNYd"
+                  },
+                  {
+                      "id":  "au002",
+                      "titulo":  "Brincar com o fefo 2",
+                      "menu":  "Jukebox do Fefo",
+                      "arquivo":  "/usr/a/a0002.wav",
+                      "tamanho":  5666928,
+                      "checksum":  "297de09c62ce96e3bf8f59d7669bbc5156a7364c045e21d96bc8edacd9595806",
+                      "tipo":  "audio",
+                      "url":  "https://drive.google.com/uc?export=download\u0026id=1QUv40jpY-IIphM-bgwde1vMjh_vD6uv_"
+                  },
+                  {
+                      "id":  "au003",
+                      "titulo":  "COMIDA SAUDAVEL",
+                      "menu":  "Jukebox do Fefo",
+                      "arquivo":  "/usr/a/a0003.wav",
+                      "tamanho":  4043824,
+                      "checksum":  "c128bd4e98bf956dba3c77374b06829b1b745ba34651e439a6d24d9deaaca58a",
+                      "tipo":  "audio",
+                      "url":  "https://drive.google.com/uc?export=download\u0026id=1P6NDNjqU3hpyp_1GGbEp1r3rbgW40eex"
+                  },
+                  {
+                      "id":  "au004",
+                      "titulo":  "CONHECENDO O CORPO",
+                      "menu":  "Jukebox do Fefo",
+                      "arquivo":  "/usr/a/a0004.wav",
+                      "tamanho":  5102444,
+                      "checksum":  "32dc0a0547158dddb1b3cdb32dc0e3775a67138f7f2b427d5f6498b28a3e7f1f",
+                      "tipo":  "audio",
+                      "url":  "https://drive.google.com/uc?export=download\u0026id=1Odu5N5jTsMGwhriolwfM2ekDAkI3Xjje"
+                  },
+                  {
+                      "id":  "au005",
+                      "titulo":  "HIGIENE",
+                      "menu":  "Jukebox do Fefo",
+                      "arquivo":  "/usr/a/a0005.wav",
+                      "tamanho":  5048426,
+                      "checksum":  "07464c7c63fe0c3a1772a8d3cd4e027d96e6aad5c2cf662a024bff2af2867dd6",
+                      "tipo":  "audio",
+                      "url":  "https://drive.google.com/uc?export=download\u0026id=1gqju5uwoVdkvPTlYTsocmKQZ-tIP5nVX"
+                  },
+                  {
+                      "id":  "au006",
+                      "titulo":  "HORA DE DORMIR",
+                      "menu":  "Jukebox do Fefo",
+                      "arquivo":  "/usr/a/a0006.wav",
+                      "tamanho":  5343076,
+                      "checksum":  "ad694742d3f686900319b60782cc00f7c419b2ab825c30557d4401bcc0dc2990",
+                      "tipo":  "audio",
+                      "url":  "https://drive.google.com/uc?export=download\u0026id=1BnFjFn3B5vBKY51pKCGJT2SblAJM8urv"
+                  },
+                  {
+                      "id":  "au007",
+                      "titulo":  "OS NUMEROS",
+                      "menu":  "Jukebox do Fefo",
+                      "arquivo":  "/usr/a/a0007.wav",
+                      "tamanho":  4253740,
+                      "checksum":  "b0f3502981ca7f078be8fdf31383b97a728c53f81363f86a7968ee19b061be51",
+                      "tipo":  "audio",
+                      "url":  "https://drive.google.com/uc?export=download\u0026id=15cFhpW8dlwcGUB59V6j7z0DVd5NhcnNh"
+                  },
+                  {
+                      "id":  "au008",
+                      "titulo":  "pipoquinha Disco",
+                      "menu":  "Jukebox do Fefo",
+                      "arquivo":  "/usr/a/a0008.wav",
+                      "tamanho":  4715838,
+                      "checksum":  "8f76e2a8b900cb53c6c875174d655ea016942f011756fa0199e430161752e9ce",
+                      "tipo":  "audio",
+                      "url":  "https://drive.google.com/uc?export=download\u0026id=1WeW_WQENRR83LNP0i-zc2usKnTuo53V8"
+                  },
+                  {
+                      "id":  "au009",
+                      "titulo":  "Respeitando os colegas 2",
+                      "menu":  "Jukebox do Fefo",
+                      "arquivo":  "/usr/a/a0009.wav",
+                      "tamanho":  4811018,
+                      "checksum":  "86391cc30895f99867f0b1cabdc4d52fc9e1889987849446f7c2487fc846d3a1",
+                      "tipo":  "audio",
+                      "url":  "https://drive.google.com/uc?export=download\u0026id=1bXLbwQMZ06HyDx-ztELgksv2p5-z1Kxc"
+                  },
+                  {
+                      "id":  "au010",
+                      "titulo":  "RESPIRAR",
+                      "menu":  "Jukebox do Fefo",
+                      "arquivo":  "/usr/a/a0010.wav",
+                      "tamanho":  3961178,
+                      "checksum":  "b9249d5bec9f707a07463fd4ef19116a429a14b88b5d34b72d1235a5476558db",
+                      "tipo":  "audio",
+                      "url":  "https://drive.google.com/uc?export=download\u0026id=1XFZc89KUroUSW9ojjvHp9ox4VtBgqy6S"
+                  },
+                  {
+                      "id":  "au011",
+                      "titulo":  "SONS DOS ANIMAIS",
+                      "menu":  "Jukebox do Fefo",
+                      "arquivo":  "/usr/a/a0011.wav",
+                      "tamanho":  4904722,
+                      "checksum":  "5216a7828c1bf3b3eff50a9a89f1a73077a4a41d00426272d42f829e577a828c",
+                      "tipo":  "audio",
+                      "url":  "https://drive.google.com/uc?export=download\u0026id=1dPjQAJT3nlWkCuXOU5YIVuf4Bnp50Dvn"
+                  },
+                  {
+                      "id":  "au012",
+                      "titulo":  "contando numeros",
+                      "menu":  "Jukebox do Fefo 2",
+                      "arquivo":  "/usr/a/a0012.wav",
+                      "tamanho":  8068624,
+                      "checksum":  "4c0b6f67d9411975bdd232a30b6be36895d3c7cd90311e88a4d833d967823d59",
+                      "tipo":  "audio",
+                      "url":  "https://drive.google.com/uc?export=download\u0026id=1Lqfs_38TDiXFmwysmLM-WRnhg4ZBMKVY"
+                  },
+                  {
+                      "id":  "au013",
+                      "titulo":  "cuide dos animais",
+                      "menu":  "Jukebox do Fefo 2",
+                      "arquivo":  "/usr/a/a0013.wav",
+                      "tamanho":  6478568,
+                      "checksum":  "f8109b4c50082e8ea54f0a106ebd039a90409bbe352a1733cdddb1fcf98518b4",
+                      "tipo":  "audio",
+                      "url":  "https://drive.google.com/uc?export=download\u0026id=18U8HX9k8e6azhjlvtt_u2BCQT5YnzUmm"
+                  },
+                  {
+                      "id":  "au014",
+                      "titulo":  "Dicas de segurança.mp3",
+                      "menu":  "Jukebox do Fefo 2",
+                      "arquivo":  "/usr/a/a0014.wav",
+                      "tamanho":  6158696,
+                      "checksum":  "0a79f77e415c9821afb104cb3b11d1caf361284172077b85810a2fa1db22e179",
+                      "tipo":  "audio",
+                      "url":  "https://drive.google.com/uc?export=download\u0026id=1S3frzsKkOQZeutQdwwP11pjcFzDVl-2Z"
+                  },
+                  {
+                      "id":  "au015",
+                      "titulo":  "frutas saudaveis",
+                      "menu":  "Jukebox do Fefo 2",
+                      "arquivo":  "/usr/a/a0015.wav",
+                      "tamanho":  7875616,
+                      "checksum":  "6a8492bac9b28715d6c421465eb3238a13c1a63ad8faccfc963b8962fe5daefe",
+                      "tipo":  "audio",
+                      "url":  "https://drive.google.com/uc?export=download\u0026id=12x5RYVLpV-x9ihWVMgKcVO3on960d-tV"
+                  }
+              ],
+    "faces":  [
+                  {
+                      "id":  "fa001",
+                      "arquivo":  "/usr/f/f0001.raw",
+                      "tamanho":  307200,
+                      "checksum":  "9f72256fd03d34243aa1212822ca7687e9180e8cf9b4a3000f932d75cebdb01b",
+                      "tipo":  "face",
+                      "titulo":  "Face 1",
+                      "url":  "https://drive.google.com/uc?export=download\u0026id=15OBWND9XWpPrnLlN59ksyk3tIzWvxAL_"
+                  },
+                  {
+                      "id":  "fa002",
+                      "arquivo":  "/usr/f/f0002.raw",
+                      "tamanho":  307200,
+                      "checksum":  "997f4e5669a66bde2a809ba3cb0ab378df881aa8b0446573aa71c6c9e6b79c98",
+                      "tipo":  "face",
+                      "titulo":  "Face 2",
+                      "url":  "https://drive.google.com/uc?export=download\u0026id=19-mHEwMsxT9yyVQXmTFIYEPbRi-qmug0"
+                  },
+                  {
+                      "id":  "fa003",
+                      "arquivo":  "/usr/f/f0003.raw",
+                      "tamanho":  307200,
+                      "checksum":  "43149c28e4b52669e30ed87dd460a3e0a9273a83c4e682652171f5eada166597",
+                      "tipo":  "face",
+                      "titulo":  "Face 3",
+                      "url":  "https://drive.google.com/uc?export=download\u0026id=1SMzfNlFk8yZht6NpfhErpvV6H31mNnss"
+                  },
+                  {
+                      "id":  "fa004",
+                      "arquivo":  "/usr/f/f0004.raw",
+                      "tamanho":  307200,
+                      "checksum":  "b3a19d89b8bb6dc803cfdeeabc5292d20b71721cfa1d816ed08cf7ff218f5173",
+                      "tipo":  "face",
+                      "titulo":  "Face 4",
+                      "url":  "https://drive.google.com/uc?export=download\u0026id=16Plf_pD4iKzsgUb1VxtHLIfkh6RRKr0O"
+                  },
+                  {
+                      "id":  "fa005",
+                      "arquivo":  "/usr/f/f0005.raw",
+                      "tamanho":  307200,
+                      "checksum":  "02b68d22f79ee8ef8f764e604fb5bb4c277c26f177191a8d8ab1a8963b2e1165",
+                      "tipo":  "face",
+                      "titulo":  "Face 5",
+                      "url":  "https://drive.google.com/uc?export=download\u0026id=1XjZ8Osu-BCIcwRvBibtBoGxITZW2niq2"
+                  },
+                  {
+                      "id":  "fa006",
+                      "arquivo":  "/usr/f/f0006.raw",
+                      "tamanho":  307200,
+                      "checksum":  "892b2aef23541b782b1cf9fafba9d3dec6291504ad7b3b92d678728b5a0cb602",
+                      "tipo":  "face",
+                      "titulo":  "Face 6",
+                      "url":  "https://drive.google.com/uc?export=download\u0026id=17a-gvsWBDEomrp6iqGFBlu4rrg6ov1C2"
+                  }
+              ]
+}

@@ -1,0 +1,34 @@
+﻿[
+    {
+        "id":  "au012",
+        "titulo":  "contando numeros",
+        "menu":  "Jukebox do Fefo 2",
+        "arquivo":  "/usr/a/a0012.wav",
+        "tamanho":  8068624,
+        "checksum":  "4c0b6f67d9411975bdd232a30b6be36895d3c7cd90311e88a4d833d967823d59"
+    },
+    {
+        "id":  "au013",
+        "titulo":  "cuide dos animais",
+        "menu":  "Jukebox do Fefo 2",
+        "arquivo":  "/usr/a/a0013.wav",
+        "tamanho":  6478568,
+        "checksum":  "f8109b4c50082e8ea54f0a106ebd039a90409bbe352a1733cdddb1fcf98518b4"
+    },
+    {
+        "id":  "au014",
+        "titulo":  "Dicas de segurança.mp3",
+        "menu":  "Jukebox do Fefo 2",
+        "arquivo":  "/usr/a/a0014.wav",
+        "tamanho":  6158696,
+        "checksum":  "0a79f77e415c9821afb104cb3b11d1caf361284172077b85810a2fa1db22e179"
+    },
+    {
+        "id":  "au015",
+        "titulo":  "frutas saudaveis",
+        "menu":  "Jukebox do Fefo 2",
+        "arquivo":  "/usr/a/a0015.wav",
+        "tamanho":  7875616,
+        "checksum":  "6a8492bac9b28715d6c421465eb3238a13c1a63ad8faccfc963b8962fe5daefe"
+    }
+]
