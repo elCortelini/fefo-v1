@@ -21,40 +21,45 @@ void notificationTapBackground(NotificationResponse notificationResponse) {
 }
 
 Future<void> _solicitarTodasPermissoes() async {
-  await [
-    Permission.bluetoothScan,
-    Permission.bluetoothConnect,
-    Permission.bluetoothAdvertise,
-    Permission.location,
-    Permission.locationWhenInUse,
-    Permission.nearbyWifiDevices,
-    Permission.notification,
-  ].request();
+  try {
+    await [
+      Permission.bluetoothScan,
+      Permission.bluetoothConnect,
+      Permission.bluetoothAdvertise,
+      Permission.location,
+      Permission.locationWhenInUse,
+      Permission.nearbyWifiDevices,
+      Permission.notification,
+    ].request();
+  } catch (e) {
+    log("FEFO: Erro permissões: $e");
+  }
 }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
 
-  await _solicitarTodasPermissoes();
-
-  tz.initializeTimeZones();
   try {
-    final dynamic tzData = await FlutterTimezone.getLocalTimezone();
-    final String timeZoneName = tzData.toString();
-    tz.setLocalLocation(tz.getLocation(timeZoneName));
-    log("FEFO: Timezone configurada para $timeZoneName");
+    tz.initializeTimeZones();
+    try {
+      final dynamic tzData = await FlutterTimezone.getLocalTimezone();
+      final String timeZoneName = tzData.toString();
+      tz.setLocalLocation(tz.getLocation(timeZoneName));
+      log("FEFO: Timezone configurada para $timeZoneName");
+    } catch (e) {
+      log("FEFO: Erro timezone, usando fallback: $e");
+      tz.setLocalLocation(tz.getLocation('America/Sao_Paulo'));
+    }
   } catch (e) {
-    log("FEFO: Erro timezone, usando fallback: $e");
-    tz.setLocalLocation(tz.getLocation('America/Sao_Paulo'));
+    log("FEFO: Falha no init TimeZone: $e");
   }
 
   final bluetoothManager = BluetoothManager();
-  final alarmService = AlarmService.instance;
-  await alarmService.init(bluetoothManager);
 
   runApp(
     ChangeNotifierProvider(
@@ -62,6 +67,20 @@ void main() async {
       child: const MyApp(),
     ),
   );
+
+  // Inicialização segura após o carregamento da UI
+  Future.microtask(() async {
+    try {
+      await AlarmService.instance.init(bluetoothManager);
+    } catch (e) {
+      log("FEFO: Erro ao inicializar AlarmService: $e");
+    }
+    try {
+      await _solicitarTodasPermissoes();
+    } catch (e) {
+      log("FEFO: Erro ao solicitar permissões: $e");
+    }
+  });
 }
 
 class MyApp extends StatefulWidget {
@@ -98,60 +117,28 @@ class _MyAppState extends State<MyApp> {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final manager = context.read<BluetoothManager>();
-    if (identical(manager, _manager)) return;
-    _manager?.removeListener(_onBluetoothChanged);
-    _manager = manager;
-    _wasConnected = manager.isConnected;
-    manager.addListener(_onBluetoothChanged);
-  }
+  Widget build(BuildContext context) {
+    _manager = Provider.of<BluetoothManager>(context);
 
-  void _onBluetoothChanged() {
-    final connected = _manager?.isConnected ?? false;
-    if (_wasConnected && !connected) {
-      if (_manager?.uploading == true) {
-        _returnAfterUpdate = true;
-      } else {
-        _returnToStart();
+    if (_manager!.isConnected != _wasConnected) {
+      _wasConnected = _manager!.isConnected;
+
+      if (_manager!.isConnected && _returnAfterUpdate) {
+        _returnTimer?.cancel();
+        _returnTimer = Timer(const Duration(seconds: 1), () {
+          if (!mounted) return;
+          _returnAfterUpdate = false;
+          _navigatorKey.currentState?.popUntil((route) => route.isFirst);
+        });
       }
     }
-    if (_returnAfterUpdate && !connected && _manager?.uploading == false) {
-      _returnAfterUpdate = false;
-      _returnTimer?.cancel();
-      // Tanto no sucesso quanto na falha o BLE foi desligado pelo FEFO para a
-      // sessao Wi-Fi. Mantemos o resultado visivel por alguns segundos e só
-      // então voltamos à tela de conexão para uma nova sincronização.
-      final delay = _manager?.lastTransferSucceeded == true
-          ? const Duration(seconds: 3)
-          : const Duration(seconds: 7);
-      _returnTimer = Timer(delay, _returnToStart);
-    }
-    _wasConnected = connected;
-  }
 
-  void _returnToStart() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _navigatorKey.currentState?.popUntil((route) => route.isFirst);
-    });
-  }
-
-  @override
-  void dispose() {
-    _manager?.removeListener(_onBluetoothChanged);
-    _returnTimer?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return MaterialApp(
       navigatorKey: _navigatorKey,
+      title: 'FEFO',
       debugShowCheckedModeBanner: false,
-      title: 'FEFO App',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF318134)),
         useMaterial3: true,
       ),
       home: const TelaInicial(),
