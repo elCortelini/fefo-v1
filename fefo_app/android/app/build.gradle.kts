@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.elcortelini.fefo"
+    namespace = "com.elcortelini.fefo.app"
     compileSdk = 36
 
     ndkVersion = flutter.ndkVersion
@@ -21,7 +21,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.elcortelini.fefo"
+        applicationId = "com.elcortelini.fefo.app"
         minSdk = flutter.minSdkVersion
         targetSdk = 34
         versionCode = flutter.versionCode

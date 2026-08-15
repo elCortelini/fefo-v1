@@ -1,6 +1,7 @@
 // lib/pages/tela_alarmes.dart
 
 import 'dart:async';
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/alarm_model.dart';
@@ -142,10 +143,29 @@ class _TelaAlarmesState extends State<TelaAlarmes> {
     );
 
     if (confirmar == true) {
-      if (alarme.id != null) {
-        await AlarmService.instance.cancelarAlarme(alarme.id!);
-        await DatabaseService.instance.delete(alarme.id!);
+      setState(() {
+        _listaDeAlarmes.removeWhere((a) =>
+            a.id == alarme.id ||
+            (a.title == alarme.title && a.hour == alarme.hour && a.minute == alarme.minute));
+      });
+
+      try {
+        if (alarme.id != null) {
+          await AlarmService.instance.cancelarAlarme(alarme.id!);
+          await DatabaseService.instance.delete(alarme.id!);
+        } else {
+          final todos = await DatabaseService.instance.readAll();
+          for (final a in todos) {
+            if (a.title == alarme.title && a.hour == alarme.hour && a.minute == alarme.minute && a.id != null) {
+              await AlarmService.instance.cancelarAlarme(a.id!);
+              await DatabaseService.instance.delete(a.id!);
+            }
+          }
+        }
+      } catch (e) {
+        log("FEFO: Erro ao deletar alarme no DB: $e");
       }
+
       await _recarregarAlarmes();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
