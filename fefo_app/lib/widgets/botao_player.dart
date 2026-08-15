@@ -230,14 +230,31 @@ class _ControlButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-      tooltip: tooltip,
-      onPressed: onPressed,
-      visualDensity: VisualDensity.compact,
-      iconSize: size,
-      color: active ? const Color(0xFFDC4900) : color,
-      disabledColor: color.withValues(alpha: 0.28),
-      icon: Icon(icon),
+    const activeColor = Color(0xFFDC4900);
+    final isEnabled = onPressed != null;
+
+    return Tooltip(
+      message: tooltip,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(2),
+        decoration: BoxDecoration(
+          color: active
+              ? activeColor
+              : (isEnabled
+                  ? Colors.black.withValues(alpha: 0.07)
+                  : Colors.transparent),
+          shape: BoxShape.circle,
+        ),
+        child: IconButton(
+          onPressed: onPressed,
+          visualDensity: VisualDensity.compact,
+          iconSize: size,
+          color: active ? Colors.white : color,
+          disabledColor: color.withValues(alpha: 0.28),
+          icon: Icon(icon),
+        ),
+      ),
     );
   }
 }

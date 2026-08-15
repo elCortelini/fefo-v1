@@ -294,6 +294,14 @@ class BluetoothManager extends ChangeNotifier {
   bool get isConnecting => _isConnecting;
   bool get isScanning => _isScanning;
   BluetoothDevice? get connectedDevice => _connectedDevice;
+  String get dispositivoConectadoNome {
+    if (_connectedDevice == null) return '';
+    if (_connectedDevice!.platformName.isNotEmpty) return _connectedDevice!.platformName;
+    if (_connectedDevice!.advName.isNotEmpty) return _connectedDevice!.advName;
+    return 'FEFO BLE';
+  }
+  bool get lendoCatalogo => _recebendoCatalogo;
+  bool get catalogLoaded => !_recebendoCatalogo && (_audioItems.isNotEmpty || _faces.isNotEmpty);
   String? get caminhoAudioAtivo => _caminhoAudioAtivo;
   String? get audioSelecionado => _audioSelecionado;
   List<ScanResult> get devicesList => List.unmodifiable(_devicesList);
