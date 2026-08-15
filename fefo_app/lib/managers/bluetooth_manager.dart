@@ -277,6 +277,8 @@ class BluetoothManager extends ChangeNotifier {
   String? _operationPath;
   double _uploadItemProgress = 0;
   double _audioProgress = 0;
+  int _audioPosSec = 0;
+  int _audioTotalSec = 0;
   int _audioVolume = 50;
   String _audioControlState = 'idle';
   bool _audioPaused = false;
@@ -325,6 +327,32 @@ class BluetoothManager extends ChangeNotifier {
   String? get operationPath => _operationPath;
   double get uploadItemProgress => _uploadItemProgress;
   double get audioProgress => _audioProgress;
+  int get audioPosSec => _audioPosSec;
+  int get audioTotalSec => _audioTotalSec;
+  String get posTimeFormatted {
+    final m = _audioPosSec ~/ 60;
+    final s = _audioPosSec % 60;
+    return '$m:${s.toString().padLeft(2, '0')}';
+  }
+  String get totalTimeFormatted {
+    final m = _audioTotalSec ~/ 60;
+    final s = _audioTotalSec % 60;
+    return '$m:${s.toString().padLeft(2, '0')}';
+  }
+  String get audioAtivoTitulo {
+    if (_caminhoAudioAtivo == null || _caminhoAudioAtivo!.isEmpty) {
+      return 'Nenhum áudio em execução';
+    }
+    for (final item in _audioItems) {
+      if (item.path == _caminhoAudioAtivo ||
+          item.token == _caminhoAudioAtivo ||
+          _caminhoAudioAtivo!.endsWith(item.fileName)) {
+        return item.title.isNotEmpty ? item.title : item.fileName;
+      }
+    }
+    final baseName = _caminhoAudioAtivo!.split('/').last;
+    return baseName.replaceAll('.wav', '').replaceAll('.mp3', '');
+  }
   int get audioVolume => _audioVolume;
   bool get audioPaused => _audioPaused;
   bool get audioPlaying => _audioControlState == 'playing';
@@ -574,6 +602,12 @@ class BluetoothManager extends ChangeNotifier {
       final state = _extrairCampo(texto, 'STATE')?.toUpperCase();
       final position = int.tryParse(_extrairCampo(texto, 'POS') ?? '') ?? 0;
       final size = int.tryParse(_extrairCampo(texto, 'SIZE') ?? '') ?? 0;
+      final file = _extrairCampo(texto, 'FILE');
+      if (file != null && file != '-') {
+        _caminhoAudioAtivo = file;
+      }
+      _audioPosSec = int.tryParse(_extrairCampo(texto, 'POS_SEC') ?? '') ?? (position ~/ 32000);
+      _audioTotalSec = int.tryParse(_extrairCampo(texto, 'TOTAL_SEC') ?? '') ?? (size ~/ 32000);
       _audioVolume =
           int.tryParse(_extrairCampo(texto, 'VOL') ?? '') ?? _audioVolume;
       _audioPaused = state == 'PAUSED';
@@ -583,6 +617,8 @@ class BluetoothManager extends ChangeNotifier {
       if (state == 'IDLE') {
         _caminhoAudioAtivo = null;
         _audioProgress = 0;
+        _audioPosSec = 0;
+        _audioTotalSec = 0;
         _audioPaused = false;
         _audioProgressTimer?.cancel();
       }

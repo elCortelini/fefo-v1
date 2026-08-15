@@ -645,16 +645,21 @@ void AppController::handleBleCommand(const char* command) {
 
   if (strcasecmp(start, "AUDIO STATUS") == 0 ||
       strcasecmp(start, "PLAY STATUS") == 0) {
-    char line[150]{};
+    char line[180]{};
     const uint32_t position = audio_.playbackPosition();
     const uint32_t size = audio_.playbackSize();
+    const uint32_t posSec = position / 32000;
+    const uint32_t totalSec = size / 32000;
     snprintf(line, sizeof(line),
-             "OK AUDIO STATE=%s FILE=%s POS=%lu SIZE=%lu VOL=%u",
+             "OK AUDIO STATE=%s FILE=%s POS=%lu SIZE=%lu POS_SEC=%lu TOTAL_SEC=%lu VOL=%u",
              audio_.playbackActive() ? "PLAYING" :
                  (audioPaused_ ? "PAUSED" : "IDLE"),
              currentAudioPath_[0] != '\0' ? currentAudioPath_ : "-",
              static_cast<unsigned long>(position),
-             static_cast<unsigned long>(size), audio_.volumePercent());
+             static_cast<unsigned long>(size),
+             static_cast<unsigned long>(posSec),
+             static_cast<unsigned long>(totalSec),
+             audio_.volumePercent());
     sendBleLine(line);
     return;
   }

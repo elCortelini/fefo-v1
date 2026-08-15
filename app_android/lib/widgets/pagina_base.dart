@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import 'botao_verde.dart';
+import 'mini_player.dart';
 
 class PaginaBase extends StatelessWidget {
   final Widget child;
@@ -38,22 +39,30 @@ class PaginaBase extends StatelessWidget {
               child: Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 700),
-                  child: mostrarBotaoVoltar
-                      ? Column(
-                          children: [
-                            Expanded(child: child),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.only(top: 10, bottom: 15),
-                              child: BotaoVerde(
-                                texto: 'Voltar',
-                                larguraPercentual: 0.72,
-                                aoPressionar: () => Navigator.pop(context),
-                              ),
-                            ),
-                          ],
-                        )
-                      : child,
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: mostrarBotaoVoltar
+                            ? Column(
+                                children: [
+                                  Expanded(child: child),
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        top: 10, bottom: 15),
+                                    child: BotaoVerde(
+                                      texto: 'Voltar',
+                                      larguraPercentual: 0.72,
+                                      aoPressionar: () =>
+                                          Navigator.pop(context),
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : child,
+                      ),
+                      const MiniPlayer(),
+                    ],
+                  ),
                 ),
               ),
             ),
