@@ -1321,6 +1321,7 @@ class BluetoothManager extends ChangeNotifier {
 
   Future<void> playAudio(String audioRef) async {
     _audioSelecionado = audioRef;
+    _caminhoAudioAtivo = audioRef;
     await _enviarComandoNormalizado(
       _comandoPlayParaAudio(audioRef),
       origemParaEstado: audioRef,
@@ -1331,18 +1332,21 @@ class BluetoothManager extends ChangeNotifier {
     _audioProgressTimer?.cancel();
     _audioProgressTimer =
         Timer.periodic(const Duration(milliseconds: 500), (_) {
-      if (!isConnected || _caminhoAudioAtivo == null) {
+      if (!isConnected) {
         _audioProgressTimer?.cancel();
         return;
       }
       enviarComando('AUDIO STATUS');
     });
+    notifyListeners();
+  }
+
+  Future<void> tocarAudio(String audioRef) async {
+    await playAudio(audioRef);
   }
 
   void selecionarAudio(String audioRef) {
-    _audioSelecionado = audioRef;
-    _audioControlState = 'idle';
-    notifyListeners();
+    playAudio(audioRef);
   }
 
   Future<void> stopAudio() async {
