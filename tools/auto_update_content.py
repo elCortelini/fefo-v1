@@ -108,28 +108,35 @@ def load_metadata_csv() -> dict:
     return metadata
 
 
+def append_to_metadata_csv(new_entries: list):
+    """
+    Adiciona novos itens processados à planilha Catalogo_Online_Planilha.csv
+    sem sobrescrever o que já existe.
+    """
+    if not new_entries:
+        return
 
-def get_file_hash(path: Path) -> str:
-    h = sha256()
-    with open(path, 'rb') as f:
-        while chunk := f.read(65536):
-            h.update(chunk)
-    return h.hexdigest()
+    csv_path = CSV_FILE
+    file_exists = csv_path.exists()
+    fieldnames = ['arquivo_origem', 'titulo', 'menu_principal', 'submenu', 'tipo', 'extensao', 'publicar', 'observacoes']
 
+    with open(csv_path, 'a', encoding='utf-8-sig', newline='') as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames, delimiter=';')
+        if not file_exists or csv_path.stat().st_size == 0:
+            writer.writeheader()
 
-def load_tracker() -> dict:
-    if TRACKER_FILE.exists():
-        try:
-            with open(TRACKER_FILE, 'r', encoding='utf-8') as f:
-                return json.load(f)
-        except Exception:
-            pass
-    return {"processed_hashes": {}}
-
-
-def save_tracker(tracker_data: dict):
-    with open(TRACKER_FILE, 'w', encoding='utf-8') as f:
-        json.dump(tracker_data, f, indent=2, ensure_ascii=False)
+        for entry in new_entries:
+            writer.writerow({
+                'arquivo_origem': entry.get('arquivo_origem', ''),
+                'titulo': entry.get('titulo', ''),
+                'menu_principal': entry.get('menu_principal', ''),
+                'submenu': entry.get('submenu', ''),
+                'tipo': entry.get('tipo', 'audio'),
+                'extensao': entry.get('extensao', ''),
+                'publicar': entry.get('publicar', 'Sim'),
+                'observacoes': entry.get('observacoes', 'Cadastrado automaticamente')
+            })
+    print(f"  [PLANILHA ATUALIZADA] {len(new_entries)} novo(s) item(ns) inserido(s) em {csv_path.name}")
 
 
 def parse_filename(stem: str):
@@ -138,17 +145,24 @@ def parse_filename(stem: str):
     - Sem hífen: Titulo ("Jukebox do Fefo")
     - 1 hífen: Menu-Titulo
     - 2 hífens: Menu-Submenu-Titulo
-    - >2 hífens: Menu > Submenu1 > Submenu2 - Titulo
+    - >2 hífens: Menu-Submenu1-Submenu2-Titulo
+    Retorna (menu_principal, submenu, titulo, menu_path_completo)
     """
     parts = [p.strip() for p in stem.split('-') if p.strip()]
     if len(parts) == 1:
-        return "Jukebox do Fefo", parts[0]
+        return "Jukebox do Fefo", "", parts[0], "Jukebox do Fefo"
     elif len(parts) == 2:
-        return parts[0], parts[1]
+        return parts[0], "", parts[1], parts[0]
+    elif len(parts) == 3:
+        menu_path = f"{parts[0]} > {parts[1]}"
+        return parts[0], parts[1], parts[2], menu_path
     else:
-        menu_path = " > ".join(parts[:-1])
+        menu_principal = parts[0]
+        submenu = " > ".join(parts[1:-1])
         title = parts[-1]
-        return menu_path, title
+        menu_path = f"{menu_principal} > {submenu}"
+        return menu_principal, submenu, title, menu_path
+
 
 
 def get_next_audio_index() -> int:
@@ -370,6 +384,7 @@ def main():
     new_audios = []
     new_faces = []
     new_videos = []
+    new_csv_rows = []
     added_summary = []
 
     audio_idx = get_next_audio_index()
@@ -400,9 +415,19 @@ def main():
             elif menu_principal:
                 menu = menu_principal
             else:
-                menu, _ = parse_filename(src.stem)
+                _, _, _, menu = parse_filename(src.stem)
         else:
-            menu, titulo = parse_filename(src.stem)
+            menu_principal, submenu, titulo, menu = parse_filename(src.stem)
+            new_csv_rows.append({
+                'arquivo_origem': src.name,
+                'titulo': titulo,
+                'menu_principal': menu_principal,
+                'submenu': submenu,
+                'tipo': 'audio',
+                'extensao': src.suffix.lstrip('.'),
+                'publicar': 'Sim',
+                'observacoes': 'Gerado automaticamente pelo script'
+            })
 
         file_name = f"a{audio_idx:04d}.wav"
         au_id = f"au{audio_idx:03d}"
@@ -443,6 +468,18 @@ def main():
         if publicar in ('não', 'nao', 'false', '0', 'n'):
             print(f"[IGNORADO - CSV] Face '{src.name}' marcada para NÃO publicar.")
             continue
+
+        if src.name.lower() not in metadata_map:
+            new_csv_rows.append({
+                'arquivo_origem': src.name,
+                'titulo': src.stem,
+                'menu_principal': 'Faces',
+                'submenu': '',
+                'tipo': 'face',
+                'extensao': src.suffix.lstrip('.'),
+                'publicar': 'Sim',
+                'observacoes': 'Gerada automaticamente pelo script'
+            })
 
         file_name = f"f{face_idx:04d}.raw"
         fa_id = f"fa{face_idx:03d}"
@@ -492,9 +529,19 @@ def main():
             elif menu_principal:
                 menu = menu_principal
             else:
-                menu, _ = parse_filename(src.stem)
+                _, _, _, menu = parse_filename(src.stem)
         else:
-            menu, titulo = parse_filename(src.stem)
+            menu_principal, submenu, titulo, menu = parse_filename(src.stem)
+            new_csv_rows.append({
+                'arquivo_origem': src.name,
+                'titulo': titulo,
+                'menu_principal': menu_principal,
+                'submenu': submenu,
+                'tipo': 'video',
+                'extensao': src.suffix.lstrip('.'),
+                'publicar': 'Sim',
+                'observacoes': 'Gerado automaticamente pelo script'
+            })
 
         file_name = f"v{video_idx:04d}.mp4"
         vi_id = f"vi{video_idx:03d}"
@@ -522,8 +569,9 @@ def main():
         print(f"  -> Processado Vídeo: ID {vi_id} | Menu: '{menu}' | Título: '{titulo}'")
         video_idx += 1
 
-    # Atualizar catálogos e tracker
+    # Atualizar catálogos, planilha e tracker
     if new_audios or new_faces or new_videos:
+        append_to_metadata_csv(new_csv_rows)
         update_catalog_files(new_audios, new_faces, new_videos)
         tracker["processed_hashes"] = processed_hashes
         save_tracker(tracker)
