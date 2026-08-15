@@ -124,6 +124,80 @@ class _TelaConexaoState extends State<TelaConexao> {
             const Divider(color: Colors.black26, thickness: 1.5),
             Consumer<BluetoothManager>(
               builder: (context, manager, _) {
+                if (manager.isConnected) {
+                  final nomeConectado = manager.dispositivoConectadoNome.isNotEmpty
+                      ? manager.dispositivoConectadoNome
+                      : 'FEFO BLE';
+                  return Container(
+                    margin: const EdgeInsets.symmetric(vertical: 10),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: corVerde.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: corVerde, width: 2),
+                    ),
+                    child: Column(
+                      children: [
+                        const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.bluetooth_connected, color: corVerde, size: 30),
+                            SizedBox(width: 8),
+                            Text(
+                              'FEFO CONECTADO',
+                              style: TextStyle(
+                                fontFamily: 'Billotilde',
+                                fontSize: 32,
+                                color: corVerde,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          nomeConectado,
+                          style: const TextStyle(
+                            fontFamily: 'KGPen',
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red.shade800,
+                                foregroundColor: Colors.white,
+                              ),
+                              icon: const Icon(Icons.bluetooth_disabled),
+                              label: const Text('Desconectar', style: TextStyle(fontFamily: 'KGPen')),
+                              onPressed: () async {
+                                await manager.disconnectFromDevice();
+                                _mostrarMensagem('FEFO desconectado.');
+                              },
+                            ),
+                            ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: corLaranja,
+                                foregroundColor: Colors.white,
+                              ),
+                              icon: const Icon(Icons.refresh),
+                              label: const Text('Reconectar', style: TextStyle(fontFamily: 'KGPen')),
+                              onPressed: () async {
+                                await manager.disconnectFromDevice();
+                                await _buscarFefoBle();
+                              },
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: Text(
