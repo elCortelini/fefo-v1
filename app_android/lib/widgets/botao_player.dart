@@ -91,14 +91,16 @@ class BotaoPlayer extends StatelessWidget {
                             : () => manager.playAudio(caminhoArquivoPlay),
                   ),
                   _ControlButton(
-                    tooltip: 'Pausar',
+                    tooltip: manager.audioPaused ? 'Retomar' : 'Pausar',
                     icon: Icons.pause_rounded,
                     color: Colors.black,
                     active: manager.audioPaused,
                     size: 48,
-                    onPressed: enabled && !manager.audioPaused
-                        ? manager.pauseAudio
-                        : null,
+                    onPressed: !enabled
+                        ? null
+                        : manager.audioPaused
+                            ? manager.resumeAudio
+                            : manager.pauseAudio,
                   ),
                   _ControlButton(
                     tooltip: 'Parar',

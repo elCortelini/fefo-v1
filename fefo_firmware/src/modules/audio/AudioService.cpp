@@ -313,6 +313,7 @@ void AudioService::audioTask() {
   while (true) {
     if (stopPlaybackRequested_.load(std::memory_order_relaxed)) {
       if (playbackFile) playbackFile.close();
+      i2s_zero_dma_buffer(kI2sPort);
       playbackActive_.store(false, std::memory_order_relaxed);
       stopPlaybackRequested_.store(false, std::memory_order_relaxed);
       playbackPosition_.store(0, std::memory_order_relaxed);
@@ -326,6 +327,7 @@ void AudioService::audioTask() {
         playbackRequested_.load(std::memory_order_relaxed)) {
       playbackRequested_.store(false, std::memory_order_relaxed);
       if (playbackFile) playbackFile.close();
+      i2s_zero_dma_buffer(kI2sPort);
       playbackFile = SD.open(playbackPath_, FILE_READ);
       if (!playbackFile) {
         Serial.printf("[AUDIO] ERRO: arquivo de audio nao encontrado: %s\n",
@@ -376,6 +378,7 @@ void AudioService::audioTask() {
 
       if (bytesRead == 0 || stopPlaybackRequested_.load(std::memory_order_relaxed)) {
         if (playbackFile) playbackFile.close();
+        i2s_zero_dma_buffer(kI2sPort);
         playbackActive_.store(false, std::memory_order_relaxed);
         stopPlaybackRequested_.store(false, std::memory_order_relaxed);
         playbackPosition_.store(0, std::memory_order_relaxed);

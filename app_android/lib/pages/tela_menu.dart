@@ -36,7 +36,7 @@ class _TelaMenuState extends State<TelaMenu> {
     return PaginaBase(
       child: Consumer<BluetoothManager>(
         builder: (context, manager, _) {
-          final temAulas = _temConteudoAudio(manager, 'Aulas do Fefo');
+          // Exceções com presenças fixas solicitadas: Alarmes, CARDs Interativos, Aulas do Fefo
           final temDesafios =
               _temConteudoAudio(manager, 'Desafios e Brincadeiras');
           final temMeuCorpo = _temConteudoAudio(manager, 'Meu corpo');
@@ -47,22 +47,17 @@ class _TelaMenuState extends State<TelaMenu> {
           final temAnimais =
               _temConteudoAudio(manager, 'Conhecendo os animais');
 
-          final temExploracao = temAulas ||
-              temDesafios ||
-              temMeuCorpo ||
-              temContos ||
-              temPalavras ||
-              temSeguro ||
-              temRotina ||
-              temAnimais ||
-              true;
+          const temExploracao = true;
 
+          final temClassicas = _temConteudoAudio(manager, 'Músicas Clássicas');
           final temInstrumentais =
               _temConteudoAudio(manager, 'Instrumentais e Natureza');
-          final temEstimulos = temInstrumentais || true;
+          final temJukebox = _temConteudoAudio(manager, 'Jukebox do Fefo');
+          final temEstimulos = temClassicas || temInstrumentais || temJukebox;
 
           final temRelaxamento = _temConteudoAudio(manager, 'Relaxamento');
-          final temTerapias = temRelaxamento || true;
+          const temLuzes = true;
+          final temTerapias = temRelaxamento || temLuzes;
 
           const temSobre = true;
 
@@ -91,13 +86,12 @@ class _TelaMenuState extends State<TelaMenu> {
                     texto: 'Alarmes',
                     aoPressionar: () => _abrir(const TelaAlarmes()),
                   ),
-                  if (temAulas)
-                    _BotaoMenu(
-                      texto: 'Aulas do Fefo',
-                      aoPressionar: () => _abrir(
-                        const TelaAudiosFefo(grupoInicial: 'Aulas do Fefo'),
-                      ),
+                  _BotaoMenu(
+                    texto: 'Aulas do Fefo',
+                    aoPressionar: () => _abrir(
+                      const TelaAudiosFefo(grupoInicial: 'Aulas do Fefo'),
                     ),
+                  ),
                   if (temDesafios)
                     _BotaoMenu(
                       texto: 'Desafios e Brincadeiras',
@@ -161,10 +155,11 @@ class _TelaMenuState extends State<TelaMenu> {
                 if (temEstimulos) ...[
                   const _TituloSecao(titulo: 'Estímulos Sonoros'),
                   const SizedBox(height: 8),
-                  _BotaoMenu(
-                    texto: 'Músicas Clássicas',
-                    aoPressionar: () => _abrir(const TelaClassicas()),
-                  ),
+                  if (temClassicas)
+                    _BotaoMenu(
+                      texto: 'Músicas Clássicas',
+                      aoPressionar: () => _abrir(const TelaClassicas()),
+                    ),
                   if (temInstrumentais)
                     _BotaoMenu(
                       texto: 'Instrumentais e Natureza',
@@ -173,12 +168,13 @@ class _TelaMenuState extends State<TelaMenu> {
                             grupoInicial: 'Instrumentais e Natureza'),
                       ),
                     ),
-                  _BotaoMenu(
-                    texto: 'Jukebox do Fefo',
-                    aoPressionar: () => _abrir(
-                      const TelaAudiosFefo(grupoInicial: 'Jukebox do Fefo'),
+                  if (temJukebox)
+                    _BotaoMenu(
+                      texto: 'Jukebox do Fefo',
+                      aoPressionar: () => _abrir(
+                        const TelaAudiosFefo(grupoInicial: 'Jukebox do Fefo'),
+                      ),
                     ),
-                  ),
                   const SizedBox(height: 15),
                 ],
 

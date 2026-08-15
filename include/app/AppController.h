@@ -57,6 +57,7 @@ class AppController {
   bool showFaceByToken(const char* token);
   bool handleModeCommand(const char* command);
   bool handleVolumeCommand(const char* command);
+  bool handleSeekCommand(const char* command);
   bool handleBrightnessCommand(const char* command);
   bool handleLedPatternCommand(const char* command);
   bool handleVibrationCommand(const char* command);

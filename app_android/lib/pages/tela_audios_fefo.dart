@@ -17,7 +17,6 @@ class TelaAudiosFefo extends StatefulWidget {
 }
 
 class _TelaAudiosFefoState extends State<TelaAudiosFefo> {
-  bool _modoSelecao = false;
   final Set<String> _selecionados = {};
 
   void _toggleSelecao(String path) {
@@ -64,7 +63,6 @@ class _TelaAudiosFefoState extends State<TelaAudiosFefo> {
       if (mounted) {
         setState(() {
           _selecionados.clear();
-          _modoSelecao = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -186,13 +184,13 @@ class _TelaAudiosFefoState extends State<TelaAudiosFefo> {
                                               bottom: 10),
                                           child: Row(
                                             children: [
-                                              if (_modoSelecao) ...[
-                                                Checkbox(
-                                                  value: _selecionados.contains(audio.path),
-                                                  activeColor: corLaranja,
-                                                  onChanged: (_) => _toggleSelecao(audio.path),
-                                                ),
-                                              ],
+                                              Checkbox(
+                                                value: _selecionados
+                                                    .contains(audio.path),
+                                                activeColor: corLaranja,
+                                                onChanged: (_) =>
+                                                    _toggleSelecao(audio.path),
+                                              ),
                                               Expanded(
                                                 child: BotaoPlayer(
                                                   legenda: audio.title.isEmpty
@@ -200,7 +198,8 @@ class _TelaAudiosFefoState extends State<TelaAudiosFefo> {
                                                       : audio.title,
                                                   caminhoArquivoPlay: audio.token,
                                                   larguraIcone: 38,
-                                                  aoExcluir: _modoSelecao
+                                                  aoExcluir: _selecionados
+                                                          .isNotEmpty
                                                       ? null
                                                       : () => _confirmarExclusao(
                                                             context,
@@ -225,65 +224,49 @@ class _TelaAudiosFefoState extends State<TelaAudiosFefo> {
                   padding: const EdgeInsets.only(bottom: 15, top: 15),
                   child: Column(
                     children: [
-                      if (audios.isNotEmpty && manager.isConnected) ...[
-                        if (!_modoSelecao)
-                          BotaoPincelada(
-                            texto: 'Deletar Múltiplos',
-                            cor: Colors.red.shade800,
-                            larguraPercentual: 0.72,
-                            aoPressionar: () {
-                              setState(() {
-                                _modoSelecao = true;
-                                _selecionados.clear();
-                              });
-                            },
-                          )
-                        else
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red.shade800,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 12),
-                                ),
-                                icon: const Icon(Icons.delete_forever),
-                                label: Text(
-                                  'Excluir (${_selecionados.length})',
-                                  style: const TextStyle(
-                                    fontFamily: 'KGPen',
-                                    fontSize: 18,
-                                  ),
-                                ),
-                                onPressed: _selecionados.isEmpty
-                                    ? null
-                                    : () => _excluirSelecionados(context),
+                      if (_selecionados.isNotEmpty && manager.isConnected) ...[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red.shade800,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 12),
                               ),
-                              const SizedBox(width: 12),
-                              OutlinedButton(
-                                style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 12),
-                                ),
-                                onPressed: () {
-                                  setState(() {
-                                    _modoSelecao = false;
-                                    _selecionados.clear();
-                                  });
-                                },
-                                child: const Text(
-                                  'Cancelar',
-                                  style: TextStyle(
-                                    fontFamily: 'KGPen',
-                                    fontSize: 18,
-                                    color: Colors.black87,
-                                  ),
+                              icon: const Icon(Icons.delete_forever),
+                              label: Text(
+                                'Deletar Selecionados (${_selecionados.length})',
+                                style: const TextStyle(
+                                  fontFamily: 'KGPen',
+                                  fontSize: 18,
                                 ),
                               ),
-                            ],
-                          ),
+                              onPressed: () => _excluirSelecionados(context),
+                            ),
+                            const SizedBox(width: 12),
+                            OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 12),
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _selecionados.clear();
+                                });
+                              },
+                              child: const Text(
+                                'Cancelar',
+                                style: TextStyle(
+                                  fontFamily: 'KGPen',
+                                  fontSize: 18,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                         const SizedBox(height: 10),
                       ],
                       BotaoPincelada(
