@@ -62,7 +62,7 @@ class AlarmModel {
       );
 
   static AlarmModel fromJson(Map<String, Object?> json) => AlarmModel(
-        id: json[AlarmFields.id] as int?,
+        id: (json[AlarmFields.id] ?? json['id'] ?? json['id_alarm']) as int?,
         title: json[AlarmFields.title] as String,
         hour: json[AlarmFields.hour] as int,
         minute: json[AlarmFields.minute] as int,

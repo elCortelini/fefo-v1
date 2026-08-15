@@ -18,8 +18,6 @@ class TelaInicial extends StatelessWidget {
     final manager = context.watch<BluetoothManager>();
     const laranja = Color(0xFFDC4900);
     const verde = Color(0xFF318134);
-    final firmware =
-        (manager.firmwareVersion ?? '52').split('.').last.padLeft(3, '0');
 
     return PaginaBase(
       child: SingleChildScrollView(
@@ -30,13 +28,35 @@ class TelaInicial extends StatelessWidget {
             Image.asset('assets/images/logo.png', height: 180),
             Image.asset('assets/images/fefo.png', height: 350),
             const SizedBox(height: 15),
-            Text(
-              'FEFO Firm v${firmware.split('.').last.padLeft(3, '0')} - App v042',
-              style: const TextStyle(
-                color: verde,
-                fontFamily: 'KGPen',
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFFDC4900).withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFDC4900), width: 1.4),
+              ),
+              child: Column(
+                children: [
+                  const Text(
+                    'FEFO App v055 (1.0.55+55)',
+                    style: TextStyle(
+                      fontFamily: 'KGPen',
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFFDC4900),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'PET FEFO Firmware v${manager.firmwareVersion ?? '0.0.71'}',
+                    style: const TextStyle(
+                      fontFamily: 'KGPen',
+                      fontSize: 13,
+                      color: verde,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 25),

@@ -26,6 +26,11 @@ class TelaEditarAlarme extends StatefulWidget {
 
   static const List<OpcaoDeSom> opcoesPadrao = [
     OpcaoDeSom(
+      nomeAmigavel: 'Pipoquinha Disco',
+      caminhoDoArquivo: 'pipoquinha_disco.wav',
+      grupo: 'Músicas',
+    ),
+    OpcaoDeSom(
       nomeAmigavel: 'Bom Dia com Fefo',
       caminhoDoArquivo: '/rotina/rotina01.wav',
       grupo: 'Rotina',

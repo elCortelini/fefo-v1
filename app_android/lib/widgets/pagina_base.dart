@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-import 'botao_verde.dart';
+import 'botao_pincelada.dart';
 import 'mini_player.dart';
 
 class PaginaBase extends StatelessWidget {
@@ -41,26 +41,18 @@ class PaginaBase extends StatelessWidget {
                   constraints: const BoxConstraints(maxWidth: 700),
                   child: Column(
                     children: [
-                      Expanded(
-                        child: mostrarBotaoVoltar
-                            ? Column(
-                                children: [
-                                  Expanded(child: child),
-                                  Padding(
-                                    padding: const EdgeInsets.only(
-                                        top: 10, bottom: 15),
-                                    child: BotaoVerde(
-                                      texto: 'Voltar',
-                                      larguraPercentual: 0.72,
-                                      aoPressionar: () =>
-                                          Navigator.pop(context),
-                                    ),
-                                  ),
-                                ],
-                              )
-                            : child,
-                      ),
+                      Expanded(child: child),
                       const MiniPlayer(),
+                      if (mostrarBotaoVoltar)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8, bottom: 12),
+                          child: BotaoPincelada(
+                            texto: 'Voltar',
+                            cor: const Color(0xFFDC4900),
+                            larguraPercentual: 0.72,
+                            aoPressionar: () => Navigator.pop(context),
+                          ),
+                        ),
                     ],
                   ),
                 ),
