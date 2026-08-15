@@ -8,6 +8,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:permission_handler/permission_handler.dart';
 
+import 'package:audioplayers/audioplayers.dart';
 import '../models/alarm_model.dart';
 import '../managers/bluetooth_manager.dart';
 import '../main.dart' as main_app;
@@ -52,7 +53,14 @@ class AlarmService {
         }
 
         if (payload != null && payload.startsWith('P:')) {
-          await _bluetoothManager.enviarComando(payload);
+          if (_bluetoothManager.isConnected) {
+            await _bluetoothManager.enviarComando(payload);
+          } else {
+            try {
+              final player = AudioPlayer();
+              await player.play(AssetSource('audios/disco.mp3'));
+            } catch (_) {}
+          }
         }
       },
       onDidReceiveBackgroundNotificationResponse:

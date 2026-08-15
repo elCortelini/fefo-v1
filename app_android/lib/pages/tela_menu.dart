@@ -8,6 +8,7 @@ import 'tela_alarmes.dart';
 import 'tela_audios_fefo.dart';
 import 'tela_cards.dart';
 import 'tela_catalogo_online.dart';
+import 'tela_configuracoes.dart';
 import 'tela_classicas.dart';
 import 'tela_conexao.dart';
 import 'tela_luzes.dart';
@@ -138,35 +139,7 @@ class _TelaMenuState extends State<TelaMenu> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Column(
               children: [
-                const SizedBox(height: 15),
-                const Text(
-                  'Menu Principal',
-                  style: TextStyle(
-                    fontFamily: 'Billotilde',
-                    fontSize: 55,
-                    color: verde,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 4),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFDC4900).withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFFDC4900), width: 1.2),
-                  ),
-                  child: const Text(
-                    'FEFO App v054 (1.0.54+54)',
-                    style: TextStyle(
-                      fontFamily: 'KGPen',
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFFDC4900),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 15),
+                const SizedBox(height: 20),
                 // Botão Pânico bem no topo
                 BotaoPincelada(
                   texto: 'PÂNICO',
@@ -311,16 +284,7 @@ class _TelaMenuState extends State<TelaMenu> {
                   ),
                   _BotaoMenu(
                     texto: 'Configurações',
-                    aoPressionar: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Configurações serão definidas em breve.',
-                            style: TextStyle(fontFamily: 'KGPen'),
-                          ),
-                        ),
-                      );
-                    },
+                    aoPressionar: () => _abrir(const TelaConfiguracoes()),
                   ),
                   const SizedBox(height: 15),
                 ],

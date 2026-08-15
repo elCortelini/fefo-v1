@@ -141,10 +141,21 @@ class _TelaAlarmesState extends State<TelaAlarmes> {
       ),
     );
 
-    if (confirmar == true && alarme.id != null) {
-      await AlarmService.instance.cancelarAlarme(alarme.id!);
-      await DatabaseService.instance.delete(alarme.id!);
+    if (confirmar == true) {
+      if (alarme.id != null) {
+        await AlarmService.instance.cancelarAlarme(alarme.id!);
+        await DatabaseService.instance.delete(alarme.id!);
+      }
       await _recarregarAlarmes();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Alarme "${alarme.title}" excluído com sucesso!'),
+            backgroundColor: const Color(0xFFDC4900),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
     }
   }
 
@@ -175,6 +186,7 @@ class _TelaAlarmesState extends State<TelaAlarmes> {
     final manager = context.watch<BluetoothManager>();
 
     return PaginaBase(
+      mostrarBotaoVoltar: true,
       child: Stack(
         children: [
           Padding(
