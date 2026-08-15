@@ -157,7 +157,7 @@ class _TelaMenuState extends State<TelaMenu> {
                     border: Border.all(color: const Color(0xFFDC4900), width: 1.2),
                   ),
                   child: const Text(
-                    'FEFO App v049 (1.0.49+49)',
+                    'FEFO App v050 (1.0.50+50)',
                     style: TextStyle(
                       fontFamily: 'KGPen',
                       fontSize: 14,

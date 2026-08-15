@@ -1306,10 +1306,148 @@ class BluetoothManager extends ChangeNotifier {
     };
   }
 
+  static const Map<String, String> _catalogoPredefinidoTitulos = {
+    '/usr/a/a0001.wav': 'AS CORES',
+    'a0001': 'AS CORES',
+    '/usr/a/a0002.wav': 'Brincar com o Fefo 2',
+    'a0002': 'Brincar com o Fefo 2',
+    '/usr/a/a0003.wav': 'COMIDA SAUDÁVEL',
+    'a0003': 'COMIDA SAUDÁVEL',
+    '/usr/a/a0004.wav': 'CONHECENDO O CORPO',
+    'a0004': 'CONHECENDO O CORPO',
+    '/usr/a/a0005.wav': 'HIGIENE',
+    'a0005': 'HIGIENE',
+    '/usr/a/a0006.wav': 'HORA DE DORMIR',
+    'a0006': 'HORA DE DORMIR',
+    '/usr/a/a0007.wav': 'OS NÚMEROS',
+    'a0007': 'OS NÚMEROS',
+    '/usr/a/a0008.wav': 'Pipoquinha Disco',
+    'a0008': 'Pipoquinha Disco',
+    '/usr/a/a0009.wav': 'Respeitando os Colegas 2',
+    'a0009': 'Respeitando os Colegas 2',
+    '/usr/a/a0010.wav': 'RESPIRAR',
+    'a0010': 'RESPIRAR',
+    '/usr/a/a0011.wav': 'SONS DOS ANIMAIS',
+    'a0011': 'SONS DOS ANIMAIS',
+    '/usr/a/a0012.wav': 'Contando Números',
+    'a0012': 'Contando Números',
+    '/usr/a/a0013.wav': 'Cuide dos Animais',
+    'a0013': 'Cuide dos Animais',
+    '/usr/a/a0014.wav': 'Dicas de Segurança',
+    'a0014': 'Dicas de Segurança',
+    '/usr/a/a0015.wav': 'Frutas Saudáveis',
+    'a0015': 'Frutas Saudáveis',
+    '/rotina/rotina01.wav': 'Bom Dia com Fefo',
+    'rotina01': 'Bom Dia com Fefo',
+    '/rotina/rotina02.wav': 'Hora de Escovar os Dentes',
+    'rotina02': 'Hora de Escovar os Dentes',
+    '/rotina/rotina03.wav': 'Hora do Banho',
+    'rotina03': 'Hora do Banho',
+    '/rotina/rotina04.wav': 'Hora de Comer',
+    'rotina04': 'Hora de Comer',
+    '/rotina/rotina05.wav': 'Hora de Guardar os Brinquedos',
+    'rotina05': 'Hora de Guardar os Brinquedos',
+    '/rotina/rotina06.wav': 'Boa Noite',
+    'rotina06': 'Boa Noite',
+  };
+
+  static const Map<String, String> _catalogoPredefinidoGrupos = {
+    '/usr/a/a0001.wav': 'Jukebox do Fefo',
+    'a0001': 'Jukebox do Fefo',
+    '/usr/a/a0002.wav': 'Jukebox do Fefo',
+    'a0002': 'Jukebox do Fefo',
+    '/usr/a/a0003.wav': 'Jukebox do Fefo',
+    'a0003': 'Jukebox do Fefo',
+    '/usr/a/a0004.wav': 'Jukebox do Fefo',
+    'a0004': 'Jukebox do Fefo',
+    '/usr/a/a0005.wav': 'Jukebox do Fefo',
+    'a0005': 'Jukebox do Fefo',
+    '/usr/a/a0006.wav': 'Jukebox do Fefo',
+    'a0006': 'Jukebox do Fefo',
+    '/usr/a/a0007.wav': 'Jukebox do Fefo',
+    'a0007': 'Jukebox do Fefo',
+    '/usr/a/a0008.wav': 'Jukebox do Fefo',
+    'a0008': 'Jukebox do Fefo',
+    '/usr/a/a0009.wav': 'Jukebox do Fefo',
+    'a0009': 'Jukebox do Fefo',
+    '/usr/a/a0010.wav': 'Jukebox do Fefo',
+    'a0010': 'Jukebox do Fefo',
+    '/usr/a/a0011.wav': 'Jukebox do Fefo',
+    'a0011': 'Jukebox do Fefo',
+    '/usr/a/a0012.wav': 'Jukebox do Fefo 2',
+    'a0012': 'Jukebox do Fefo 2',
+    '/usr/a/a0013.wav': 'Jukebox do Fefo 2',
+    'a0013': 'Jukebox do Fefo 2',
+    '/usr/a/a0014.wav': 'Jukebox do Fefo 2',
+    'a0014': 'Jukebox do Fefo 2',
+    '/usr/a/a0015.wav': 'Jukebox do Fefo 2',
+    'a0015': 'Jukebox do Fefo 2',
+    '/rotina/rotina01.wav': 'Minha Rotina',
+    'rotina01': 'Minha Rotina',
+    '/rotina/rotina02.wav': 'Minha Rotina',
+    'rotina02': 'Minha Rotina',
+    '/rotina/rotina03.wav': 'Minha Rotina',
+    'rotina03': 'Minha Rotina',
+    '/rotina/rotina04.wav': 'Minha Rotina',
+    'rotina04': 'Minha Rotina',
+    '/rotina/rotina05.wav': 'Minha Rotina',
+    'rotina05': 'Minha Rotina',
+    '/rotina/rotina06.wav': 'Minha Rotina',
+    'rotina06': 'Minha Rotina',
+  };
+
+  FefoAudioItem _enriquecerItemComCatalogo(FefoAudioItem item) {
+    var title = item.catalogTitle.trim();
+    var group = item.catalogGroup.trim();
+    var submenu = item.catalogSubmenu.trim();
+
+    if (title.isEmpty) {
+      title = _catalogoPredefinidoTitulos[item.path] ??
+          _catalogoPredefinidoTitulos[item.token] ??
+          _catalogoPredefinidoTitulos[item.fileName] ??
+          '';
+    }
+
+    if (group.isEmpty) {
+      group = _catalogoPredefinidoGrupos[item.path] ??
+          _catalogoPredefinidoGrupos[item.token] ??
+          _catalogoPredefinidoGrupos[item.fileName] ??
+          '';
+    }
+
+    if (title.isEmpty) {
+      var clean = item.token.replaceAll('_', ' ').replaceAll('-', ' ').trim();
+      if (clean.length > 2 && RegExp(r'^[a-zA-Z]+\d+$').hasMatch(clean)) {
+        clean = clean.replaceAllMapped(
+          RegExp(r'^([a-zA-Z]+)(\d+)$'),
+          (m) => '${m[1]} ${m[2]}',
+        );
+      }
+      title = clean
+          .split(' ')
+          .map((w) => w.isNotEmpty ? (w[0].toUpperCase() + w.substring(1).toLowerCase()) : '')
+          .join(' ');
+    }
+
+    return FefoAudioItem(
+      id: item.id,
+      path: item.path,
+      catalogTitle: title,
+      catalogGroup: group,
+      catalogSubmenu: submenu,
+      checksum: item.checksum,
+    );
+  }
+
   void _adicionarAudioCatalogo(FefoAudioItem item) {
     if (item.path.isEmpty) return;
-    if (_audioItems.any((audio) => audio.path == item.path)) return;
-    _audioItems.add(item);
+    final itemEnriquecido = _enriquecerItemComCatalogo(item);
+    final idx = _audioItems.indexWhere((audio) => audio.path == itemEnriquecido.path);
+    if (idx >= 0) {
+      _audioItems[idx] = itemEnriquecido;
+    } else {
+      _audioItems.add(itemEnriquecido);
+    }
   }
 
   Future<void> enviarComando(String comando) async {
