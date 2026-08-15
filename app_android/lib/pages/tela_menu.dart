@@ -138,7 +138,35 @@ class _TelaMenuState extends State<TelaMenu> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Column(
               children: [
-                const SizedBox(height: 20),
+                const SizedBox(height: 15),
+                const Text(
+                  'Menu Principal',
+                  style: TextStyle(
+                    fontFamily: 'Billotilde',
+                    fontSize: 55,
+                    color: verde,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFDC4900).withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFDC4900), width: 1.2),
+                  ),
+                  child: const Text(
+                    'FEFO App v048 (1.0.48+48)',
+                    style: TextStyle(
+                      fontFamily: 'KGPen',
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFFDC4900),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 15),
                 // Botão Pânico bem no topo
                 BotaoPincelada(
                   texto: 'PÂNICO',
