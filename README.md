@@ -7,7 +7,7 @@ Projeto do FEFO Pet para a placa CYD ESP32 de 3,5 polegadas. Este repositório r
 | Componente | Versão no código | Artefato local |
 |---|---:|---|
 | Firmware CYD | `0.0.71` / BLE `FEFO_BLE_V071` | `releases/FEFO_Firmware_v071.bin` |
-| Aplicativo Android | `1.0.42+42` (App v042) | `releases/FEFO_App_v042.apk` |
+| Aplicativo Android | `1.0.43+43` (App v043) | `releases/FEFO_App_v043.apk` |
 | Catálogo remoto | schema 1, revisão 6 | `repository/catalog.json` |
 | Catálogo do cartão | schema 1, revisão 3 | `sdcard/fefo.json` |
 
