@@ -16,6 +16,7 @@
         <span class="logo-badge">FeFo</span> Pet
       </a>
       <ul class="nav-links">
+        <li><a href="#video-estudio" class="nav-link highlight-link">🎬 Vídeo da Historinha</a></li>
         <li><a href="#projeto" class="nav-link">O Projeto</a></li>
         <li><a href="#proposito" class="nav-link">Propósito</a></li>
         <li><a href="#simulador" class="nav-link">Simulador</a></li>
@@ -23,13 +24,130 @@
         <li><a href="#tecnologia" class="nav-link">Tecnologia</a></li>
         <li><a href="#roadmap" class="nav-link">Roadmap</a></li>
         <li><a href="#equipe" class="nav-link">Equipe</a></li>
-        <li><a href="#faq" class="nav-link">FAQ</a></li>
       </ul>
       <a href="https://github.com/elCortelini/fefo-v1/tree/main/releases" target="_blank" class="btn btn-primary">
         <span>Baixar App (v042)</span>
       </a>
     </div>
   </nav>
+
+  <!-- Video Studio Section for "1. O Jogo das Cores" -->
+  <section id="video-estudio" class="video-studio-section">
+    <div class="container">
+      <div class="text-center">
+        <div class="section-tag glow-tag">
+          <span>🎬 Estúdio de Vídeo do FEFO • Historinha Animada</span>
+        </div>
+        <h1 class="video-title">
+          <span class="gradient-text">1. O Jogo das Cores</span>
+        </h1>
+        <p class="video-subtitle">
+          Assista à historinha sobre amizade, observação e inclusão com FEFO e o Sapo, ou exporte em arquivo de vídeo HD (.webm) para compartilhar!
+        </p>
+      </div>
+
+      <div class="video-studio-wrapper glass-card">
+        <div class="video-header-bar">
+          <div class="video-badge">
+            <span class="live-dot"></span>
+            <span id="video-status-text">Pronto para Reproduzir</span>
+          </div>
+          <div class="video-aspect-toggle">
+            <button class="aspect-btn active" id="btn-aspect-169" title="Formato Horizontal (YouTube / TV)">16:9 HD</button>
+            <button class="aspect-btn" id="btn-aspect-916" title="Formato Vertical (Reels / Shorts / TikTok)">9:16 Vertical</button>
+          </div>
+        </div>
+
+        <div class="canvas-container" id="canvas-container">
+          <canvas id="video-canvas" width="1280" height="720"></canvas>
+          <div class="canvas-overlay" id="canvas-overlay">
+            <button class="play-overlay-btn" id="btn-play-overlay">
+              <span class="play-icon">▶</span>
+              <span class="play-label">Assistir Historinha</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Subtitles Bar -->
+        <div class="subtitle-box" id="subtitle-box">
+          <div class="speaker-tag" id="speaker-tag">NARRADOR</div>
+          <div class="subtitle-text" id="subtitle-text">Clique no Play para iniciar a historinha animada...</div>
+        </div>
+
+        <!-- Timeline Progress Bar -->
+        <div class="timeline-bar-container">
+          <div class="timeline-progress" id="timeline-progress"></div>
+        </div>
+
+        <!-- Video Controls Bar -->
+        <div class="video-controls-bar">
+          <div class="controls-left">
+            <button class="control-btn" id="btn-play-pause" title="Play / Pause">▶ Reproduzir</button>
+            <button class="control-btn" id="btn-restart" title="Reiniciar Historinha">🔄 Reiniciar</button>
+            <button class="control-btn" id="btn-mute" title="Ativar/Desativar Áudio">🔊 Som Ativo</button>
+          </div>
+
+          <div class="scene-selector-dropdown">
+            <label for="select-scene">Ir para Cena:</label>
+            <select id="select-scene">
+              <option value="0">1. Manhã no Jardim</option>
+              <option value="1">2. O Jogo e suas Regras</option>
+              <option value="2">3. A Flor Vermelha</option>
+              <option value="3">4. A Borboleta Amarela</option>
+              <option value="4">5. As Outras Cores & Imaginação</option>
+              <option value="5">6. Descanso na Grama</option>
+              <option value="6">7. Aprender a Brincar do Seu Jeito</option>
+            </select>
+          </div>
+
+          <div class="controls-right">
+            <button class="btn btn-export" id="btn-export-video">
+              <span>📹 Baixar Vídeo (.webm)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Story Transcript Cards -->
+        <div class="story-script-accordion">
+          <h3>📜 Script Completo da Historinha</h3>
+          <div class="script-scenes-grid">
+            <div class="script-card active" data-scene-idx="0">
+              <span class="scene-num">Cena 1</span>
+              <strong>Narrador:</strong> Em uma manhã ensolarada, FEFO passeava pelo jardim quando encontrou o Sapo.
+              <br><strong>Sapo:</strong> Coaxá, coaxá! Oi, FEFO! Quer brincar do Jogo das Cores?
+              <br><strong>FEFO:</strong> Quero! Como funciona?
+            </div>
+            <div class="script-card" data-scene-idx="1">
+              <span class="scene-num">Cena 2</span>
+              <strong>Sapo:</strong> Um de nós escolhe uma cor. Depois, procuramos alguma coisa dessa cor no jardim. Não é preciso correr nem pular. Cada um participa do seu jeito.
+            </div>
+            <div class="script-card" data-scene-idx="2">
+              <span class="scene-num">Cena 3</span>
+              <strong>FEFO:</strong> Eu escolho o vermelho!
+              <br><strong>Sapo:</strong> Encontrei! A flor é vermelha. Agora escolho o amarelo.
+            </div>
+            <div class="script-card" data-scene-idx="3">
+              <span class="scene-num">Cena 4</span>
+              <strong>FEFO:</strong> Achei! A borboleta tem asas amarelas!
+            </div>
+            <div class="script-card" data-scene-idx="4">
+              <span class="scene-num">Cena 5</span>
+              <strong>Narrador:</strong> Os amigos continuaram procurando as cores azul, verde, rosa e laranja. Quando não encontravam uma cor, imaginavam juntos um objeto que poderia tê-la.
+            </div>
+            <div class="script-card" data-scene-idx="5">
+              <span class="scene-num">Cena 6</span>
+              <strong>Sapo:</strong> Quantas cores encontramos!
+              <br><strong>FEFO:</strong> Descobri que posso observar detalhes que antes passavam despercebidos.
+            </div>
+            <div class="script-card" data-scene-idx="6">
+              <span class="scene-num">Cena 7</span>
+              <strong>Narrador:</strong> FEFO aprendeu que existem muitas maneiras de brincar. Observar, imaginar, apontar ou falar também são formas de participar. E, quando cada amigo pode brincar do seu jeito, a diversão fica ainda mais colorida.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- Hero Section -->
   <section id="projeto" class="hero-section">
