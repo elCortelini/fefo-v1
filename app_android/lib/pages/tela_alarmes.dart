@@ -41,9 +41,6 @@ class _TelaAlarmesState extends State<TelaAlarmes> {
   }
 
   Future<void> _recarregarAlarmes() async {
-    if (mounted && !_estaCarregando) {
-      setState(() => _estaCarregando = true);
-    }
     try {
       final alarmesDoDB = await DatabaseService.instance.readAll();
       if (mounted) {
@@ -53,6 +50,7 @@ class _TelaAlarmesState extends State<TelaAlarmes> {
         });
       }
     } catch (e) {
+      log("FEFO: Erro ao recarregar alarmes: $e");
       if (mounted) {
         setState(() => _estaCarregando = false);
       }

@@ -77,14 +77,18 @@ class AlarmModel {
             [],
       );
 
-  Map<String, Object?> toJson() => {
-        AlarmFields.id: id,
-        AlarmFields.title: title,
-        AlarmFields.hour: hour,
-        AlarmFields.minute: minute,
-        AlarmFields.isActive: isActive ? 1 : 0,
-        AlarmFields.audioPath: audioPath,
-        // Salva List<int> como string "1,2,3"
-        AlarmFields.daysOfWeek: daysOfWeek.join(','),
-      };
+  Map<String, Object?> toJson() {
+    final map = <String, Object?>{
+      AlarmFields.title: title,
+      AlarmFields.hour: hour,
+      AlarmFields.minute: minute,
+      AlarmFields.isActive: isActive ? 1 : 0,
+      AlarmFields.audioPath: audioPath,
+      AlarmFields.daysOfWeek: daysOfWeek.join(','),
+    };
+    if (id != null) {
+      map[AlarmFields.id] = id;
+    }
+    return map;
+  }
 }

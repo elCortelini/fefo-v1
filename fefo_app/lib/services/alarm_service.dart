@@ -1,6 +1,7 @@
 // lib/services/alarm_service.dart
 
 import 'dart:async';
+import 'dart:developer';
 import 'dart:typed_data';
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -96,29 +97,50 @@ class AlarmService {
     String? payload,
     String labelSnooze = 'Soneca',
   }) async {
-    await flutterLocalNotificationsPlugin.zonedSchedule(
-      id,
-      title,
-      body,
-      scheduledDate,
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'alarm_channel_unique_id',
-          'Alarmes Críticos do FEFO',
-          importance: Importance.max,
-          priority: Priority.max,
-          fullScreenIntent: true,
-          category: AndroidNotificationCategory.alarm,
-          ongoing: false,
-          playSound: true,
-          enableVibration: true,
-        ),
+    const details = NotificationDetails(
+      android: AndroidNotificationDetails(
+        'alarm_channel_unique_id',
+        'Alarmes Críticos do FEFO',
+        importance: Importance.max,
+        priority: Priority.max,
+        fullScreenIntent: false,
+        category: AndroidNotificationCategory.alarm,
+        ongoing: false,
+        playSound: true,
+        enableVibration: true,
       ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-      payload: payload,
     );
+
+    try {
+      await flutterLocalNotificationsPlugin.zonedSchedule(
+        id,
+        title,
+        body,
+        scheduledDate,
+        details,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        payload: payload,
+      );
+    } catch (e) {
+      log("FEFO: Fallback para agendamento inexato devido a permissão do Android: $e");
+      try {
+        await flutterLocalNotificationsPlugin.zonedSchedule(
+          id,
+          title,
+          body,
+          scheduledDate,
+          details,
+          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          uiLocalNotificationDateInterpretation:
+              UILocalNotificationDateInterpretation.absoluteTime,
+          payload: payload,
+        );
+      } catch (err) {
+        log("FEFO: Erro ao agendar notificação: $err");
+      }
+    }
   }
 
   Future<void> testeImediato() async {
