@@ -64,7 +64,7 @@ inline constexpr uint32_t kMotorAbsoluteMaxDurationMs = 10000;
 // Intervalo mínimo de repouso do motor entre dois acionamentos.
 inline constexpr uint32_t kMotorCooldownMs = 2000;
 inline constexpr uint8_t kVuSegmentCount = 20;
-inline constexpr uint8_t kDefaultMaxVolumePercent = 75;
+inline constexpr uint8_t kDefaultMaxVolumePercent = 100;
 
 // Sirene gerada pelo DAC interno no GPIO 26. A frequência percorre o intervalo
 // abaixo em subida e descida contínuas, produzindo o efeito de alerta sem usar

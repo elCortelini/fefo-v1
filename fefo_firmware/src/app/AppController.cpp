@@ -638,7 +638,8 @@ void AppController::handleBleCommand(const char* command) {
 
   if (handleModeCommand(start) || handleFaceCommand(start) ||
       handleVolumeCommand(start) || handleBrightnessCommand(start) ||
-      handleLedPatternCommand(start) || handleVibrationCommand(start)) {
+      handleLedPatternCommand(start) || handleVibrationCommand(start) ||
+      handleSeekCommand(start)) {
     return;
   }
 
@@ -2234,6 +2235,26 @@ bool AppController::handleVolumeCommand(const char* command) {
   audio_.setVolumePercent(static_cast<uint8_t>(value));
   char line[32]{};
   snprintf(line, sizeof(line), "OK VOL %u", audio_.volumePercent());
+  sendBleLine(line);
+  return true;
+}
+
+bool AppController::handleSeekCommand(const char* command) {
+  int pct = -1;
+  if (!parseNumberArgument(command, "SEEK", pct) &&
+      !parseNumberArgument(command, "POS", pct)) {
+    return false;
+  }
+  if (pct < 0 || pct > 100) {
+    sendBleLine("ERR SEEK RANGE 0-100");
+    return true;
+  }
+  if (audio_.playbackActive() && audio_.playbackSize() > 0 && currentAudioPath_[0] != '\0') {
+    const uint32_t targetByte = ((static_cast<uint64_t>(audio_.playbackSize()) * pct) / 100) & ~uint32_t{1};
+    audio_.playWavFileFrom(currentAudioPath_, targetByte);
+  }
+  char line[32]{};
+  snprintf(line, sizeof(line), "OK SEEK %d", pct);
   sendBleLine(line);
   return true;
 }
