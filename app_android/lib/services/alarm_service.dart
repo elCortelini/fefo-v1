@@ -101,7 +101,7 @@ class AlarmService {
       title,
       body,
       scheduledDate,
-      NotificationDetails(
+      const NotificationDetails(
         android: AndroidNotificationDetails(
           'alarm_channel_unique_id',
           'Alarmes Críticos do FEFO',
@@ -109,14 +109,9 @@ class AlarmService {
           priority: Priority.max,
           fullScreenIntent: true,
           category: AndroidNotificationCategory.alarm,
-          ongoing: true,
-          additionalFlags: Int32List.fromList([4]),
-          actions: <AndroidNotificationAction>[
-            AndroidNotificationAction('snooze', labelSnooze,
-                showsUserInterface: true),
-            const AndroidNotificationAction('dismiss', 'Finalizar',
-                showsUserInterface: true),
-          ],
+          ongoing: false,
+          playSound: true,
+          enableVibration: true,
         ),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
