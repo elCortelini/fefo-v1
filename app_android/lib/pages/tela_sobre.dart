@@ -57,14 +57,17 @@ class TelaSobre extends StatelessWidget {
 
                       // Selo da Versão do Aplicativo
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFDC4900).withValues(alpha: 0.15),
+                          color:
+                              const Color(0xFFDC4900).withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: const Color(0xFFDC4900), width: 1.5),
+                          border: Border.all(
+                              color: const Color(0xFFDC4900), width: 1.5),
                         ),
                         child: const Text(
-                          'Versão do App: FEFO App v062 (1.0.62+62)',
+                          'Versão do App: FEFO App v063 (1.0.63+63)',
                           style: TextStyle(
                             fontFamily: 'KGPen',
                             fontSize: 16,

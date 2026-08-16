@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
-
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -27,6 +28,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
   final Set<String> _selectedPaths = {};
   List<_OnlineItem> _items = const [];
   _OnlineFirmware? _onlineFirmware;
+  _OnlineApp? _onlineApp;
   String _status = 'Informe o link público do catalog.json no Google Drive.';
   bool _busy = false;
   String? _activeDownloadPath;
@@ -114,11 +116,16 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
       final onlineFirmware = rawFirmware is Map
           ? _OnlineFirmware.fromJson(Map<String, dynamic>.from(rawFirmware))
           : null;
+      final rawApp = decoded['app'];
+      final onlineApp = rawApp is Map
+          ? _OnlineApp.fromJson(Map<String, dynamic>.from(rawApp))
+          : null;
       await (await SharedPreferences.getInstance()).setString(_urlKey, url);
       if (!mounted) return;
       setState(() {
         _items = items;
         _onlineFirmware = onlineFirmware;
+        _onlineApp = onlineApp;
         _selectedPaths.removeWhere((path) => !items.any((e) => e.path == path));
         _status = '${items.length} item(ns) no catálogo.';
       });
@@ -191,7 +198,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
 
     return {
       'schema': 1,
-      'firmware': manager.firmwareVersion ?? '0.0.60',
+      'firmware': manager.firmwareVersion ?? '0.0.74',
       'menus': [
         for (final menu in menus) {'id': menu, 'titulo': menu}
       ],
@@ -262,6 +269,16 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
             if (mounted) setState(() => _activeDownloadProgress = progress);
           },
         );
+        final downloaded = uploads[item.path]!;
+        if (item.size > 0 && downloaded.length != item.size) {
+          throw FormatException('Tamanho inválido para ${item.title}.');
+        }
+        final actualHash = sha256.convert(downloaded).toString();
+        final expectedHash =
+            item.checksum.toLowerCase().replaceFirst('sha256:', '');
+        if (expectedHash.isNotEmpty && actualHash != expectedHash) {
+          throw FormatException('Checksum inválido para ${item.title}.');
+        }
         checksums[item.path] = item.checksum;
       }
       final manifest = _criarManifesto(manager, adicionar: items);
@@ -395,6 +412,59 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
     }
   }
 
+  Future<void> _installApp(_OnlineApp app) async {
+    if (app.url.isEmpty || app.checksum.isEmpty || _busy) return;
+    final confirmed = await _confirm(
+      'Atualizar aplicativo?',
+      'Será baixado o FEFO App v${app.version}. O Android abrirá a instalação ao final.',
+      'Baixar e instalar',
+    );
+    if (!confirmed) return;
+    setState(() {
+      _busy = true;
+      _activeDownloadPath = '/fefo-app.apk';
+      _activeDownloadProgress = 0;
+      _status = 'Baixando atualização do aplicativo...';
+    });
+    try {
+      final bytes = await _download(
+        app.url,
+        onProgress: (progress) {
+          if (mounted) setState(() => _activeDownloadProgress = progress);
+        },
+      );
+      if (app.size > 0 && bytes.length != app.size) {
+        throw const FormatException('Tamanho do APK diferente do catálogo.');
+      }
+      final actualHash = sha256.convert(bytes).toString();
+      if (actualHash.toLowerCase() !=
+          app.checksum.toLowerCase().replaceFirst('sha256:', '')) {
+        throw const FormatException('Checksum SHA-256 do APK inválido.');
+      }
+      final temp = await getTemporaryDirectory();
+      final apk = File(
+          '${temp.path}${Platform.pathSeparator}fefo-app-${app.build}.apk');
+      await apk.writeAsBytes(bytes, flush: true);
+      await const MethodChannel('fefo/wifi').invokeMethod<bool>('installApk', {
+        'path': apk.path,
+      });
+      if (mounted) {
+        setState(() => _status =
+            'APK validado. Confirme a instalação na tela do Android.');
+      }
+    } catch (e) {
+      if (mounted) setState(() => _status = 'Falha ao atualizar o app: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _busy = false;
+          _activeDownloadPath = null;
+          _activeDownloadProgress = 0;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final manager = context.watch<BluetoothManager>();
@@ -436,6 +506,32 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
               ),
             ),
           ),
+          if (_onlineApp != null)
+            Builder(builder: (context) {
+              final app = _onlineApp!;
+              const installedVersion = 63;
+              final hasUpdate = app.build > installedVersion;
+              return Card(
+                margin: const EdgeInsets.fromLTRB(16, 10, 16, 4),
+                color: hasUpdate
+                    ? Colors.blue.shade50
+                    : Colors.white.withValues(alpha: 0.95),
+                child: ListTile(
+                  leading: Icon(Icons.android,
+                      color: hasUpdate
+                          ? Colors.blue.shade800
+                          : Colors.green.shade700),
+                  title: Text('FEFO App v${app.version}'),
+                  subtitle: Text(
+                      hasUpdate ? app.notes : 'Aplicativo já está atualizado.'),
+                  trailing: FilledButton(
+                    onPressed:
+                        hasUpdate && !_busy ? () => _installApp(app) : null,
+                    child: Text(hasUpdate ? 'Atualizar app' : 'Atualizado'),
+                  ),
+                ),
+              );
+            }),
           if (_onlineFirmware != null)
             Builder(builder: (context) {
               final firmware = _onlineFirmware!;
@@ -479,7 +575,9 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                   side: BorderSide(
-                    color: hasUpdate ? Colors.orange.shade400 : Colors.green.shade400,
+                    color: hasUpdate
+                        ? Colors.orange.shade400
+                        : Colors.green.shade400,
                     width: 1.5,
                   ),
                 ),
@@ -489,7 +587,9 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                     ListTile(
                       leading: Icon(
                         hasUpdate ? Icons.system_update : Icons.verified_user,
-                        color: hasUpdate ? Colors.orange.shade800 : Colors.green.shade700,
+                        color: hasUpdate
+                            ? Colors.orange.shade800
+                            : Colors.green.shade700,
                         size: 32,
                       ),
                       title: Text(
@@ -512,8 +612,9 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                       ),
                       trailing: FilledButton(
                         style: FilledButton.styleFrom(
-                          backgroundColor:
-                              hasUpdate ? Colors.orange.shade800 : Colors.green.shade700,
+                          backgroundColor: hasUpdate
+                              ? Colors.orange.shade800
+                              : Colors.green.shade700,
                         ),
                         onPressed: habilitado
                             ? () => _installFirmware(firmware)
@@ -745,4 +846,27 @@ class _OnlineFirmware {
       size: map['tamanho'] is num ? (map['tamanho'] as num).toInt() : 0,
     );
   }
+}
+
+class _OnlineApp {
+  final String version, url, checksum, notes;
+  final int build, size;
+
+  const _OnlineApp({
+    required this.version,
+    required this.build,
+    required this.url,
+    required this.checksum,
+    required this.size,
+    required this.notes,
+  });
+
+  factory _OnlineApp.fromJson(Map<String, dynamic> map) => _OnlineApp(
+        version: (map['version'] ?? '').toString(),
+        build: (map['build'] as num?)?.toInt() ?? 0,
+        url: (map['url'] ?? map['downloadUrl'] ?? '').toString(),
+        checksum: (map['checksum'] ?? '').toString(),
+        size: (map['tamanho'] as num?)?.toInt() ?? 0,
+        notes: (map['notas'] ?? map['notes'] ?? '').toString(),
+      );
 }
