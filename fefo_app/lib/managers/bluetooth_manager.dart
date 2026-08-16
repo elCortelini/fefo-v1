@@ -1554,9 +1554,14 @@ class BluetoothManager extends ChangeNotifier {
       _audioItems.removeWhere((item) => item.path == path);
       await Future<void>.delayed(const Duration(milliseconds: 150));
     }
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_prefKeyCatalogCache);
+    } catch (_) {}
     notifyListeners();
     try {
-      await atualizarCatalogo();
+      await enviarComando('CATALOG GET');
+      await Future<void>.delayed(const Duration(milliseconds: 500));
     } catch (_) {}
   }
 
