@@ -141,27 +141,32 @@ class _TelaAlarmesState extends State<TelaAlarmes> {
     );
 
     if (confirmar == true) {
+      final idOriginal = alarme.id;
+      final tituloOriginal = alarme.title;
+      final horaOriginal = alarme.hour;
+      final minutoOriginal = alarme.minute;
+
       setState(() {
         _listaDeAlarmes.removeWhere((a) =>
-            a.id == alarme.id ||
-            (a.title == alarme.title && a.hour == alarme.hour && a.minute == alarme.minute));
+            (idOriginal != null && a.id == idOriginal) ||
+            (a.title == tituloOriginal && a.hour == horaOriginal && a.minute == minutoOriginal));
       });
 
       try {
-        if (alarme.id != null) {
-          await AlarmService.instance.cancelarAlarme(alarme.id!);
-          await DatabaseService.instance.delete(alarme.id!);
+        if (idOriginal != null) {
+          await AlarmService.instance.cancelarAlarme(idOriginal);
+          await DatabaseService.instance.delete(idOriginal);
         }
-        await DatabaseService.instance.deleteByTitleAndTime(alarme.title, alarme.hour, alarme.minute);
+        await DatabaseService.instance.deleteByTitleAndTime(tituloOriginal, horaOriginal, minutoOriginal);
       } catch (e) {
-        log("FEFO: Erro ao deletar alarme no DB: $e");
+        log("FEFO: Erro ao deletar alarme: $e");
       }
 
       await _recarregarAlarmes();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Alarme "${alarme.title}" excluído com sucesso!'),
+            content: Text('Alarme "$tituloOriginal" excluído com sucesso!'),
             backgroundColor: const Color(0xFFDC4900),
             duration: const Duration(seconds: 2),
           ),

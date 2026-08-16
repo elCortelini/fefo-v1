@@ -16,8 +16,7 @@ import 'widgets/aviso_bem_vindo_dialog.dart';
 
 @pragma('vm:entry-point')
 void notificationTapBackground(NotificationResponse notificationResponse) {
-  log("BACKGROUND: Alarme disparado.");
-  AlarmService.backgroundCallback(notificationResponse);
+  log("BACKGROUND: Alarme disparado id=${notificationResponse.id}");
 }
 
 Future<void> _solicitarTodasPermissoes() async {
