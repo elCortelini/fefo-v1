@@ -92,10 +92,27 @@ class DatabaseService {
 
   Future<int> delete(int id) async {
     final db = await instance.database;
+    try {
+      return await db.delete(
+        tableAlarms,
+        where: '${AlarmFields.id} = ? OR id = ?',
+        whereArgs: [id, id],
+      );
+    } catch (_) {
+      return await db.delete(
+        tableAlarms,
+        where: '${AlarmFields.id} = ?',
+        whereArgs: [id],
+      );
+    }
+  }
+
+  Future<int> deleteByTitleAndTime(String title, int hour, int minute) async {
+    final db = await instance.database;
     return await db.delete(
       tableAlarms,
-      where: '${AlarmFields.id} = ?',
-      whereArgs: [id],
+      where: '${AlarmFields.title} = ? AND ${AlarmFields.hour} = ? AND ${AlarmFields.minute} = ?',
+      whereArgs: [title, hour, minute],
     );
   }
 

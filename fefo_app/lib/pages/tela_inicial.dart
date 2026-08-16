@@ -38,7 +38,7 @@ class TelaInicial extends StatelessWidget {
               child: Column(
                 children: [
                   const Text(
-                    'FEFO App v057 (1.0.57+57)',
+                    'FEFO App v058 (1.0.58+58)',
                     style: TextStyle(
                       fontFamily: 'KGPen',
                       fontSize: 16,
