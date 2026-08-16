@@ -1201,7 +1201,7 @@ class BluetoothManager extends ChangeNotifier {
     notifyListeners();
     final manifest = <String, dynamic>{
       'schema': 1,
-      'firmware': _firmwareVersion ?? '0.0.74',
+      'firmware': _firmwareVersion ?? '0.0.75',
       'audio': _audioItems
           .where((item) => item.path != path)
           .map((item) => {
@@ -1317,7 +1317,7 @@ class BluetoothManager extends ChangeNotifier {
   }) {
     return {
       'schema': 1,
-      'firmware': _firmwareVersion ?? '0.0.74',
+      'firmware': _firmwareVersion ?? '0.0.75',
       'audio': _audioItems
           .map((item) => {
                 'id': item.id,
@@ -1606,7 +1606,7 @@ class BluetoothManager extends ChangeNotifier {
     final pathSet = validPaths.toSet();
     final manifest = <String, dynamic>{
       'schema': 1,
-      'firmware': _firmwareVersion ?? '0.0.74',
+      'firmware': _firmwareVersion ?? '0.0.75',
       'audio': _audioItems
           .where((item) => !pathSet.contains(item.path))
           .map((item) => {
