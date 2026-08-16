@@ -372,6 +372,15 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
       if (mounted) {
         setState(() => _status =
             'Firmware enviado. O FEFO está reiniciando na versão ${firmware.version}.');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                'Firmware v${firmware.version} enviado com sucesso! O PET FEFO está reiniciando. Reconecte o Bluetooth.'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 6),
+          ),
+        );
+        Navigator.of(context).popUntil((route) => route.isFirst);
       }
     } catch (e) {
       if (mounted) setState(() => _status = 'Falha no firmware OTA: $e');
@@ -432,6 +441,16 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
               final firmware = _onlineFirmware!;
               final currentVersion = manager.firmwareVersion;
               final isConnected = manager.isConnected;
+              final isAlreadyUpdated = isConnected &&
+                  currentVersion != null &&
+                  _compareVersions(firmware.version, currentVersion) <= 0;
+
+              // Se o PET estiver conectado e a versão já for igual ou superior à do servidor,
+              // o card SUME da página conforme solicitado pelo usuário.
+              if (isAlreadyUpdated) {
+                return const SizedBox.shrink();
+              }
+
               final hasUpdate = isConnected &&
                   currentVersion != null &&
                   _compareVersions(firmware.version, currentVersion) > 0;
@@ -445,15 +464,10 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                     'Versão do Servidor: v${firmware.version}\nConecte o PET via Bluetooth para instalar esta versão.\n${firmware.notes}';
                 botaoTexto = 'Conecte o PET';
                 habilitado = false;
-              } else if (hasUpdate) {
+              } else {
                 subtitulo =
                     'Sua versão: v$currentVersion ➔ Nova versão: v${firmware.version}\n${firmware.notes}';
                 botaoTexto = 'Atualizar';
-                habilitado = !_busy;
-              } else {
-                subtitulo =
-                    'PET já está na versão v${firmware.version} (Mais recente).\n${firmware.notes}';
-                botaoTexto = 'Reinstalar';
                 habilitado = !_busy;
               }
 
