@@ -1537,9 +1537,22 @@ class BluetoothManager extends ChangeNotifier {
       throw StateError('Conecte novamente ao FEFO antes de excluir.');
     }
     for (final path in validPaths) {
-      await enviarComando('DELETE $path');
-      await Future<void>.delayed(const Duration(milliseconds: 250));
+      final respostaFuture = _aguardarLinha((line) =>
+          line.startsWith('OK DELETE') ||
+          line.startsWith('ERR DELETE') ||
+          line.startsWith('CONFIRM DELETE'));
+      await enviarComando('DELETE DIRECT $path');
+      try {
+        final resp = await respostaFuture.timeout(const Duration(seconds: 3));
+        if (resp.startsWith('CONFIRM DELETE')) {
+          final codeStr = _extrairCampo(resp, 'CODE');
+          if (codeStr != null) {
+            await enviarComando('DELETE CONFIRM $codeStr');
+          }
+        }
+      } catch (_) {}
       _audioItems.removeWhere((item) => item.path == path);
+      await Future<void>.delayed(const Duration(milliseconds: 150));
     }
     notifyListeners();
     try {

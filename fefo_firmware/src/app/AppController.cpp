@@ -1421,6 +1421,40 @@ bool AppController::handleFileCommand(const char* command) {
     return true;
   }
 
+  if (strncasecmp(command, "DELETE DIRECT ", 14) == 0 ||
+      (strncasecmp(command, "DELETE ", 7) == 0 &&
+       strncasecmp(command, "DELETE CONFIRM ", 15) != 0 &&
+       strncasecmp(command, "DELETE AUDIO ", 13) != 0)) {
+    const char* pathToken = strncasecmp(command, "DELETE DIRECT ", 14) == 0
+                                ? (command + 14)
+                                : (command + 7);
+    char path[64]{};
+    if (pathToken[0] == '/') {
+      strlcpy(path, pathToken, sizeof(path));
+    } else {
+      buildUserMediaPath(pathToken, path, sizeof(path));
+    }
+    if (!isSafeUserMediaPath(path)) {
+      sendBleLine("ERR DELETE PROTECTED_PATH");
+      return true;
+    }
+    if (!storage_.available() && !storage_.begin()) {
+      sendBleLine("ERR DELETE SD_UNAVAILABLE");
+      return true;
+    }
+    const bool removed = sdRemovePath(path);
+    if (removed) {
+      scanAudioTestFiles();
+      buildMediaIndex();
+      buildCatalogJson();
+      logEvent("file_delete", path);
+      sendBleLine("OK DELETE");
+    } else {
+      sendBleLine("ERR DELETE REMOVE");
+    }
+    return true;
+  }
+
   if (strncasecmp(command, "DELETE AUDIO ", 13) == 0) {
     char path[64]{};
     const char* token = command + 13;
