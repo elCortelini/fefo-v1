@@ -11,6 +11,7 @@ import '../managers/bluetooth_manager.dart';
 import '../widgets/botao_verde.dart';
 import '../widgets/pagina_base.dart';
 import '../widgets/progresso_operacao.dart';
+import 'tela_conexao.dart';
 
 class TelaCatalogoOnline extends StatefulWidget {
   const TelaCatalogoOnline({super.key});
@@ -199,7 +200,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
 
     return {
       'schema': 1,
-      'firmware': manager.firmwareVersion ?? '0.0.76',
+      'firmware': manager.firmwareVersion ?? '0.0.77',
       'menus': [
         for (final menu in menus) {'id': menu, 'titulo': menu}
       ],
@@ -214,25 +215,25 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
     };
   }
 
-  Future<bool> _confirm(String title, String message, String action) async {
-    return await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text(title),
-            content: Text(message),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancelar'),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: Text(action),
-              ),
-            ],
-          ),
-        ) ??
-        false;
+  Future<bool> _ensurePetConnected(BluetoothManager manager) async {
+    if (manager.isConnected) return true;
+    if (mounted) {
+      setState(() => _status = 'Conectando automaticamente ao PET FEFO...');
+    }
+    final connected = await manager.conectarAutomaticamenteAoFefo();
+    if (!connected && mounted) {
+      setState(() => _status =
+          'Não foi possível conectar automaticamente ao PET. Ligue-o e tente novamente.');
+    }
+    return connected;
+  }
+
+  void _voltarAoMenuConexao() {
+    if (!mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const TelaConexao()),
+      (route) => route.isFirst,
+    );
   }
 
   Future<void> _installItems(Iterable<_OnlineItem> requested) async {
@@ -240,26 +241,12 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
     final items = requested
         .where((item) => item.url.isNotEmpty && item.path.isNotEmpty)
         .toList();
-    if (!manager.isConnected) {
-      if (mounted) {
-        setState(
-            () => _status = 'Conecte o PET via Bluetooth antes de instalar.');
-      }
-      return;
-    }
     if (items.isEmpty) {
       if (mounted) {
         setState(() => _status = 'Nenhum item válido foi selecionado.');
       }
       return;
     }
-    final confirmed = await _confirm(
-      'Instalar no FEFO?',
-      '${items.length} item(ns) serão baixados e instalados automaticamente.',
-      'Instalar',
-    );
-    if (!confirmed) return;
-
     setState(() {
       _busy = true;
       _status = 'Preparando downloads...';
@@ -299,6 +286,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
       if (mounted) {
         setState(() => _status = 'Conectando ao Wi-Fi temporário do FEFO...');
       }
+      if (!await _ensurePetConnected(manager)) return;
       if (mounted) {
         setState(() {
           _activeDownloadPath = null;
@@ -311,8 +299,9 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
           _justInstalledPaths.addAll(items.map((item) => item.path));
           _selectedPaths.removeAll(items.map((e) => e.path));
           _status =
-              '${items.length} item(ns) instalado(s). O PET está reiniciando. Reconecte o Bluetooth para confirmar.';
+              '${items.length} item(ns) instalado(s). O PET reiniciará e voltará ao menu de conexão.';
         });
+        Future<void>.delayed(const Duration(seconds: 2), _voltarAoMenuConexao);
       }
     } catch (e) {
       if (mounted) setState(() => _status = 'Falha na atualização: $e');
@@ -358,19 +347,9 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
 
   Future<void> _installFirmware(_OnlineFirmware firmware) async {
     final manager = context.read<BluetoothManager>();
-    if (!manager.isConnected ||
-        firmware.url.isEmpty ||
-        firmware.checksum.isEmpty) {
+    if (firmware.url.isEmpty || firmware.checksum.isEmpty) {
       return;
     }
-    final current = manager.firmwareVersion ?? 'desconhecida';
-    final confirmed = await _confirm(
-      'Atualizar firmware?',
-      'Versão atual: $current\nNova versão: ${firmware.version}\n\n'
-          '${firmware.notes}\n\nNão desligue o FEFO durante a atualização.',
-      'Atualizar',
-    );
-    if (!confirmed) return;
     setState(() {
       _busy = true;
       _status = 'Baixando Firmware v${firmware.version}...';
@@ -397,6 +376,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
       if (mounted) {
         setState(() => _status = 'Transferindo firmware ao FEFO...');
       }
+      if (!await _ensurePetConnected(manager)) return;
       await manager.enviarArquivosPorWifi(
         {'/firmware.bin': bytes},
         checksums: {'/firmware.bin': firmware.checksum},
@@ -407,12 +387,12 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-                'Firmware v${firmware.version} enviado com sucesso! O PET FEFO está reiniciando. Reconecte o Bluetooth.'),
+                'Firmware v${firmware.version} enviado! O PET reiniciará e voltará ao menu de conexão.'),
             backgroundColor: Colors.green,
             duration: const Duration(seconds: 6),
           ),
         );
-        Navigator.of(context).popUntil((route) => route.isFirst);
+        Future<void>.delayed(const Duration(seconds: 2), _voltarAoMenuConexao);
       }
     } catch (e) {
       if (mounted) setState(() => _status = 'Falha no firmware OTA: $e');
@@ -429,12 +409,6 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
 
   Future<void> _installApp(_OnlineApp app) async {
     if (app.url.isEmpty || app.checksum.isEmpty || _busy) return;
-    final confirmed = await _confirm(
-      'Atualizar aplicativo?',
-      'Será baixado o FEFO App v${app.version}. O Android abrirá a instalação ao final.',
-      'Baixar e instalar',
-    );
-    if (!confirmed) return;
     setState(() {
       _busy = true;
       _activeDownloadPath = '/fefo-app.apk';
@@ -570,7 +544,8 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                     side: BorderSide(color: Colors.green.shade300),
                   ),
                   child: const ListTile(
-                    leading: Icon(Icons.verified_rounded, color: Color(0xFF318134), size: 30),
+                    leading: Icon(Icons.verified_rounded,
+                        color: Color(0xFF318134), size: 30),
                     title: Text('Aplicativo atualizado'),
                     subtitle: Text('O FEFO App está na versão mais recente.'),
                   ),
@@ -612,8 +587,8 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                 return const SizedBox.shrink();
               }
 
-              final hasUpdate = isConnected &&
-                  currentVersion != null &&
+              final hasUpdate = !isConnected ||
+                  currentVersion == null ||
                   _compareVersions(firmware.version, currentVersion) > 0;
 
               String subtitulo;
@@ -622,9 +597,9 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
 
               if (!isConnected) {
                 subtitulo =
-                    'Versão do Servidor: v${firmware.version}\nConecte o PET via Bluetooth para instalar esta versão.\n${firmware.notes}';
-                botaoTexto = 'Conecte o PET';
-                habilitado = false;
+                    'O PET será conectado automaticamente antes da instalação.\n${firmware.notes}';
+                botaoTexto = 'Atualizar automaticamente';
+                habilitado = !_busy;
               } else {
                 subtitulo =
                     'Sua versão: v$currentVersion ➔ Nova versão: v${firmware.version}\n${firmware.notes}';
@@ -813,8 +788,12 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                   children: [
                     ListTile(
                       leading: Icon(
-                        selected ? Icons.check_circle_rounded : Icons.audiotrack_rounded,
-                        color: selected ? const Color(0xFFDC4900) : const Color(0xFF318134),
+                        selected
+                            ? Icons.check_circle_rounded
+                            : Icons.audiotrack_rounded,
+                        color: selected
+                            ? const Color(0xFFDC4900)
+                            : const Color(0xFF318134),
                         size: 30,
                       ),
                       title: Text(item.title,

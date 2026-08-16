@@ -1,25 +1,25 @@
 {
     "schema":  1,
-    "catalogVersion":  9,
+    "catalogVersion":  10,
     "repository":  "FEFO Google Drive",
     "firmware":  {
-                     "version":  "0.0.76",
+                     "version":  "0.0.77",
                      "board":  "FEFO_CYD_ESP32",
-                     "arquivo":  "FEFO_Firmware_v076.bin",
+                     "arquivo":  "FEFO_Firmware_v077.bin",
                      "tamanho":  1742320,
-                     "checksum":  "f989640018aa6d545c5f565d9a995c41de0c4ba753e1fcb850b902784029acfe",
-                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v076.bin",
+                     "checksum":  "893f47b21076f0571a736d1f6a79f2739245d1de452e0046c26222df7d7cc0cb",
+                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v077.bin",
                      "obrigatorio":  false,
-                     "notas":  "Versão 0.0.76: firmware recompilado com catálogo e atualizações do App v065."
+                     "notas":  "Versão 0.0.77: atualização com conexão automática do App e retorno ao menu de conexão."
                  },
     "app":  {
-                "version":  "1.0.65",
-                "build":  65,
-                "arquivo":  "FEFO_App_v065.apk",
+                "version":  "1.0.66",
+                "build":  66,
+                "arquivo":  "FEFO_App_v066.apk",
                 "tamanho":  56656731,
-                "checksum":  "05f2fb4d885dc4ce9a5175c00011ce587e6a06fa22b38b140a347cf0cf5698ef",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v065.apk",
-                "notas":  "Corrige o início da instalação do APK, mostra apenas o estado atualizado e moderniza a seleção de áudios por toque prolongado."
+                "checksum":  "67f06f50390c3d73197943d70e4a5ca0715d652adf966808c0e7083634bc7855",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v066.apk",
+                "notas":  "Conecta automaticamente ao PET, executa a transferência sem confirmações intermediárias e retorna ao menu de conexão após o reinício."
              },
     "audio":  [
                   {

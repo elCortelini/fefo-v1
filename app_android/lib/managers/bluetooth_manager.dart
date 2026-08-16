@@ -473,6 +473,53 @@ class BluetoothManager extends ChangeNotifier {
     }
   }
 
+  /// Localiza e conecta automaticamente ao último FEFO conhecido.
+  /// A confirmação visual do usuário não é necessária; permissões do Android
+  /// continuam sendo respeitadas quando o sistema ainda não as concedeu.
+  Future<bool> conectarAutomaticamenteAoFefo() async {
+    if (isConnected) return true;
+    if (!await solicitarPermissoes()) {
+      _setStatus('Permissões de Bluetooth necessárias para conectar ao PET.');
+      return false;
+    }
+    if (!await FlutterBluePlus.isSupported) {
+      _setStatus('Este aparelho não suporta BLE.');
+      return false;
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    final savedId = prefs.getString(_prefKeyId);
+    final encontrados = <String, ScanResult>{};
+    _isScanning = true;
+    _setStatus('Conectando automaticamente ao PET FEFO...');
+    final subscription = FlutterBluePlus.onScanResults.listen((results) {
+      for (final result in results.where(_isFefoScanResult)) {
+        encontrados[result.device.remoteId.toString()] = result;
+      }
+    });
+    try {
+      if (!kIsWeb && Platform.isAndroid) await FlutterBluePlus.turnOn();
+      await FlutterBluePlus.startScan(timeout: const Duration(seconds: 12));
+      await FlutterBluePlus.isScanning
+          .where((scanning) => scanning == false)
+          .first;
+    } catch (e) {
+      _setStatus('Falha ao localizar o PET: $e');
+      return false;
+    } finally {
+      await subscription.cancel();
+      _isScanning = false;
+    }
+    final result = (savedId != null ? encontrados[savedId] : null) ??
+        (encontrados.isEmpty ? null : encontrados.values.first);
+    if (result == null) {
+      _setStatus('PET FEFO não encontrado. Ligue o PET e tente novamente.');
+      return false;
+    }
+    await connectToDevice(result);
+    return isConnected;
+  }
+
   bool _isFefoScanResult(ScanResult result) {
     final name = nomeDoDispositivo(result).toUpperCase();
     final services = result.advertisementData.serviceUuids;
@@ -1201,7 +1248,7 @@ class BluetoothManager extends ChangeNotifier {
     notifyListeners();
     final manifest = <String, dynamic>{
       'schema': 1,
-      'firmware': _firmwareVersion ?? '0.0.76',
+      'firmware': _firmwareVersion ?? '0.0.77',
       'audio': _audioItems
           .where((item) => item.path != path)
           .map((item) => {
@@ -1317,7 +1364,7 @@ class BluetoothManager extends ChangeNotifier {
   }) {
     return {
       'schema': 1,
-      'firmware': _firmwareVersion ?? '0.0.76',
+      'firmware': _firmwareVersion ?? '0.0.77',
       'audio': _audioItems
           .map((item) => {
                 'id': item.id,
@@ -1606,7 +1653,7 @@ class BluetoothManager extends ChangeNotifier {
     final pathSet = validPaths.toSet();
     final manifest = <String, dynamic>{
       'schema': 1,
-      'firmware': _firmwareVersion ?? '0.0.76',
+      'firmware': _firmwareVersion ?? '0.0.77',
       'audio': _audioItems
           .where((item) => !pathSet.contains(item.path))
           .map((item) => {
