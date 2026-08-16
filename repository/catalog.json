@@ -3,14 +3,14 @@
     "catalogVersion":  6,
     "repository":  "FEFO Google Drive",
     "firmware":  {
-                     "version":  "0.0.72",
+                     "version":  "0.0.73",
                      "board":  "FEFO_CYD_ESP32",
-                     "arquivo":  "FEFO_Firmware_v072.bin",
-                     "tamanho":  1741072,
-                     "checksum":  "d5189973456edf20553753755185a91c2932b8ac9b9c1992087ab49b7b4a66a7",
-                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v072.bin",
+                     "arquivo":  "FEFO_Firmware_v073.bin",
+                     "tamanho":  1741344,
+                     "checksum":  "09388771aefba77649f012f4138f9bac0a93217523b3e8e66b67e77bf8aee9dc",
+                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v073.bin",
                      "obrigatorio":  false,
-                     "notas":  "Leitura do ADC da bateria no pino GPIO 36, sincronização híbrida otimizada do catálogo BLE e correções de estabilidade."
+                     "notas":  "Versão 0.0.73: Exclusão direta de áudios no SDCard, sincronização imediata do catálogo e leitura do ADC da bateria no pino GPIO 36."
                  },
     "audio":  [
                   {

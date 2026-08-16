@@ -38,7 +38,7 @@ class TelaInicial extends StatelessWidget {
               child: Column(
                 children: [
                   const Text(
-                    'FEFO App v061 (1.0.61+61)',
+                    'FEFO App v062 (1.0.62+62)',
                     style: TextStyle(
                       fontFamily: 'KGPen',
                       fontSize: 16,
@@ -48,7 +48,7 @@ class TelaInicial extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'PET FEFO Firmware v${manager.firmwareVersion ?? '0.0.72'}',
+                    'PET FEFO Firmware v${manager.firmwareVersion ?? '0.0.73'}',
                     style: const TextStyle(
                       fontFamily: 'KGPen',
                       fontSize: 13,
