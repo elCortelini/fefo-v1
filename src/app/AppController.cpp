@@ -2804,7 +2804,7 @@ bool AppController::startNextAudioTest() {
 
 bool AppController::scanAudioTestFiles() {
   audioTestFileCount_ = 0;
-  const char* directories[] = {"/usr/a", "usr/a", "/a", "a", "/sys/a", "sys/a"};
+  const char* directories[] = {"/usr/a", "/a", "/sys/a"};
   bool foundAny = false;
   for (const char* dir : directories) {
     if (collectAudioTestFiles(dir)) foundAny = true;
@@ -2873,7 +2873,7 @@ bool AppController::addAudioTestFile(const char* path) {
 
 bool AppController::scanFaceFiles() {
   faceFileCount_ = 0;
-  const char* directories[] = {"/usr/f", "usr/f", "/f", "f", "/sys/f", "sys/f"};
+  const char* directories[] = {"/usr/f", "/f", "/sys/f"};
   bool foundAny = false;
   for (const char* dir : directories) {
     if (collectFaceFiles(dir)) foundAny = true;
