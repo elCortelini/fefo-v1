@@ -84,7 +84,7 @@ class _TelaAudiosFefoState extends State<TelaAudiosFefo> {
     try {
       await context
           .read<BluetoothManager>()
-          .removerVariosAudiosPorWifi(paths);
+          .removerVariosAudios(paths);
       if (mounted) {
         setState(() {
           _selecionados.clear();

@@ -151,15 +151,8 @@ class _TelaAlarmesState extends State<TelaAlarmes> {
         if (alarme.id != null) {
           await AlarmService.instance.cancelarAlarme(alarme.id!);
           await DatabaseService.instance.delete(alarme.id!);
-        } else {
-          final todos = await DatabaseService.instance.readAll();
-          for (final a in todos) {
-            if (a.title == alarme.title && a.hour == alarme.hour && a.minute == alarme.minute && a.id != null) {
-              await AlarmService.instance.cancelarAlarme(a.id!);
-              await DatabaseService.instance.delete(a.id!);
-            }
-          }
         }
+        await DatabaseService.instance.deleteByTitleAndTime(alarme.title, alarme.hour, alarme.minute);
       } catch (e) {
         log("FEFO: Erro ao deletar alarme no DB: $e");
       }
@@ -214,7 +207,7 @@ class _TelaAlarmesState extends State<TelaAlarmes> {
               children: [
                 const SizedBox(height: 10),
                 const Text(
-                  'Alarmes do FEFO',
+                  'Alarmes',
                   style: TextStyle(
                     fontFamily: 'Billotilde',
                     fontSize: 55,

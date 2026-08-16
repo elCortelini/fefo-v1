@@ -286,6 +286,7 @@ class BluetoothManager extends ChangeNotifier {
   bool _faceRandomEnabled = true;
   String? _currentFacePath;
   Timer? _audioProgressTimer;
+  Timer? _keepAliveTimer;
   bool? _lastTransferSucceeded;
   int? _sdTotalBytes;
   int? _sdUsedBytes;
@@ -504,6 +505,7 @@ class BluetoothManager extends ChangeNotifier {
       await prefs.setString(_prefKeyNome, nomeDoDispositivo(result));
 
       _setStatus('Conectado por BLE. Pronto para comandos.');
+      _iniciarKeepAlive();
       await enviarComando('APP SYNC');
       await enviarComando('CATALOG GET');
       await setVolume(50);
@@ -1518,6 +1520,23 @@ class BluetoothManager extends ChangeNotifier {
     await _enviarComandoNormalizado('SEEK $pctInt');
   }
 
+  Future<void> removerVariosAudios(List<String> paths) async {
+    final validPaths = paths.where((p) => p.isNotEmpty).toList();
+    if (validPaths.isEmpty) return;
+    if (!isConnected) {
+      throw StateError('Conecte novamente ao FEFO antes de excluir.');
+    }
+    for (final path in validPaths) {
+      await enviarComando('DELETE $path');
+      await Future<void>.delayed(const Duration(milliseconds: 250));
+      _audioItems.removeWhere((item) => item.path == path);
+    }
+    notifyListeners();
+    try {
+      await atualizarCatalogo();
+    } catch (_) {}
+  }
+
   Future<void> removerVariosAudiosPorWifi(List<String> paths) async {
     final validPaths = paths.where((p) => p.isNotEmpty).toList();
     if (validPaths.isEmpty) return;
@@ -1768,6 +1787,17 @@ class BluetoothManager extends ChangeNotifier {
     await device?.disconnect();
   }
 
+  void _iniciarKeepAlive() {
+    _keepAliveTimer?.cancel();
+    _keepAliveTimer = Timer.periodic(const Duration(seconds: 8), (_) {
+      if (isConnected) {
+        enviarComando('PING');
+      } else {
+        _keepAliveTimer?.cancel();
+      }
+    });
+  }
+
   void _cleanup() {
     _rxCharacteristic = null;
     _txCharacteristic = null;
@@ -1775,6 +1805,7 @@ class BluetoothManager extends ChangeNotifier {
     _caminhoAudioAtivo = null;
     _audioSelecionado = null;
     _audioProgressTimer?.cancel();
+    _keepAliveTimer?.cancel();
     _audioProgress = 0;
     _audioPaused = false;
     notifyListeners();
@@ -1786,6 +1817,7 @@ class BluetoothManager extends ChangeNotifier {
     _txSubscription?.cancel();
     _connectionSubscription?.cancel();
     _audioProgressTimer?.cancel();
+    _keepAliveTimer?.cancel();
     _connectedDevice?.disconnect();
     super.dispose();
   }
