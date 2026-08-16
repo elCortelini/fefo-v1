@@ -1,6 +1,6 @@
 # Aplicativo FEFO
 
-Aplicativo Flutter/Android de controle do FEFO Pet. Versão atual: `1.0.64+64` (App v064).
+Aplicativo Flutter/Android de controle do FEFO Pet. Versão atual: `1.0.65+65` (App v065).
 
 Principais funções: conexão BLE, sincronização do inventário do microSD, player de áudio, LEDs, vibração, pânico, faces, catálogo online, associação automática ao Wi-Fi temporário do FEFO, transferência de arquivos e OTA.
 

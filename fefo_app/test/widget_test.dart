@@ -15,6 +15,6 @@ void main() {
     );
 
     expect(find.text('Conectar'), findsOneWidget);
-    expect(find.textContaining('App v064'), findsOneWidget);
+    expect(find.textContaining('App v065'), findsOneWidget);
   });
 }

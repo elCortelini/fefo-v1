@@ -199,7 +199,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
 
     return {
       'schema': 1,
-      'firmware': manager.firmwareVersion ?? '0.0.75',
+      'firmware': manager.firmwareVersion ?? '0.0.76',
       'menus': [
         for (final menu in menus) {'id': menu, 'titulo': menu}
       ],
@@ -559,8 +559,23 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
           if (_onlineApp != null)
             Builder(builder: (context) {
               final app = _onlineApp!;
-              const installedVersion = 64;
+              const installedVersion = 65;
               final hasUpdate = app.build > installedVersion;
+              if (!hasUpdate) {
+                return Card(
+                  margin: const EdgeInsets.fromLTRB(16, 10, 16, 4),
+                  color: Colors.white.withValues(alpha: 0.95),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: BorderSide(color: Colors.green.shade300),
+                  ),
+                  child: const ListTile(
+                    leading: Icon(Icons.verified_rounded, color: Color(0xFF318134), size: 30),
+                    title: Text('Aplicativo atualizado'),
+                    subtitle: Text('O FEFO App está na versão mais recente.'),
+                  ),
+                );
+              }
               return Card(
                 margin: const EdgeInsets.fromLTRB(16, 10, 16, 4),
                 color: hasUpdate
@@ -797,17 +812,10 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                 child: Column(
                   children: [
                     ListTile(
-                      leading: Checkbox(
-                        value: selected,
-                        onChanged: _busy
-                            ? null
-                            : (value) => setState(() {
-                                  if (value == true) {
-                                    _selectedPaths.add(item.path);
-                                  } else {
-                                    _selectedPaths.remove(item.path);
-                                  }
-                                }),
+                      leading: Icon(
+                        selected ? Icons.check_circle_rounded : Icons.audiotrack_rounded,
+                        color: selected ? const Color(0xFFDC4900) : const Color(0xFF318134),
+                        size: 30,
                       ),
                       title: Text(item.title,
                           style: const TextStyle(
@@ -824,12 +832,14 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                           color: Colors.black87,
                         ),
                       ),
-                      onTap: _busy
+                      onLongPress: _busy
                           ? null
                           : () => setState(() {
-                                selected
-                                    ? _selectedPaths.remove(item.path)
-                                    : _selectedPaths.add(item.path);
+                                if (selected) {
+                                  _selectedPaths.remove(item.path);
+                                } else {
+                                  _selectedPaths.add(item.path);
+                                }
                               }),
                       trailing: IconButton(
                         tooltip: 'Instalar',

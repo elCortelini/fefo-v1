@@ -111,7 +111,7 @@ class MainActivity : FlutterActivity() {
                 return
             }
             val uri = FileProvider.getUriForFile(this, "com.elcortelini.fefo.app.fileprovider", apk)
-            val intent = Intent(Intent.ACTION_VIEW).apply {
+            val intent = Intent(Intent.ACTION_INSTALL_PACKAGE).apply {
                 setDataAndType(uri, "application/vnd.android.package-archive")
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
