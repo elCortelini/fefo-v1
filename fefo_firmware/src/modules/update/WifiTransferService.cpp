@@ -141,11 +141,13 @@ void WifiTransferService::handlePushClient(WiFiClient& client, bool& finished) {
 void WifiTransferService::handleFirmwareUpload(WiFiClient& client,
                                                uint32_t contentLength,
                                                const char* expectedSha) {
-  if (!contentLength || !expectedSha || strlen(expectedSha) != 64) {
+  if (!contentLength) {
     reply(client, 400, "FIRMWARE_METADATA_INVALID");
     client.stop();
     return;
   }
+  const bool hasExpectedSha = (expectedSha != nullptr && strlen(expectedSha) == 64);
+
   if (!Update.begin(contentLength, U_FLASH)) {
     reply(client, 500, "OTA_BEGIN_FAILED");
     client.stop();
@@ -201,7 +203,7 @@ void WifiTransferService::handleFirmwareUpload(WiFiClient& client,
   for (int i = 0; i < 32; ++i) {
     snprintf(actual + i * 2, 3, "%02x", digest[i]);
   }
-  if (received != contentLength || strcasecmp(expectedSha, actual) != 0) {
+  if (received != contentLength || (hasExpectedSha && strcasecmp(expectedSha, actual) != 0)) {
     Update.abort();
     reply(client, 422,
           received != contentLength ? "OTA_SIZE_MISMATCH"
