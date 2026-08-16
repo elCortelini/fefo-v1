@@ -26,6 +26,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
 
   final _urlController = TextEditingController();
   final Set<String> _selectedPaths = {};
+  final Set<String> _justInstalledPaths = {};
   List<_OnlineItem> _items = const [];
   _OnlineFirmware? _onlineFirmware;
   _OnlineApp? _onlineApp;
@@ -198,7 +199,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
 
     return {
       'schema': 1,
-      'firmware': manager.firmwareVersion ?? '0.0.74',
+      'firmware': manager.firmwareVersion ?? '0.0.75',
       'menus': [
         for (final menu in menus) {'id': menu, 'titulo': menu}
       ],
@@ -239,7 +240,19 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
     final items = requested
         .where((item) => item.url.isNotEmpty && item.path.isNotEmpty)
         .toList();
-    if (!manager.isConnected || items.isEmpty) return;
+    if (!manager.isConnected) {
+      if (mounted) {
+        setState(
+            () => _status = 'Conecte o PET via Bluetooth antes de instalar.');
+      }
+      return;
+    }
+    if (items.isEmpty) {
+      if (mounted) {
+        setState(() => _status = 'Nenhum item válido foi selecionado.');
+      }
+      return;
+    }
     final confirmed = await _confirm(
       'Instalar no FEFO?',
       '${items.length} item(ns) serão baixados e instalados automaticamente.',
@@ -295,8 +308,10 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
       await manager.enviarArquivosPorWifi(uploads, checksums: checksums);
       if (mounted) {
         setState(() {
+          _justInstalledPaths.addAll(items.map((item) => item.path));
           _selectedPaths.removeAll(items.map((e) => e.path));
-          _status = '${items.length} item(ns) instalado(s). Reconecte ao FEFO.';
+          _status =
+              '${items.length} item(ns) instalado(s). O PET está reiniciando. Reconecte o Bluetooth para confirmar.';
         });
       }
     } catch (e) {
@@ -472,8 +487,11 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
       for (final item in manager.audioItems) item.path: item.checksum,
       for (final item in manager.faces) item.path: item.checksum,
     };
-    final availableItems =
-        _items.where((item) => !installed.containsKey(item.path)).toList();
+    final availableItems = _items
+        .where((item) =>
+            !installed.containsKey(item.path) &&
+            !_justInstalledPaths.contains(item.path))
+        .toList();
     final selected = availableItems
         .where((item) => _selectedPaths.contains(item.path))
         .toList();
@@ -489,27 +507,59 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
         padding: const EdgeInsets.symmetric(horizontal: 4),
         child: Column(children: [
           const SizedBox(height: 18),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 12),
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                'Catálogo online',
-                maxLines: 1,
-                softWrap: false,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: 'Billotilde',
-                  fontSize: 52,
-                  color: Color(0xFF318134),
-                ),
-              ),
+          Container(
+            margin: const EdgeInsets.fromLTRB(12, 8, 12, 10),
+            padding: const EdgeInsets.fromLTRB(20, 18, 16, 16),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                  colors: [Color(0xFF318134), Color(0xFF65A844)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight),
+              borderRadius: BorderRadius.circular(26),
+              boxShadow: const [
+                BoxShadow(
+                    color: Colors.black26, blurRadius: 12, offset: Offset(0, 5))
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.18),
+                        shape: BoxShape.circle),
+                    child: const Icon(Icons.cloud_download_rounded,
+                        color: Colors.white, size: 32)),
+                const SizedBox(width: 14),
+                const Expanded(
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                      Text('Catálogo online',
+                          style: TextStyle(
+                              fontFamily: 'Billotilde',
+                              fontSize: 38,
+                              color: Colors.white,
+                              height: 1)),
+                      SizedBox(height: 6),
+                      Text('Novos conteúdos para o PET FEFO',
+                          style: TextStyle(
+                              fontFamily: 'KGPen',
+                              fontSize: 15,
+                              color: Colors.white70))
+                    ])),
+                IconButton(
+                    tooltip: 'Atualizar catálogo',
+                    onPressed: _busy ? null : _loadCatalog,
+                    icon: const Icon(Icons.refresh_rounded,
+                        color: Colors.white, size: 28)),
+              ],
             ),
           ),
           if (_onlineApp != null)
             Builder(builder: (context) {
               final app = _onlineApp!;
-              const installedVersion = 63;
+              const installedVersion = 64;
               final hasUpdate = app.build > installedVersion;
               return Card(
                 margin: const EdgeInsets.fromLTRB(16, 10, 16, 4),
@@ -637,37 +687,79 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                 ),
               );
             }),
-          Card(
-            margin: const EdgeInsets.fromLTRB(12, 8, 12, 2),
-            color: Colors.white.withValues(alpha: 0.92),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Text(
-                'SD livre: ${_formatBytes(manager.sdFreeBytes)}  •  '
-                'Selecionado: ${_formatBytes(selectedDownloadBytes)}\n'
-                'Livre após instalar: ${_formatBytes(freeAfterSelection)}',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: freeAfterSelection != null && freeAfterSelection < 0
-                      ? Colors.red.shade800
-                      : Colors.black,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
+          Container(
+            margin: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.94),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                    color: const Color(0xFF318134).withValues(alpha: 0.25))),
+            child: Row(children: [
+              const Icon(Icons.sd_storage_rounded, color: Color(0xFF318134)),
+              const SizedBox(width: 8),
+              Expanded(
+                  child: Text('SD livre: ${_formatBytes(manager.sdFreeBytes)}',
+                      style: const TextStyle(fontWeight: FontWeight.bold))),
+              Text('${availableItems.length} disponíveis',
+                  style: const TextStyle(color: Colors.black54))
+            ]),
           ),
-          if (!manager.uploading && _activeDownloadPath == null)
-            Padding(
-              padding: const EdgeInsets.all(10),
-              child: Text(
-                manager.uploading
-                    ? '${manager.statusMensagem}\n'
-                        '${(manager.uploadProgress * 100).clamp(0, 100).toStringAsFixed(0)}%\n'
-                        'Aguarde. Não feche o app nem desligue o FEFO.'
-                    : _status,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white),
-              ),
+          if (_busy || manager.uploading || _status.isNotEmpty)
+            Container(
+              margin: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                  color: _status.startsWith('Falha')
+                      ? Colors.red.shade50
+                      : const Color(0xFFFFF4DF),
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                      color: _status.startsWith('Falha')
+                          ? Colors.red.shade200
+                          : const Color(0xFFFFC15A))),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(children: [
+                      Icon(
+                          _status.startsWith('Falha')
+                              ? Icons.error_outline
+                              : Icons.sync_rounded,
+                          color: _status.startsWith('Falha')
+                              ? Colors.red.shade800
+                              : const Color(0xFFDC4900)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                          child: Text(
+                              manager.uploading
+                                  ? manager.statusMensagem
+                                  : _status,
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold)))
+                    ]),
+                    if (manager.uploading) ...[
+                      const SizedBox(height: 8),
+                      LinearProgressIndicator(
+                          value: manager.uploadProgress.clamp(0, 1),
+                          color: const Color(0xFFDC4900),
+                          backgroundColor: Colors.white),
+                      const SizedBox(height: 5),
+                      const Text('Aguarde. O PET reiniciará ao concluir.',
+                          style: TextStyle(fontSize: 12, color: Colors.black54))
+                    ] else if (_activeDownloadPath != null) ...[
+                      const SizedBox(height: 8),
+                      LinearProgressIndicator(
+                          value: _activeDownloadProgress.clamp(0, 1),
+                          color: const Color(0xFF318134),
+                          backgroundColor: Colors.white),
+                      const SizedBox(height: 5),
+                      Text(
+                          '${(_activeDownloadProgress * 100).clamp(0, 100).toStringAsFixed(0)}%  •  Baixando conteúdo com validação de segurança.',
+                          style: const TextStyle(
+                              fontSize: 12, color: Colors.black54))
+                    ],
+                  ]),
             ),
           ListView.builder(
             shrinkWrap: true,
@@ -685,13 +777,22 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                       ? manager.uploadItemProgress
                       : null;
               return Container(
-                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: selected
                       ? const Color(0xFFFFD89A)
                       : Colors.white.withValues(alpha: 0.88),
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                      color:
+                          selected ? const Color(0xFFDC4900) : Colors.black12),
+                  boxShadow: const [
+                    BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 5,
+                        offset: Offset(0, 2))
+                  ],
                 ),
                 child: Column(
                   children: [
@@ -708,15 +809,12 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                                   }
                                 }),
                       ),
-                      title: Text(
-                        item.title,
-                        style: const TextStyle(
-                          fontFamily: 'KGPen',
-                          fontSize: 28,
-                          color: Color(0xFF4B5563),
-                          height: 1.05,
-                        ),
-                      ),
+                      title: Text(item.title,
+                          style: const TextStyle(
+                              fontFamily: 'KGPen',
+                              fontSize: 22,
+                              color: Color(0xFF374151),
+                              height: 1.05)),
                       subtitle: Text(
                         '${item.menu.isEmpty ? item.type : item.menu} • '
                         '${_formatBytes(item.size)}',

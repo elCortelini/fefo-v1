@@ -1,25 +1,25 @@
 {
     "schema":  1,
-    "catalogVersion":  7,
+    "catalogVersion":  8,
     "repository":  "FEFO Google Drive",
     "firmware":  {
-                     "version":  "0.0.74",
+                     "version":  "0.0.75",
                      "board":  "FEFO_CYD_ESP32",
-                     "arquivo":  "FEFO_Firmware_v074.bin",
+                     "arquivo":  "FEFO_Firmware_v075.bin",
                      "tamanho":  1742320,
-                     "checksum":  "fa02f47fc47ddeb968ade28c534ceb57767143c4bd479ed7896dd4106f1070a1",
-                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v074.bin",
+                     "checksum":  "7bf106eec25008042ece5826e57a29283623c814c8e534566b6b56c8c01d97b4",
+                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v075.bin",
                      "obrigatorio":  false,
-                     "notas":  "Versão 0.0.74: catálogo do SDCard sincronizado após exclusões e transferência protegida por confirmação."
+                     "notas":  "Versão 0.0.75: instalação de conteúdos com progresso visível e catálogo online reorganizado."
                  },
     "app":  {
-                "version":  "1.0.63",
-                "build":  63,
-                "arquivo":  "FEFO_App_v063.apk",
-                "tamanho":  56836379,
-                "checksum":  "ffe977aea4df9fdd79a1c761bd9a7fa9ba62bcc07c2d84a46a15f49ebf743197",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v063.apk",
-                "notas":  "Exclusão efetiva de áudios, reinstalação pelo catálogo online e atualização do aplicativo pelo próprio catálogo."
+                "version":  "1.0.64",
+                "build":  64,
+                "arquivo":  "FEFO_App_v064.apk",
+                "tamanho":  56836815,
+                "checksum":  "2dc9f78039b9644bd812d9b394efeec82103d8036620d480d039b05520ee2f03",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v064.apk",
+                "notas":  "Instalação de áudios com progresso visível, ocultação imediata dos conteúdos instalados e novo visual do catálogo."
              },
     "audio":  [
                   {
