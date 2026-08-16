@@ -7,8 +7,8 @@
 namespace fefo::board {
 
 inline constexpr char kBoardName[] = "FEFO-35-V0";
-inline constexpr char kBleName[] = "FEFO_BLE_V071";
-inline constexpr char kFirmwareVersion[] = "0.0.71";
+inline constexpr char kBleName[] = "FEFO_BLE_V072";
+inline constexpr char kFirmwareVersion[] = "0.0.72";
 inline constexpr char kProtocolVersion[] = "0.1";
 
 // TFT SPI ILI9488 480x320 validada no protótipo com a configuração funcional
@@ -23,14 +23,15 @@ inline constexpr int kTftDc = 2;
 inline constexpr int kTftReset = -1;
 inline constexpr int kBacklight = 27;
 
-// Touch desabilitado na Fase 0. Os GPIOs 21 e 22 ficam reservados
-// exclusivamente aos atuadores externos, conforme a montagem do FEFO 190.
+// Touch desabilitado na Fase 0. O GPIO 36 (TP_IRQ) é utilizado para a leitura
+// da bateria via divisor de tensão no ADC1.
 inline constexpr int kTouchClock = 25;
 inline constexpr int kTouchCs = 33;
 inline constexpr int kTouchMosi = 32;
 inline constexpr int kTouchMiso = 39;
 inline constexpr int kTouchIrq = 36;
 inline constexpr bool kTouchEnabled = false;
+inline constexpr int kBatterySensor = 36;
 
 // Cartão microSD no controlador HSPI, remapeado para a pinagem abaixo. O TFT
 // usa o outro controlador SPI e pode operar sem reconfigurar este barramento.

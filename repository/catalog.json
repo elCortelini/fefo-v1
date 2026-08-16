@@ -1,16 +1,16 @@
-﻿{
+{
     "schema":  1,
     "catalogVersion":  6,
     "repository":  "FEFO Google Drive",
     "firmware":  {
-                     "version":  "0.0.69",
+                     "version":  "0.0.72",
                      "board":  "FEFO_CYD_ESP32",
-                     "arquivo":  "FEFO_Firmware_v069.bin",
-                     "tamanho":  1914672,
-                     "checksum":  "31aca534a264e37270f8f5225cf6eab5ff7242f4fac998e98556ac210a69dc07",
-                     "url":  "https://drive.google.com/uc?export=download&id=11gQzFq8QgqXoN4X2kJx8uQ65LxHFrvK0",
+                     "arquivo":  "FEFO_Firmware_v072.bin",
+                     "tamanho":  1741072,
+                     "checksum":  "d5189973456edf20553753755185a91c2932b8ac9b9c1992087ab49b7b4a66a7",
+                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v072.bin",
                      "obrigatorio":  false,
-                     "notas":  "Reconhecimento de faces RAW no SDCard e persistência do modo Faces após reiniciar."
+                     "notas":  "Leitura do ADC da bateria no pino GPIO 36, sincronização híbrida otimizada do catálogo BLE e correções de estabilidade."
                  },
     "audio":  [
                   {
