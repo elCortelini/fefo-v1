@@ -21,7 +21,7 @@ class TelaCatalogoOnline extends StatefulWidget {
 class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
   static const _urlKey = 'fefo_catalog_url';
   static const _defaultCatalogUrl =
-      'https://drive.google.com/uc?export=download&id=1paHhyR8jJlBlpffqsYA0ofYIzyLPlO72';
+      'https://raw.githubusercontent.com/elCortelini/fefo-v1/main/repository/catalog.json';
 
   final _urlController = TextEditingController();
   final Set<String> _selectedPaths = {};
