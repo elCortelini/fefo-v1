@@ -2,16 +2,16 @@
 
 import 'dart:async';
 import 'dart:developer';
-import 'dart:typed_data';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:permission_handler/permission_handler.dart';
-
 import 'package:audioplayers/audioplayers.dart';
+
 import '../models/alarm_model.dart';
 import '../managers/bluetooth_manager.dart';
+import '../services/database_service.dart';
 import '../main.dart' as main_app;
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -21,10 +21,14 @@ class AlarmService {
   AlarmService._privateConstructor();
   static final AlarmService instance = AlarmService._privateConstructor();
 
-  late final BluetoothManager _bluetoothManager;
+  BluetoothManager? _bluetoothManager;
+  Timer? _timerChecagemLocal;
+  final Set<String> _alarmesTocadosNesteMinuto = {};
 
-  Future<void> init(BluetoothManager bluetoothManager) async {
-    _bluetoothManager = bluetoothManager;
+  Future<void> init(BluetoothManager? bluetoothManager) async {
+    if (bluetoothManager != null) {
+      _bluetoothManager = bluetoothManager;
+    }
 
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -32,60 +36,99 @@ class AlarmService {
     const InitializationSettings initializationSettings =
         InitializationSettings(android: initializationSettingsAndroid);
 
-    await flutterLocalNotificationsPlugin.initialize(
-      initializationSettings,
-      onDidReceiveNotificationResponse: (NotificationResponse response) async {
-        await flutterLocalNotificationsPlugin.cancel(response.id ?? 0);
+    try {
+      await flutterLocalNotificationsPlugin.initialize(
+        initializationSettings,
+        onDidReceiveNotificationResponse: (NotificationResponse response) async {
+          try {
+            await flutterLocalNotificationsPlugin.cancel(response.id ?? 0);
+          } catch (_) {}
 
-        final String? payload = response.payload;
-
-        if (response.actionId == 'snooze') {
-          final nextTime =
-              tz.TZDateTime.now(tz.local).add(const Duration(minutes: 1));
-          await _dispararNotificacao(
-            id: response.id ?? 999,
-            title: 'Soneca FEFO',
-            body: 'A rotina continua!',
-            scheduledDate: nextTime,
-            payload: payload,
-            labelSnooze: 'Soneca (1 min)',
-          );
-          return;
-        }
-
-        if (payload != null && payload.startsWith('P:')) {
-          if (_bluetoothManager.isConnected) {
-            await _bluetoothManager.enviarComando(payload);
-          } else {
-            try {
-              final player = AudioPlayer();
-              await player.play(AssetSource('audios/disco.mp3'));
-            } catch (_) {}
-          }
-        }
-      },
-      onDidReceiveBackgroundNotificationResponse:
-          main_app.notificationTapBackground,
-    );
+          final String? payload = response.payload;
+          _executarAudioAlarme(payload);
+        },
+        onDidReceiveBackgroundNotificationResponse:
+            main_app.notificationTapBackground,
+      );
+    } catch (e) {
+      log("FEFO: Erro ao inicializar flutterLocalNotificationsPlugin: $e");
+    }
 
     if (Platform.isAndroid) {
-      await Permission.notification.request();
-      await Permission.scheduleExactAlarm.request();
+      try {
+        await Permission.notification.request();
+        await Permission.scheduleExactAlarm.request();
+      } catch (_) {}
 
-      final androidImplementation =
-          flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>();
+      try {
+        final androidImplementation =
+            flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin>();
 
-      if (androidImplementation != null) {
-        const AndroidNotificationChannel channel = AndroidNotificationChannel(
-          'alarm_channel_unique_id',
-          'Alarmes Críticos do FEFO',
-          importance: Importance.max,
-          playSound: true,
-          enableVibration: true,
-        );
-        await androidImplementation.createNotificationChannel(channel);
+        if (androidImplementation != null) {
+          const AndroidNotificationChannel channel = AndroidNotificationChannel(
+            'alarm_channel_unique_id',
+            'Alarmes Críticos do FEFO',
+            importance: Importance.high,
+            playSound: true,
+            enableVibration: true,
+          );
+          await androidImplementation.createNotificationChannel(channel);
+        }
+      } catch (e) {
+        log("FEFO: Erro ao criar canal de notificação: $e");
       }
+    }
+
+    _iniciarMotorChecagemLocal();
+  }
+
+  void _iniciarMotorChecagemLocal() {
+    _timerChecagemLocal?.cancel();
+    _timerChecagemLocal = Timer.periodic(const Duration(seconds: 10), (_) async {
+      try {
+        final agora = DateTime.now();
+        final chaveMinuto = "${agora.hour}:${agora.minute}";
+
+        final list = await DatabaseService.instance.readAll();
+        for (final alarme in list) {
+          if (!alarme.isActive) continue;
+
+          final ehHora = alarme.hour == agora.hour && alarme.minute == agora.minute;
+          if (!ehHora) continue;
+
+          bool diaValido = alarme.daysOfWeek.isEmpty || alarme.daysOfWeek.contains(agora.weekday);
+          if (!diaValido) continue;
+
+          final idChave = "${alarme.id ?? alarme.title}_$chaveMinuto";
+          if (!_alarmesTocadosNesteMinuto.contains(idChave)) {
+            _alarmesTocadosNesteMinuto.add(idChave);
+            _executarAudioAlarme('P:${alarme.audioPath}');
+          }
+        }
+
+        if (_alarmesTocadosNesteMinuto.length > 50) {
+          _alarmesTocadosNesteMinuto.clear();
+        }
+      } catch (e) {
+        log("FEFO: Erro no motor de checagem local de alarmes: $e");
+      }
+    });
+  }
+
+  Future<void> _executarAudioAlarme(String? payload) async {
+    try {
+      if (_bluetoothManager != null &&
+          _bluetoothManager!.isConnected &&
+          payload != null &&
+          payload.startsWith('P:')) {
+        await _bluetoothManager!.enviarComando(payload);
+      } else {
+        final player = AudioPlayer();
+        await player.play(AssetSource('audios/pipoquinha_disco.wav'));
+      }
+    } catch (e) {
+      log("FEFO: Erro ao executar áudio do alarme: $e");
     }
   }
 
@@ -95,14 +138,13 @@ class AlarmService {
     required String body,
     required tz.TZDateTime scheduledDate,
     String? payload,
-    String labelSnooze = 'Soneca',
   }) async {
     const details = NotificationDetails(
       android: AndroidNotificationDetails(
         'alarm_channel_unique_id',
         'Alarmes Críticos do FEFO',
-        importance: Importance.max,
-        priority: Priority.max,
+        importance: Importance.high,
+        priority: Priority.high,
         fullScreenIntent: false,
         category: AndroidNotificationCategory.alarm,
         ongoing: false,
@@ -118,99 +160,48 @@ class AlarmService {
         body,
         scheduledDate,
         details,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
         payload: payload,
       );
     } catch (e) {
-      log("FEFO: Fallback para agendamento inexato devido a permissão do Android: $e");
-      try {
-        await flutterLocalNotificationsPlugin.zonedSchedule(
-          id,
-          title,
-          body,
-          scheduledDate,
-          details,
-          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-          uiLocalNotificationDateInterpretation:
-              UILocalNotificationDateInterpretation.absoluteTime,
-          payload: payload,
-        );
-      } catch (err) {
-        log("FEFO: Erro ao agendar notificação: $err");
-      }
+      log("FEFO: Erro ao agendar notificação: $e");
     }
   }
 
-  Future<void> testeImediato() async {
-    final nextTime =
-        tz.TZDateTime.now(tz.local).add(const Duration(seconds: 10));
-    await _dispararNotificacao(
-      id: 888,
-      title: '🚨 TESTE FEFO',
-      body: 'Som persistente de teste!',
-      scheduledDate: nextTime,
-      payload: 'P:respire',
-      labelSnooze: 'Soneca (10s)',
-    );
-  }
-
-  static Future<void> backgroundCallback(NotificationResponse response) async {
-    WidgetsFlutterBinding.ensureInitialized();
-    await flutterLocalNotificationsPlugin.cancel(response.id ?? 0);
-    // Nota: O agendamento de comandos Bluetooth em background
-    // agora será centralizado no BluetoothManager (Classic).
-  }
-
   Future<void> agendarAlarme(AlarmModel alarme) async {
+    final idNotificacao = alarme.id ?? (alarme.title.hashCode ^ alarme.hour ^ alarme.minute).abs();
+
     if (!alarme.isActive) {
-      await cancelarAlarme(alarme.id!);
+      await cancelarAlarme(idNotificacao);
       return;
     }
 
     final agora = DateTime.now();
-    DateTime dataAlarme;
+    DateTime dataAlarme = DateTime(
+        agora.year, agora.month, agora.day, alarme.hour, alarme.minute);
 
-    if (alarme.daysOfWeek.isEmpty) {
-      dataAlarme = DateTime(
-          agora.year, agora.month, agora.day, alarme.hour, alarme.minute);
-      if (dataAlarme.isBefore(agora)) {
-        dataAlarme = dataAlarme.add(const Duration(days: 1));
-      }
-    } else {
-      dataAlarme = DateTime(
-          agora.year, agora.month, agora.day, alarme.hour, alarme.minute);
-      bool encontrou = false;
-      for (int i = 0; i <= 7; i++) {
-        DateTime candidato = DateTime(
-                agora.year, agora.month, agora.day, alarme.hour, alarme.minute)
-            .add(Duration(days: i));
-        if (alarme.daysOfWeek.contains(candidato.weekday)) {
-          if (candidato.isAfter(agora)) {
-            dataAlarme = candidato;
-            encontrou = true;
-            break;
-          }
-        }
-      }
-      if (!encontrou) return;
+    if (dataAlarme.isBefore(agora)) {
+      dataAlarme = dataAlarme.add(const Duration(days: 1));
     }
 
     final diferenca = dataAlarme.difference(agora);
     final horarioFinal = tz.TZDateTime.now(tz.local).add(diferenca);
 
     await _dispararNotificacao(
-      id: alarme.id ?? 0,
+      id: idNotificacao,
       title: '⏰ ${alarme.title}',
       body: 'O FEFO está te chamando!',
       scheduledDate: horarioFinal,
       payload: 'P:${alarme.audioPath}',
-      labelSnooze: 'Soneca (1 min)',
     );
   }
 
-  Future<void> cancelarAlarme(int id) async {
-    await flutterLocalNotificationsPlugin.cancel(id);
+  Future<void> cancelarAlarme(int? id) async {
+    if (id == null) return;
+    try {
+      await flutterLocalNotificationsPlugin.cancel(id);
+    } catch (_) {}
   }
 }

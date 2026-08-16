@@ -1,12 +1,16 @@
 // lib/services/database_service.dart
 
+import 'dart:convert';
+import 'dart:developer';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/alarm_model.dart';
 
 class DatabaseService {
   static final DatabaseService instance = DatabaseService._init();
   static Database? _database;
+  static const String _spKey = 'fefo_saved_alarms_v1';
 
   DatabaseService._init();
 
@@ -50,70 +54,126 @@ class DatabaseService {
     }
   }
 
-  Future<AlarmModel> create(AlarmModel alarm) async {
-    final db = await instance.database;
-    final id = await db.insert(tableAlarms, alarm.toJson());
-    return alarm.copyWith(id: id);
-  }
-
-  Future<AlarmModel> read(int id) async {
-    final db = await instance.database;
-    final maps = await db.query(
-      tableAlarms,
-      columns: AlarmFields.values,
-      where: '${AlarmFields.id} = ?',
-      whereArgs: [id],
-    );
-
-    if (maps.isNotEmpty) {
-      return AlarmModel.fromJson(maps.first);
-    } else {
-      throw Exception('ID $id not found');
+  Future<void> _salvarEmSharedPreferences(List<AlarmModel> alarmes) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonList = alarmes.map((a) => a.toJson()).toList();
+      await prefs.setString(_spKey, jsonEncode(jsonList));
+    } catch (e) {
+      log("FEFO: Erro ao salvar em SharedPreferences: $e");
     }
   }
 
-  Future<List<AlarmModel>> readAll() async {
-    final db = await instance.database;
-    const orderBy = '${AlarmFields.hour}, ${AlarmFields.minute} ASC';
-    final result = await db.query(tableAlarms, orderBy: orderBy);
+  Future<List<AlarmModel>> _lerDeSharedPreferences() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final str = prefs.getString(_spKey);
+      if (str == null || str.isEmpty) return [];
+      final List<dynamic> jsonList = jsonDecode(str);
+      return jsonList.map((j) => AlarmModel.fromJson(j as Map<String, dynamic>)).toList();
+    } catch (e) {
+      return [];
+    }
+  }
 
-    return result.map((json) => AlarmModel.fromJson(json)).toList();
+  Future<AlarmModel> create(AlarmModel alarm) async {
+    int? insertedId;
+    try {
+      final db = await instance.database;
+      insertedId = await db.insert(tableAlarms, alarm.toJson());
+    } catch (e) {
+      log("FEFO: Erro ao inserir no SQLite: $e");
+    }
+
+    final novoAlarme = alarm.copyWith(id: insertedId ?? DateTime.now().millisecondsSinceEpoch ~/ 1000);
+    final todos = await readAll();
+    todos.add(novoAlarme);
+    await _salvarEmSharedPreferences(todos);
+    return novoAlarme;
+  }
+
+  Future<AlarmModel> read(int id) async {
+    final todos = await readAll();
+    return todos.firstWhere((a) => a.id == id, orElse: () => throw Exception('ID $id not found'));
+  }
+
+  Future<List<AlarmModel>> readAll() async {
+    List<AlarmModel> alarmes = [];
+    try {
+      final db = await instance.database;
+      const orderBy = '${AlarmFields.hour}, ${AlarmFields.minute} ASC';
+      final result = await db.query(tableAlarms, orderBy: orderBy);
+      alarmes = result.map((json) => AlarmModel.fromJson(json)).toList();
+    } catch (e) {
+      log("FEFO: Erro ao ler SQLite: $e");
+    }
+
+    if (alarmes.isEmpty) {
+      alarmes = await _lerDeSharedPreferences();
+    }
+
+    alarmes.sort((a, b) {
+      if (a.hour != b.hour) return a.hour.compareTo(b.hour);
+      return a.minute.compareTo(b.minute);
+    });
+
+    return alarmes;
   }
 
   Future<int> update(AlarmModel alarm) async {
-    final db = await instance.database;
-    return db.update(
-      tableAlarms,
-      alarm.toJson(),
-      where: '${AlarmFields.id} = ?',
-      whereArgs: [alarm.id],
-    );
+    try {
+      final db = await instance.database;
+      if (alarm.id != null) {
+        await db.update(
+          tableAlarms,
+          alarm.toJson(),
+          where: '${AlarmFields.id} = ?',
+          whereArgs: [alarm.id],
+        );
+      }
+    } catch (_) {}
+
+    final todos = await readAll();
+    final idx = todos.indexWhere((a) => a.id == alarm.id || (a.title == alarm.title && a.hour == alarm.hour && a.minute == alarm.minute));
+    if (idx != -1) {
+      todos[idx] = alarm;
+    } else {
+      todos.add(alarm);
+    }
+    await _salvarEmSharedPreferences(todos);
+    return 1;
   }
 
   Future<int> delete(int id) async {
-    final db = await instance.database;
     try {
-      return await db.delete(
+      final db = await instance.database;
+      await db.delete(
         tableAlarms,
         where: '${AlarmFields.id} = ? OR id = ?',
         whereArgs: [id, id],
       );
-    } catch (_) {
-      return await db.delete(
-        tableAlarms,
-        where: '${AlarmFields.id} = ?',
-        whereArgs: [id],
-      );
-    }
+    } catch (_) {}
+
+    final todos = await readAll();
+    todos.removeWhere((a) => a.id == id);
+    await _salvarEmSharedPreferences(todos);
+    return 1;
   }
 
   Future<int> deleteByTitleAndTime(String title, int hour, int minute) async {
-    final db = await instance.database;
-    return await db.delete(
-      tableAlarms,
-      where: '${AlarmFields.title} = ? AND ${AlarmFields.hour} = ? AND ${AlarmFields.minute} = ?',
-      whereArgs: [title, hour, minute],
-    );
+    try {
+      final db = await instance.database;
+      await db.delete(
+        tableAlarms,
+        where: '${AlarmFields.title} = ? AND ${AlarmFields.hour} = ? AND ${AlarmFields.minute} = ?',
+        whereArgs: [title, hour, minute],
+      );
+    } catch (_) {}
+
+    final todos = await _lerDeSharedPreferences();
+    todos.removeWhere((a) => a.title == title && a.hour == hour && a.minute == minute);
+    await _salvarEmSharedPreferences(todos);
+    return 1;
   }
 
   Future close() async {
