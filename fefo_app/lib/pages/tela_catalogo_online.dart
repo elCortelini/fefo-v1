@@ -51,7 +51,12 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
     }
     final prefs = await SharedPreferences.getInstance();
     if (!mounted) return;
-    _urlController.text = prefs.getString(_urlKey) ?? _defaultCatalogUrl;
+    var savedUrl = prefs.getString(_urlKey);
+    if (savedUrl == null || savedUrl.contains('drive.google.com')) {
+      savedUrl = _defaultCatalogUrl;
+      await prefs.setString(_urlKey, savedUrl);
+    }
+    _urlController.text = savedUrl;
     if (_urlController.text.isNotEmpty) await _loadCatalog();
   }
 
@@ -422,42 +427,99 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
               ),
             ),
           ),
-          if (_onlineFirmware != null &&
-              manager.firmwareVersion != null &&
-              _compareVersions(
-                    _onlineFirmware!.version,
-                    manager.firmwareVersion!,
-                  ) >
-                  0)
+          if (_onlineFirmware != null)
             Builder(builder: (context) {
               final firmware = _onlineFirmware!;
+              final currentVersion = manager.firmwareVersion;
+              final isConnected = manager.isConnected;
+              final hasUpdate = isConnected &&
+                  currentVersion != null &&
+                  _compareVersions(firmware.version, currentVersion) > 0;
+
+              String subtitulo;
+              String botaoTexto;
+              bool habilitado;
+
+              if (!isConnected) {
+                subtitulo =
+                    'Versão do Servidor: v${firmware.version}\nConecte o PET via Bluetooth para instalar esta versão.\n${firmware.notes}';
+                botaoTexto = 'Conecte o PET';
+                habilitado = false;
+              } else if (hasUpdate) {
+                subtitulo =
+                    'Sua versão: v$currentVersion ➔ Nova versão: v${firmware.version}\n${firmware.notes}';
+                botaoTexto = 'Atualizar';
+                habilitado = !_busy;
+              } else {
+                subtitulo =
+                    'PET já está na versão v${firmware.version} (Mais recente).\n${firmware.notes}';
+                botaoTexto = 'Reinstalar';
+                habilitado = !_busy;
+              }
+
               return Card(
                 margin: const EdgeInsets.fromLTRB(16, 10, 16, 4),
-                child: Column(children: [
-                  ListTile(
-                    leading:
-                        const Icon(Icons.system_update, color: Colors.orange),
-                    title: Text('Firmware v${firmware.version}'),
-                    subtitle:
-                        Text('Nova versão disponível • ${firmware.notes}'),
-                    trailing: FilledButton(
-                      onPressed:
-                          _busy ? null : () => _installFirmware(firmware),
-                      child: const Text('Atualizar'),
-                    ),
+                color: hasUpdate
+                    ? Colors.orange.shade50
+                    : Colors.white.withValues(alpha: 0.95),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: BorderSide(
+                    color: hasUpdate ? Colors.orange.shade400 : Colors.green.shade400,
+                    width: 1.5,
                   ),
-                  if (_activeDownloadPath == '/firmware.bin' ||
-                      (manager.uploading &&
-                          manager.uploadCurrentPath == '/firmware.bin'))
-                    ProgressoOperacao(
-                      status: _activeDownloadPath == '/firmware.bin'
-                          ? 'Baixando atualização'
-                          : 'Atualizando',
-                      progresso: _activeDownloadPath == '/firmware.bin'
-                          ? _activeDownloadProgress
-                          : manager.uploadItemProgress,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  child: Column(children: [
+                    ListTile(
+                      leading: Icon(
+                        hasUpdate ? Icons.system_update : Icons.verified_user,
+                        color: hasUpdate ? Colors.orange.shade800 : Colors.green.shade700,
+                        size: 32,
+                      ),
+                      title: Text(
+                        'Firmware PET FEFO v${firmware.version}',
+                        style: const TextStyle(
+                          fontFamily: 'KGPen',
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      subtitle: Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          subtitulo,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade800,
+                          ),
+                        ),
+                      ),
+                      trailing: FilledButton(
+                        style: FilledButton.styleFrom(
+                          backgroundColor:
+                              hasUpdate ? Colors.orange.shade800 : Colors.green.shade700,
+                        ),
+                        onPressed: habilitado
+                            ? () => _installFirmware(firmware)
+                            : null,
+                        child: Text(botaoTexto),
+                      ),
                     ),
-                ]),
+                    if (_activeDownloadPath == '/firmware.bin' ||
+                        (manager.uploading &&
+                            manager.uploadCurrentPath == '/firmware.bin'))
+                      ProgressoOperacao(
+                        status: _activeDownloadPath == '/firmware.bin'
+                            ? 'Baixando atualização'
+                            : 'Atualizando',
+                        progresso: _activeDownloadPath == '/firmware.bin'
+                            ? _activeDownloadProgress
+                            : manager.uploadItemProgress,
+                      ),
+                  ]),
+                ),
               );
             }),
           Card(
