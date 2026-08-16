@@ -38,7 +38,7 @@ class TelaInicial extends StatelessWidget {
               child: Column(
                 children: [
                   const Text(
-                    'FEFO App v059 (1.0.59+59)',
+                    'FEFO App v060 (1.0.60+60)',
                     style: TextStyle(
                       fontFamily: 'KGPen',
                       fontSize: 16,
@@ -48,7 +48,7 @@ class TelaInicial extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'PET FEFO Firmware v${manager.firmwareVersion ?? '0.0.71'}',
+                    'PET FEFO Firmware v${manager.firmwareVersion ?? '0.0.72'}',
                     style: const TextStyle(
                       fontFamily: 'KGPen',
                       fontSize: 13,
@@ -56,9 +56,48 @@ class TelaInicial extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
+                  if (manager.isConnected && manager.bateriaPercentual != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      '🔋 Bateria: ${manager.bateriaPercentual}%',
+                      style: TextStyle(
+                        fontFamily: 'KGPen',
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: manager.bateriaBaixa ? Colors.red : verde,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
+            if (manager.isConnected && manager.bateriaBaixa) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade100,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.red.shade700, width: 1.5),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.battery_alert, color: Colors.red, size: 22),
+                    const SizedBox(width: 8),
+                    const Text(
+                      '⚠️ Bateria Fraca! Conecte o carregador (≤ 20%)',
+                      style: TextStyle(
+                        fontFamily: 'KGPen',
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.red,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             const SizedBox(height: 25),
             BotaoPincelada(
               texto: manager.isConnected ? 'Desconectar' : 'Conectar',

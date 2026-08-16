@@ -287,6 +287,7 @@ class BluetoothManager extends ChangeNotifier {
   String? _currentFacePath;
   Timer? _audioProgressTimer;
   Timer? _keepAliveTimer;
+  int? _bateriaPercentual = 100;
   bool? _lastTransferSucceeded;
   int? _sdTotalBytes;
   int? _sdUsedBytes;
@@ -296,6 +297,8 @@ class BluetoothManager extends ChangeNotifier {
   bool get isConnected => _connectedDevice != null && _rxCharacteristic != null;
   bool get isConnecting => _isConnecting;
   bool get isScanning => _isScanning;
+  int? get bateriaPercentual => _bateriaPercentual;
+  bool get bateriaBaixa => (_bateriaPercentual ?? 100) <= 20;
   BluetoothDevice? get connectedDevice => _connectedDevice;
   String get dispositivoConectadoNome {
     if (_connectedDevice == null) return '';
@@ -592,11 +595,18 @@ class BluetoothManager extends ChangeNotifier {
     }
 
     if (texto.startsWith('STATE MIC=') || texto.startsWith('OK STATUS')) {
+      final batStr = _extrairCampo(texto, 'BAT');
+      if (batStr != null) {
+        final val = int.tryParse(batStr.replaceAll('%', '').trim());
+        if (val != null) {
+          _bateriaPercentual = val;
+        }
+      }
       final panic = _extrairCampo(texto, 'PANIC_EN');
       if (panic != null) {
         _panicEnabled = panic.toUpperCase() == 'ON';
-        notifyListeners();
       }
+      notifyListeners();
       return;
     }
 

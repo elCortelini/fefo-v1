@@ -756,16 +756,35 @@ void AppController::sendBleLine(const char* line) {
 }
 
 void AppController::sendBleStatus() {
-  char line[180]{};
+  char line[220]{};
   const char* audioState = audio_.playbackActive() ? "PLAYING" : "IDLE";
   const char* sdState = storage_.available() ? "OK" : "ERR";
   const char* micState =
       microphoneActive_ ? (microphoneReady_ ? "ON" : "ERR") : "OFF";
   const uint32_t idleMs = millis() - lastUserActivityMs_;
+
+  analogReadResolution(12);
+  uint32_t rawSum = 0;
+  for (int i = 0; i < 8; ++i) {
+    rawSum += analogRead(board::kBatterySensor);
+    delayMicroseconds(100);
+  }
+  uint32_t rawAvg = rawSum / 8;
+  float voltagePin = (rawAvg / 4095.0f) * 3.3f;
+  float voltageBat = voltagePin * 2.0f;
+  uint8_t batPct = 100;
+  if (voltageBat >= 4.15f) {
+    batPct = 100;
+  } else if (voltageBat <= 3.30f) {
+    batPct = 0;
+  } else {
+    batPct = static_cast<uint8_t>(((voltageBat - 3.30f) / (4.15f - 3.30f)) * 100.0f);
+  }
+
   snprintf(line, sizeof(line),
            "OK STATUS FW=%s BLE=%s SD=%s AUDIO=%s FILE=%s MIC=%s PANIC=%s "
            "IDLE_MS=%lu VOL=%u BRILHO=%u LED=%u VIBRA=%s DIAG=%s "
-           "PANIC_EN=%s PANIC_LEVEL=%u",
+           "PANIC_EN=%s PANIC_LEVEL=%u BAT=%u%%",
            board::kFirmwareVersion, ble_.connected() ? "CONNECTED" : "WAITING",
            sdState, audioPaused_ ? "PAUSED" : audioState,
            audio_.playbackActive() ? audio_.playbackFileName() : "-",
@@ -774,7 +793,8 @@ void AppController::sendBleStatus() {
            leds_.brightnessPercent(), leds_.pattern(),
            vibration_.active() ? "ON" : "OFF",
            diagnosticMode_ ? "ON" : "OFF",
-           panic_.enabled() ? "ON" : "OFF", panic_.triggerPercent());
+           panic_.enabled() ? "ON" : "OFF", panic_.triggerPercent(),
+           batPct);
   sendBleLine(line);
 }
 
