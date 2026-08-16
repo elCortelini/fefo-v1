@@ -240,7 +240,8 @@ class BluetoothManager extends ChangeNotifier {
         _aplicarCatalogoJson(cachedJson, saveToCache: false);
       }
     } catch (e) {
-      developer.log('Erro ao carregar catálogo em cache: $e', name: 'BluetoothManager');
+      developer.log('Erro ao carregar catálogo em cache: $e',
+          name: 'BluetoothManager');
     }
   }
 
@@ -302,12 +303,15 @@ class BluetoothManager extends ChangeNotifier {
   BluetoothDevice? get connectedDevice => _connectedDevice;
   String get dispositivoConectadoNome {
     if (_connectedDevice == null) return '';
-    if (_connectedDevice!.platformName.isNotEmpty) return _connectedDevice!.platformName;
+    if (_connectedDevice!.platformName.isNotEmpty)
+      return _connectedDevice!.platformName;
     if (_connectedDevice!.advName.isNotEmpty) return _connectedDevice!.advName;
     return 'FEFO BLE';
   }
+
   bool get lendoCatalogo => _recebendoCatalogo;
-  bool get catalogLoaded => !_recebendoCatalogo && (_audioItems.isNotEmpty || _faces.isNotEmpty);
+  bool get catalogLoaded =>
+      !_recebendoCatalogo && (_audioItems.isNotEmpty || _faces.isNotEmpty);
   String? get caminhoAudioAtivo => _caminhoAudioAtivo;
   String? get audioSelecionado => _audioSelecionado;
   List<ScanResult> get devicesList => List.unmodifiable(_devicesList);
@@ -338,11 +342,13 @@ class BluetoothManager extends ChangeNotifier {
     final s = _audioPosSec % 60;
     return '$m:${s.toString().padLeft(2, '0')}';
   }
+
   String get totalTimeFormatted {
     final m = _audioTotalSec ~/ 60;
     final s = _audioTotalSec % 60;
     return '$m:${s.toString().padLeft(2, '0')}';
   }
+
   String get audioAtivoTitulo {
     if (_caminhoAudioAtivo == null || _caminhoAudioAtivo!.isEmpty) {
       return 'Nenhum áudio em execução';
@@ -357,6 +363,7 @@ class BluetoothManager extends ChangeNotifier {
     final baseName = _caminhoAudioAtivo!.split('/').last;
     return baseName.replaceAll('.wav', '').replaceAll('.mp3', '');
   }
+
   int get audioVolume => _audioVolume;
   bool get audioPaused => _audioPaused;
   bool get audioPlaying => _audioControlState == 'playing';
@@ -618,8 +625,10 @@ class BluetoothManager extends ChangeNotifier {
       if (file != null && file != '-') {
         _caminhoAudioAtivo = file;
       }
-      _audioPosSec = int.tryParse(_extrairCampo(texto, 'POS_SEC') ?? '') ?? (position ~/ 32000);
-      _audioTotalSec = int.tryParse(_extrairCampo(texto, 'TOTAL_SEC') ?? '') ?? (size ~/ 32000);
+      _audioPosSec = int.tryParse(_extrairCampo(texto, 'POS_SEC') ?? '') ??
+          (position ~/ 32000);
+      _audioTotalSec = int.tryParse(_extrairCampo(texto, 'TOTAL_SEC') ?? '') ??
+          (size ~/ 32000);
       _audioVolume =
           int.tryParse(_extrairCampo(texto, 'VOL') ?? '') ?? _audioVolume;
       _audioPaused = state == 'PAUSED';
@@ -895,7 +904,16 @@ class BluetoothManager extends ChangeNotifier {
   Future<void> enviarArquivosPorWifi(Map<String, List<int>> arquivos,
       {Map<String, String> checksums = const {},
       List<String> excluir = const []}) async {
-    if (!isConnected || arquivos.isEmpty || _uploading) return;
+    if (!isConnected) {
+      throw StateError(
+          'Conecte novamente ao FEFO antes de iniciar a transferência.');
+    }
+    if (arquivos.isEmpty) {
+      throw ArgumentError('Nenhum arquivo foi preparado para transferência.');
+    }
+    if (_uploading) {
+      throw StateError('Já existe uma transferência em andamento.');
+    }
     _uploading = true;
     _lastTransferSucceeded = null;
     _uploadProgress = 0;
@@ -1054,7 +1072,16 @@ class BluetoothManager extends ChangeNotifier {
   Future<void> enviarArquivosViaHotspot(Map<String, List<int>> arquivos,
       {Map<String, String> checksums = const {},
       List<String> excluir = const []}) async {
-    if (!isConnected || arquivos.isEmpty || _uploading) return;
+    if (!isConnected) {
+      throw StateError(
+          'Conecte novamente ao FEFO antes de iniciar a transferência.');
+    }
+    if (arquivos.isEmpty) {
+      throw ArgumentError('Nenhum arquivo foi preparado para transferência.');
+    }
+    if (_uploading) {
+      throw StateError('Já existe uma transferência em andamento.');
+    }
     _uploading = true;
     _uploadProgress = 0;
     notifyListeners();
@@ -1174,7 +1201,7 @@ class BluetoothManager extends ChangeNotifier {
     notifyListeners();
     final manifest = <String, dynamic>{
       'schema': 1,
-      'firmware': _firmwareVersion ?? '0.0.66',
+      'firmware': _firmwareVersion ?? '0.0.74',
       'audio': _audioItems
           .where((item) => item.path != path)
           .map((item) => {
@@ -1290,7 +1317,7 @@ class BluetoothManager extends ChangeNotifier {
   }) {
     return {
       'schema': 1,
-      'firmware': _firmwareVersion ?? '0.0.68',
+      'firmware': _firmwareVersion ?? '0.0.74',
       'audio': _audioItems
           .map((item) => {
                 'id': item.id,
@@ -1437,7 +1464,9 @@ class BluetoothManager extends ChangeNotifier {
       }
       title = clean
           .split(' ')
-          .map((w) => w.isNotEmpty ? (w[0].toUpperCase() + w.substring(1).toLowerCase()) : '')
+          .map((w) => w.isNotEmpty
+              ? (w[0].toUpperCase() + w.substring(1).toLowerCase())
+              : '')
           .join(' ');
     }
 
@@ -1454,7 +1483,8 @@ class BluetoothManager extends ChangeNotifier {
   void _adicionarAudioCatalogo(FefoAudioItem item) {
     if (item.path.isEmpty) return;
     final itemEnriquecido = _enriquecerItemComCatalogo(item);
-    final idx = _audioItems.indexWhere((audio) => audio.path == itemEnriquecido.path);
+    final idx =
+        _audioItems.indexWhere((audio) => audio.path == itemEnriquecido.path);
     if (idx >= 0) {
       _audioItems[idx] = itemEnriquecido;
     } else {
@@ -1531,7 +1561,7 @@ class BluetoothManager extends ChangeNotifier {
   }
 
   Future<void> removerVariosAudios(List<String> paths) async {
-    final validPaths = paths.where((p) => p.isNotEmpty).toList();
+    final validPaths = paths.where((p) => p.isNotEmpty).toSet().toList();
     if (validPaths.isEmpty) return;
     if (!isConnected) {
       throw StateError('Conecte novamente ao FEFO antes de excluir.');
@@ -1542,27 +1572,27 @@ class BluetoothManager extends ChangeNotifier {
           line.startsWith('ERR DELETE') ||
           line.startsWith('CONFIRM DELETE'));
       await enviarComando('DELETE DIRECT $path');
-      try {
-        final resp = await respostaFuture.timeout(const Duration(seconds: 3));
-        if (resp.startsWith('CONFIRM DELETE')) {
-          final codeStr = _extrairCampo(resp, 'CODE');
-          if (codeStr != null) {
-            await enviarComando('DELETE CONFIRM $codeStr');
-          }
+      final resp = await respostaFuture.timeout(const Duration(seconds: 5));
+      if (resp.startsWith('CONFIRM DELETE')) {
+        final codeStr = _extrairCampo(resp, 'CODE');
+        if (codeStr == null)
+          throw StateError('Código de exclusão inválido para $path.');
+        final confirmFuture = _aguardarLinha((line) =>
+            line.startsWith('OK DELETE') || line.startsWith('ERR DELETE'));
+        await enviarComando('DELETE CONFIRM $codeStr');
+        final confirm = await confirmFuture.timeout(const Duration(seconds: 5));
+        if (!confirm.startsWith('OK DELETE')) {
+          throw StateError(
+              'O FEFO não confirmou a exclusão de $path: $confirm');
         }
-      } catch (_) {}
+      } else if (!resp.startsWith('OK DELETE')) {
+        throw StateError('O FEFO não excluiu $path: $resp');
+      }
       _audioItems.removeWhere((item) => item.path == path);
       await Future<void>.delayed(const Duration(milliseconds: 150));
     }
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(_prefKeyCatalogCache);
-    } catch (_) {}
     notifyListeners();
-    try {
-      await enviarComando('CATALOG GET');
-      await Future<void>.delayed(const Duration(milliseconds: 500));
-    } catch (_) {}
+    await enviarComando('CATALOG GET');
   }
 
   Future<void> removerVariosAudiosPorWifi(List<String> paths) async {
@@ -1576,7 +1606,7 @@ class BluetoothManager extends ChangeNotifier {
     final pathSet = validPaths.toSet();
     final manifest = <String, dynamic>{
       'schema': 1,
-      'firmware': _firmwareVersion ?? '0.0.66',
+      'firmware': _firmwareVersion ?? '0.0.74',
       'audio': _audioItems
           .where((item) => !pathSet.contains(item.path))
           .map((item) => {

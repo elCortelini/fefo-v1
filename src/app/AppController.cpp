@@ -1144,10 +1144,10 @@ bool AppController::handleMediaCommand(const char* command) {
       sendBleLine("ERR CATALOG SD_UNAVAILABLE");
       return true;
     }
-    // O manifesto da raiz contém títulos e menus definidos pelo catálogo.
-    // Mantém o catálogo gerado pelo firmware como fallback para cartões antigos.
-    File file = SD.open("/fefo.json", FILE_READ);
-    if (!file) file = SD.open("/sys/db/fefo.json", FILE_READ);
+    // O catálogo gerado pelo firmware reflete o conteúdo real do SDCard.
+    // O manifesto da raiz pode conter uma lista antiga após uma exclusão.
+    File file = SD.open("/sys/db/fefo.json", FILE_READ);
+    if (!file) file = SD.open("/fefo.json", FILE_READ);
     if (!file) {
       sendBleLine("ERR CATALOG NOT_FOUND");
       return true;

@@ -1,17 +1,26 @@
 {
     "schema":  1,
-    "catalogVersion":  6,
+    "catalogVersion":  7,
     "repository":  "FEFO Google Drive",
     "firmware":  {
-                     "version":  "0.0.73",
+                     "version":  "0.0.74",
                      "board":  "FEFO_CYD_ESP32",
-                     "arquivo":  "FEFO_Firmware_v073.bin",
-                     "tamanho":  1741344,
-                     "checksum":  "09388771aefba77649f012f4138f9bac0a93217523b3e8e66b67e77bf8aee9dc",
-                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v073.bin",
+                     "arquivo":  "FEFO_Firmware_v074.bin",
+                     "tamanho":  1742320,
+                     "checksum":  "fa02f47fc47ddeb968ade28c534ceb57767143c4bd479ed7896dd4106f1070a1",
+                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v074.bin",
                      "obrigatorio":  false,
-                     "notas":  "Versão 0.0.73: Exclusão direta de áudios no SDCard, sincronização imediata do catálogo e leitura do ADC da bateria no pino GPIO 36."
+                     "notas":  "Versão 0.0.74: catálogo do SDCard sincronizado após exclusões e transferência protegida por confirmação."
                  },
+    "app":  {
+                "version":  "1.0.63",
+                "build":  63,
+                "arquivo":  "FEFO_App_v063.apk",
+                "tamanho":  56836379,
+                "checksum":  "ffe977aea4df9fdd79a1c761bd9a7fa9ba62bcc07c2d84a46a15f49ebf743197",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v063.apk",
+                "notas":  "Exclusão efetiva de áudios, reinstalação pelo catálogo online e atualização do aplicativo pelo próprio catálogo."
+             },
     "audio":  [
                   {
                       "id":  "au001",

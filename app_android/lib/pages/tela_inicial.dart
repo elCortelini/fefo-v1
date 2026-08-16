@@ -38,7 +38,7 @@ class TelaInicial extends StatelessWidget {
               child: Column(
                 children: [
                   const Text(
-                    'FEFO App v062 (1.0.62+62)',
+                    'FEFO App v063 (1.0.63+63)',
                     style: TextStyle(
                       fontFamily: 'KGPen',
                       fontSize: 16,
@@ -48,7 +48,7 @@ class TelaInicial extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'PET FEFO Firmware v${manager.firmwareVersion ?? '0.0.73'}',
+                    'PET FEFO Firmware v${manager.firmwareVersion ?? '0.0.74'}',
                     style: const TextStyle(
                       fontFamily: 'KGPen',
                       fontSize: 13,
@@ -56,7 +56,8 @@ class TelaInicial extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  if (manager.isConnected && manager.bateriaPercentual != null) ...[
+                  if (manager.isConnected &&
+                      manager.bateriaPercentual != null) ...[
                     const SizedBox(height: 4),
                     Text(
                       '🔋 Bateria: ${manager.bateriaPercentual}%',
@@ -74,7 +75,8 @@ class TelaInicial extends StatelessWidget {
             if (manager.isConnected && manager.bateriaBaixa) ...[
               const SizedBox(height: 12),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
                   color: Colors.red.shade100,
                   borderRadius: BorderRadius.circular(12),
@@ -83,7 +85,8 @@ class TelaInicial extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.battery_alert, color: Colors.red, size: 22),
+                    const Icon(Icons.battery_alert,
+                        color: Colors.red, size: 22),
                     const SizedBox(width: 8),
                     const Text(
                       '⚠️ Bateria Fraca! Conecte o carregador (≤ 20%)',
