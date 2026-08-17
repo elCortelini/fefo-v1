@@ -39,7 +39,8 @@ class AlarmService {
     try {
       await flutterLocalNotificationsPlugin.initialize(
         initializationSettings,
-        onDidReceiveNotificationResponse: (NotificationResponse response) async {
+        onDidReceiveNotificationResponse:
+            (NotificationResponse response) async {
           try {
             await flutterLocalNotificationsPlugin.cancel(response.id ?? 0);
           } catch (_) {}
@@ -61,8 +62,8 @@ class AlarmService {
       } catch (_) {}
 
       try {
-        final androidImplementation =
-            flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+        final androidImplementation = flutterLocalNotificationsPlugin
+            .resolvePlatformSpecificImplementation<
                 AndroidFlutterLocalNotificationsPlugin>();
 
         if (androidImplementation != null) {
@@ -80,12 +81,25 @@ class AlarmService {
       }
     }
 
+    await _reagendarAlarmesSalvos();
     _iniciarMotorChecagemLocal();
+  }
+
+  Future<void> _reagendarAlarmesSalvos() async {
+    try {
+      final alarmes = await DatabaseService.instance.readAll();
+      for (final alarme in alarmes.where((item) => item.isActive)) {
+        await agendarAlarme(alarme);
+      }
+    } catch (e) {
+      log('FEFO: Erro ao reagendar alarmes salvos: $e');
+    }
   }
 
   void _iniciarMotorChecagemLocal() {
     _timerChecagemLocal?.cancel();
-    _timerChecagemLocal = Timer.periodic(const Duration(seconds: 10), (_) async {
+    _timerChecagemLocal =
+        Timer.periodic(const Duration(seconds: 10), (_) async {
       try {
         final agora = DateTime.now();
         final chaveMinuto = "${agora.hour}:${agora.minute}";
@@ -94,10 +108,12 @@ class AlarmService {
         for (final alarme in list) {
           if (!alarme.isActive) continue;
 
-          final ehHora = alarme.hour == agora.hour && alarme.minute == agora.minute;
+          final ehHora =
+              alarme.hour == agora.hour && alarme.minute == agora.minute;
           if (!ehHora) continue;
 
-          bool diaValido = alarme.daysOfWeek.isEmpty || alarme.daysOfWeek.contains(agora.weekday);
+          bool diaValido = alarme.daysOfWeek.isEmpty ||
+              alarme.daysOfWeek.contains(agora.weekday);
           if (!diaValido) continue;
 
           final idChave = "${alarme.id ?? alarme.title}_$chaveMinuto";
@@ -125,7 +141,9 @@ class AlarmService {
         await _bluetoothManager!.enviarComando(payload);
       } else {
         final player = AudioPlayer();
-        await player.play(AssetSource('audios/pipoquinha_disco.wav'));
+        await player.play(AssetSource('sounds/pru.mp3'));
+        await player.onPlayerComplete.first;
+        await player.dispose();
       }
     } catch (e) {
       log("FEFO: Erro ao executar áudio do alarme: $e");
@@ -160,34 +178,59 @@ class AlarmService {
         body,
         scheduledDate,
         details,
-        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
         payload: payload,
       );
     } catch (e) {
-      log("FEFO: Erro ao agendar notificação: $e");
+      log('FEFO: Agendamento exato indisponível; usando modo econômico: $e');
+      try {
+        await flutterLocalNotificationsPlugin.zonedSchedule(
+          id,
+          title,
+          body,
+          scheduledDate,
+          details,
+          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          uiLocalNotificationDateInterpretation:
+              UILocalNotificationDateInterpretation.absoluteTime,
+          payload: payload,
+        );
+      } catch (fallbackError) {
+        log('FEFO: Erro ao agendar notificação: $fallbackError');
+      }
     }
   }
 
   Future<void> agendarAlarme(AlarmModel alarme) async {
-    final idNotificacao = alarme.id ?? (alarme.title.hashCode ^ alarme.hour ^ alarme.minute).abs();
+    final idNotificacao = alarme.id ??
+        (alarme.title.hashCode ^ alarme.hour ^ alarme.minute).abs();
 
     if (!alarme.isActive) {
       await cancelarAlarme(idNotificacao);
       return;
     }
 
-    final agora = DateTime.now();
-    DateTime dataAlarme = DateTime(
-        agora.year, agora.month, agora.day, alarme.hour, alarme.minute);
-
-    if (dataAlarme.isBefore(agora)) {
-      dataAlarme = dataAlarme.add(const Duration(days: 1));
+    final agora = tz.TZDateTime.now(tz.local);
+    final inicioDoDia = tz.TZDateTime(
+      tz.local,
+      agora.year,
+      agora.month,
+      agora.day,
+      alarme.hour,
+      alarme.minute,
+    );
+    var horarioFinal = inicioDoDia;
+    for (var dias = 0; dias <= 7; dias++) {
+      final candidato = inicioDoDia.add(Duration(days: dias));
+      final diaValido = alarme.daysOfWeek.isEmpty ||
+          alarme.daysOfWeek.contains(candidato.weekday);
+      if (diaValido && candidato.isAfter(agora)) {
+        horarioFinal = candidato;
+        break;
+      }
     }
-
-    final diferenca = dataAlarme.difference(agora);
-    final horarioFinal = tz.TZDateTime.now(tz.local).add(diferenca);
 
     await _dispararNotificacao(
       id: idNotificacao,

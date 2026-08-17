@@ -1,6 +1,6 @@
 {
     "schema":  1,
-    "catalogVersion":  11,
+    "catalogVersion":  12,
     "repository":  "FEFO Google Drive",
     "firmware":  {
                      "version":  "0.0.77",
@@ -13,13 +13,13 @@
                      "notas":  "Versão 0.0.77: atualização com conexão automática do App e retorno ao menu de conexão."
                  },
     "app":  {
-                "version":  "1.0.67",
-                "build":  67,
-                "arquivo":  "FEFO_App_v067.apk",
+                "version":  "1.0.68",
+                "build":  68,
+                "arquivo":  "FEFO_App_v068.apk",
                 "tamanho":  56656731,
-                "checksum":  "4f1edce790d08085511f1f23512020dc7d3a7c545aa15e474dbbc7a0928ec494",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v067.apk",
-                "notas":  "Corrige a indicação de versão atualizada, melhora o layout do firmware OTA e reforça a conexão Wi-Fi temporária no Android."
+                "checksum":  "c6617ec8f52db3e7d77d553209b92a67035a48161314d5379eb4994065f8ccd8",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v068.apk",
+                "notas":  "Corrige alarmes, reagenda horários salvos, toca áudio reserva válido e integra o Criador de Ninar ao site do projeto."
              },
     "audio":  [
                   {

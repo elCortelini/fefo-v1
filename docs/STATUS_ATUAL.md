@@ -1,6 +1,6 @@
 # Status atual e fases do FEFO
 
-Revisão documental: 16 de agosto de 2026. Referência: firmware v077 e aplicativo v067.
+Revisão documental: 16 de agosto de 2026. Referência: firmware v077 e aplicativo v068.
 
 ## Critério usado
 
