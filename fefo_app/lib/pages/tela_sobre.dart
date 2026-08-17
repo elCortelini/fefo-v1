@@ -67,7 +67,7 @@ class TelaSobre extends StatelessWidget {
                               color: const Color(0xFFDC4900), width: 1.5),
                         ),
                         child: const Text(
-                          'Versão do App: FEFO App v067 (1.0.67+67)',
+                          'Versão do App: FEFO App v068 (1.0.68+68)',
                           style: TextStyle(
                             fontFamily: 'KGPen',
                             fontSize: 16,

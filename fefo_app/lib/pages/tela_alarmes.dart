@@ -65,19 +65,31 @@ class _TelaAlarmesState extends State<TelaAlarmes> {
 
     if (alarme.daysOfWeek.isEmpty) {
       proximo = DateTime(
-        agora.year, agora.month, agora.day, alarme.hour, alarme.minute,
+        agora.year,
+        agora.month,
+        agora.day,
+        alarme.hour,
+        alarme.minute,
       );
       if (proximo.isBefore(agora)) {
         proximo = proximo.add(const Duration(days: 1));
       }
     } else {
       proximo = DateTime(
-        agora.year, agora.month, agora.day, alarme.hour, alarme.minute,
+        agora.year,
+        agora.month,
+        agora.day,
+        alarme.hour,
+        alarme.minute,
       );
       bool encontrou = false;
       for (int i = 0; i <= 7; i++) {
         DateTime candidato = DateTime(
-          agora.year, agora.month, agora.day, alarme.hour, alarme.minute,
+          agora.year,
+          agora.month,
+          agora.day,
+          alarme.hour,
+          alarme.minute,
         ).add(Duration(days: i));
         if (alarme.daysOfWeek.contains(candidato.weekday)) {
           if (candidato.isAfter(agora)) {
@@ -121,7 +133,10 @@ class _TelaAlarmesState extends State<TelaAlarmes> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text(
           'Excluir Alarme',
-          style: TextStyle(fontFamily: 'KGPen', color: Color(0xFFDC4900), fontWeight: FontWeight.bold),
+          style: TextStyle(
+              fontFamily: 'KGPen',
+              color: Color(0xFFDC4900),
+              fontWeight: FontWeight.bold),
         ),
         content: Text(
           'Deseja remover o alarme "${alarme.title}"?',
@@ -130,11 +145,16 @@ class _TelaAlarmesState extends State<TelaAlarmes> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar', style: TextStyle(fontFamily: 'KGPen', color: Colors.grey)),
+            child: const Text('Cancelar',
+                style: TextStyle(fontFamily: 'KGPen', color: Colors.grey)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Excluir', style: TextStyle(fontFamily: 'KGPen', color: Color(0xFFDC4900), fontWeight: FontWeight.bold)),
+            child: const Text('Excluir',
+                style: TextStyle(
+                    fontFamily: 'KGPen',
+                    color: Color(0xFFDC4900),
+                    fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -149,7 +169,9 @@ class _TelaAlarmesState extends State<TelaAlarmes> {
       setState(() {
         _listaDeAlarmes.removeWhere((a) =>
             (idOriginal != null && a.id == idOriginal) ||
-            (a.title == tituloOriginal && a.hour == horaOriginal && a.minute == minutoOriginal));
+            (a.title == tituloOriginal &&
+                a.hour == horaOriginal &&
+                a.minute == minutoOriginal));
       });
 
       try {
@@ -157,7 +179,8 @@ class _TelaAlarmesState extends State<TelaAlarmes> {
           await AlarmService.instance.cancelarAlarme(idOriginal);
           await DatabaseService.instance.delete(idOriginal);
         }
-        await DatabaseService.instance.deleteByTitleAndTime(tituloOriginal, horaOriginal, minutoOriginal);
+        await DatabaseService.instance
+            .deleteByTitleAndTime(tituloOriginal, horaOriginal, minutoOriginal);
       } catch (e) {
         log("FEFO: Erro ao deletar alarme: $e");
       }
@@ -206,7 +229,8 @@ class _TelaAlarmesState extends State<TelaAlarmes> {
       child: Stack(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -231,7 +255,6 @@ class _TelaAlarmesState extends State<TelaAlarmes> {
                   ),
                 ),
                 const SizedBox(height: 18),
-
                 Expanded(
                   child: _estaCarregando
                       ? const Center(
@@ -336,7 +359,9 @@ class _TelaAlarmesState extends State<TelaAlarmes> {
         ),
         boxShadow: [
           BoxShadow(
-            color: alarme.isActive ? corVerde.withValues(alpha: 0.12) : Colors.black12,
+            color: alarme.isActive
+                ? corVerde.withValues(alpha: 0.12)
+                : Colors.black12,
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -347,7 +372,8 @@ class _TelaAlarmesState extends State<TelaAlarmes> {
         children: [
           // TOPO DO CARD: HORÁRIO + TITULO + SWITCH
           Padding(
-            padding: const EdgeInsets.only(left: 20, right: 12, top: 16, bottom: 4),
+            padding:
+                const EdgeInsets.only(left: 20, right: 12, top: 16, bottom: 4),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -365,7 +391,9 @@ class _TelaAlarmesState extends State<TelaAlarmes> {
                               fontFamily: 'KGPen',
                               fontSize: 42,
                               fontWeight: FontWeight.bold,
-                              color: alarme.isActive ? corVerde : Colors.grey.shade600,
+                              color: alarme.isActive
+                                  ? corVerde
+                                  : Colors.grey.shade600,
                             ),
                           ),
                         ],
@@ -376,7 +404,9 @@ class _TelaAlarmesState extends State<TelaAlarmes> {
                           fontFamily: 'KGPen',
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: alarme.isActive ? Colors.black87 : Colors.grey.shade600,
+                          color: alarme.isActive
+                              ? Colors.black87
+                              : Colors.grey.shade600,
                         ),
                       ),
                     ],
@@ -455,7 +485,8 @@ class _TelaAlarmesState extends State<TelaAlarmes> {
           Container(
             decoration: BoxDecoration(
               color: Colors.grey.shade50,
-              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
+              borderRadius:
+                  const BorderRadius.vertical(bottom: Radius.circular(20)),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
@@ -480,7 +511,8 @@ class _TelaAlarmesState extends State<TelaAlarmes> {
                 // Botão Testar no FEFO
                 IconButton(
                   tooltip: 'Testar no FEFO',
-                  icon: const Icon(Icons.play_circle_fill_rounded, color: corLaranja, size: 26),
+                  icon: const Icon(Icons.play_circle_fill_rounded,
+                      color: corLaranja, size: 26),
                   onPressed: () {
                     if (manager.isConnected) {
                       manager.playAudio(alarme.audioPath);
@@ -493,7 +525,8 @@ class _TelaAlarmesState extends State<TelaAlarmes> {
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Conecte ao PET FEFO via Bluetooth para testar o alarme.'),
+                          content: Text(
+                              'Conecte ao PET FEFO via Bluetooth para testar o alarme.'),
                         ),
                       );
                     }
@@ -502,13 +535,15 @@ class _TelaAlarmesState extends State<TelaAlarmes> {
                 // Editar
                 IconButton(
                   tooltip: 'Editar',
-                  icon: const Icon(Icons.edit_rounded, color: Colors.black54, size: 22),
+                  icon: const Icon(Icons.edit_rounded,
+                      color: Colors.black54, size: 22),
                   onPressed: () => _abrirEditor(alarme),
                 ),
                 // Excluir
                 IconButton(
                   tooltip: 'Excluir',
-                  icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 22),
+                  icon: const Icon(Icons.delete_outline_rounded,
+                      color: Colors.redAccent, size: 22),
                   onPressed: () => _deletarAlarme(alarme),
                 ),
               ],
