@@ -488,7 +488,7 @@
     <!-- Visual Central: FEFO & Círculo de Respiração Guiada -->
     <div class="visual-center">
       <div class="character-frame" id="characterFrame">
-        <img src="dormindo.png" alt="Fefo dormindo calmamente" class="character-img" onerror="this.src='fefo deitado.jpg'">
+        <img src="dormindo.png" alt="Fefo dormindo calmamente" class="character-img" onerror="this.src='fefo-deitado.jpg'">
       </div>
       <div class="breathing-instruction" id="breathingText">Inspire suavemente... ☁️</div>
     </div>
@@ -574,7 +574,7 @@
 
     <!-- Rodapé com Botões de Ação e Download -->
     <footer class="footer-actions">
-      <a href="FEFO - Chuva Relaxante (5 Minutos).wav" download="FEFO - Chuva Relaxante (5 Minutos).wav" class="btn-action btn-download">
+      <a href="fefo-chuva-relaxante-5min.wav" download="fefo-chuva-relaxante-5min.wav" class="btn-action btn-download">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
         Baixar Áudio (.WAV 5 Min)
       </a>
@@ -587,7 +587,7 @@
   </main>
 
   <!-- Elemento de Áudio Nativo para a Faixa WAV de 5 Minutos -->
-  <audio id="mainAudio" src="FEFO - Chuva Relaxante (5 Minutos).wav" preload="auto"></audio>
+  <audio id="mainAudio" src="fefo-chuva-relaxante-5min.wav" preload="metadata"></audio>
 
   <script>
     // ==========================================
@@ -741,6 +741,10 @@
       audio.volume = val / 100;
     });
     audio.volume = 0.85;
+    audio.addEventListener('error', () => {
+      console.error('Não foi possível carregar o áudio relaxante.', audio.error);
+      document.getElementById('breathingText').textContent = 'Áudio indisponível. Tente recarregar a página.';
+    });
 
     // Sliders visuais informativos
     document.getElementById('rainSlider').addEventListener('input', (e) => {
