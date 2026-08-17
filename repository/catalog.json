@@ -1,6 +1,6 @@
 {
     "schema":  1,
-    "catalogVersion":  10,
+    "catalogVersion":  11,
     "repository":  "FEFO Google Drive",
     "firmware":  {
                      "version":  "0.0.77",
@@ -13,13 +13,13 @@
                      "notas":  "Versão 0.0.77: atualização com conexão automática do App e retorno ao menu de conexão."
                  },
     "app":  {
-                "version":  "1.0.66",
-                "build":  66,
-                "arquivo":  "FEFO_App_v066.apk",
+                "version":  "1.0.67",
+                "build":  67,
+                "arquivo":  "FEFO_App_v067.apk",
                 "tamanho":  56656731,
-                "checksum":  "67f06f50390c3d73197943d70e4a5ca0715d652adf966808c0e7083634bc7855",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v066.apk",
-                "notas":  "Conecta automaticamente ao PET, executa a transferência sem confirmações intermediárias e retorna ao menu de conexão após o reinício."
+                "checksum":  "4f1edce790d08085511f1f23512020dc7d3a7c545aa15e474dbbc7a0928ec494",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v067.apk",
+                "notas":  "Corrige a indicação de versão atualizada, melhora o layout do firmware OTA e reforça a conexão Wi-Fi temporária no Android."
              },
     "audio":  [
                   {

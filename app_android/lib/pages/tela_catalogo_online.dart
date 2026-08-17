@@ -541,7 +541,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
           if (_onlineApp != null)
             Builder(builder: (context) {
               final app = _onlineApp!;
-              const installedVersion = 65;
+              const installedVersion = 66;
               final hasUpdate = app.build > installedVersion;
               if (!hasUpdate) {
                 return Card(
@@ -632,33 +632,42 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 6),
                   child: Column(children: [
-                    ListTile(
-                      leading: Icon(
-                        hasUpdate ? Icons.system_update : Icons.verified_user,
-                        color: hasUpdate
-                            ? Colors.orange.shade800
-                            : Colors.green.shade700,
-                        size: 32,
-                      ),
-                      title: Text(
-                        'Firmware PET FEFO v${firmware.version}',
-                        style: const TextStyle(
-                          fontFamily: 'KGPen',
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          hasUpdate ? Icons.system_update : Icons.verified_user,
+                          color: hasUpdate
+                              ? Colors.orange.shade800
+                              : Colors.green.shade700,
+                          size: 32,
                         ),
-                      ),
-                      subtitle: Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Text(
-                          subtitulo,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey.shade800,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Firmware PET FEFO v${firmware.version}',
+                            style: const TextStyle(
+                              fontFamily: 'KGPen',
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
+                      ],
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(
+                        subtitulo,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade800,
+                        ),
                       ),
-                      trailing: FilledButton(
+                    ),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: FilledButton(
                         style: FilledButton.styleFrom(
                           backgroundColor: hasUpdate
                               ? Colors.orange.shade800
@@ -667,7 +676,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                         onPressed: habilitado
                             ? () => _installFirmware(firmware)
                             : null,
-                        child: Text(botaoTexto),
+                        child: Text('Atualizar'),
                       ),
                     ),
                     if (_activeDownloadPath == '/firmware.bin' ||

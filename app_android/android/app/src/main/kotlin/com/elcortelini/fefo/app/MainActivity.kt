@@ -79,6 +79,8 @@ class MainActivity : FlutterActivity() {
             .setWpa2Passphrase(password).build()
         val request = NetworkRequest.Builder()
             .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+            .addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED)
+            .addCapability(NetworkCapabilities.NET_CAPABILITY_TRUSTED)
             .removeCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
             .setNetworkSpecifier(specifier).build()
         var completed = false
@@ -93,7 +95,7 @@ class MainActivity : FlutterActivity() {
                 } }
             }
         }
-        manager.requestNetwork(request, networkCallback!!, 30000)
+        manager.requestNetwork(request, networkCallback!!, 60000)
     }
 
     private fun disconnect() {
