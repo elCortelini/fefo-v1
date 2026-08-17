@@ -533,7 +533,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
           if (_onlineApp != null)
             Builder(builder: (context) {
               final app = _onlineApp!;
-              const installedVersion = 66;
+              const installedVersion = 70;
               final hasUpdate = app.build > installedVersion;
               if (!hasUpdate) {
                 return Card(
@@ -556,18 +556,28 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                 color: hasUpdate
                     ? Colors.blue.shade50
                     : Colors.white.withValues(alpha: 0.95),
-                child: ListTile(
-                  leading: Icon(Icons.android,
-                      color: hasUpdate
-                          ? Colors.blue.shade800
-                          : Colors.green.shade700),
-                  title: Text('FEFO App v${app.version}'),
-                  subtitle: Text(
-                      hasUpdate ? app.notes : 'Aplicativo já está atualizado.'),
-                  trailing: FilledButton(
-                    onPressed:
-                        hasUpdate && !_busy ? () => _installApp(app) : null,
-                    child: Text(hasUpdate ? 'Atualizar app' : 'Atualizado'),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(children: [
+                        Icon(Icons.android, color: Colors.blue.shade800, size: 30),
+                        const SizedBox(width: 12),
+                        Expanded(child: Text('FEFO App v${app.version}',
+                            style: const TextStyle(fontWeight: FontWeight.bold))),
+                      ]),
+                      const SizedBox(height: 8),
+                      Text(app.notes),
+                      const SizedBox(height: 10),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: FilledButton(
+                          onPressed: hasUpdate && !_busy ? () => _installApp(app) : null,
+                          child: const Text('Atualizar app'),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               );
@@ -577,8 +587,8 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
               final firmware = _onlineFirmware!;
               final currentVersion = manager.firmwareVersion;
               final isConnected = manager.isConnected;
-              final isAlreadyUpdated = isConnected &&
-                  currentVersion != null &&
+              final isAlreadyUpdated = !isConnected ||
+                  currentVersion == null ||
                   _compareVersions(firmware.version, currentVersion) <= 0;
 
               // Se o PET estiver conectado e a versão já for igual ou superior à do servidor,
@@ -587,25 +597,16 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                 return const SizedBox.shrink();
               }
 
-              final hasUpdate = !isConnected ||
-                  currentVersion == null ||
-                  _compareVersions(firmware.version, currentVersion) > 0;
+              const hasUpdate = true;
 
               String subtitulo;
               String botaoTexto;
               bool habilitado;
 
-              if (!isConnected) {
-                subtitulo =
-                    'O PET será conectado automaticamente antes da instalação.\n${firmware.notes}';
-                botaoTexto = 'Atualizar automaticamente';
-                habilitado = !_busy;
-              } else {
-                subtitulo =
-                    'Sua versão: v$currentVersion ➔ Nova versão: v${firmware.version}\n${firmware.notes}';
-                botaoTexto = 'Atualizar';
-                habilitado = !_busy;
-              }
+              subtitulo =
+                  'Sua versão: v$currentVersion ➔ Nova versão: v${firmware.version}\n${firmware.notes}';
+              botaoTexto = 'Atualizar';
+              habilitado = !_busy;
 
               return Card(
                 margin: const EdgeInsets.fromLTRB(16, 10, 16, 4),
@@ -668,7 +669,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                         onPressed: habilitado
                             ? () => _installFirmware(firmware)
                             : null,
-                        child: Text('Atualizar'),
+                        child: Text(botaoTexto),
                       ),
                     ),
                     if (_activeDownloadPath == '/firmware.bin' ||
@@ -700,8 +701,6 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
               Expanded(
                   child: Text('SD livre: ${_formatBytes(manager.sdFreeBytes)}',
                       style: const TextStyle(fontWeight: FontWeight.bold))),
-              Text('${availableItems.length} disponíveis',
-                  style: const TextStyle(color: Colors.black54))
             ]),
           ),
           if (_busy || manager.uploading || _status.isNotEmpty)
@@ -776,8 +775,8 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                       ? manager.uploadItemProgress
                       : null;
               return Container(
-                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                 decoration: BoxDecoration(
                   color: selected
                       ? const Color(0xFFFFD89A)
@@ -808,7 +807,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                       title: Text(item.title,
                           style: const TextStyle(
                               fontFamily: 'KGPen',
-                              fontSize: 22,
+                              fontSize: 25,
                               color: Color(0xFF374151),
                               height: 1.05)),
                       subtitle: Text(

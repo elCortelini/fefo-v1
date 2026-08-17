@@ -1,6 +1,6 @@
 {
     "schema":  1,
-    "catalogVersion":  13,
+    "catalogVersion":  14,
     "repository":  "FEFO Google Drive",
     "firmware":  {
                      "version":  "0.0.77",
@@ -13,13 +13,13 @@
                      "notas":  "Versão 0.0.77: atualização com conexão automática do App e retorno ao menu de conexão."
                  },
     "app":  {
-                "version":  "1.0.69",
-                "build":  69,
-                "arquivo":  "FEFO_App_v069.apk",
-                "tamanho":  56656731,
-                "checksum":  "5f92f75f3e3defd2c5b27161444ac7e98eba4eb52632eb921ae373cf658b2916",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v069.apk",
-                "notas":  "Corrige o disparo de alarmes sem fechar o App e mantém o site na versão anterior."
+                "version":  "1.0.70",
+                "build":  70,
+                "arquivo":  "FEFO_App_v070.apk",
+                "tamanho":  56656655,
+                "checksum":  "c79ab6494f22f946a6f624bc5bbe6c4976c6d40c085376034e8840e0b0c9a07e",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v070.apk",
+                "notas":  "Aprimora o catálogo online, oculta versões antigas e organiza a instalação de atualizações."
              },
     "audio":  [
                   {

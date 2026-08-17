@@ -1,6 +1,6 @@
 # Status atual e fases do FEFO
 
-Revisão documental: 16 de agosto de 2026. Referência: firmware v077 e aplicativo v069.
+Revisão documental: 16 de agosto de 2026. Referência: firmware v077 e aplicativo v070.
 
 ## Critério usado
 
@@ -46,7 +46,7 @@ Revisão documental: 16 de agosto de 2026. Referência: firmware v077 e aplicati
 
 ### Prioridade alta
 
-1. Executar uma regressão completa do App v067 + Firmware v077 em uma CYD real: instalar e apagar vários áudios, reinstalar pelo catálogo, instalar faces, reiniciar, validar menus, tocar áudio, alternar faces e atualizar firmware/app.
+1. Executar uma regressão completa do App v070 + Firmware v077 em uma CYD real: instalar e apagar vários áudios, reinstalar pelo catálogo, instalar faces, reiniciar, validar menus, tocar áudio, alternar faces e atualizar firmware/app.
 2. Criar recuperação transacional: arquivo temporário, confirmação de checksum, troca atômica e limpeza automática após uma transferência interrompida.
 3. Implementar rollback ou imagem de recuperação para OTA e impedir que falha de energia deixe o equipamento sem inicialização.
 4. Continuar controlando o tamanho do firmware: a v070 reduziu a ocupação de aproximadamente 97,4% para 88,2%. O BIN caiu de 1.914.672 para 1.740.480 bytes, recuperando 174.192 bytes. A pendência crítica foi resolvida, mas cada release deve continuar sendo medida.
