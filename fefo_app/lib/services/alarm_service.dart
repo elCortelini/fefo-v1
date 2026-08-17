@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:permission_handler/permission_handler.dart';
-import 'package:audioplayers/audioplayers.dart';
 
 import '../models/alarm_model.dart';
 import '../managers/bluetooth_manager.dart';
@@ -139,12 +138,11 @@ class AlarmService {
           payload != null &&
           payload.startsWith('P:')) {
         await _bluetoothManager!.enviarComando(payload);
-      } else {
-        final player = AudioPlayer();
-        await player.play(AssetSource('sounds/pru.mp3'));
-        await player.onPlayerComplete.first;
-        await player.dispose();
       }
+      // Quando o App está em segundo plano ou sem Bluetooth, o próprio canal
+      // da notificação Android reproduz o som do alarme. Não inicializamos um
+      // player Flutter aqui, pois esse callback também pode ocorrer em estado
+      // de background e não deve derrubar o processo do App.
     } catch (e) {
       log("FEFO: Erro ao executar áudio do alarme: $e");
     }
