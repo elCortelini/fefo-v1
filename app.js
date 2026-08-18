@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initFaqAccordion();
   initSmoothScroll();
   initFefoVideoStudio();
+  initRealPhotoGallery();
 });
 
 // 1. FEFO Interactive Screen & Mode Simulator
@@ -716,4 +717,90 @@ function initFefoVideoStudio() {
       mediaRecorder.stop();
     }
   }
+}
+
+
+// 5. FEFO Real Photo Gallery & Lightbox Logic
+function initRealPhotoGallery() {
+  const tabs = document.querySelectorAll('.gallery-tab');
+  const cards = document.querySelectorAll('.gallery-card');
+  const modal = document.getElementById('lightbox-modal');
+  const modalImg = document.getElementById('lightbox-img');
+  const modalTitle = document.getElementById('lightbox-title');
+  const modalDesc = document.getElementById('lightbox-desc');
+  const modalClose = document.getElementById('lightbox-close');
+  const heroImgTrigger = document.getElementById('hero-img-trigger');
+
+  if (!modal) return;
+
+  // Filter tabs
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+
+      const filter = tab.getAttribute('data-filter');
+
+      cards.forEach(card => {
+        const cat = card.getAttribute('data-category');
+        if (filter === 'all' || cat === filter) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+    });
+  });
+
+  // Open Lightbox on card click
+  cards.forEach(card => {
+    card.addEventListener('click', () => {
+      const fullSrc = card.getAttribute('data-full');
+      const title = card.getAttribute('data-title') || '';
+      const desc = card.getAttribute('data-desc') || '';
+
+      openLightbox(fullSrc, title, desc);
+    });
+  });
+
+  // Hero Image trigger lightbox
+  if (heroImgTrigger) {
+    heroImgTrigger.addEventListener('click', () => {
+      const imgEl = document.getElementById('hero-img-element');
+      openLightbox(
+        imgEl ? imgEl.src : 'images/fefo_dispositivo_ligado_tela.jpg',
+        'FEFO Pet — Protótipo V1 Real em Funcionamento',
+        'Robô assistivo com chassi 3D, tela OLED afetiva e anel de iluminação NeoPixel RGB para cromoterapia.'
+      );
+    });
+  }
+
+  function openLightbox(src, title, desc) {
+    modalImg.src = src;
+    modalTitle.textContent = title;
+    modalDesc.textContent = desc;
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    modal.classList.remove('show');
+    document.body.style.overflow = '';
+  }
+
+  if (modalClose) {
+    modalClose.addEventListener('click', closeLightbox);
+  }
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal || e.target === modalClose) {
+      closeLightbox();
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('show')) {
+      closeLightbox();
+    }
+  });
 }

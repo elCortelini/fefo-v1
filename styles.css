@@ -1019,3 +1019,266 @@ h1, h2, h3, h4, .brand-font {
   margin-bottom: 0.4rem;
 }
 
+
+
+/* ==========================================================================
+   FEFO Pet - Real Photo Gallery, Hero Badges, Lightbox & Team Avatars
+   ========================================================================== */
+
+/* Hero Image Extensions */
+.hero-img-wrapper {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 16px 48px rgba(139, 92, 246, 0.35);
+  border: 2px solid rgba(139, 92, 246, 0.4);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.hero-img-wrapper:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 24px 60px rgba(236, 72, 153, 0.45);
+}
+
+.hero-img-badge {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: rgba(15, 10, 28, 0.85);
+  backdrop-filter: blur(10px);
+  color: #f43f5e;
+  border: 1px solid rgba(244, 63, 94, 0.4);
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--radius-full);
+  z-index: 2;
+}
+
+.hero-img-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(0deg, rgba(15, 10, 28, 0.95) 0%, rgba(15, 10, 28, 0.6) 70%, transparent 100%);
+  padding: 1.2rem 1.5rem;
+  font-size: 0.88rem;
+  color: var(--text-main);
+  z-index: 2;
+}
+
+/* Gallery Section */
+.gallery-section {
+  padding: 6rem 0;
+  position: relative;
+}
+
+.gallery-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 3rem;
+}
+
+.gallery-tab {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 0.6rem 1.4rem;
+  border-radius: var(--radius-full);
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.gallery-tab:hover, .gallery-tab.active {
+  background: linear-gradient(135deg, var(--purple-main), var(--pink-accent));
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 4px 20px var(--purple-glow);
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.75rem;
+}
+
+.gallery-card {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+  cursor: pointer;
+  height: 100%;
+}
+
+.gallery-card.hidden {
+  display: none;
+}
+
+.gallery-img-box {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.gallery-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.gallery-card:hover .gallery-img {
+  transform: scale(1.08);
+}
+
+.gallery-badge {
+  position: absolute;
+  top: 0.8rem;
+  left: 0.8rem;
+  padding: 0.25rem 0.7rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  z-index: 2;
+  backdrop-filter: blur(8px);
+}
+
+.badge-purple { background: rgba(139, 92, 246, 0.85); color: white; }
+.badge-pink { background: rgba(236, 72, 153, 0.85); color: white; }
+.badge-blue { background: rgba(59, 130, 246, 0.85); color: white; }
+.badge-emerald { background: rgba(16, 185, 129, 0.85); color: white; }
+.badge-amber { background: rgba(245, 158, 11, 0.85); color: white; }
+
+.gallery-card-body {
+  padding: 1.25rem 1.5rem 1.5rem 1.5rem;
+  flex-grow: 1;
+}
+
+.gallery-card-body h3 {
+  font-size: 1.15rem;
+  margin-bottom: 0.4rem;
+  color: var(--text-bright);
+}
+
+.gallery-card-body p {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* Team Avatars with Real Photos */
+.team-avatar-box {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid var(--purple-main);
+  box-shadow: 0 0 20px var(--purple-glow);
+  flex-shrink: 0;
+  margin-bottom: 1rem;
+}
+
+.team-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Lightbox Modal */
+.lightbox-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(10, 6, 22, 0.92);
+  backdrop-filter: blur(20px);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.lightbox-modal.show {
+  display: flex;
+  opacity: 1;
+}
+
+.lightbox-content {
+  max-width: 900px;
+  width: 100%;
+  background: var(--bg-card);
+  border: 1px solid var(--border-glow);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+  position: relative;
+  animation: modalZoom 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes modalZoom {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.lightbox-img {
+  width: 100%;
+  max-height: 60vh;
+  object-fit: contain;
+  background: #000;
+  display: block;
+}
+
+.lightbox-caption {
+  padding: 1.5rem 2rem;
+}
+
+.lightbox-caption h3 {
+  font-size: 1.4rem;
+  color: var(--purple-light);
+  margin-bottom: 0.5rem;
+}
+
+.lightbox-caption p {
+  font-size: 0.95rem;
+  color: var(--text-main);
+  line-height: 1.6;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 1.5rem;
+  right: 2rem;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  font-size: 2rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  transition: all 0.2s ease;
+}
+
+.lightbox-close:hover {
+  background: #ef4444;
+  transform: scale(1.1);
+}
