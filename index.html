@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FEFO Pet — Tecnologia Assistiva & Apoio Emocional para Autismo</title>
-  <meta name="description" content="FEFO é um pet eletrônico assistivo de apoio emocional e educacional para crianças autistas (TEA). Desenvolvido por educadores para unir tecnologia, afeto e inclusão.">
+  <title>FEFO Pet — Tecnologia Assistiva, Pedagógica & Apoio Emocional para Autismo (TEA)</title>
+  <meta name="description" content="FEFO é um pet eletrônico assistivo conhecido como a 'Alexa da Inclusão'. Desenvolvido por psicopedagogos e engenheiros de TI para unir tecnologia, afeto e inclusão no autismo.">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -17,10 +17,11 @@
       </a>
       <ul class="nav-links">
         <li><a href="ninar/index.html" class="nav-link" target="_blank" rel="noopener">🌙 Criador de Ninar</a></li>
+        <li><a href="#galeria" class="nav-link">📸 Fotos Reais</a></li>
         <li><a href="#projeto" class="nav-link">O Projeto</a></li>
         <li><a href="#proposito" class="nav-link">Propósito</a></li>
         <li><a href="#simulador" class="nav-link">Simulador</a></li>
-        <li><a href="#funcionalidades" class="nav-link">Funcionalidades</a></li>
+        <li><a href="#funcionalidades" class="nav-link">Recursos</a></li>
         <li><a href="#tecnologia" class="nav-link">Tecnologia</a></li>
         <li><a href="#roadmap" class="nav-link">Roadmap</a></li>
         <li><a href="#equipe" class="nav-link">Equipe</a></li>
@@ -36,28 +37,37 @@
     <div class="container hero-grid">
       <div class="hero-content">
         <div class="section-tag">
-          <span>🐾 Tecnologia Assistiva & Afeto</span>
+          <span>🐾 A "Alexa da Inclusão" & Tecnologia Assistiva</span>
         </div>
         <h1 class="hero-title">
-          <span class="gradient-text">FEFO Pet</span> — Apoio Emocional e Educacional para Crianças Autistas
+          <span class="gradient-text">FEFO Pet</span> — O Guardião das Emoções para Crianças Autistas
         </h1>
         <p class="hero-subtitle">
-          Um amiguinho eletrônico carismático com inteligência emocional, cromoterapia LED, histórias e sensoriamento de ruído que conecta crianças autistas, educadores e famílias.
+          Um robô assistivo eletrônico carismático nascido no <strong>Projeto NASCER (Escola CE Pedro Rizzi - Itajaí/BC)</strong> e indicado ao <strong>Prêmio Péter Murányi 2026 – Educação</strong>. Une inteligência emocional, cromoterapia NeoPixel, sensor acústico anti-crise, contos e atividades pedagógicas.
         </p>
         <div class="hero-buttons">
-          <a href="#proposito" class="btn btn-primary">
-            <span>Conhecer o Propósito</span>
+          <a href="#galeria" class="btn btn-primary">
+            <span>📸 Ver Fotos Reais do Robô</span>
+          </a>
+          <a href="#proposito" class="btn btn-secondary">
+            <span>Conhecer o Propósito 🌟</span>
           </a>
           <a href="https://github.com/elCortelini/fefo-v1" target="_blank" class="btn btn-secondary">
             <span>Ver no GitHub 🚀</span>
           </a>
           <a href="ninar/index.html" target="_blank" rel="noopener" class="btn btn-secondary">
-            <span>🌙 Abrir Criador de Ninar</span>
+            <span>🌙 Criador de Ninar</span>
           </a>
         </div>
       </div>
       <div class="hero-media">
-        <img src="images/fefo_hero.jpg" alt="FEFO Pet Eletrônico Assistivo" class="hero-img" id="hero-img-element">
+        <div class="hero-img-wrapper" id="hero-img-trigger">
+          <span class="hero-img-badge">🔴 Protótipo V1 Real em Funcionamento</span>
+          <img src="images/fefo_dispositivo_ligado_tela.jpg" alt="Protótipo Físico do FEFO Pet com Tela e Luzes" class="hero-img" id="hero-img-element">
+          <div class="hero-img-caption">
+            <strong>FEFO Pet Físico:</strong> Chassi ergonômico impresso em 3D, tela com expressões faciais dinâmicas e anel de cromoterapia.
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -67,19 +77,214 @@
     <div class="container stats-grid">
       <div class="stat-card">
         <div class="stat-number gradient-text">+2 Milhões</div>
-        <div class="stat-label">Crianças autistas no Brasil precisando de apoio diário</div>
+        <div class="stat-label">Crianças autistas no Brasil necessitando de suporte diário na inclusão</div>
       </div>
       <div class="stat-card">
-        <div class="stat-number gradient-text">1 em 36</div>
-        <div class="stat-label">Crianças está no Espectro Autista (TEA)</div>
+        <div class="stat-number gradient-text">1.230 Alunos</div>
+        <div class="stat-label">Escola CE Pedro Rizzi (Projeto NASCER - Itajaí/BC) com +30 alunos TEA</div>
       </div>
       <div class="stat-card">
-        <div class="stat-number gradient-text">+250%</div>
-        <div class="stat-label">Aumento de matrículas de autistas nas escolas em 6 anos</div>
+        <div class="stat-number gradient-text">Prêmio 2026</div>
+        <div class="stat-label">Indicado ao Prêmio Péter Murányi 2026 – Categoria Educação</div>
       </div>
       <div class="stat-card">
         <div class="stat-number gradient-text">3 em 1</div>
-        <div class="stat-label">Integração Única: Pedagógico + Lúdico + Terapêutico</div>
+        <div class="stat-label">Abordagem Tríplice Integrada: Pedagógico + Lúdico + Terapêutico</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Real Photo Gallery Section -->
+  <section id="galeria" class="gallery-section">
+    <div class="container">
+      <div class="text-center">
+        <div class="section-tag">
+          <span>📸 Evidências Reais & Desenvolvimento</span>
+        </div>
+        <h2 class="section-title">Galeria do FEFO Pet: Do Laboratório à Sala de Aula</h2>
+        <p class="section-subtitle">
+          Explore as fotos reais do protótipo robótico FEFO, montagem dos circuitos ESP32, modelagem CAD 3D, livrinhos pedagógicos e aplicação prática com educadores.
+        </p>
+
+        <!-- Gallery Filter Tabs -->
+        <div class="gallery-tabs">
+          <button class="gallery-tab active" data-filter="all">Todas as Fotos</button>
+          <button class="gallery-tab" data-filter="prototipo">🤖 Dispositivo Físico & Luzes</button>
+          <button class="gallery-tab" data-filter="hardware">🔬 Engenharia, Circuito & 3D</button>
+          <button class="gallery-tab" data-filter="pedagogico">📚 Livrinhos & Cards</button>
+          <button class="gallery-tab" data-filter="equipe">👥 Fundadores & Campo</button>
+        </div>
+      </div>
+
+      <!-- Gallery Grid -->
+      <div class="gallery-grid">
+        <!-- Prototipo 1 -->
+        <div class="glass-card gallery-card" data-category="prototipo" data-full="images/fefo_dispositivo_ligado_tela.jpg" data-title="FEFO Pet com Tela OLED/TFT Ativa" data-desc="Protótipo robótico real exibindo expressões faciais dinâmicas para comunicação afetiva com a criança.">
+          <div class="gallery-img-box">
+            <span class="gallery-badge badge-purple">Robô Físico</span>
+            <img src="images/fefo_dispositivo_ligado_tela.jpg" alt="FEFO Pet com Tela OLED Ativa" class="gallery-img" loading="lazy">
+          </div>
+          <div class="gallery-card-body">
+            <h3>Expressões Faciais na Tela</h3>
+            <p>Rostinho dinâmico que reage com afeto e orienta a criança durante a rotina escolar.</p>
+          </div>
+        </div>
+
+        <!-- Prototipo 2 -->
+        <div class="glass-card gallery-card" data-category="prototipo" data-full="images/fefo_dispositivo_luzes_led.jpg" data-title="Cromoterapia NeoPixel RGB" data-desc="Efeitos visuais suaves de cromoterapia com 15 LEDs RGB para acalmar a criança durante crises ou sobrecarga.">
+          <div class="gallery-img-box">
+            <span class="gallery-badge badge-pink">Cromoterapia</span>
+            <img src="images/fefo_dispositivo_luzes_led.jpg" alt="Cromoterapia NeoPixel RGB no FEFO" class="gallery-img" loading="lazy">
+          </div>
+          <div class="gallery-card-body">
+            <h3>Luzes Terapêuticas LED</h3>
+            <p>Cromoterapia suave em frequências visuais calculadas para reduzir a ansiedade sensorial.</p>
+          </div>
+        </div>
+
+        <!-- Prototipo 3 -->
+        <div class="glass-card gallery-card" data-category="prototipo" data-full="images/fefo_prototipo_fisico_completo.jpg" data-title="Protótipo Físico Completo FEFO V1" data-desc="Vista frontal do FEFO 3D real montado com chassi suave e proporções ergonômicas.">
+          <div class="gallery-img-box">
+            <span class="gallery-badge badge-purple">Chassi 3D</span>
+            <img src="images/fefo_prototipo_fisico_completo.jpg" alt="Protótipo Físico Completo FEFO V1" class="gallery-img" loading="lazy">
+          </div>
+          <div class="gallery-card-body">
+            <h3>Design Físico Ergonômico</h3>
+            <p>Robô em formato de pet interativo com corpo confortável ao toque e pegada infantil.</p>
+          </div>
+        </div>
+
+        <!-- Prototipo 4 -->
+        <div class="glass-card gallery-card" data-category="prototipo" data-full="images/fefo_dispositivo_na_mao.jpg" data-title="Ergonomia & Porte Tátil na Mão" data-desc="Demonstração prática da dimensão compacta do FEFO Pet, fácil de transportar na mochila escolar.">
+          <div class="gallery-img-box">
+            <span class="gallery-badge badge-emerald">Porte Tátil</span>
+            <img src="images/fefo_dispositivo_na_mao.jpg" alt="Ergonomia do FEFO na Mão" class="gallery-img" loading="lazy">
+          </div>
+          <div class="gallery-card-body">
+            <h3>Tamanho de Pelúcia Compacto</h3>
+            <p>Super leve e portátil para acompanhar a criança entre a sala de aula e a sua casa.</p>
+          </div>
+        </div>
+
+        <!-- Equipe 1 -->
+        <div class="glass-card gallery-card" data-category="equipe" data-full="images/fefo_criadores_tailise_elevi.jpg" data-title="Profª Tailise da Roza & Prof. Elevi Cortelini" data-desc="Os criadores do FEFO Pet: Psicopedagoga Especialista em Educação Especial e Professor de Arquitetura de TI & Robótica.">
+          <div class="gallery-img-box">
+            <span class="gallery-badge badge-blue">Criadores</span>
+            <img src="images/fefo_criadores_tailise_elevi.jpg" alt="Tailise da Roza e Elevi Cortelini" class="gallery-img" loading="lazy">
+          </div>
+          <div class="gallery-card-body">
+            <h3>União de Educação & Engenharia</h3>
+            <p>Profª Tailise da Roza (Psicopedagoga) e Prof. Elevi Cortelini (Analista de TI & Robótica).</p>
+          </div>
+        </div>
+
+        <!-- Equipe 2 -->
+        <div class="glass-card gallery-card" data-category="equipe" data-full="images/fefo_criadores_com_dispositivo.jpg" data-title="Apresentação do FEFO aos Educadores" data-desc="Professores fundadores demonstrando o robô FEFO Pet em ação e validando sua metodologia assistiva.">
+          <div class="gallery-img-box">
+            <span class="gallery-badge badge-blue">Equipe NASCER</span>
+            <img src="images/fefo_criadores_com_dispositivo.jpg" alt="Demonstração do FEFO com a Equipe" class="gallery-img" loading="lazy">
+          </div>
+          <div class="gallery-card-body">
+            <h3>Validação com Professores</h3>
+            <p>Testado e aprovado por especialistas em Educação Especial e gestão educacional.</p>
+          </div>
+        </div>
+
+        <!-- Hardware 1 -->
+        <div class="glass-card gallery-card" data-category="hardware" data-full="images/fefo_hardware_interno_esp32.jpg" data-title="Engenharia Interna: Placa ESP32 CYD" data-desc="Arquitetura interna com microcontrolador ESP32 CYD, sensor de som MAX9814, fiação e barramentos organizados.">
+          <div class="gallery-img-box">
+            <span class="gallery-badge badge-amber">Circuito ESP32</span>
+            <img src="images/fefo_hardware_interno_esp32.jpg" alt="Montagem Interna ESP32 no FEFO" class="gallery-img" loading="lazy">
+          </div>
+          <div class="gallery-card-body">
+            <h3>Placa Microcontrolada Embarcada</h3>
+            <p>Controle de processamento rápido, comunicação Bluetooth LE e sensor acústico anti-crise.</p>
+          </div>
+        </div>
+
+        <!-- Hardware 2 -->
+        <div class="glass-card gallery-card" data-category="hardware" data-full="images/fefo_alto_falantes_hardware.jpg" data-title="Sistema de Áudio Dac Mono 5W" data-desc="Alto-falante de 5W integrado para reprodução contínua e límpida de músicas infantis, sons relaxantes e contos.">
+          <div class="gallery-img-box">
+            <span class="gallery-badge badge-amber">Sistema de Áudio</span>
+            <img src="images/fefo_alto_falantes_hardware.jpg" alt="Alto-Falante do FEFO" class="gallery-img" loading="lazy">
+          </div>
+          <div class="gallery-card-body">
+            <h3>Sonoridade Límpida & Segura</h3>
+            <p>Saída DAC Mono em volume suave projetada especificamente para evitar sustos sensoriais.</p>
+          </div>
+        </div>
+
+        <!-- Hardware 3 -->
+        <div class="glass-card gallery-card" data-category="hardware" data-full="images/fefo_motor_vibracao_hardware.jpeg" data-title="Motor DC Háptico para Vibração" data-desc="Componente motor de vibração que gera pulsações táteis confortadoras para acalmar a criança durante abraços.">
+          <div class="gallery-img-box">
+            <span class="gallery-badge badge-amber">Vibração Tátil</span>
+            <img src="images/fefo_motor_vibracao_hardware.jpeg" alt="Motor DC de Vibração" class="gallery-img" loading="lazy">
+          </div>
+          <div class="gallery-card-body">
+            <h3>Aconchego Hápitco & Vibração</h3>
+            <p>Estimulação tátil suave que simula o bater de um coraçãozinho reconfortante.</p>
+          </div>
+        </div>
+
+        <!-- Hardware 4 -->
+        <div class="glass-card gallery-card" data-category="hardware" data-full="images/fefo_modelo_3d_chassi1.png" data-title="Modelagem CAD 3D do Chassi Snapfit" data-desc="Projeto de engenharia em 3D com travas snapfit para fácil fabricação, manutenção e montagem resistente.">
+          <div class="gallery-img-box">
+            <span class="gallery-badge badge-amber">Projeto 3D CAD</span>
+            <img src="images/fefo_modelo_3d_chassi1.png" alt="Modelagem 3D CAD do Chassi" class="gallery-img" loading="lazy">
+          </div>
+          <div class="gallery-card-body">
+            <h3>Modelagem 3D do Chassi</h3>
+            <p>Estrutura impressa com encaixes de precisão e espaço seguro para bateria e sensores.</p>
+          </div>
+        </div>
+
+        <!-- Pedagogico 1 -->
+        <div class="glass-card gallery-card" data-category="pedagogico" data-full="images/fefo_livrinho_pedagogico1.jpg" data-title="Coleção Pedagógica: Livrinho FEFO" data-desc="Material impresso suplementar com contos e atividades ilustradas para alfabetização e regulação socioemocional.">
+          <div class="gallery-img-box">
+            <span class="gallery-badge badge-pink">Coleção Pedagógica</span>
+            <img src="images/fefo_livrinho_pedagogico1.jpg" alt="Livrinho Pedagógico do FEFO" class="gallery-img" loading="lazy">
+          </div>
+          <div class="gallery-card-body">
+            <h3>Livrinhos de Histórias Ilustradas</h3>
+            <p>40 contos lúdicos originais ensinando empatia, hábitos de higiene e rotina diária.</p>
+          </div>
+        </div>
+
+        <!-- Pedagogico 2 -->
+        <div class="glass-card gallery-card" data-category="pedagogico" data-full="images/fefo_cards_numerais_exemplo.png" data-title="Cards Físicos da Maleta Sensorial" data-desc="Cards táteis de numerais e rotina visual para mediação pedagógica entre o professor e a criança autista.">
+          <div class="gallery-img-box">
+            <span class="gallery-badge badge-pink">Maleta Sensorial</span>
+            <img src="images/fefo_cards_numerais_exemplo.png" alt="Cards Numerais FEFO" class="gallery-img" loading="lazy">
+          </div>
+          <div class="gallery-card-body">
+            <h3>Cards de Rotina & Numerais</h3>
+            <p>Ferramenta de comunicação alternativa (PECS/Rotina Visual) para uso integrado em sala de aula.</p>
+          </div>
+        </div>
+
+        <!-- Equipe 3 -->
+        <div class="glass-card gallery-card" data-category="equipe" data-full="images/fefo_prototipo_campo_escola.jpg" data-title="Validação Prática do FEFO na Escola" data-desc="Encontro de avaliação do FEFO Pet com materiais e protótipos durante o desenvolvimento do Projeto NASCER.">
+          <div class="gallery-img-box">
+            <span class="gallery-badge badge-blue">Aplicação Real</span>
+            <img src="images/fefo_prototipo_campo_escola.jpg" alt="Teste Prático do FEFO em Escola" class="gallery-img" loading="lazy">
+          </div>
+          <div class="gallery-card-body">
+            <h3>Testado no Ambiente Escolar</h3>
+            <p>Desenvolvido a partir da vivência real em sala de aula com crianças neurodivergentes.</p>
+          </div>
+        </div>
+
+        <!-- Hardware 5 -->
+        <div class="glass-card gallery-card" data-category="hardware" data-full="images/fefo_embalagem_caixa.jpg" data-title="Embalagem Oficial do FEFO Pet" data-desc="Design da caixa do produto e kit pedagógico completo para entrega nas redes públicas municipais.">
+          <div class="gallery-img-box">
+            <span class="gallery-badge badge-purple">Embalagem</span>
+            <img src="images/fefo_embalagem_caixa.jpg" alt="Embalagem do FEFO Pet" class="gallery-img" loading="lazy">
+          </div>
+          <div class="gallery-card-body">
+            <h3>Kit Completo de Entrega</h3>
+            <p>Embalagem protetora contendo o pet eletrônico, carregador, manual e kit de cards.</p>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -92,29 +297,29 @@
       </div>
       <h2 class="section-title">Uma Crise Silenciosa na Educação Especial</h2>
       <p class="section-subtitle">
-        O aumento de diagnósticos evidencia a necessidade urgente de ferramentas assistivas humanas que apoiem a inclusão sem sobrecarregar educadores e famílias.
+        Nas redes de ensino de Itajaí e Balneário Camboriú, o número de estudantes com TEA dobrou em dois anos, alcançando de <strong>6,14% a 7,7% das matrículas</strong>. O FEFO foi criado para apoiar essa demanda urgente.
       </p>
 
       <div class="pillars-grid">
         <div class="glass-card">
           <div class="pillar-icon">👧</div>
           <h3>Crianças Negligenciadas</h3>
-          <p>Muitas passam despercebidas em sala de aula, sem o apoio sensorial e educacional necessário para se expressarem.</p>
+          <p>Muitas passam desapercebidas na sala de aula por falta de ferramentas sensoriais e visuais para se expressarem com segurança.</p>
         </div>
         <div class="glass-card">
           <div class="pillar-icon">🏡</div>
           <h3>Famílias Desamparadas</h3>
-          <p>Pais se sentem sozinhos diante dos desafios diários de inclusão, aprendizagem e regulação emocional.</p>
+          <p>Pais enfrentam angústia diária buscando formas de apoiar a aprendizagem e conter crises de desregulação sensorial em casa.</p>
         </div>
         <div class="glass-card">
           <div class="pillar-icon">🏫</div>
           <h3>Escolas Sobrecarregadas</h3>
-          <p>Sem recursos assistivos específicos, o desafio da inclusão recai sobre profissionais frequentemente exaustos.</p>
+          <p>Professores e agentes de apoio lidam com salas de aula numerosas sem um mediador tecnológico dedicado ao acolhimento.</p>
         </div>
         <div class="glass-card">
           <div class="pillar-icon">💡</div>
-          <h3>Falta de Recursos</h3>
-          <p>Poucas tecnologias são projetadas sob medida para as reais necessidades sensoriais e afetivas da criança no TEA.</p>
+          <h3>Falta de Soluções Específicas</h3>
+          <p>Existiam poucas tecnologias nacionais desenhadas especificamente para o tripé: Pedagógico, Lúdico e Terapêutico.</p>
         </div>
       </div>
     </div>
@@ -128,24 +333,24 @@
       </div>
       <h2 class="section-title">Muito Mais que um Brinquedo: Uma Ferramenta Assistiva</h2>
       <p class="section-subtitle">
-        O FEFO une três dimensões essenciais para transformar o aprendizado em acolhimento e bem-estar.
+        O FEFO une três dimensões essenciais para transformar a experiência educacional em um momento de afeto e inclusão real.
       </p>
 
       <div class="triad-grid">
         <div class="glass-card triad-card triad-pedagogico">
           <div class="pillar-icon">📚</div>
           <h3>Pedagógico</h3>
-          <p>Estimula atenção, linguagem e cognição. Oferece atividades visuais e de rotina alinhadas à BNCC, auxiliando o professor no aprendizado com sentido e afeto.</p>
+          <p>Estimula a linguagem, atenção e comunicação. Oferece atividades de rotina visual e contos ilustrados alinhados à BNCC para auxiliar a mediação docente.</p>
         </div>
         <div class="glass-card triad-card triad-ludico">
           <div class="pillar-icon">🎈</div>
           <h3>Lúdico</h3>
-          <p>Aprender brincando com músicas infantis originais, contos, brincadeiras e cards interativos. Cada interação vira uma descoberta cheia de alegria.</p>
+          <p>Aprender brincando com 40 contos e fábulas originais, mídias autorais, cards físicos e jogos simples na tela que tornam o aprendizado divertido.</p>
         </div>
         <div class="glass-card triad-card triad-terapeuto">
           <div class="pillar-icon">💜</div>
           <h3>Terapêutico</h3>
-          <p>Acolhe e acalma. Com luzes de cromoterapia, vibrações confortadoras e sensor automático de ruído para prevenção e controle de crises sensoriais.</p>
+          <p>Acolhe e acalma. Com cromoterapia NeoPixel, pulsação vibratória de abraço e <strong>sensor acústico de ruído MAX9814</strong> que ativa o Modo Pânico automático em sobrecargas sonoras.</p>
         </div>
       </div>
     </div>
@@ -157,9 +362,9 @@
       <div class="section-tag">
         <span>🎮 Demonstração Interativa</span>
       </div>
-      <h2 class="section-title">Experimente as Expressões do FEFO Pet</h2>
+      <h2 class="section-title">Simulador dos Estados e Expressões do FEFO</h2>
       <p class="section-subtitle">
-        Clique nos botões para simular o comportamento da tela, luzes e estados do FEFO em tempo real.
+        Clique nos botões abaixo para simular a reação da tela OLED, luzes e alto-falante do FEFO em tempo real.
       </p>
 
       <div class="demo-box">
@@ -172,7 +377,7 @@
           <button class="demo-btn active" data-mode="happy">🐱 Alegre</button>
           <button class="demo-btn" data-mode="calm">😌 Calmo</button>
           <button class="demo-btn" data-mode="music">🎵 Jukebox</button>
-          <button class="demo-btn" data-mode="panic">🚨 Modo Pânico (Ruído)</button>
+          <button class="demo-btn" data-mode="panic">🚨 Modo Pânico (Sensor Ruído)</button>
         </div>
       </div>
     </div>
@@ -187,34 +392,34 @@
         </div>
         <h2 class="section-title">Funcionalidades do FEFO Pet</h2>
         <p class="section-subtitle">
-          Um ecossistema completo de apoio emocional, atividades pedagógicas e materiais complementares.
+          Um ecossistema completo de apoio emocional, atividades pedagógicas e materiais suplementares.
         </p>
       </div>
 
       <div class="pillars-grid">
         <div class="glass-card">
-          <h3>🚨 Modo Pânico Automático</h3>
-          <p>O FEFO monitora o barulho do ambiente com sensor acústico. Em caso de ruído excessivo, entra em modo terapêutico acalmando a criança com sons suaves e luzes confortantes.</p>
+          <h3>🚨 Modo Pânico Automático (Anti-Crise)</h3>
+          <p>O sensor de som MAX9814 monitora o ruído da sala de aula. Se houver barulho excessivo, o FEFO entra em modo de acolhimento com luzes suaves e sons de acalmar.</p>
         </div>
         <div class="glass-card">
           <h3>🎵 Musicoterapia & Jukebox</h3>
-          <p>Músicas originais, sons da natureza e temas instrumentais selecionados para manter o foco e acalmar durante a rotina escolar.</p>
+          <p>Sons da natureza, temas relaxantes e músicas infantis autorais para focar a atenção e aliviar a ansiedade durante a rotina escolar.</p>
         </div>
         <div class="glass-card">
-          <h3>📖 Contos e Fábulas</h3>
-          <p>Pequenos contos gravados com voz infantil carismática que ensinam sobre emoções, empatia, respeito e valores de convivência.</p>
+          <h3>📖 40 Contos & Fábulas Integrados</h3>
+          <p>20 mini-aventuras e 20 contos épicos narrados com voz infantil afetuosa ensinando sentimentos, valores, paciência e convívio social.</p>
         </div>
         <div class="glass-card">
-          <h3>🧼 Meu Corpo & Higiene</h3>
-          <p>Áudio-aulas interativas sobre saúde e hábitos que incentivam a autonomia da criança nos cuidados de higiene pessoal.</p>
+          <h3>🧼 Meu Corpo & Hábitos de Higiene</h3>
+          <p>Instruções áudio-visuais de rotina que estimulam a autonomia da criança no lavar das mãos, escovação e cuidados de saúde.</p>
         </div>
         <div class="glass-card">
-          <h3>💡 Luzes Terapêuticas</h3>
-          <p>Efeitos de cromoterapia com 15 LEDs NeoPixel coloridos e intensidades suaves que reduzem a ansiedade sensorial.</p>
+          <h3>💡 Luzes Terapêuticas (Cromoterapia)</h3>
+          <p>Anel com 15 LEDs NeoPixel coloridos com modulação de brilho para redução de estresse e suporte sensorial visual.</p>
         </div>
         <div class="glass-card">
-          <h3>💼 Maleta Sensorial & Cards</h3>
-          <p>Materiais complementares físicos com cards de apoio para alfabetização, rotina visual, números, cores e estimulação psicomotora.</p>
+          <h3>💼 Maleta Sensorial, Cards & Livrinhos</h3>
+          <p>Acompanha livrinhos ilustrados e cards físicos de numerais, cores e tarefas diárias para mediação pedagógica tátil.</p>
         </div>
       </div>
     </div>
@@ -227,41 +432,50 @@
         <div class="section-tag">
           <span>🔬 Arquitetura de Hardware & Software</span>
         </div>
-        <h2 class="section-title">Tecnologia Robusta e Segura</h2>
+        <h2 class="section-title">Tecnologia Robusta, Segura e 100% Offline</h2>
         <p class="hero-subtitle">
-          Desenvolvido com hardware nacional embarcado ESP32 e aplicativo Android nativo em Flutter. O FEFO opera 100% offline no cartão SD, sem depender de internet para funcionar na sala de aula.
+          Construído sobre a plataforma embarcada nacional <strong>ESP32 CYD 3.5" (480×320 px)</strong> com controle nativo em aplicativo Android (Flutter). Funciona 100% offline no cartão MicroSD sem depender de internet na sala de aula.
         </p>
 
         <ul class="tech-list">
           <li class="tech-item">
             <div class="tech-icon">✓</div>
             <div>
-              <strong>Placa ESP32 CYD 3.5" (480×320):</strong> Display colorido com suporte a animações visuais e rostos interativos.
+              <strong>Processador ESP32 CYD 3.5" Dual-Core:</strong> Display colorido com animações visuais e expressividade afetiva.
             </div>
           </li>
           <li class="tech-item">
             <div class="tech-icon">✓</div>
             <div>
-              <strong>Áudio DAC 22.050 Hz Mono:</strong> Saída de som contínua e límpida com volume controlado com segurança.
+              <strong>Sensor Acústico MAX9814 & Motor Háptico:</strong> Medição de ruído ambiente com gatilho automático anti-crise e vibração confortável.
             </div>
           </li>
           <li class="tech-item">
             <div class="tech-icon">✓</div>
             <div>
-              <strong>Comunicação BLE + Wi-Fi Temporário:</strong> Controle por Bluetooth Low Energy. Conexão Wi-Fi local criada apenas durante atualizações de mídias e OTA.
+              <strong>Áudio DAC 22.050 Hz Mono (5W Speaker):</strong> Reprodução clara de voz, contos e sons de acalmar com controle de volume seguro.
             </div>
           </li>
           <li class="tech-item">
             <div class="tech-icon">✓</div>
             <div>
-              <strong>Catálogo Sincronizado no GitHub:</strong> Atualizações remotas via GitHub com validação de checksum SHA-256 e filtro anti-duplicação.
+              <strong>Bateria 18650 Dupla com Boost 5V:</strong> Autonomia para o dia letivo inteiro com recarga simplificada USB.
+            </div>
+          </li>
+          <li class="tech-item">
+            <div class="tech-icon">✓</div>
+            <div>
+              <strong>Comunicação BLE + Wi-Fi Temporário:</strong> Conexão Bluetooth constante com o app e Wi-Fi ativado apenas para atualizações OTA e mídias.
             </div>
           </li>
         </ul>
       </div>
 
       <div class="text-center">
-        <img src="images/fefo_app.jpg" alt="Aplicativo Android FEFO" class="hero-img">
+        <div class="tech-media-box">
+          <img src="images/fefo_hardware_interno_esp32.jpg" alt="Montagem do Circuito ESP32 do FEFO" class="hero-img" style="margin-bottom: 1.5rem; border-radius: var(--radius-md);">
+          <img src="images/fefo_modelo_3d_chassi1.png" alt="Modelagem 3D CAD do Chassi" class="hero-img" style="border-radius: var(--radius-md);">
+        </div>
       </div>
     </div>
   </section>
@@ -275,7 +489,7 @@
         </div>
         <h2 class="section-title">Roadmap do FEFO V1</h2>
         <p class="section-subtitle">
-          Acompanhe o histórico de evolução do hardware, firmware e aplicativo até as futuras etapas de produção.
+          Da validação de hardware à concorrência no Prêmio Péter Murányi 2026 e implantação em redes municipais de ensino.
         </p>
       </div>
 
@@ -284,8 +498,8 @@
           <div class="timeline-badge"></div>
           <div class="glass-card">
             <span class="timeline-status status-done">Concluída ✅</span>
-            <h3>Fase 0 — Hardware Base</h3>
-            <p>Validação da placa ESP32 CYD 3,5", display ILI9488, microSD, DAC áudio PCM, motor de vibração e NeoPixels.</p>
+            <h3>Fase 0 — Validação de Hardware Base</h3>
+            <p>Testes com placa ESP32 CYD 3.5", display ILI9488, leitor MicroSD, DAC áudio PCM, motor de vibração, NeoPixels e sensor de som MAX9814.</p>
           </div>
         </div>
 
@@ -293,8 +507,8 @@
           <div class="timeline-badge"></div>
           <div class="glass-card">
             <span class="timeline-status status-done">Concluída ✅</span>
-            <h3>Fase 1 & 2 — Controle BLE & Persistência</h3>
-            <p>Perfil Nordic UART, comandos de voz/volume/luzes, logs em SD, modo pânico e salvamento de configurações em NVS/SD.</p>
+            <h3>Fase 1 & 2 — Controle BLE & Regulação Terapêutica</h3>
+            <p>Comunicação via perfil Nordic UART, comandos de som/luzes/vibração, logs em SD e automação do Modo Pânico por ruído.</p>
           </div>
         </div>
 
@@ -302,17 +516,17 @@
           <div class="timeline-badge"></div>
           <div class="glass-card">
             <span class="timeline-status status-done">Concluída ✅</span>
-            <h3>Fase 3 & 4 — Conteúdos no SD & App Android</h3>
-            <p>Aplicativo Flutter v042, catálogo em JSON (`fefo.json`), player por menus dinâmicos e transferência via Wi-Fi temporário.</p>
+            <h3>Fase 3 & 4 — App Android Flutter (v042) & Mídias</h3>
+            <p>Aplicativo Android nativo em Flutter v042, catálogo em JSON (`catalog.json`), reprodução dinâmica e transferência via Wi-Fi temporário.</p>
           </div>
         </div>
 
         <div class="timeline-item right">
           <div class="timeline-badge"></div>
           <div class="glass-card">
-            <span class="timeline-status status-active">Em Validação 🚀</span>
-            <h3>Fase 5 — Automação GitHub & Catálogo Online</h3>
-            <p>Fluxo automático `FEFO_novos_conteudos`, conversão com hashing SHA256, parse de submenus e sincronização com GitHub.</p>
+            <span class="timeline-status status-active">Em Andamento 🚀</span>
+            <h3>Fase 5 — Prêmio Péter Murányi 2026 & GitHub Automation</h3>
+            <p>Apresentação aos comitês de educação, sincronização automática de conteúdos com GitHub e validação em secretarias municipais.</p>
           </div>
         </div>
 
@@ -320,8 +534,8 @@
           <div class="timeline-badge"></div>
           <div class="glass-card">
             <span class="timeline-status status-future">Próxima Etapa 🎯</span>
-            <h3>Fase 6 — Produção & Validação em Campo</h3>
-            <p>Assinatura digital de firmware, fabricação da estrutura emborrachada, maleta sensorial e programa de pilotos em escolas públicas.</p>
+            <h3>Fase 6 — Escala em Redes Públicas & Inmetro/Anatel</h3>
+            <p>Certificação oficial INMETRO/ANATEL, produção em lote com revestimento emborrachado macio e distribuição de kits com Maleta Sensorial.</p>
           </div>
         </div>
       </div>
@@ -337,29 +551,33 @@
         </div>
         <h2 class="section-title">Quem Faz o FEFO Acontecer</h2>
         <p class="section-subtitle">
-          Por trás do FEFO existe uma equipe apaixonada que une inteligência pedagógica e engenharia de sistemas.
+          Uma parceria que une inteligência psicopedagógica de sala de aula com engenharia de sistemas embarcados e robótica.
         </p>
       </div>
 
       <div class="team-grid">
         <div class="glass-card team-card">
-          <div class="team-avatar">👩‍🏫</div>
+          <div class="team-avatar-box">
+            <img src="images/fefo_criadores_tailise_elevi.jpg" alt="Professora Tailise da Roza" class="team-avatar-img">
+          </div>
           <div>
             <h3>Tailise da Roza</h3>
             <div class="team-role">Psicopedagoga & Educadora Especial</div>
             <p class="team-bio">
-              Mestre em Gestão Educacional com +10 anos de experiência em sala de aula e APAE. Especialista em Educação Especial e apaixonada por promover a inclusão com afeto.
+              Mestre em Gestão Educacional com +10 anos de experiência em sala de aula inclusiva e APAE. Especialista em Educação Especial, vivenciou na prática as necessidades das crianças autistas.
             </p>
           </div>
         </div>
 
         <div class="glass-card team-card">
-          <div class="team-avatar">👨‍💻</div>
+          <div class="team-avatar-box">
+            <img src="images/fefo_criadores_com_dispositivo.jpg" alt="Professor Elevi Cortelini" class="team-avatar-img">
+          </div>
           <div>
             <h3>Elevi Cortelini</h3>
-            <div class="team-role">Analista de Sistemas & Professor</div>
+            <div class="team-role">Analista de TI, Robótica & Professor</div>
             <p class="team-bio">
-              Especialista em Arquitetura de TI, Jogos, Robótica e IoTs com +15 anos de experiência. Idealizador de soluções tecnológicas focadas no propósito e impacto social.
+              Especialista em Arquitetura de TI, Jogos, Robótica e IoTs com +15 anos de experiência. Idealizador da infraestrutura de hardware embarcado e software assistivo do FEFO.
             </p>
           </div>
         </div>
@@ -380,51 +598,51 @@
       <div class="faq-list">
         <div class="faq-item">
           <button class="faq-question">
-            <span>1. O FEFO substitui o professor?</span>
+            <span>1. O FEFO substitui a mediação do professor?</span>
             <span>+</span>
           </button>
           <div class="faq-answer">
-            NÃO. O FEFO é uma ferramenta assistiva de apoio, operada e orientada por um adulto. Ele serve para fortalecer o vínculo entre a criança e o professor, facilitando a mediação e aproximando as pessoas.
+            NÃO. O FEFO é uma ferramenta assistiva de mediação, operada pelo adulto. Ele fortalece o vínculo afetivo entre o professor e a criança, facilitando o diálogo e o foco nas atividades.
           </div>
         </div>
 
         <div class="faq-item">
           <button class="faq-question">
-            <span>2. O FEFO pode ser deixado sozinho com a criança?</span>
+            <span>2. O FEFO pode ser deixado sozinho com o aluno?</span>
             <span>+</span>
           </button>
           <div class="faq-answer">
-            NÃO. O FEFO atua como mediador entre a criança e o educador ou responsável, estimulando o diálogo, o foco e a autorregulação emocional acompanhada.
+            NÃO. O FEFO atua como ponte mediadora entre a criança e o educador ou familiar, estimulando a interação social acompanhada e o acolhimento durante momentos de crise.
           </div>
         </div>
 
         <div class="faq-item">
           <button class="faq-question">
-            <span>3. É uma tecnologia muito complexa para usar na escola?</span>
+            <span>3. É uma tecnologia difícil de utilizar na sala de aula?</span>
             <span>+</span>
           </button>
           <div class="faq-answer">
-            Não! A interface do aplicativo foi desenhada para ser simples, intuitiva e acessível com poucos toques. O objetivo é encaixar na rotina escolar sem exigir nenhum conhecimento técnico avançado.
+            Não! O aplicativo Android em Flutter foi desenvolvido com botões visuais grandes e intuitivos. É possível disparar luzes, sons e contos com apenas um toque no celular.
           </div>
         </div>
 
         <div class="faq-item">
           <button class="faq-question">
-            <span>4. E se o professor não tiver tempo para usar mais uma ferramenta?</span>
+            <span>4. Como o FEFO ajuda a conter crises sensoriais?</span>
             <span>+</span>
           </button>
           <div class="faq-answer">
-            O FEFO foi pensado justamente para reduzir a sobrecarga docente. Ele auxilia em transições de atividades, controle automático de crises pelo sensor de ruído e na organização da rotina visual.
+            Ele possui um sensor acústico MAX9814 que detecta picos de ruído. Ao notar um ambiente barulhento, ele emite luzes de cromoterapia suaves, sons tranquilizantes e pulsação vibratória confortável.
           </div>
         </div>
 
         <div class="faq-item">
           <button class="faq-question">
-            <span>5. Existem outros semelhantes no mercado?</span>
+            <span>5. Por que o FEFO é único no mercado brasileiro?</span>
             <span>+</span>
           </button>
           <div class="faq-answer">
-            Não. O FEFO é um conceito inovador único no Brasil por integrar em um único equipamento o triplo propósito: Pedagógico + Lúdico + Terapêutico.
+            O FEFO é a única tecnologia assistiva nacional que integra em um só equipamento o tripé: Pedagógico (BNCC) + Lúdico (Músicas e Contos) + Terapêutico (Cromoterapia e Sensor de Ruído).
           </div>
         </div>
       </div>
@@ -437,11 +655,12 @@
       <div class="logo" style="justify-content: center; margin-bottom: 1rem;">
         <span class="logo-badge">FeFo</span> Pet
       </div>
-      <p style="color: var(--text-muted);">Uma causa que vai além da sala de aula: um movimento para humanizar a inclusão.</p>
+      <p style="color: var(--text-muted);">Uma causa que vai além da sala de aula: um movimento para humanizar a inclusão educacional.</p>
 
       <ul class="footer-links">
         <li><a href="https://github.com/elCortelini/fefo-v1" target="_blank">Repositório no GitHub</a></li>
         <li><a href="https://github.com/elCortelini/fefo-v1/tree/main/releases" target="_blank">Baixar APK Android (v042)</a></li>
+        <li><a href="ninar/index.html" target="_blank">🌙 Criador de Ninar</a></li>
         <li><a href="https://raw.githubusercontent.com/elCortelini/fefo-v1/main/repository/catalog.json" target="_blank">Catálogo JSON</a></li>
       </ul>
 
@@ -450,6 +669,18 @@
       </p>
     </div>
   </footer>
+
+  <!-- Lightbox Modal for Real Photos -->
+  <div class="lightbox-modal" id="lightbox-modal">
+    <button class="lightbox-close" id="lightbox-close">&times;</button>
+    <div class="lightbox-content">
+      <img src="" alt="" id="lightbox-img" class="lightbox-img">
+      <div class="lightbox-caption">
+        <h3 id="lightbox-title"></h3>
+        <p id="lightbox-desc"></p>
+      </div>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>
