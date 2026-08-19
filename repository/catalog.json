@@ -1,24 +1,24 @@
 {
     "schema":  1,
-    "catalogVersion":  14,
+    "catalogVersion":  15,
     "repository":  "FEFO Google Drive",
     "firmware":  {
-                     "version":  "0.0.77",
+                     "version":  "1.077",
                      "board":  "FEFO_CYD_ESP32",
-                     "arquivo":  "FEFO_Firmware_v077.bin",
-                     "tamanho":  1742320,
-                     "checksum":  "893f47b21076f0571a736d1f6a79f2739245d1de452e0046c26222df7d7cc0cb",
-                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v077.bin",
+                     "arquivo":  "FEFO_Firmware_v1.077.bin",
+                     "tamanho":  1741344,
+                     "checksum":  "87262701d7597f3950dd0bcd9ea750020ef3a8da6c888cf30079724a9eaf7881",
+                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.077.bin",
                      "obrigatorio":  false,
-                     "notas":  "Versão 0.0.77: atualização com conexão automática do App e retorno ao menu de conexão."
+                     "notas":  "Versão 1.077: atualização com conexão automática do App e retorno ao menu de conexão."
                  },
     "app":  {
-                "version":  "1.0.70",
-                "build":  70,
-                "arquivo":  "FEFO_App_v070.apk",
+                "version":  "1.070",
+                "build":  1070,
+                "arquivo":  "FEFO_App_v1.070.apk",
                 "tamanho":  56656655,
                 "checksum":  "c79ab6494f22f946a6f624bc5bbe6c4976c6d40c085376034e8840e0b0c9a07e",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v070.apk",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.070.apk",
                 "notas":  "Aprimora o catálogo online, oculta versões antigas e organiza a instalação de atualizações."
              },
     "audio":  [
@@ -71,6 +71,16 @@
                       "checksum":  "07464c7c63fe0c3a1772a8d3cd4e027d96e6aad5c2cf662a024bff2af2867dd6",
                       "tipo":  "audio",
                       "url":  "https://drive.google.com/uc?export=download\u0026id=1gqju5uwoVdkvPTlYTsocmKQZ-tIP5nVX"
+                  },
+                  {
+                      "id":  "au005_32khz",
+                      "titulo":  "HIGIENE 32 kHz",
+                      "menu":  "Jukebox do Fefo",
+                      "arquivo":  "/usr/a/a0005_32khz.wav",
+                      "tamanho":  7326430,
+                      "checksum":  "7e22f2a327b0280ddd81e3921e4d37f24a0ed9ce7e63911420efee0cf18e04f8",
+                      "tipo":  "audio",
+                      "url":  "https://raw.githubusercontent.com/elCortelini/fefo-v1/main/repository/audio/HIGIENE_32_kHz.wav"
                   },
                   {
                       "id":  "au006",
