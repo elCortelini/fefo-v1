@@ -13,13 +13,13 @@
                      "notas":  "Versão 1.080: equalização suave para reduzir o abafamento e limitador para preservar a clareza do áudio."
                  },
     "app":  {
-                "version":  "1.070",
-                "build":  1070,
-                "arquivo":  "FEFO_App_v1.070.apk",
+                "version":  "1.071",
+                "build":  1071,
+                "arquivo":  "FEFO_App_v1.071.apk",
                 "tamanho":  56656655,
-                "checksum":  "c79ab6494f22f946a6f624bc5bbe6c4976c6d40c085376034e8840e0b0c9a07e",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.070.apk",
-                "notas":  "Aprimora o catálogo online, oculta versões antigas e organiza a instalação de atualizações."
+                "checksum":  "87ec02af3e5d1b1318734f550ebf1044a5c67ec1823570db4cae07c1802c0ceb",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.071.apk",
+                "notas":  "Detecta perda de conexão BLE, avisa o usuário, retorna à tela inicial e tenta reconectar automaticamente."
              },
     "audio":  [
                   {

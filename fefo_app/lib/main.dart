@@ -120,7 +120,28 @@ class _MyAppState extends State<MyApp> {
     _manager = Provider.of<BluetoothManager>(context);
 
     if (_manager!.isConnected != _wasConnected) {
+      final lostConnection = _wasConnected &&
+          !_manager!.isConnected &&
+          _manager!.consumeUnexpectedDisconnect();
       _wasConnected = _manager!.isConnected;
+
+      if (lostConnection) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          _navigatorKey.currentState?.popUntil((route) => route.isFirst);
+          final context = _navigatorKey.currentContext;
+          if (context != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content:
+                    Text('Conexão com o FEFO perdida. Tentando reconectar...'),
+                backgroundColor: Colors.red,
+                duration: Duration(seconds: 5),
+              ),
+            );
+          }
+        });
+      }
 
       if (_manager!.isConnected && _returnAfterUpdate) {
         _returnTimer?.cancel();
