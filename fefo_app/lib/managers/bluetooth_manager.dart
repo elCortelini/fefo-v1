@@ -290,6 +290,10 @@ class BluetoothManager extends ChangeNotifier {
   String? _currentFacePath;
   Timer? _audioProgressTimer;
   Timer? _keepAliveTimer;
+  Timer? _autoReconnectTimer;
+  bool _autoReconnectInProgress = false;
+  bool _intentionalDisconnect = false;
+  bool _unexpectedDisconnectEvent = false;
   int? _bateriaPercentual = 100;
   bool? _lastTransferSucceeded;
   int? _sdTotalBytes;
@@ -298,6 +302,12 @@ class BluetoothManager extends ChangeNotifier {
   final List<Completer<String>> _lineWaiters = [];
 
   bool get isConnected => _connectedDevice != null && _rxCharacteristic != null;
+  bool consumeUnexpectedDisconnect() {
+    final occurred = _unexpectedDisconnectEvent;
+    _unexpectedDisconnectEvent = false;
+    return occurred;
+  }
+
   bool get isConnecting => _isConnecting;
   bool get isScanning => _isScanning;
   int? get bateriaPercentual => _bateriaPercentual;
@@ -547,8 +557,13 @@ class BluetoothManager extends ChangeNotifier {
       _connectedDevice = device;
       _connectionSubscription = device.connectionState.listen((state) {
         if (state == BluetoothConnectionState.disconnected) {
-          _setStatus('Desconectado.');
+          final unexpected = !_intentionalDisconnect;
           _cleanup();
+          if (unexpected) {
+            _unexpectedDisconnectEvent = true;
+            _setStatus('Conexão BLE perdida. Procurando o FEFO novamente...');
+            _iniciarReconexaoAutomatica();
+          }
         }
       });
 
@@ -1890,8 +1905,15 @@ class BluetoothManager extends ChangeNotifier {
 
   Future<void> disconnectFromDevice() async {
     final device = _connectedDevice;
+    _intentionalDisconnect = true;
+    _autoReconnectTimer?.cancel();
+    _autoReconnectTimer = null;
     _cleanup();
-    await device?.disconnect();
+    try {
+      await device?.disconnect();
+    } finally {
+      _intentionalDisconnect = false;
+    }
   }
 
   void _iniciarKeepAlive() {
@@ -1901,6 +1923,29 @@ class BluetoothManager extends ChangeNotifier {
         enviarComando('PING');
       } else {
         _keepAliveTimer?.cancel();
+      }
+    });
+  }
+
+  void _iniciarReconexaoAutomatica() {
+    if (_autoReconnectTimer != null) return;
+    _autoReconnectTimer =
+        Timer.periodic(const Duration(seconds: 15), (_) async {
+      if (isConnected) {
+        _autoReconnectTimer?.cancel();
+        _autoReconnectTimer = null;
+        return;
+      }
+      if (_autoReconnectInProgress) return;
+      _autoReconnectInProgress = true;
+      try {
+        await conectarAutomaticamenteAoFefo();
+        if (isConnected) {
+          _autoReconnectTimer?.cancel();
+          _autoReconnectTimer = null;
+        }
+      } finally {
+        _autoReconnectInProgress = false;
       }
     });
   }
@@ -1925,6 +1970,7 @@ class BluetoothManager extends ChangeNotifier {
     _connectionSubscription?.cancel();
     _audioProgressTimer?.cancel();
     _keepAliveTimer?.cancel();
+    _autoReconnectTimer?.cancel();
     _connectedDevice?.disconnect();
     super.dispose();
   }
