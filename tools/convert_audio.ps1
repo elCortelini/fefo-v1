@@ -1,7 +1,7 @@
 param(
     [string]$Source = (Join-Path $PSScriptRoot '..\audiosFEFO'),
 
-    [string]$Destination = (Join-Path $PSScriptRoot '..\sdcard\usr\a'),
+    [string]$Destination = (Join-Path $PSScriptRoot '..\fefo_firmware\sdcard\usr\a'),
 
     [switch]$Recurse
 )

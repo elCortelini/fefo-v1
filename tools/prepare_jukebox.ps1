@@ -1,6 +1,6 @@
 param(
     [string]$Source = (Join-Path $PSScriptRoot '..\audiosFEFO\musicas'),
-    [string]$SdCardRoot = (Join-Path $PSScriptRoot '..\sdcard'),
+    [string]$SdCardRoot = (Join-Path $PSScriptRoot '..\fefo_firmware\sdcard'),
     [string]$Menu = 'Jukebox do Fefo',
     [switch]$RemoveLegacyAudio
 )

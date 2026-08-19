@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../managers/bluetooth_manager.dart';
+import '../config/app_version.dart';
+import '../config/firmware_version.dart';
 import '../widgets/botao_pincelada.dart';
 import '../widgets/pagina_base.dart';
 import 'tela_conexao.dart';
@@ -38,7 +40,7 @@ class TelaInicial extends StatelessWidget {
               child: Column(
                 children: [
                   const Text(
-                    'FEFO App v070 (1.0.70+70)',
+                    'FEFO App $fefoAppVersionLabel',
                     style: TextStyle(
                       fontFamily: 'KGPen',
                       fontSize: 16,
@@ -48,7 +50,7 @@ class TelaInicial extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'PET FEFO Firmware v${manager.firmwareVersion ?? '0.0.77'}',
+                    'PET FEFO Firmware v${manager.firmwareVersion ?? fefoFirmwareVersion}',
                     style: const TextStyle(
                       fontFamily: 'KGPen',
                       fontSize: 13,

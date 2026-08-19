@@ -1708,7 +1708,7 @@ bool AppController::handleAdvancedPlayCommand(const char* command) {
   return false;
 }
 
-#if 0  // Transporte OTA por BLE legado; a v070 usa somente OTA por Wi-Fi.
+#if 0  // Transporte OTA por BLE legado; a v1.070 usa somente OTA por Wi-Fi.
 bool AppController::handleOtaCommand(const char* command) {
   if (command == nullptr) return false;
   if (strcasecmp(command, "OTA STATUS") == 0 ||

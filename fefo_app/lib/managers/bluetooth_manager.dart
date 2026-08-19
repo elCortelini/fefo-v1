@@ -23,6 +23,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../config/firmware_version.dart';
 import 'dart:developer' as developer;
 
 class _ParsedAudioName {
@@ -1248,7 +1250,7 @@ class BluetoothManager extends ChangeNotifier {
     notifyListeners();
     final manifest = <String, dynamic>{
       'schema': 1,
-      'firmware': _firmwareVersion ?? '0.0.77',
+      'firmware': _firmwareVersion ?? fefoFirmwareVersion,
       'audio': _audioItems
           .where((item) => item.path != path)
           .map((item) => {
@@ -1364,7 +1366,7 @@ class BluetoothManager extends ChangeNotifier {
   }) {
     return {
       'schema': 1,
-      'firmware': _firmwareVersion ?? '0.0.77',
+      'firmware': _firmwareVersion ?? fefoFirmwareVersion,
       'audio': _audioItems
           .map((item) => {
                 'id': item.id,
@@ -1653,7 +1655,7 @@ class BluetoothManager extends ChangeNotifier {
     final pathSet = validPaths.toSet();
     final manifest = <String, dynamic>{
       'schema': 1,
-      'firmware': _firmwareVersion ?? '0.0.77',
+      'firmware': _firmwareVersion ?? fefoFirmwareVersion,
       'audio': _audioItems
           .where((item) => !pathSet.contains(item.path))
           .map((item) => {
