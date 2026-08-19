@@ -28,6 +28,12 @@ constexpr uint16_t kDacSilenceSample = uint16_t{128} << 8;
 // Em repouso, o amplificador desta placa fica mais silencioso com a saída
 // efetivamente desativada. O centro do DAC só é usado enquanto há áudio.
 constexpr uint16_t kDacIdleSample = 0;
+// Ajuste acústico leve para compensar o som fechado do pequeno amplificador.
+// O filtro reforça apenas o componente acima do passa-baixas e o limitador
+// impede que esse ganho gere recorte audível antes da redução para 8 bits.
+constexpr int32_t kTrebleFilterShift = 3;
+constexpr int32_t kTrebleBoostPercent = 18;
+constexpr int32_t kSoftClipThreshold = 30000;
 
 struct WavInfo {
   uint32_t sampleRate{0};
@@ -310,6 +316,7 @@ void AudioService::audioTask() {
   uint32_t sweepSample = 0;
   uint32_t playbackDataOffset = 0;
   uint32_t playbackSampleRate = board::kAudioSampleRateHz;
+  int32_t trebleLowpass = 0;
 
   File playbackFile;
   playbackActive_.store(false, std::memory_order_relaxed);
@@ -359,6 +366,7 @@ void AudioService::audioTask() {
           playbackDataOffset = wav.dataOffset;
           playbackSampleRate = wav.sampleRate;
           playbackFile.seek(playbackDataOffset + offset);
+          trebleLowpass = 0;
           playbackSize_.store(wav.dataSize, std::memory_order_relaxed);
           playbackPosition_.store(offset, std::memory_order_relaxed);
           playbackActive_.store(true, std::memory_order_relaxed);
@@ -402,6 +410,16 @@ void AudioService::audioTask() {
         for (size_t index = 0; index < sampleCount; ++index) {
           int32_t sample = samples[index];
           peak = max<uint32_t>(peak, abs(sample));
+          trebleLowpass += (sample - trebleLowpass) >> kTrebleFilterShift;
+          const int32_t treble = sample - trebleLowpass;
+          sample += (treble * kTrebleBoostPercent) / 100;
+          if (sample > kSoftClipThreshold) {
+            sample = kSoftClipThreshold +
+                     (sample - kSoftClipThreshold) / 4;
+          } else if (sample < -kSoftClipThreshold) {
+            sample = -kSoftClipThreshold +
+                     (sample + kSoftClipThreshold) / 4;
+          }
           sample = (sample * static_cast<int32_t>(volume)) / 100;
           const uint8_t dacValue = static_cast<uint8_t>((sample + 32768) >> 8);
           buffer[index] = static_cast<uint16_t>(dacValue) << 8;
