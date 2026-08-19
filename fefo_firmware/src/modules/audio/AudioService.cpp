@@ -12,15 +12,19 @@ namespace fefo {
 namespace {
 
 constexpr i2s_port_t kI2sPort = I2S_NUM_0;
-constexpr size_t kBufferSamples = 512;
+constexpr size_t kBufferSamples = 1024;
 constexpr int kMaxI2sRecoverAttempts = 3;
 constexpr size_t kSineTableSize = 256;
 constexpr uint16_t kEnvelopeMaximum = 32767;
 constexpr uint64_t kFullPhase = uint64_t{1} << 32;
-constexpr uint8_t kAudioTaskPriority = 2;
+constexpr uint8_t kAudioTaskPriority = 4;
 constexpr uint32_t kAudioTaskStackBytes = 8192;
 constexpr BaseType_t kAudioTaskCore = 0;
 constexpr TickType_t kDmaWriteTimeout = pdMS_TO_TICKS(200);
+// O DAC interno do ESP32 recebe amostras de 8 bits no byte mais significativo.
+// O valor 128 e o ponto de repouso; enviar zero durante o silencio cria um
+// degrau de tensao que pode ser ouvido como estalo no amplificador.
+constexpr uint16_t kDacSilenceSample = uint16_t{128} << 8;
 
 struct WavInfo {
   uint32_t sampleRate{0};
@@ -386,7 +390,9 @@ void AudioService::audioTask() {
         playbackLevelPercent_.store(0, std::memory_order_relaxed);
         i2s_set_clk(kI2sPort, board::kAudioSampleRateHz,
                     I2S_BITS_PER_SAMPLE_16BIT, I2S_CHANNEL_MONO);
-        for (size_t index = 0; index < kBufferSamples; ++index) buffer[index] = 0;
+        for (size_t index = 0; index < kBufferSamples; ++index) {
+          buffer[index] = kDacSilenceSample;
+        }
       } else {
         int16_t* samples = reinterpret_cast<int16_t*>(buffer);
         uint32_t peak = 0;
@@ -401,7 +407,7 @@ void AudioService::audioTask() {
             static_cast<uint8_t>(constrain((peak * 100UL) / 32768UL, 0UL, 100UL)),
             std::memory_order_relaxed);
         for (size_t index = sampleCount; index < kBufferSamples; ++index) {
-          buffer[index] = 0;
+          buffer[index] = kDacSilenceSample;
         }
         playbackPosition_.store(
             playbackPosition_.load(std::memory_order_relaxed) +
@@ -493,6 +499,7 @@ void AudioService::audioTask() {
       } else {
         phaseAccumulator = 0;
         sweepSample = 0;
+        dacValue = 128;
       }
 
       buffer[index] =
