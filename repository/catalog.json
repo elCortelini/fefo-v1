@@ -3,14 +3,14 @@
     "catalogVersion":  15,
     "repository":  "FEFO Google Drive",
     "firmware":  {
-                     "version":  "1.078",
+                     "version":  "1.079",
                      "board":  "FEFO_CYD_ESP32",
-                     "arquivo":  "FEFO_Firmware_v1.078.bin",
+                     "arquivo":  "FEFO_Firmware_v1.079.bin",
                      "tamanho":  1741376,
-                     "checksum":  "b77d27102a4d0329e192003fc7852b170a1922cfc219fa902e881a975eb350d4",
-                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.078.bin",
+                     "checksum":  "f6e169d2f7fb0d5e1ece3de4abb5394fdc21370de87c76d631bce2b7ebac7225",
+                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.079.bin",
                      "obrigatorio":  false,
-                     "notas":  "Versão 1.078: correções no fluxo do DAC, preenchimento de blocos e estabilidade da reprodução de áudio."
+                     "notas":  "Versão 1.079: silencia o DAC no repouso e mantém o centro do sinal somente durante a reprodução."
                  },
     "app":  {
                 "version":  "1.070",

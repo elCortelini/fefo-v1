@@ -22,9 +22,12 @@ constexpr uint32_t kAudioTaskStackBytes = 8192;
 constexpr BaseType_t kAudioTaskCore = 0;
 constexpr TickType_t kDmaWriteTimeout = pdMS_TO_TICKS(200);
 // O DAC interno do ESP32 recebe amostras de 8 bits no byte mais significativo.
-// O valor 128 e o ponto de repouso; enviar zero durante o silencio cria um
-// degrau de tensao que pode ser ouvido como estalo no amplificador.
+// Durante um WAV, o valor 128 representa o silencio centrado e evita um
+// deslocamento DC dentro do bloco de audio.
 constexpr uint16_t kDacSilenceSample = uint16_t{128} << 8;
+// Em repouso, o amplificador desta placa fica mais silencioso com a saída
+// efetivamente desativada. O centro do DAC só é usado enquanto há áudio.
+constexpr uint16_t kDacIdleSample = 0;
 
 struct WavInfo {
   uint32_t sampleRate{0};
@@ -391,7 +394,7 @@ void AudioService::audioTask() {
         i2s_set_clk(kI2sPort, board::kAudioSampleRateHz,
                     I2S_BITS_PER_SAMPLE_16BIT, I2S_CHANNEL_MONO);
         for (size_t index = 0; index < kBufferSamples; ++index) {
-          buffer[index] = kDacSilenceSample;
+          buffer[index] = kDacIdleSample;
         }
       } else {
         int16_t* samples = reinterpret_cast<int16_t*>(buffer);
@@ -499,7 +502,7 @@ void AudioService::audioTask() {
       } else {
         phaseAccumulator = 0;
         sweepSample = 0;
-        dacValue = 128;
+        dacValue = 0;
       }
 
       buffer[index] =
