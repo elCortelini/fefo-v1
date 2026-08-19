@@ -11,7 +11,7 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parent.parent
 ASSETS_DIR = ROOT / 'assets'
 BUILD_DIR = ROOT / 'build'
-SDCARD_DIR = ROOT / 'sdcard'
+SDCARD_DIR = ROOT / 'fefo_firmware' / 'sdcard'
 
 AUDIO_SRC = ASSETS_DIR / 'audio'
 FACES_SRC = ASSETS_DIR / 'faces'

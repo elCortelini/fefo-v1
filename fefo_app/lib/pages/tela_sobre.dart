@@ -5,6 +5,7 @@ import 'dart:math';
 
 import '../widgets/pagina_base.dart';
 import '../widgets/botao_verde.dart';
+import '../config/app_version.dart';
 
 class TelaSobre extends StatelessWidget {
   const TelaSobre({super.key});
@@ -67,7 +68,7 @@ class TelaSobre extends StatelessWidget {
                               color: const Color(0xFFDC4900), width: 1.5),
                         ),
                         child: const Text(
-                          'Versão do App: FEFO App v070 (1.0.70+70)',
+                          'Versão do App: FEFO App $fefoAppVersionLabel',
                           style: TextStyle(
                             fontFamily: 'KGPen',
                             fontSize: 16,

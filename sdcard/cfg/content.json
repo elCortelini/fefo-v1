@@ -1,9 +1,0 @@
-{
-  "schema": 1,
-  "storageWarningPercent": 90,
-  "protectedPaths": [
-    "/sys/a/",
-    "/sys/f/"
-  ],
-  "panicEnabled": false
-}

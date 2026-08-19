@@ -38,7 +38,7 @@ CSV_FILE_LEGACY = INBOX_DIR / 'metadados_conteudo.csv'
 
 TRACKER_FILE = TOOLS_DIR / '.content_tracker.json'
 
-SDCARD_DIR = ROOT / 'sdcard'
+SDCARD_DIR = ROOT / 'fefo_firmware' / 'sdcard'
 SD_AUDIO_DIR = SDCARD_DIR / 'usr' / 'a'
 SD_FACES_DIR = SDCARD_DIR / 'usr' / 'f'
 SD_VIDEO_DIR = SDCARD_DIR / 'usr' / 'v'

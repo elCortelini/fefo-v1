@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../managers/bluetooth_manager.dart';
+import '../config/firmware_version.dart';
 import '../widgets/botao_verde.dart';
 import '../widgets/pagina_base.dart';
 import '../widgets/progresso_operacao.dart';
@@ -200,7 +201,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
 
     return {
       'schema': 1,
-      'firmware': manager.firmwareVersion ?? '0.0.77',
+      'firmware': manager.firmwareVersion ?? fefoFirmwareVersion,
       'menus': [
         for (final menu in menus) {'id': menu, 'titulo': menu}
       ],

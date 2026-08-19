@@ -6,8 +6,8 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $root = Resolve-Path (Join-Path $PSScriptRoot '..')
-$destination = Join-Path $root 'sdcard\usr\a'
-$manifestPath = Join-Path $root 'sdcard\fefo.json'
+$destination = Join-Path $root 'fefo_firmware\sdcard\usr\a'
+$manifestPath = Join-Path $root 'fefo_firmware\sdcard\fefo.json'
 $extensions = @('.wav', '.mp3', '.mpeg', '.mpg', '.flac', '.ogg', '.m4a')
 $files = @(Get-ChildItem -LiteralPath $Source -File | Where-Object {
     $_.Extension.ToLowerInvariant() -in $extensions
