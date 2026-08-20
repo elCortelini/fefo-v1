@@ -74,6 +74,49 @@ class TelaInicial extends StatelessWidget {
                 ],
               ),
             ),
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: manager.isConnected
+                    ? const Color(0xFF318134).withValues(alpha: 0.12)
+                    : const Color(0xFFDC4900).withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: manager.isConnected
+                      ? const Color(0xFF318134)
+                      : const Color(0xFFDC4900),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    manager.isConnected
+                        ? Icons.bluetooth_connected
+                        : (manager.isConnecting
+                            ? Icons.bluetooth_searching
+                            : Icons.bluetooth_disabled),
+                    color: manager.isConnected
+                        ? const Color(0xFF318134)
+                        : const Color(0xFFDC4900),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    manager.isConnected
+                        ? 'FEFO conectado'
+                        : (manager.isConnecting
+                            ? 'Procurando o FEFO...'
+                            : 'FEFO desconectado'),
+                    style: const TextStyle(
+                      fontFamily: 'KGPen',
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
             if (manager.isConnected && manager.bateriaBaixa) ...[
               const SizedBox(height: 12),
               Container(

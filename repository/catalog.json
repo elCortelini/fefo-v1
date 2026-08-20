@@ -1,25 +1,25 @@
 {
     "schema":  1,
-    "catalogVersion":  15,
+    "catalogVersion":  16,
     "repository":  "FEFO Google Drive",
     "firmware":  {
-                     "version":  "1.080",
+                     "version":  "1.081",
                      "board":  "FEFO_CYD_ESP32",
-                     "arquivo":  "FEFO_Firmware_v1.080.bin",
-                     "tamanho":  1741472,
-                     "checksum":  "92ed5b9be0dc6b993835f28c93c702912208ae91472ca6df77274471f85716a3",
-                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.080.bin",
+                     "arquivo":  "FEFO_Firmware_v1.081.bin",
+                     "tamanho":  1741952,
+                     "checksum":  "b9af7afa682e43810bd73838c067598228ba6a4061dba4b79fd2f0ce901dda28",
+                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.081.bin",
                      "obrigatorio":  false,
-                     "notas":  "Versão 1.080: equalização suave para reduzir o abafamento e limitador para preservar a clareza do áudio."
+                     "notas":  "Versão 1.081: boas-vindas na inicialização, faces automáticas a cada 5 segundos, seleção temporária por 1 minuto e modo desenvolvedor controlado pelo app."
                  },
     "app":  {
-                "version":  "1.071",
-                "build":  1071,
-                "arquivo":  "FEFO_App_v1.071.apk",
-                "tamanho":  56656655,
-                "checksum":  "87ec02af3e5d1b1318734f550ebf1044a5c67ec1823570db4cae07c1802c0ceb",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.071.apk",
-                "notas":  "Detecta perda de conexão BLE, avisa o usuário, retorna à tela inicial e tenta reconectar automaticamente."
+                "version":  "1.072",
+                "build":  1072,
+                "arquivo":  "FEFO_App_v1.072.apk",
+                "tamanho":  57387755,
+                "checksum":  "bdea80d2a951bb8cef62c5f2aad002170a3be33f56684c01bb1b470d4c285d3c",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.072.apk",
+                "notas":  "Inclui o menu Rostinhos do Fefo, modo desenvolvedor com senha, status de conexão, confirmações de atualização e melhorias no catálogo."
              },
     "audio":  [
                   {

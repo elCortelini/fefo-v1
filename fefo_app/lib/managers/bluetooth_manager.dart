@@ -287,6 +287,7 @@ class BluetoothManager extends ChangeNotifier {
   bool _audioPaused = false;
   bool _faceModeEnabled = false;
   bool _faceRandomEnabled = true;
+  bool _developerModeEnabled = false;
   String? _currentFacePath;
   Timer? _audioProgressTimer;
   Timer? _keepAliveTimer;
@@ -382,6 +383,7 @@ class BluetoothManager extends ChangeNotifier {
   bool get audioStopped => _audioControlState == 'stopped';
   bool get faceModeEnabled => _faceModeEnabled;
   bool get faceRandomEnabled => _faceRandomEnabled;
+  bool get developerModeEnabled => _developerModeEnabled;
   String? get currentFacePath => _currentFacePath;
   bool? get lastTransferSucceeded => _lastTransferSucceeded;
   bool get aguardandoReconexao =>
@@ -1765,6 +1767,20 @@ class BluetoothManager extends ChangeNotifier {
     _faceRandomEnabled = false;
     _currentFacePath = path;
     notifyListeners();
+  }
+
+  Future<bool> setDeveloperMode(bool enabled) async {
+    final responseFuture = _aguardarLinha(
+      (line) => line == 'OK DIAG ON' || line == 'OK DIAG OFF',
+    );
+    await enviarComando(enabled ? 'DIAG ON' : 'DIAG OFF');
+    final response = await responseFuture;
+    if (response == (enabled ? 'OK DIAG ON' : 'OK DIAG OFF')) {
+      _developerModeEnabled = enabled;
+      notifyListeners();
+      return true;
+    }
+    return false;
   }
 
   Future<void> setBrightness(int brightness) async {

@@ -90,8 +90,8 @@ class AppController {
   uint32_t lastMicrophoneLogMs_{0};
   uint8_t latestMicrophoneLevelPercent_{0};
   bool watchdogReady_{false};
-  bool blePanelActive_{true};
-  bool preferredFacesMode_{false};
+  bool blePanelActive_{false};
+  bool preferredFacesMode_{true};
   bool lastBleConnected_{false};
   uint32_t lastBlePanelUpdateMs_{0};
   uint32_t bleCommandCount_{0};
@@ -102,7 +102,7 @@ class AppController {
   bool audioPaused_{false};
   char pausedAudioPath_[64]{};
   uint32_t pausedAudioOffset_{0};
-  bool diagnosticMode_{true};
+  bool diagnosticMode_{false};
   bool audioLoop_{false};
   char deviceId_[32]{"FEFO_001"};
   char deviceName_[32]{"FEFO"};
@@ -140,10 +140,11 @@ class AppController {
   size_t faceFileCount_{0};
   size_t currentFaceIndex_{0};
   uint32_t lastFaceChangeMs_{0};
-  static constexpr uint32_t kFaceDisplayMs = 3000;
+  static constexpr uint32_t kFaceDisplayMs = 5000;
   // Quando true, as faces são ciclada independentemente do estado de audioTest
   bool faceCyclingActive_{false};
   bool faceRandomLoop_{true};
+  uint32_t manualFaceUntilMs_{0};
 
   bool scanFaceFiles();
   bool collectFaceFiles(const char* directory, int depth = 0);

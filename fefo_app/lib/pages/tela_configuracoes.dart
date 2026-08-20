@@ -17,6 +17,52 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
   bool _vibracaoAtiva = true;
   bool _facesAtivas = true;
 
+  Future<void> _alternarModoDesenvolvedor(
+      BuildContext context, BluetoothManager manager, bool enabled) async {
+    if (!enabled) {
+      await manager.setDeveloperMode(false);
+      if (mounted) setState(() {});
+      return;
+    }
+    final controller = TextEditingController();
+    final senha = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Modo desenvolvedor'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          obscureText: true,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(labelText: 'Senha'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, controller.text),
+            child: const Text('Entrar'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (senha != '3616' || !mounted) return;
+    if (!manager.isConnected) {
+      _mostrarAvisoBLE(context);
+      return;
+    }
+    final ok = await manager.setDeveloperMode(true);
+    if (mounted) {
+      setState(() {});
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(ok ? 'Modo desenvolvedor ativado.' : 'Não foi possível ativar o modo desenvolvedor.'),
+      ));
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -62,6 +108,20 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
               ),
             ),
             const SizedBox(height: 25),
+
+            Card(
+              child: SwitchListTile(
+                secondary: const Icon(Icons.developer_mode),
+                title: const Text('Modo desenvolvedor'),
+                subtitle: Text(manager.developerModeEnabled
+                    ? 'Testes e telas de sistema liberados.'
+                    : 'Desativado. O FEFO permanece no modo normal.'),
+                value: manager.developerModeEnabled,
+                onChanged: (value) =>
+                    _alternarModoDesenvolvedor(context, manager, value),
+              ),
+            ),
+            const SizedBox(height: 15),
 
             // Card Vibração
             Container(
@@ -162,6 +222,7 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
             const SizedBox(height: 20),
 
             // Card Faces do FEFO
+            if (manager.developerModeEnabled) ...[
             Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
@@ -230,6 +291,7 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
                 ],
               ),
             ),
+            ],
             const SizedBox(height: 25),
           ],
         ),

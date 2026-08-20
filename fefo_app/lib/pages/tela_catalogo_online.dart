@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../managers/bluetooth_manager.dart';
 import '../config/firmware_version.dart';
+import '../config/app_version.dart';
 import '../widgets/botao_verde.dart';
 import '../widgets/pagina_base.dart';
 import '../widgets/progresso_operacao.dart';
@@ -39,6 +40,28 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
 
   List<int> _manifestBytes(Map<String, dynamic> manifest) =>
       utf8.encode(const JsonEncoder.withIndent('  ').convert(manifest));
+
+  Future<bool> _confirmarAcao(String titulo, String mensagem) async {
+    if (!mounted) return false;
+    return await showDialog<bool>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: Text(titulo),
+            content: Text(mensagem),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext, false),
+                child: const Text('Cancelar'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(dialogContext, true),
+                child: const Text('Continuar'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+  }
 
   @override
   void initState() {
@@ -248,6 +271,11 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
       }
       return;
     }
+    if (!await _confirmarAcao(
+        'Instalar conteúdo?',
+        'Os arquivos serão transferidos ao FEFO e ele poderá reiniciar ao concluir.')) {
+      return;
+    }
     setState(() {
       _busy = true;
       _status = 'Preparando downloads...';
@@ -351,6 +379,11 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
     if (firmware.url.isEmpty || firmware.checksum.isEmpty) {
       return;
     }
+    if (!await _confirmarAcao(
+        'Atualizar firmware?',
+        'O FEFO será reiniciado durante o processo. Não desligue o aparelho até terminar.')) {
+      return;
+    }
     setState(() {
       _busy = true;
       _status = 'Baixando Firmware v${firmware.version}...';
@@ -410,6 +443,11 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
 
   Future<void> _installApp(_OnlineApp app) async {
     if (app.url.isEmpty || app.checksum.isEmpty || _busy) return;
+    if (!await _confirmarAcao(
+        'Atualizar aplicativo?',
+        'O Android abrirá a instalação da nova versão do FEFO App.')) {
+      return;
+    }
     setState(() {
       _busy = true;
       _activeDownloadPath = '/fefo-app.apk';
@@ -534,7 +572,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
           if (_onlineApp != null)
             Builder(builder: (context) {
               final app = _onlineApp!;
-              const installedVersion = 70;
+              const installedVersion = fefoAppBuildNumber;
               final hasUpdate = app.build > installedVersion;
               if (!hasUpdate) {
                 return Card(

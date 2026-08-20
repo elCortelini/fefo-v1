@@ -125,27 +125,10 @@ class _TelaFacesFefoState extends State<TelaFacesFefo> {
               color: Color(0xFF318134),
             ),
           ),
-          SwitchListTile(
-            title: const Text('Modo Faces', style: _faceTextStyle),
-            subtitle: Text(
-              manager.faceModeEnabled
-                  ? 'Faces exibidas no visor.'
-                  : 'Desligado: o visor mostra o funcionamento atual do FEFO.',
-              style: _faceSubtitleStyle,
-            ),
-            value: manager.faceModeEnabled,
-            onChanged: _busy ? null : manager.setFaceMode,
-          ),
-          SwitchListTile(
-            title: const Text('Faces aleatórias', style: _faceTextStyle),
-            subtitle: const Text(
-              'Troca automaticamente a cada 3 segundos.',
-              style: _faceSubtitleStyle,
-            ),
-            value: manager.faceRandomEnabled,
-            onChanged: !manager.faceModeEnabled || _busy
-                ? null
-                : manager.setFaceRandom,
+          const Text(
+            'Escolha um rostinho para exibir. Após a seleção, o FEFO retorna ao modo aleatório automaticamente.',
+            textAlign: TextAlign.center,
+            style: _faceSubtitleStyle,
           ),
           Expanded(
             child: ListView(
