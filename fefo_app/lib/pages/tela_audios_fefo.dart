@@ -287,6 +287,8 @@ class _TelaAudiosFefoState extends State<TelaAudiosFefo> {
                                               });
                                             }
                                           },
+                                          favorito: manager.isFavorite(audio.path),
+                                          onFavorito: () => manager.alternarFavorito(audio),
                                         ),
                                       ],
                                     ],
@@ -353,6 +355,8 @@ class _CardAudioItem extends StatelessWidget {
   final bool tocando;
   final VoidCallback onTap;
   final VoidCallback onLongPress;
+  final bool favorito;
+  final VoidCallback onFavorito;
 
   const _CardAudioItem({
     required this.audio,
@@ -361,6 +365,8 @@ class _CardAudioItem extends StatelessWidget {
     required this.tocando,
     required this.onTap,
     required this.onLongPress,
+    required this.favorito,
+    required this.onFavorito,
   });
 
   @override
@@ -434,15 +440,10 @@ class _CardAudioItem extends StatelessWidget {
             : null,
         trailing: modoSelecao
             ? null
-            : IconButton(
-                tooltip: 'Tocar no FEFO',
-                icon: Icon(
-                  tocando ? Icons.equalizer_rounded : Icons.play_circle_fill_rounded,
-                  color: tocando ? corVerde : corLaranja,
-                  size: 36,
-                ),
-                onPressed: onTap,
-              ),
+            : Row(mainAxisSize: MainAxisSize.min, children: [
+                IconButton(tooltip: favorito ? 'Remover favorito' : 'Adicionar favorito', icon: Icon(favorito ? Icons.star_rounded : Icons.star_border_rounded, color: favorito ? corLaranja : corVerde), onPressed: onFavorito),
+                IconButton(tooltip: 'Tocar no FEFO', icon: Icon(tocando ? Icons.equalizer_rounded : Icons.play_circle_fill_rounded, color: tocando ? corVerde : corLaranja, size: 36), onPressed: onTap),
+              ]),
       ),
     );
   }

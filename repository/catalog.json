@@ -1,25 +1,25 @@
 {
     "schema":  1,
-    "catalogVersion":  20,
+    "catalogVersion":  21,
     "repository":  "FEFO Google Drive",
     "firmware":  {
-                     "version":  "1.084",
+                     "version":  "1.085",
                      "board":  "FEFO_CYD_ESP32",
-                     "arquivo":  "FEFO_Firmware_v1.084.bin",
-                     "tamanho":  1744112,
-                     "checksum":  "c73b4c4abf2597c17148a445d365f8dcb13ca8fba5d04624c49b574bd8a91641",
-                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.084.bin",
+                     "arquivo":  "FEFO_Firmware_v1.085.bin",
+                     "tamanho":  1744400,
+                     "checksum":  "e8420a5ad6b3e04ec80174e623ac89698eb4d903535259c6e0bacdff50282988",
+                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.085.bin",
                      "obrigatorio":  false,
-                     "notas":  "Versão 1.084: 10 padrões intensos de vibração com 7 segundos, 10 efeitos LED divertidos, arco-íris preservado e telas de status somente no modo Desenvolvedor."
+                     "notas":  "Versão 1.085: Ronronar com áudio e vibração protegida por 10 segundos, desligamento dos LEDs e telas técnicas somente no modo Desenvolvedor."
                  },
     "app":  {
-                "version":  "1.076",
-                "build":  1076,
-                "arquivo":  "FEFO_App_v1.076.apk",
-                "tamanho":  57387755,
-                "checksum":  "19ee1ad55fb15886ad534cbd54e9cd2ce9f352f22b666143ddb46fcc63b2a836",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.076.apk",
-                "notas":  "Correção do fluxo automático de conexão: abre o menu principal sem deixar a tela preta."
+                "version":  "1.077",
+                "build":  1077,
+                "arquivo":  "FEFO_App_v1.077.apk",
+                "tamanho":  57748203,
+                "checksum":  "d20d5fc360a824834738469f1bcb2e51d3d2d21009c4c1633a67c1ca21b7cb0b",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.077.apk",
+                "notas":  "Melhorias visuais, favoritos, modo escuro, navegação inferior reversível, Ronronar, ações rápidas, LED com nomes e cores, catálogo padronizado e player em laranja claro."
              },
     "audio":  [
                   {
@@ -181,6 +181,16 @@
                       "checksum":  "6a8492bac9b28715d6c421465eb3238a13c1a63ad8faccfc963b8962fe5daefe",
                       "tipo":  "audio",
                       "url":  "https://drive.google.com/uc?export=download\u0026id=12x5RYVLpV-x9ihWVMgKcVO3on960d-tV"
+                  },
+                  {
+                      "id":  "au016",
+                      "titulo":  "Ronronar",
+                      "menu":  "Efeitos Especiais",
+                      "arquivo":  "/usr/a/ronronar.wav",
+                      "tamanho":  640044,
+                      "checksum":  "31204d4eb3ae6243633842a1f6c7b7dbc779aff56863775708da51e2b42370a4",
+                      "tipo":  "audio",
+                      "url":  "https://raw.githubusercontent.com/elCortelini/fefo-v1/main/repository/audio/RONRONAR_10s.wav"
                   }
               ],
     "faces":  [

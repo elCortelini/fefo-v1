@@ -8,16 +8,30 @@ import 'mini_player.dart';
 class PaginaBase extends StatelessWidget {
   final Widget child;
   final bool mostrarBotaoVoltar;
+  final ValueChanged<int>? onNavegacao;
 
   const PaginaBase({
     super.key,
     required this.child,
     this.mostrarBotaoVoltar = false,
+    this.onNavegacao,
   });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: onNavegacao == null
+          ? null
+          : NavigationBar(
+              selectedIndex: 0,
+              onDestinationSelected: onNavegacao,
+              destinations: const [
+                NavigationDestination(icon: Icon(Icons.home_rounded), label: 'Início'),
+                NavigationDestination(icon: Icon(Icons.star_rounded), label: 'Favoritos'),
+                NavigationDestination(icon: Icon(Icons.library_music_rounded), label: 'Conteúdos'),
+                NavigationDestination(icon: Icon(Icons.settings_rounded), label: 'Configurações'),
+              ],
+            ),
       body: Stack(
         fit: StackFit.expand,
         children: [

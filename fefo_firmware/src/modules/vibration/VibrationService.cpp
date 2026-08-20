@@ -71,9 +71,9 @@ bool VibrationService::start(uint8_t duty, uint32_t maxDurationMs) {
   return true;
 }
 
-bool VibrationService::startPattern(uint8_t pattern) {
-  if (pattern < 1 || pattern > 10) return false;
-  const bool started = start(255, 7000);
+bool VibrationService::startPattern(uint8_t pattern, uint32_t durationMs) {
+  if (pattern < 1 || pattern > 11 || durationMs == 0) return false;
+  const bool started = start(255, durationMs);
   if (started) pattern_ = pattern;
   return started;
 }
@@ -106,6 +106,7 @@ void VibrationService::update(uint32_t nowMs) {
                                     (elapsed % cycle >= 360 && elapsed % cycle < 540) ||
                                     (elapsed % cycle >= 720 && elapsed % cycle < 900)) ? 255 : 0; break;
         case 10: cycle = 1100; on = ((elapsed % cycle) < 780) ? 255 : 0; break;
+        case 11: cycle = 620; on = ((elapsed % cycle) < 390) ? 255 : 0; break;
       }
       const uint32_t phase = elapsed % cycle;
       writeOutput(phase < on ? 255 : 0);

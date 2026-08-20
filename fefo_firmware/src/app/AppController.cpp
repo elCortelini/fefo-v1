@@ -623,6 +623,15 @@ void AppController::handleBleCommand(const char* command) {
     return;
   }
 
+  if (strcasecmp(start, "RONRONAR") == 0) {
+    vibration_.clearSafetyLockout();
+    vibration_.stop();
+    const bool vibraOk = vibration_.startPattern(11, 10000);
+    const bool audioOk = playAudioFromBleToken("ronronar");
+    sendBleLine(vibraOk && audioOk ? "OK RONRONAR" : "ERR RONRONAR AUDIO_NOT_INSTALLED");
+    return;
+  }
+
   if (handleConfigCommand(start)) {
     return;
   }
@@ -928,7 +937,7 @@ void AppController::sendBleHelp() {
   sendBleLine("OK HELP PING STATUS LIST AUDIO LIST FACES TREE PLAY <audio>");
   sendBleLine("OK HELP FACE <n|random|path> MODE FACES MODE BLE PAUSE RESUME STOP");
   sendBleLine("OK HELP PLAY RANDOM|NEXT|PREV|LOOP ON|LOOP OFF");
-  sendBleLine("OK HELP VOL 0-100 BRILHO 0-100 LED 1-10 VIBRA 1-5");
+  sendBleLine("OK HELP VOL 0-100 BRILHO 0-100 LED 1-10 VIBRA 1-10 RONRONAR");
   sendBleLine("OK HELP CONFIG GET|SET <key> <value>|SAVE|LOAD SD INFO");
   sendBleLine("OK HELP PANIC ON|OFF|STATUS|SET LEVEL|SET IDLE DIAG ON|OFF");
   sendBleLine("OK HELP DEVICE LOG MEDIA CATALOG FILE UPLOAD DELETE");
@@ -1585,7 +1594,7 @@ void AppController::sendAppCaps() {
   sendBleLine("BEGIN APP CAPS");
   sendBleLine("CAP AUDIO_PLAY=1 AUDIO_UPLOAD=1 AUDIO_DELETE=1 AUDIO_LIST=1");
   sendBleLine("CAP FACE_LIST=1 FACE_SHOW=1 FACE_RANDOM=1 DISPLAY_MODES=1");
-  sendBleLine("CAP LED=1 LED_PATTERNS=10 BRIGHTNESS=1 MOTOR=1 VIBRA=5");
+  sendBleLine("CAP LED=1 LED_PATTERNS=10 BRIGHTNESS=1 MOTOR=1 VIBRA=10 RONRONAR=1");
   sendBleLine("CAP MIC=1 PANIC=1 SD_TREE=1 LOG=1 CONFIG=1 CATALOG=1");
   sendBleLine("CAP OTA_WIFI=1 WIFI_PUSH=1 TOUCH=0");
   sendBleLine("END APP CAPS");
@@ -2388,6 +2397,13 @@ bool AppController::handleBrightnessCommand(const char* command) {
 }
 
 bool AppController::handleLedPatternCommand(const char* command) {
+  if (strcasecmp(command, "LED OFF") == 0 ||
+      strcasecmp(command, "LEDS OFF") == 0) {
+    leds_.setPattern(0);
+    leds_.stop();
+    sendBleLine("OK LED OFF");
+    return true;
+  }
   if (strcasecmp(command, "LED COUNT?") == 0 ||
       strcasecmp(command, "LEDS?") == 0) {
     char line[40]{};

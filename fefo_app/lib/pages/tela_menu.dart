@@ -14,6 +14,7 @@ import 'tela_conexao.dart';
 import 'tela_luzes.dart';
 import 'tela_sobre.dart';
 import 'tela_faces_fefo.dart';
+import 'tela_favoritos.dart';
 
 class TelaMenu extends StatefulWidget {
   const TelaMenu({super.key});
@@ -37,6 +38,11 @@ class _TelaMenuState extends State<TelaMenu> {
     const vermelho = Color(0xD5FF0101);
 
     return PaginaBase(
+      onNavegacao: (index) {
+        if (index == 1) _abrir(const TelaFavoritos());
+        if (index == 2) _abrir(const TelaAudiosFefo());
+        if (index == 3) _abrir(const TelaConfiguracoes());
+      },
       child: Consumer<BluetoothManager>(
         builder: (context, manager, _) {
           // Trava de segurança: Menu só é liberado com FEFO conectado e catálogo lido
@@ -150,6 +156,14 @@ class _TelaMenuState extends State<TelaMenu> {
                   aoPressionar: () => context
                       .read<BluetoothManager>()
                       .enviarComando('PANIC TRIGGER'),
+                ),
+                const SizedBox(height: 15),
+                Row(
+                  children: [
+                    Expanded(child: _BotaoMenu(texto: 'Ronronar', aoPressionar: manager.isConnected ? manager.ronronar : () => _abrir(const TelaConexao()))),
+                    const SizedBox(width: 10),
+                    Expanded(child: _BotaoMenu(texto: 'Favoritos', aoPressionar: () => _abrir(const TelaFavoritos()))),
+                  ],
                 ),
                 const SizedBox(height: 15),
 

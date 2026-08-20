@@ -23,16 +23,16 @@ class TelaLuzes extends StatefulWidget {
 class _TelaLuzesState extends State<TelaLuzes> {
   int _brilho = 50;
   static const _padroes = [
-    _PadraoLed('Vermelho', 1, Colors.red),
-    _PadraoLed('Verde', 2, Color(0xFF35B84A)),
-    _PadraoLed('Azul', 3, Color(0xFF3287E8)),
-    _PadraoLed('Pisca branco', 4, Colors.white),
-    _PadraoLed('Ponto laranja', 5, Colors.orange),
-    _PadraoLed('Roxo alternado', 6, Color(0xFF9C55D8)),
+    _PadraoLed('Confete neon', 1, Color(0xFFE91E63)),
+    _PadraoLed('Onda tropical', 2, Color(0xFF19BFA7)),
+    _PadraoLed('Foguete', 3, Color(0xFF3287E8)),
+    _PadraoLed('Pulsos de festa', 4, Color(0xFFFF7A00)),
+    _PadraoLed('Fogo divertido', 5, Color(0xFFE53935)),
+    _PadraoLed('Ping-pong', 6, Color(0xFF7E57C2)),
     _PadraoLed('Arco-íris', 7, Color(0xFF20C7B5)),
-    _PadraoLed('Respiração azul', 8, Colors.lightBlueAccent),
-    _PadraoLed('Polícia', 9, Color(0xFF6457E8)),
-    _PadraoLed('Rastro laranja', 10, Colors.orangeAccent),
+    _PadraoLed('Estrelas', 8, Color(0xFF455A64)),
+    _PadraoLed('Balada pastel', 9, Color(0xFFEC407A)),
+    _PadraoLed('Chuva colorida', 10, Color(0xFF26A69A)),
   ];
 
   @override
@@ -113,6 +113,12 @@ class _TelaLuzesState extends State<TelaLuzes> {
               },
             ),
             const SizedBox(height: 28),
+            ElevatedButton.icon(
+              onPressed: manager.isConnected ? manager.desligarLeds : null,
+              icon: const Icon(Icons.lightbulb_outline_rounded),
+              label: const Text('Desligar LEDs', style: TextStyle(fontFamily: 'KGPen', fontSize: 18)),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.black87, foregroundColor: Colors.white),
+            ),
             BotaoPincelada(
               texto: 'Voltar',
               cor: const Color(0xFF318134),
