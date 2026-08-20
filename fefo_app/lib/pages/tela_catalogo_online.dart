@@ -559,12 +559,18 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                      Text('Conteúdos disponíveis',
-                          style: TextStyle(
-                              fontFamily: 'Billotilde',
-                              fontSize: 38,
-                              color: Colors.white,
-                              height: 1)),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text('Conteúdos disponíveis',
+                            maxLines: 1,
+                            softWrap: false,
+                            style: TextStyle(
+                                fontFamily: 'Billotilde',
+                                fontSize: 38,
+                                color: Colors.white,
+                                height: 1)),
+                      ),
                       SizedBox(height: 6),
                       Text('Novos conteúdos para o PET FEFO',
                           style: TextStyle(
@@ -862,16 +868,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                                   _selectedPaths.add(item.path);
                                 }
                               }),
-                      trailing: Checkbox(
-                        value: selected,
-                        onChanged: _busy ? null : (_) => setState(() {
-                          if (selected) {
-                            _selectedPaths.remove(item.path);
-                          } else {
-                            _selectedPaths.add(item.path);
-                          }
-                        }),
-                      ),
+                      onTap: _busy ? null : () => _installItems([item]),
                     ),
                     if (itemProgress != null)
                       ProgressoOperacao(

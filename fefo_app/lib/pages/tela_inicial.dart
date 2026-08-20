@@ -130,13 +130,6 @@ class TelaInicial extends StatelessWidget {
                 MaterialPageRoute(builder: (_) => const TelaMenu()),
               ),
             ),
-            const SizedBox(height: 12),
-            if (manager.isConnected)
-              BotaoPincelada(
-                texto: 'Ronronar',
-                cor: laranja,
-                aoPressionar: manager.ronronar,
-              ),
             const SizedBox(height: 40),
             if (Platform.isAndroid)
               const BotaoPincelada(
