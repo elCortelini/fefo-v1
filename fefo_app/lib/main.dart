@@ -161,9 +161,8 @@ class _MyAppState extends State<MyApp> {
       if (connectedNow && !wasConnected) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted || !_manager!.isConnected) return;
-          _navigatorKey.currentState?.pushAndRemoveUntil(
+          _navigatorKey.currentState?.pushReplacement(
             MaterialPageRoute(builder: (_) => const TelaMenu()),
-            (route) => false,
           );
         });
       }
