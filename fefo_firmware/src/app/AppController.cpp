@@ -417,7 +417,7 @@ void AppController::update() {
       uint32_t nowMsLocal = millis();
       const bool fileChanged = strcmp(audio_.playbackFileName(), lastAudioFile_) != 0;
       // Não sobrescreve a exibição das faces enquanto o ciclo de faces estiver ativo
-      if (!faceCyclingActive_ && (fileChanged || progress != lastAudioProgress_ ||
+      if (diagnosticMode_ && !faceCyclingActive_ && (fileChanged || progress != lastAudioProgress_ ||
           nowMsLocal - lastAudioDisplayMs_ > 200)) {
         lastAudioDisplayMs_ = nowMsLocal;
         lastAudioProgress_ = progress;
@@ -436,7 +436,7 @@ void AppController::update() {
   // Se estivermos no teste de audio (ou ciclo de faces ativo) e houver
   // faces carregadas, cicla-as
   if (microphoneSampled) {
-    if (faceFileCount_ == 0) {
+    if (diagnosticMode_ && faceFileCount_ == 0) {
       display_.showVuMeter(reading.levelPercent, reading.peakPercent, reading.rms,
                            reading.bias, reading.peakToPeak, reading.clipping,
                            motorActive);
@@ -2431,7 +2431,7 @@ bool AppController::handleLedPatternCommand(const char* command) {
 bool AppController::handleVibrationCommand(const char* command) {
   if (strcasecmp(command, "VIBRA?") == 0 ||
       strcasecmp(command, "VIBRA LIST") == 0) {
-    sendBleLine("OK VIBRA 1=leve 2=curta 3=media 4=longa 5=forte");
+    sendBleLine("OK VIBRA 1=Metralhadora 2=Batida 3=SOS 4=Onda 5=Triplo 6=Sirene 7=Marcha 8=Crescendo 9=Festa 10=Pulso");
     return true;
   }
 
@@ -2440,22 +2440,14 @@ bool AppController::handleVibrationCommand(const char* command) {
       !parseNumberArgument(command, "VIB", value)) {
     return false;
   }
-  if (value < 1 || value > 5) {
-    sendBleLine("ERR VIBRA RANGE 1-5");
+  if (value < 1 || value > 10) {
+    sendBleLine("ERR VIBRA RANGE 1-10");
     return true;
   }
 
-  struct Pattern {
-    uint8_t duty;
-    uint32_t durationMs;
-  };
-  constexpr Pattern patterns[] = {
-      {90, 350}, {140, 600}, {190, 900}, {170, 1600}, {255, 2400},
-  };
-  const Pattern& pattern = patterns[value - 1];
   vibration_.clearSafetyLockout();
   vibration_.stop();
-  const bool started = vibration_.start(pattern.duty, pattern.durationMs);
+  const bool started = vibration_.startPattern(static_cast<uint8_t>(value));
   if (started) {
     manualVibrationPattern_ = static_cast<uint8_t>(value);
     manualVibrationActive_ = true;
@@ -2608,8 +2600,10 @@ bool AppController::playAudioFromBleToken(const char* token) {
   }
 
   Serial.printf("[BLE] Tocando audio: %s\n", playablePath);
-  display_.showAudioPlayback(audio_.playbackFileName(), 0,
-                             audio_.volumePercent());
+  if (diagnosticMode_) {
+    display_.showAudioPlayback(audio_.playbackFileName(), 0,
+                               audio_.volumePercent());
+  }
   return true;
 }
 
@@ -2681,23 +2675,28 @@ bool AppController::buildCatalogJson() {
   }
   file.println("  ],");
   file.println("  \"led_effects\": [");
-  file.println("    {\"id\":1,\"name\":\"Vermelho\",\"command\":\"LED 1\"},");
-  file.println("    {\"id\":2,\"name\":\"Verde\",\"command\":\"LED 2\"},");
-  file.println("    {\"id\":3,\"name\":\"Azul\",\"command\":\"LED 3\"},");
-  file.println("    {\"id\":4,\"name\":\"Pisca branco\",\"command\":\"LED 4\"},");
-  file.println("    {\"id\":5,\"name\":\"Ponto laranja\",\"command\":\"LED 5\"},");
-  file.println("    {\"id\":6,\"name\":\"Roxo alternado\",\"command\":\"LED 6\"},");
+  file.println("    {\"id\":1,\"name\":\"Confete neon\",\"command\":\"LED 1\"},");
+  file.println("    {\"id\":2,\"name\":\"Onda tropical\",\"command\":\"LED 2\"},");
+  file.println("    {\"id\":3,\"name\":\"Foguete\",\"command\":\"LED 3\"},");
+  file.println("    {\"id\":4,\"name\":\"Pulsos de festa\",\"command\":\"LED 4\"},");
+  file.println("    {\"id\":5,\"name\":\"Fogo divertido\",\"command\":\"LED 5\"},");
+  file.println("    {\"id\":6,\"name\":\"Ping-pong\",\"command\":\"LED 6\"},");
   file.println("    {\"id\":7,\"name\":\"Arco-iris\",\"command\":\"LED 7\"},");
-  file.println("    {\"id\":8,\"name\":\"Respiracao azul\",\"command\":\"LED 8\"},");
-  file.println("    {\"id\":9,\"name\":\"Policia\",\"command\":\"LED 9\"},");
-  file.println("    {\"id\":10,\"name\":\"Rastro laranja\",\"command\":\"LED 10\"}");
+  file.println("    {\"id\":8,\"name\":\"Estrelas\",\"command\":\"LED 8\"},");
+  file.println("    {\"id\":9,\"name\":\"Balada pastel\",\"command\":\"LED 9\"},");
+  file.println("    {\"id\":10,\"name\":\"Chuva colorida\",\"command\":\"LED 10\"}");
   file.println("  ],");
   file.println("  \"vibration_effects\": [");
-  file.println("    {\"id\":1,\"name\":\"Leve\",\"command\":\"VIBRA 1\"},");
-  file.println("    {\"id\":2,\"name\":\"Curta\",\"command\":\"VIBRA 2\"},");
-  file.println("    {\"id\":3,\"name\":\"Media\",\"command\":\"VIBRA 3\"},");
-  file.println("    {\"id\":4,\"name\":\"Longa\",\"command\":\"VIBRA 4\"},");
-  file.println("    {\"id\":5,\"name\":\"Forte\",\"command\":\"VIBRA 5\"}");
+  file.println("    {\"id\":1,\"name\":\"Metralhadora\",\"command\":\"VIBRA 1\"},");
+  file.println("    {\"id\":2,\"name\":\"Batida dupla\",\"command\":\"VIBRA 2\"},");
+  file.println("    {\"id\":3,\"name\":\"SOS intenso\",\"command\":\"VIBRA 3\"},");
+  file.println("    {\"id\":4,\"name\":\"Onda forte\",\"command\":\"VIBRA 4\"},");
+  file.println("    {\"id\":5,\"name\":\"Triplo impacto\",\"command\":\"VIBRA 5\"},");
+  file.println("    {\"id\":6,\"name\":\"Sirene\",\"command\":\"VIBRA 6\"},");
+  file.println("    {\"id\":7,\"name\":\"Marcha\",\"command\":\"VIBRA 7\"},");
+  file.println("    {\"id\":8,\"name\":\"Crescendo\",\"command\":\"VIBRA 8\"},");
+  file.println("    {\"id\":9,\"name\":\"Festa\",\"command\":\"VIBRA 9\"},");
+  file.println("    {\"id\":10,\"name\":\"Pulso\",\"command\":\"VIBRA 10\"}");
   file.println("  ],");
   file.println("  \"uploads\": {");
   file.println("    \"audio\":\"/usr/a/\",");
@@ -2832,13 +2831,13 @@ void AppController::startAudioTestSequence() {
     return;
   }
 
-  display_.showAudioPlayback("Procurando arquivos", 0,
-                             audio_.volumePercent());
+  if (diagnosticMode_) display_.showAudioPlayback("Procurando arquivos", 0,
+                                                  audio_.volumePercent());
 
   if (!scanAudioTestFiles()) {
     Serial.println("[AUDIO TEST] Nenhum arquivo de audio encontrado.");
-    display_.showAudioPlayback("SEM ARQUIVOS", 0,
-                               audio_.volumePercent());
+    if (diagnosticMode_) display_.showAudioPlayback("SEM ARQUIVOS", 0,
+                                                   audio_.volumePercent());
     return;
   }
 
@@ -2864,8 +2863,8 @@ bool AppController::startNextAudioTest() {
   if (audio_.playWavFile(path)) {
     audioTestPlaybackPending_ = true;
     Serial.printf("[AUDIO TEST] Iniciando audio %s\n", path);
-    display_.showAudioPlayback(audio_.playbackFileName(), 0,
-                               audio_.volumePercent());
+    if (diagnosticMode_) display_.showAudioPlayback(audio_.playbackFileName(), 0,
+                                                    audio_.volumePercent());
     return true;
   }
 

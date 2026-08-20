@@ -243,62 +243,65 @@ void LedService::showCalm(uint32_t nowMs) {
 }
 
 void LedService::showSelectedPattern(uint32_t nowMs) {
+  const uint16_t count = pixelCount_;
   switch (selectedPattern_) {
     case 1:
-      strip_.fill(strip_.Color(255, 0, 0));
+      for (uint16_t pixel = 0; pixel < count; ++pixel) {
+        const uint8_t hue = static_cast<uint8_t>((pixel * 17 + ledPhase_ * 19) & 0xFF);
+        strip_.setPixelColor(pixel, (pixel + ledPhase_) % 3 == 0 ? wheelColor(hue) : 0);
+      }
       break;
     case 2:
-      strip_.fill(strip_.Color(0, 255, 0));
-      break;
-    case 3:
-      strip_.fill(strip_.Color(0, 0, 255));
-      break;
-    case 4:
-      strip_.fill((ledPhase_ % 2) == 0 ? strip_.Color(255, 255, 255) : 0);
-      break;
-    case 5:
-      for (uint16_t pixel = 0; pixel < board::kNeoPixelCount; ++pixel) {
-        strip_.setPixelColor(pixel,
-                             pixel == (ledPhase_ % board::kNeoPixelCount)
-                                 ? strip_.Color(255, 120, 0)
-                                 : 0);
-      }
-      break;
-    case 6:
-      for (uint16_t pixel = 0; pixel < board::kNeoPixelCount; ++pixel) {
-        const bool on = ((pixel + ledPhase_) % 3) == 0;
-        strip_.setPixelColor(pixel, on ? strip_.Color(80, 0, 255) : 0);
-      }
-      break;
-    case 7:
-      for (uint16_t pixel = 0; pixel < board::kNeoPixelCount; ++pixel) {
-        const uint8_t hue = static_cast<uint8_t>(
-            (pixel * 255 / board::kNeoPixelCount + ledPhase_ * 8) & 0xFF);
+      for (uint16_t pixel = 0; pixel < count; ++pixel) {
+        const uint8_t hue = static_cast<uint8_t>((pixel * 255 / max<uint16_t>(1, count) + ledPhase_ * 10) & 0xFF);
         strip_.setPixelColor(pixel, wheelColor(hue));
       }
       break;
-    case 8: {
-      const uint8_t breath =
-          static_cast<uint8_t>(24 + ((sin(nowMs / 500.0F) + 1.0F) * 90.0F));
-      strip_.fill(scaleColor(strip_.Color(0, 180, 255), breath));
-      break;
-    }
-    case 9:
-      for (uint16_t pixel = 0; pixel < board::kNeoPixelCount; ++pixel) {
-        const bool left = pixel < board::kNeoPixelCount / 2;
-        const bool blink = (ledPhase_ % 2) == 0;
-        strip_.setPixelColor(pixel,
-                             left == blink ? strip_.Color(255, 0, 0)
-                                           : strip_.Color(0, 0, 255));
+    case 3:
+      for (uint16_t pixel = 0; pixel < count; ++pixel) {
+        const uint16_t head = (ledPhase_ * 2) % max<uint16_t>(1, count);
+        const uint16_t distance = (pixel > head) ? pixel - head : head - pixel;
+        const uint8_t glow = distance == 0 ? 255 : (distance == 1 ? 120 : (distance == 2 ? 35 : 0));
+        strip_.setPixelColor(pixel, strip_.Color(glow, glow / 3, 255));
       }
       break;
+    case 4:
+      strip_.fill((ledPhase_ % 4) < 2 ? strip_.Color(255, 80, 0) : strip_.Color(255, 0, 140));
+      break;
+    case 5:
+      for (uint16_t pixel = 0; pixel < count; ++pixel) {
+        const uint8_t flicker = random(90, 256);
+        strip_.setPixelColor(pixel, (pixel + ledPhase_) % 4 == 0
+            ? strip_.Color(255, flicker / 2, 0) : strip_.Color(flicker / 5, 0, 0));
+      }
+      break;
+    case 6:
+      for (uint16_t pixel = 0; pixel < count; ++pixel) {
+        const uint16_t pos = ledPhase_ % max<uint16_t>(1, count * 2 - 2);
+        const uint16_t head = pos < count ? pos : count * 2 - 2 - pos;
+        strip_.setPixelColor(pixel, pixel == head ? strip_.Color(255, 255, 255) : strip_.Color(0, 40, 180));
+      }
+      break;
+    case 7:
+      for (uint16_t pixel = 0; pixel < count; ++pixel) {
+        const uint8_t hue = static_cast<uint8_t>(
+            (pixel * 255 / max<uint16_t>(1, count) + ledPhase_ * 8) & 0xFF);
+        strip_.setPixelColor(pixel, wheelColor(hue));
+      }
+      break;
+    case 8:
+      for (uint16_t pixel = 0; pixel < count; ++pixel) {
+        const bool star = ((pixel * 13 + ledPhase_ * 7) % 23) < 3;
+        strip_.setPixelColor(pixel, star ? strip_.Color(255, 255, 255) : strip_.Color(10, 0, 40));
+      }
+      break;
+    case 9:
+      strip_.fill((ledPhase_ % 3) == 0 ? strip_.Color(255, 70, 180) : strip_.Color(80, 0, 255));
+      break;
     case 10:
-      for (uint16_t pixel = 0; pixel < board::kNeoPixelCount; ++pixel) {
-        const uint8_t distance = abs(static_cast<int>(pixel) -
-                                     static_cast<int>(ledPhase_ % board::kNeoPixelCount));
-        const uint8_t intensity =
-            distance == 0 ? 255 : (distance == 1 ? 90 : (distance == 2 ? 25 : 0));
-        strip_.setPixelColor(pixel, strip_.Color(intensity, intensity / 3, 0));
+      for (uint16_t pixel = 0; pixel < count; ++pixel) {
+        const uint8_t hue = static_cast<uint8_t>((pixel * 31 + ledPhase_ * 5) & 0xFF);
+        strip_.setPixelColor(pixel, (pixel + ledPhase_) % 5 == 0 ? wheelColor(hue) : 0);
       }
       break;
     default:
