@@ -7,8 +7,8 @@
 namespace fefo::board {
 
 inline constexpr char kBoardName[] = "FEFO-35-V0";
-inline constexpr char kBleName[] = "FEFO_BLE_V1082";
-inline constexpr char kFirmwareVersion[] = "1.082";
+inline constexpr char kBleName[] = "FEFO_BLE_V1083";
+inline constexpr char kFirmwareVersion[] = "1.083";
 inline constexpr char kProtocolVersion[] = "0.1";
 
 // TFT SPI ILI9488 480x320 validada no protótipo com a configuração funcional
@@ -48,7 +48,7 @@ inline constexpr int kAudioOutput = 26;
 inline constexpr bool kAudioEnabled = true;
 inline constexpr bool kAudioBootTestEnabled = false;
 inline constexpr int kNeoPixel = 22;
-inline constexpr uint16_t kNeoPixelCount = 15;
+inline constexpr uint16_t kNeoPixelCount = 35;
 inline constexpr int kMotor = 21;
 inline constexpr uint8_t kMotorPwmChannel = 7;
 inline constexpr uint32_t kMotorPwmFrequencyHz = 5000;

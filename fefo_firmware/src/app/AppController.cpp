@@ -1924,11 +1924,11 @@ void AppController::sendConfig() {
   char line[190]{};
   snprintf(line, sizeof(line),
            "OK CONFIG VOL=%u BRILHO=%u LED=%u MODE=%s DIAG=%s PANIC=%s "
-           "PANIC_LEVEL=%u PANIC_IDLE=%lu",
+           "LED_COUNT=%u PANIC_LEVEL=%u PANIC_IDLE=%lu",
            audio_.volumePercent(), leds_.brightnessPercent(),
            leds_.pattern(), preferredFacesMode_ ? "FACES" : "BLE",
            diagnosticMode_ ? "ON" : "OFF", panic_.enabled() ? "ON" : "OFF",
-           panic_.triggerPercent(),
+           leds_.pixelCount(), panic_.triggerPercent(),
            static_cast<unsigned long>(panic_.idleDelayMs() / 1000UL));
   sendBleLine(line);
 }
@@ -1944,6 +1944,7 @@ bool AppController::saveConfigToSd() {
   file.printf("volume=%u\n", audio_.volumePercent());
   file.printf("brilho=%u\n", leds_.brightnessPercent());
   file.printf("led=%u\n", leds_.pattern());
+  file.printf("led_count=%u\n", leds_.pixelCount());
   file.printf("mode=%s\n", preferredFacesMode_ ? "faces" : "ble");
   file.printf("face_random=%s\n", faceRandomLoop_ ? "on" : "off");
   file.printf("diag=%s\n", diagnosticMode_ ? "on" : "off");
@@ -2039,6 +2040,18 @@ bool AppController::applyConfigKeyValue(const char* key, const char* value,
     }
     leds_.setPattern(static_cast<uint8_t>(pattern));
     if (report) sendBleLine("OK CONFIG SET LED");
+    return true;
+  }
+
+  if (strcasecmp(key, "led_count") == 0 ||
+      strcasecmp(key, "leds") == 0 ||
+      strcasecmp(key, "quantidade_leds") == 0) {
+    const int count = atoi(value);
+    if (!leds_.setPixelCount(static_cast<uint8_t>(count))) {
+      if (report) sendBleLine("ERR CONFIG LED_COUNT USE 15|20|25|30|35");
+      return true;
+    }
+    if (report) sendBleLine("OK CONFIG SET LED_COUNT");
     return true;
   }
 
@@ -2375,6 +2388,26 @@ bool AppController::handleBrightnessCommand(const char* command) {
 }
 
 bool AppController::handleLedPatternCommand(const char* command) {
+  if (strcasecmp(command, "LED COUNT?") == 0 ||
+      strcasecmp(command, "LEDS?") == 0) {
+    char line[40]{};
+    snprintf(line, sizeof(line), "OK LED COUNT=%u", leds_.pixelCount());
+    sendBleLine(line);
+    return true;
+  }
+  if (strncasecmp(command, "LED COUNT", 9) == 0 ||
+      strncasecmp(command, "LEDS ", 5) == 0) {
+    const char* value = strncasecmp(command, "LED COUNT", 9) == 0
+                            ? command + 9
+                            : command + 5;
+    const int count = atoi(value);
+    if (!leds_.setPixelCount(static_cast<uint8_t>(count))) {
+      sendBleLine("ERR LED COUNT USE 15|20|25|30|35");
+    } else {
+      sendBleLine("OK LED COUNT");
+    }
+    return true;
+  }
   if (strcasecmp(command, "LED?") == 0) {
     char line[32]{};
     snprintf(line, sizeof(line), "OK LED %u", leds_.pattern());
