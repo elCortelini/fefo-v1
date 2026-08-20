@@ -590,11 +590,18 @@ void AppController::handleBleCommand(const char* command) {
   if (start[0] == '\0') return;
 
   noteUserActivity();
-  blePanelActive_ = true;
+  // A conexão BLE, por si só, não autoriza a tela de controle. No modo normal
+  // a tela permanece nas faces; o painel só é habilitado pelo DIAG ON.
+  if (diagnosticMode_) {
+    blePanelActive_ = true;
+  } else {
+    blePanelActive_ = false;
+    faceCyclingActive_ = faceFileCount_ > 0;
+  }
   ++bleCommandCount_;
   strlcpy(lastBleCommand_, start, sizeof(lastBleCommand_));
   logEvent("ble_cmd", start);
-  updateBlePanel(true);
+  if (diagnosticMode_) updateBlePanel(true);
 
   if (strcasecmp(start, "PING") == 0) {
     sendBleLine("OK PONG");
@@ -2282,6 +2289,10 @@ bool AppController::handleModeCommand(const char* command) {
 
   if (strcasecmp(mode, "BLE") == 0 || strcasecmp(mode, "PANEL") == 0 ||
       strcasecmp(mode, "PAINEL") == 0) {
+    if (!diagnosticMode_) {
+      sendBleLine("ERR MODE BLE DISABLED_NORMAL");
+      return true;
+    }
     preferredFacesMode_ = false;
     blePanelActive_ = true;
     faceCyclingActive_ = false;

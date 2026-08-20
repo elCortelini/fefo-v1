@@ -122,6 +122,8 @@ class _MyAppState extends State<MyApp> {
     if (_manager!.isConnected != _wasConnected) {
       final lostConnection = _wasConnected &&
           !_manager!.isConnected &&
+          !_manager!.uploading &&
+          !_manager!.aguardandoReconexao &&
           _manager!.consumeUnexpectedDisconnect();
       _wasConnected = _manager!.isConnected;
 
@@ -143,7 +145,8 @@ class _MyAppState extends State<MyApp> {
         });
       }
 
-      if (_manager!.isConnected && _returnAfterUpdate) {
+      if (_manager!.isConnected && _manager!.lastTransferSucceeded == true) {
+        _manager!.acknowledgeUpdateResult();
         _returnTimer?.cancel();
         _returnTimer = Timer(const Duration(seconds: 1), () {
           if (!mounted) return;

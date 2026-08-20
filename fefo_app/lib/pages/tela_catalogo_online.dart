@@ -330,7 +330,6 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
           _status =
               '${items.length} item(ns) instalado(s). O PET reiniciará e voltará ao menu de conexão.';
         });
-        Future<void>.delayed(const Duration(seconds: 2), _voltarAoMenuConexao);
       }
     } catch (e) {
       if (mounted) setState(() => _status = 'Falha na atualização: $e');
@@ -426,7 +425,6 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
             duration: const Duration(seconds: 6),
           ),
         );
-        Future<void>.delayed(const Duration(seconds: 2), _voltarAoMenuConexao);
       }
     } catch (e) {
       if (mounted) setState(() => _status = 'Falha no firmware OTA: $e');
