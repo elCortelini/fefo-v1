@@ -13,6 +13,7 @@ import 'tela_classicas.dart';
 import 'tela_conexao.dart';
 import 'tela_luzes.dart';
 import 'tela_sobre.dart';
+import 'tela_faces_fefo.dart';
 
 class TelaMenu extends StatefulWidget {
   const TelaMenu({super.key});
@@ -281,6 +282,10 @@ class _TelaMenuState extends State<TelaMenu> {
                   _BotaoMenu(
                     texto: 'Quem é o Fefo',
                     aoPressionar: () => _abrir(const TelaSobre()),
+                  ),
+                  _BotaoMenu(
+                    texto: 'Rostinhos do Fefo',
+                    aoPressionar: () => _abrir(const TelaFacesFefo()),
                   ),
                   _BotaoMenu(
                     texto: 'Configurações',

@@ -43,6 +43,21 @@ bool DisplayService::begin() {
   return true;
 }
 
+void DisplayService::showWelcome() {
+  if (!available_) return;
+  tft_.fillScreen(TFT_BLACK);
+  tft_.setTextDatum(MC_DATUM);
+  tft_.setTextColor(TFT_GREEN, TFT_BLACK);
+  tft_.drawString("BEM-VINDO AO FEFO", tft_.width() / 2, 105, 4);
+  tft_.setTextColor(TFT_CYAN, TFT_BLACK);
+  char version[32]{};
+  snprintf(version, sizeof(version), "Firmware v%s", board::kFirmwareVersion);
+  tft_.drawString(version, tft_.width() / 2, 155, 4);
+  tft_.setTextColor(TFT_WHITE, TFT_BLACK);
+  tft_.drawString("Iniciando rostinhos...", tft_.width() / 2, 215, 2);
+  delay(1800);
+}
+
 void DisplayService::showSystemState(SystemState state, bool storageAvailable) {
   if (!available_) return;
 
@@ -200,7 +215,8 @@ void DisplayService::showWifiTransfer(const char* filename, uint32_t received,
     tft_.drawString(preview, tft_.width() / 2, 108, 2);
     tft_.fillRoundRect(38, 155, 404, 34, 8, TFT_DARKGREY);
     tft_.setTextColor(TFT_YELLOW, TFT_BLACK);
-    tft_.drawString("Nao desligue o FEFO", tft_.width() / 2, 270, 2);
+    tft_.drawString("Nao desligue o FEFO", tft_.width() / 2, 258, 2);
+    tft_.drawString("Reiniciara apos concluir", tft_.width() / 2, 284, 2);
   }
   if (!newFile && percent == transferPercent_) return;
   transferPercent_ = percent;

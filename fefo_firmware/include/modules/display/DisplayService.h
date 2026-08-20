@@ -13,6 +13,7 @@ namespace fefo {
 class DisplayService {
  public:
   bool begin();
+  void showWelcome();
   void showSystemState(SystemState state, bool storageAvailable);
   void beginVuMeter(bool microphoneAvailable, uint16_t noiseFloorRms);
   void showVuMeter(uint8_t levelPercent, uint8_t peakPercent, uint16_t rms,

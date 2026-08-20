@@ -253,6 +253,7 @@ void AppController::begin() {
   audio_.stop();
 
   display_.begin();
+  display_.showWelcome();
   wifiTransfer_.setProgressCallback(&AppController::handleWifiProgress, this);
   microphoneReady_ = false;
   microphoneActive_ = false;
@@ -263,6 +264,12 @@ void AppController::begin() {
     loadConfigFromSd(false);
     logEvent("boot", board::kFirmwareVersion);
   }
+
+  // O modo normal sempre inicia nas faces. O modo de diagnóstico é temporário
+  // e só pode ser ativado pelo aplicativo durante os testes.
+  diagnosticMode_ = false;
+  preferredFacesMode_ = true;
+  blePanelActive_ = false;
 
   // Em diagnostico, manter a tela fixa no painel BLE para facilitar leitura de
   // comandos e erros. Com DIAG OFF, o modo salvo volta a comandar faces/painel.
@@ -284,12 +291,10 @@ void AppController::begin() {
     if (board::kAudioEnabled && board::kAudioBootTestEnabled) {
       startAudioTestSequence();
     }
-    // As faces continuam sendo escaneadas para LIST FACES, mas nao sao exibidas
-    // automaticamente nesta versao de diagnostico.
     if (scanFaceFiles()) {
       currentFaceIndex_ = 0;
       lastFaceChangeMs_ = millis();
-      if (preferredFacesMode_ && faceFileCount_ > 0) {
+      if (!diagnosticMode_ && faceFileCount_ > 0) {
         currentFaceIndex_ = random(faceFileCount_);
         display_.showFaceFile(faceFiles_[currentFaceIndex_]);
         faceCyclingActive_ = true;
@@ -342,6 +347,14 @@ void AppController::update() {
   char bleCommand[256]{};
   if (ble_.takeCommand(bleCommand, sizeof(bleCommand))) {
     handleBleCommand(bleCommand);
+  }
+  // O modo desenvolvedor não permanece exposto sem uma sessão BLE ativa.
+  if (diagnosticMode_ && !ble_.connected()) {
+    diagnosticMode_ = false;
+    preferredFacesMode_ = true;
+    blePanelActive_ = false;
+    faceCyclingActive_ = faceFileCount_ > 0;
+    lastFaceChangeMs_ = 0;
   }
   nowMs = millis();
   updateIdleMicrophone(nowMs);
@@ -2139,11 +2152,13 @@ bool AppController::handleFaceCommand(const char* command) {
 
   if (strcasecmp(command, "FACE RANDOM ON") == 0) {
     faceRandomLoop_ = true;
+    manualFaceUntilMs_ = 0;
     sendBleLine("OK FACE RANDOM ON");
     return true;
   }
   if (strcasecmp(command, "FACE RANDOM OFF") == 0) {
     faceRandomLoop_ = false;
+    manualFaceUntilMs_ = millis() + 60000UL;
     sendBleLine("OK FACE RANDOM OFF");
     return true;
   }
@@ -2194,9 +2209,11 @@ bool AppController::showFaceByToken(const char* token) {
   if (strcasecmp(start, "RANDOM") == 0 || strcasecmp(start, "ALEATORIA") == 0 ||
       strcasecmp(start, "ALEATORIO") == 0) {
     faceRandomLoop_ = true;
+    manualFaceUntilMs_ = 0;
     currentFaceIndex_ = random(faceFileCount_);
   } else if (isDigit(start[0])) {
     faceRandomLoop_ = false;
+    manualFaceUntilMs_ = millis() + 60000UL;
     const int faceNumber = atoi(start);
     if (faceNumber < 1 || faceNumber > static_cast<int>(faceFileCount_)) {
       return false;
@@ -2204,6 +2221,7 @@ bool AppController::showFaceByToken(const char* token) {
     currentFaceIndex_ = static_cast<size_t>(faceNumber - 1);
   } else {
     faceRandomLoop_ = false;
+    manualFaceUntilMs_ = millis() + 60000UL;
     bool found = false;
     for (size_t index = 0; index < faceFileCount_; ++index) {
       const char* path = faceFiles_[index];
@@ -2456,7 +2474,15 @@ void AppController::updateFaces(uint32_t nowMs) {
     lastFaceChangeMs_ = 0;
   }
 
-  if (!faceRandomLoop_ && lastFaceChangeMs_ != 0) return;
+  if (!faceRandomLoop_) {
+    if (manualFaceUntilMs_ != 0 &&
+        static_cast<int32_t>(nowMs - manualFaceUntilMs_) >= 0) {
+      faceRandomLoop_ = true;
+      manualFaceUntilMs_ = 0;
+    } else {
+      return;
+    }
+  }
 
   if (lastFaceChangeMs_ != 0 && nowMs - lastFaceChangeMs_ < kFaceDisplayMs) {
     return;
