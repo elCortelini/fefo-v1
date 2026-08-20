@@ -1,6 +1,6 @@
 {
     "schema":  1,
-    "catalogVersion":  21,
+    "catalogVersion":  22,
     "repository":  "FEFO Google Drive",
     "firmware":  {
                      "version":  "1.085",
@@ -13,13 +13,13 @@
                      "notas":  "Versão 1.085: Ronronar com áudio e vibração protegida por 10 segundos, desligamento dos LEDs e telas técnicas somente no modo Desenvolvedor."
                  },
     "app":  {
-                "version":  "1.077",
-                "build":  1077,
-                "arquivo":  "FEFO_App_v1.077.apk",
-                "tamanho":  57748203,
-                "checksum":  "d20d5fc360a824834738469f1bcb2e51d3d2d21009c4c1633a67c1ca21b7cb0b",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.077.apk",
-                "notas":  "Melhorias visuais, favoritos, modo escuro, navegação inferior reversível, Ronronar, ações rápidas, LED com nomes e cores, catálogo padronizado e player em laranja claro."
+                "version":  "1.078",
+                "build":  1078,
+                "arquivo":  "FEFO_App_v1.078.apk",
+                "tamanho":  57387755,
+                "checksum":  "9e7ba3af4dac43bcfabfa6823adeec037e5cd080b569e97c76d2d0c712c7af87",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.078.apk",
+                "notas":  "Remove a barra inferior e o modo escuro, corrige títulos cortados, deixa Ronronar somente no menu principal e remove as caixas de seleção do catálogo."
              },
     "audio":  [
                   {

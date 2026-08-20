@@ -102,22 +102,26 @@ class _BotaoPinceladaState extends State<BotaoPincelada> {
                       vertical: 14,
                     ),
                     child: Center(
-                      child: Text(
-                        widget.texto,
-                        textAlign: TextAlign.center,
-                        maxLines: 4,
-                        style: TextStyle(
-                          fontFamily: 'Billotilde',
-                          color: Colors.white,
-                          fontSize: tamanhoFonte,
-                          height: 0.9,
-                          shadows: const [
-                            Shadow(
-                              color: Colors.black38,
-                              offset: Offset(1, 2),
-                              blurRadius: 3,
-                            ),
-                          ],
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          widget.texto,
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          softWrap: false,
+                          style: TextStyle(
+                            fontFamily: 'Billotilde',
+                            color: Colors.white,
+                            fontSize: tamanhoFonte,
+                            height: 0.9,
+                            shadows: const [
+                              Shadow(
+                                color: Colors.black38,
+                                offset: Offset(1, 2),
+                                blurRadius: 3,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
