@@ -28,7 +28,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
         }
 
         final progress = _draggedProgress ?? manager.audioProgress;
-        const corVerdeCard = Color(0xFF1B4E20);
+        const corVerdeCard = Color(0xFFFFE7C2);
         const corLaranja = Color(0xFFDC4900);
 
         final IconData iconeVolume;
@@ -69,7 +69,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          color: Colors.white,
+                          color: Color(0xFF5A2A00),
                           fontFamily: 'KGPen',
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -80,7 +80,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                     Text(
                       '${manager.posTimeFormatted} / ${manager.totalTimeFormatted}',
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.85),
+                        color: const Color(0xFF5A2A00).withValues(alpha: 0.75),
                         fontFamily: 'KGPen',
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -98,7 +98,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                   overlayShape:
                       const RoundSliderOverlayShape(overlayRadius: 14),
                   activeTrackColor: corLaranja,
-                  inactiveTrackColor: Colors.white24,
+                  inactiveTrackColor: const Color(0xFFB9682B).withValues(alpha: 0.25),
                   thumbColor: corLaranja,
                   overlayColor: corLaranja.withValues(alpha: 0.2),
                 ),
@@ -124,16 +124,16 @@ class _MiniPlayerState extends State<MiniPlayer> {
                         padding: const EdgeInsets.only(bottom: 8.0),
                         child: Row(
                           children: [
-                            Icon(iconeVolume, color: Colors.white70, size: 20),
+                            Icon(iconeVolume, color: const Color(0xFF5A2A00), size: 20),
                             Expanded(
                               child: SliderTheme(
                                 data: SliderThemeData(
                                   trackHeight: 3,
                                   thumbShape: const RoundSliderThumbShape(
                                       enabledThumbRadius: 6),
-                                  activeTrackColor: Colors.white,
-                                  inactiveTrackColor: Colors.white24,
-                                  thumbColor: Colors.white,
+                                  activeTrackColor: const Color(0xFF5A2A00),
+                                  inactiveTrackColor: const Color(0xFFB9682B).withValues(alpha: 0.25),
+                                  thumbColor: const Color(0xFF5A2A00),
                                 ),
                                 child: Slider(
                                   value: manager.audioVolume.toDouble(),
@@ -148,7 +148,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                             Text(
                               '${manager.audioVolume}%',
                               style: const TextStyle(
-                                  color: Colors.white,
+                                  color: Color(0xFF5A2A00),
                                   fontFamily: 'KGPen',
                                   fontSize: 14),
                             ),
@@ -161,7 +161,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                         // Botão de Volume Dinâmico
                         IconButton(
                           tooltip: 'Volume',
-                          icon: Icon(iconeVolume, color: Colors.white),
+                          icon: Icon(iconeVolume, color: const Color(0xFF5A2A00)),
                           onPressed: () {
                             setState(() => _mostrandoVolume = !_mostrandoVolume);
                           },
@@ -178,7 +178,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                 manager.audioPaused
                                     ? Icons.play_arrow_rounded
                                     : Icons.pause_rounded,
-                                color: Colors.white,
+                                color: const Color(0xFF5A2A00),
                                 size: 32,
                               ),
                               onPressed: () {

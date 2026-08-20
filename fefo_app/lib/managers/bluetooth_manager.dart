@@ -229,9 +229,19 @@ class BluetoothManager extends ChangeNotifier {
   static const String _prefKeyId = 'fefo_ble_id';
   static const String _prefKeyNome = 'fefo_nome';
   static const String _prefKeyCatalogCache = 'fefo_catalog_cache_json';
+  static const String _prefKeyFavorites = 'fefo_favorite_audio_paths';
+  static const String _prefKeyDarkMode = 'fefo_dark_mode';
 
   BluetoothManager() {
     carregarCatalogoDoCache();
+    _carregarPreferenciasVisuais();
+  }
+
+  Future<void> _carregarPreferenciasVisuais() async {
+    final prefs = await SharedPreferences.getInstance();
+    _favoritos = (prefs.getStringList(_prefKeyFavorites) ?? const []).toSet();
+    _darkMode = prefs.getBool(_prefKeyDarkMode) ?? false;
+    notifyListeners();
   }
 
   Future<void> carregarCatalogoDoCache() async {
@@ -286,6 +296,8 @@ class BluetoothManager extends ChangeNotifier {
   int _ledCount = 35;
   String _audioControlState = 'idle';
   bool _audioPaused = false;
+  Set<String> _favoritos = <String>{};
+  bool _darkMode = false;
   bool _faceModeEnabled = false;
   bool _faceRandomEnabled = true;
   bool _developerModeEnabled = false;
@@ -385,6 +397,24 @@ class BluetoothManager extends ChangeNotifier {
   bool get audioPaused => _audioPaused;
   bool get audioPlaying => _audioControlState == 'playing';
   bool get audioStopped => _audioControlState == 'stopped';
+  bool get darkMode => _darkMode;
+  bool isFavorite(String path) => _favoritos.contains(path);
+  List<FefoAudioItem> get favoriteAudios =>
+      _audioItems.where((item) => _favoritos.contains(item.path)).toList();
+
+  Future<void> alternarFavorito(FefoAudioItem item) async {
+    if (!_favoritos.add(item.path)) _favoritos.remove(item.path);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_prefKeyFavorites, _favoritos.toList());
+    notifyListeners();
+  }
+
+  Future<void> setDarkMode(bool enabled) async {
+    _darkMode = enabled;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_prefKeyDarkMode, enabled);
+    notifyListeners();
+  }
   bool get faceModeEnabled => _faceModeEnabled;
   bool get faceRandomEnabled => _faceRandomEnabled;
   bool get developerModeEnabled => _developerModeEnabled;
@@ -1835,6 +1865,14 @@ class BluetoothManager extends ChangeNotifier {
 
   Future<void> setLedPattern(int pattern) async {
     await _enviarComandoNormalizado('LED ${pattern.clamp(1, 10)}');
+  }
+
+  Future<void> desligarLeds() async {
+    await _enviarComandoNormalizado('LED OFF');
+  }
+
+  Future<void> ronronar() async {
+    await _enviarComandoNormalizado('RONRONAR');
   }
 
   Future<void> vibrar(int pattern) async {

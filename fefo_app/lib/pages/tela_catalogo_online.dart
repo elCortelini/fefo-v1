@@ -518,6 +518,19 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
         padding: const EdgeInsets.symmetric(horizontal: 4),
         child: Column(children: [
           const SizedBox(height: 18),
+          const Text('Catálogo Online', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Billotilde', fontSize: 48, color: Color(0xFF318134))),
+          const SizedBox(height: 6),
+          Text('App v$fefoAppVersionName  •  Firmware v${manager.firmwareVersion ?? fefoFirmwareVersion}', textAlign: TextAlign.center, style: const TextStyle(fontFamily: 'KGPen', fontSize: 15)),
+          Container(
+            margin: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(color: const Color(0xFFFFF4DF), borderRadius: BorderRadius.circular(18), border: Border.all(color: const Color(0xFFFFC15A))),
+            child: Row(children: [
+              const Icon(Icons.sd_storage_rounded, color: Color(0xFF318134)),
+              const SizedBox(width: 8),
+              Expanded(child: Text('SD livre: ${_formatBytes(manager.sdFreeBytes)}', style: const TextStyle(fontWeight: FontWeight.bold))),
+            ]),
+          ),
           Container(
             margin: const EdgeInsets.fromLTRB(12, 8, 12, 10),
             padding: const EdgeInsets.fromLTRB(20, 18, 16, 16),
@@ -546,7 +559,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                      Text('Catálogo online',
+                      Text('Conteúdos disponíveis',
                           style: TextStyle(
                               fontFamily: 'Billotilde',
                               fontSize: 38,
@@ -724,22 +737,6 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                 ),
               );
             }),
-          Container(
-            margin: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.94),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                    color: const Color(0xFF318134).withValues(alpha: 0.25))),
-            child: Row(children: [
-              const Icon(Icons.sd_storage_rounded, color: Color(0xFF318134)),
-              const SizedBox(width: 8),
-              Expanded(
-                  child: Text('SD livre: ${_formatBytes(manager.sdFreeBytes)}',
-                      style: const TextStyle(fontWeight: FontWeight.bold))),
-            ]),
-          ),
           if (_busy || manager.uploading || _status.isNotEmpty)
             Container(
               margin: const EdgeInsets.fromLTRB(12, 4, 12, 8),
@@ -865,10 +862,15 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                                   _selectedPaths.add(item.path);
                                 }
                               }),
-                      trailing: IconButton(
-                        tooltip: 'Instalar',
-                        icon: const Icon(Icons.download),
-                        onPressed: _busy ? null : () => _installItems([item]),
+                      trailing: Checkbox(
+                        value: selected,
+                        onChanged: _busy ? null : (_) => setState(() {
+                          if (selected) {
+                            _selectedPaths.remove(item.path);
+                          } else {
+                            _selectedPaths.add(item.path);
+                          }
+                        }),
                       ),
                     ),
                     if (itemProgress != null)

@@ -5,8 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../managers/bluetooth_manager.dart';
-import '../config/app_version.dart';
-import '../config/firmware_version.dart';
 import '../widgets/botao_pincelada.dart';
 import '../widgets/pagina_base.dart';
 import 'tela_conexao.dart';
@@ -30,51 +28,12 @@ class TelaInicial extends StatelessWidget {
             Image.asset('assets/images/logo.png', height: 180),
             Image.asset('assets/images/fefo.png', height: 350),
             const SizedBox(height: 15),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              decoration: BoxDecoration(
-                color: const Color(0xFFDC4900).withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFDC4900), width: 1.4),
+            if (manager.isConnected && manager.bateriaPercentual != null)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(color: const Color(0xFF318134).withValues(alpha: 0.12), borderRadius: BorderRadius.circular(14)),
+                child: Text('🔋 Bateria: ${manager.bateriaPercentual}%', style: TextStyle(fontFamily: 'KGPen', fontWeight: FontWeight.bold, color: manager.bateriaBaixa ? Colors.red : verde)),
               ),
-              child: Column(
-                children: [
-                  const Text(
-                    'FEFO App $fefoAppVersionLabel',
-                    style: TextStyle(
-                      fontFamily: 'KGPen',
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFFDC4900),
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'PET FEFO Firmware v${manager.firmwareVersion ?? fefoFirmwareVersion}',
-                    style: const TextStyle(
-                      fontFamily: 'KGPen',
-                      fontSize: 13,
-                      color: verde,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  if (manager.isConnected &&
-                      manager.bateriaPercentual != null) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      '🔋 Bateria: ${manager.bateriaPercentual}%',
-                      style: TextStyle(
-                        fontFamily: 'KGPen',
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: manager.bateriaBaixa ? Colors.red : verde,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            const SizedBox(height: 10),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
@@ -171,6 +130,13 @@ class TelaInicial extends StatelessWidget {
                 MaterialPageRoute(builder: (_) => const TelaMenu()),
               ),
             ),
+            const SizedBox(height: 12),
+            if (manager.isConnected)
+              BotaoPincelada(
+                texto: 'Ronronar',
+                cor: laranja,
+                aoPressionar: manager.ronronar,
+              ),
             const SizedBox(height: 40),
             if (Platform.isAndroid)
               const BotaoPincelada(

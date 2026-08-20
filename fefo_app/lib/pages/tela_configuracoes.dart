@@ -6,6 +6,8 @@ import '../widgets/pagina_base.dart';
 import '../widgets/botao_pincelada.dart';
 import 'tela_faces_fefo.dart';
 import 'tela_vibracoes_fefo.dart';
+import '../config/app_version.dart';
+import '../config/firmware_version.dart';
 
 class TelaConfiguracoes extends StatefulWidget {
   const TelaConfiguracoes({super.key});
@@ -113,6 +115,20 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
               ),
             ),
             const SizedBox(height: 25),
+
+            Card(child: ListTile(
+              leading: const Icon(Icons.info_outline_rounded, color: corLaranja),
+              title: const Text('Versões instaladas', style: TextStyle(fontFamily: 'KGPen', fontWeight: FontWeight.bold)),
+              subtitle: Text('App $fefoAppVersionLabel  •  Firmware v${manager.firmwareVersion ?? fefoFirmwareVersion}'),
+            )),
+            Card(child: SwitchListTile(
+              secondary: const Icon(Icons.dark_mode_rounded, color: corLaranja),
+              title: const Text('Modo escuro'),
+              subtitle: const Text('Altera a aparência do aplicativo.'),
+              value: manager.darkMode,
+              onChanged: manager.setDarkMode,
+            )),
+            const SizedBox(height: 12),
 
             Card(
               child: SwitchListTile(

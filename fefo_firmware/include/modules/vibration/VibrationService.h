@@ -13,7 +13,7 @@ class VibrationService {
   // O módulo chamador fornece seu prazo, mas o driver sempre aplica também o
   // teto físico absoluto definido no perfil da placa.
   bool start(uint8_t duty, uint32_t maxDurationMs);
-  bool startPattern(uint8_t pattern);
+  bool startPattern(uint8_t pattern, uint32_t durationMs = 7000);
   void update(uint32_t nowMs);
   void stop();
   bool active() const { return active_; }

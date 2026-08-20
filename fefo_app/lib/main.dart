@@ -172,9 +172,16 @@ class _MyAppState extends State<MyApp> {
       navigatorKey: _navigatorKey,
       title: 'FEFO',
       debugShowCheckedModeBanner: false,
+      themeMode: _manager!.darkMode ? ThemeMode.dark : ThemeMode.light,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF318134)),
         useMaterial3: true,
+      ),
+      darkTheme: ThemeData.dark(useMaterial3: true).copyWith(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFFDC4900),
+          brightness: Brightness.dark,
+        ),
       ),
       home: const TelaInicial(),
     );
