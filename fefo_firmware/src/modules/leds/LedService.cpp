@@ -60,14 +60,15 @@ void IRAM_ATTR writeBitBangFrame(const uint8_t* data, size_t length) {
   delayMicroseconds(300);
 }
 
-void sendBitBangFrame(uint8_t red, uint8_t green, uint8_t blue) {
-  for (uint16_t pixel = 0; pixel < board::kNeoPixelCount; ++pixel) {
+void sendBitBangFrame(uint8_t red, uint8_t green, uint8_t blue,
+                      uint8_t pixelCount) {
+  for (uint16_t pixel = 0; pixel < pixelCount; ++pixel) {
     // A fita usada pelo FEFO 190 recebe bytes na ordem GRB.
     bitBangFrame[pixel * 3] = green;
     bitBangFrame[pixel * 3 + 1] = red;
     bitBangFrame[pixel * 3 + 2] = blue;
   }
-  writeBitBangFrame(bitBangFrame, sizeof(bitBangFrame));
+  writeBitBangFrame(bitBangFrame, static_cast<size_t>(pixelCount) * 3);
 }
 
 }  // namespace
@@ -79,6 +80,8 @@ bool LedService::begin() {
   digitalWrite(board::kNeoPixel, LOW);
   delayMicroseconds(300);
   strip_.begin();
+  pixelCount_ = board::kNeoPixelCount;
+  strip_.updateLength(pixelCount_);
   brightnessPercent_ = (board::kDefaultMaxLedBrightness * 100 + 127) / 255;
   strip_.setBrightness(board::kDefaultMaxLedBrightness);
   strip_.clear();
@@ -87,7 +90,7 @@ bool LedService::begin() {
   ledPhase_ = 0;
   lastLedUpdateMs_ = millis();
   Serial.printf("[LEDS] GPIO %d reservado; %u NeoPixels em brilho %u/255.\n",
-                board::kNeoPixel, board::kNeoPixelCount,
+                board::kNeoPixel, pixelCount_,
                 board::kDefaultMaxLedBrightness);
   return true;
 }
@@ -194,6 +197,19 @@ bool LedService::setPattern(uint8_t pattern) {
   ledPhase_ = 0;
   lastLedUpdateMs_ = 0;
   Serial.printf("[LEDS] Padrao selecionado: LED %u.\n", selectedPattern_);
+  return true;
+}
+
+bool LedService::setPixelCount(uint8_t count) {
+  if (count != 15 && count != 20 && count != 25 && count != 30 && count != 35) {
+    return false;
+  }
+  pixelCount_ = count;
+  strip_.updateLength(pixelCount_);
+  strip_.clear();
+  strip_.show();
+  ledPhase_ = 0;
+  Serial.printf("[LEDS] Quantidade configurada: %u LEDs.\n", pixelCount_);
   return true;
 }
 
@@ -355,23 +371,23 @@ void LedService::showBitBangDiagnosticPhase() {
   switch (bitBangDiagnosticPhase_) {
     case 0:
       Serial.println("[LEDS-BITBANG] VERMELHO por 3 segundos.");
-      sendBitBangFrame(64, 0, 0);
+      sendBitBangFrame(64, 0, 0, pixelCount_);
       break;
     case 1:
       Serial.println("[LEDS-BITBANG] VERDE por 3 segundos.");
-      sendBitBangFrame(0, 64, 0);
+      sendBitBangFrame(0, 64, 0, pixelCount_);
       break;
     case 2:
       Serial.println("[LEDS-BITBANG] AZUL por 3 segundos.");
-      sendBitBangFrame(0, 0, 64);
+      sendBitBangFrame(0, 0, 64, pixelCount_);
       break;
     case 3:
       Serial.println("[LEDS-BITBANG] BRANCO por 3 segundos.");
-      sendBitBangFrame(48, 48, 48);
+      sendBitBangFrame(48, 48, 48, pixelCount_);
       break;
     default:
       Serial.println("[LEDS-BITBANG] APAGADO por 3 segundos.");
-      sendBitBangFrame(0, 0, 0);
+      sendBitBangFrame(0, 0, 0, pixelCount_);
       break;
   }
 }

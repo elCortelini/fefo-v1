@@ -283,6 +283,7 @@ class BluetoothManager extends ChangeNotifier {
   int _audioPosSec = 0;
   int _audioTotalSec = 0;
   int _audioVolume = 50;
+  int _ledCount = 35;
   String _audioControlState = 'idle';
   bool _audioPaused = false;
   bool _faceModeEnabled = false;
@@ -378,6 +379,7 @@ class BluetoothManager extends ChangeNotifier {
   }
 
   int get audioVolume => _audioVolume;
+  int get ledCount => _ledCount;
   bool get audioPaused => _audioPaused;
   bool get audioPlaying => _audioControlState == 'playing';
   bool get audioStopped => _audioControlState == 'stopped';
@@ -390,6 +392,7 @@ class BluetoothManager extends ChangeNotifier {
     _lastTransferSucceeded = null;
     notifyListeners();
   }
+
   bool get aguardandoReconexao =>
       _lastTransferSucceeded == true && !isConnected && !_uploading;
   int? get sdTotalBytes => _sdTotalBytes;
@@ -1789,6 +1792,15 @@ class BluetoothManager extends ChangeNotifier {
 
   Future<void> setBrightness(int brightness) async {
     await _enviarComandoNormalizado('BRILHO ${brightness.clamp(0, 100)}');
+  }
+
+  Future<void> setLedCount(int count) async {
+    const allowed = {15, 20, 25, 30, 35};
+    if (!allowed.contains(count)) return;
+    await enviarComando('LED COUNT $count');
+    await enviarComando('CONFIG SAVE');
+    _ledCount = count;
+    notifyListeners();
   }
 
   Future<void> setLedPattern(int pattern) async {

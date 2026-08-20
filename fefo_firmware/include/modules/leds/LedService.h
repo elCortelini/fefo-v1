@@ -19,6 +19,8 @@ class LedService {
   uint8_t brightnessPercent() const { return brightnessPercent_; }
   bool setPattern(uint8_t pattern);
   uint8_t pattern() const { return selectedPattern_; }
+  bool setPixelCount(uint8_t count);
+  uint8_t pixelCount() const { return pixelCount_; }
   void stop();
 
  private:
@@ -39,6 +41,7 @@ class LedService {
   uint8_t selectedPattern_{0};
   uint8_t ledPhase_{0};
   uint32_t lastLedUpdateMs_{0};
+  uint8_t pixelCount_{board::kNeoPixelCount};
 };
 
 }  // namespace fefo

@@ -1,25 +1,25 @@
 {
     "schema":  1,
-    "catalogVersion":  17,
+    "catalogVersion":  18,
     "repository":  "FEFO Google Drive",
     "firmware":  {
-                     "version":  "1.082",
+                     "version":  "1.083",
                      "board":  "FEFO_CYD_ESP32",
-                     "arquivo":  "FEFO_Firmware_v1.082.bin",
-                     "tamanho":  1742064,
-                     "checksum":  "c1acd96b69cbd2a0dfedb6cbc5d4f2867108d0d7b4fadc16c4513e8525a36609",
-                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.082.bin",
+                     "arquivo":  "FEFO_Firmware_v1.083.bin",
+                     "tamanho":  1742816,
+                     "checksum":  "6163adb573b87eb382b013f0f74d8d4bc085fd4d74149e71e32147c55d5afe86",
+                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.083.bin",
                      "obrigatorio":  false,
-                     "notas":  "Versão 1.082: conexão BLE normal mantém as faces; painel de controle somente no modo desenvolvedor."
+                     "notas":  "Versão 1.083: quantidade de LEDs configurável no app, padrão 35, com opções 30, 25, 20 e 15."
                  },
     "app":  {
-                "version":  "1.073",
-                "build":  1073,
-                "arquivo":  "FEFO_App_v1.073.apk",
+                "version":  "1.074",
+                "build":  1074,
+                "arquivo":  "FEFO_App_v1.074.apk",
                 "tamanho":  57387755,
-                "checksum":  "d1ec81ff8967895f825ed1f60bf007422458db948ac3bc1db9245a674c4a039d",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.073.apk",
-                "notas":  "Mantém a tela de atualização até a reconexão real do FEFO e impede que a conexão BLE normal abra o painel de controle."
+                "checksum":  "0384bb5bdbb2f403eb1966339a27debcd7120c6d2ff25204f86cbb41aaff47e8",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.074.apk",
+                "notas":  "Adiciona a configuração da quantidade de LEDs da fita: 35, 30, 25, 20 ou 15."
              },
     "audio":  [
                   {

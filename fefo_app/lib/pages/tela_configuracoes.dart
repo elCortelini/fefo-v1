@@ -16,6 +16,7 @@ class TelaConfiguracoes extends StatefulWidget {
 class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
   bool _vibracaoAtiva = true;
   bool _facesAtivas = true;
+  int _ledCount = 35;
 
   Future<void> _alternarModoDesenvolvedor(
       BuildContext context, BluetoothManager manager, bool enabled) async {
@@ -58,7 +59,9 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
     if (mounted) {
       setState(() {});
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(ok ? 'Modo desenvolvedor ativado.' : 'Não foi possível ativar o modo desenvolvedor.'),
+        content: Text(ok
+            ? 'Modo desenvolvedor ativado.'
+            : 'Não foi possível ativar o modo desenvolvedor.'),
       ));
     }
   }
@@ -70,6 +73,7 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
       final manager = context.read<BluetoothManager>();
       setState(() {
         _facesAtivas = manager.faceModeEnabled;
+        _ledCount = manager.ledCount;
       });
     });
   }
@@ -123,6 +127,31 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
             ),
             const SizedBox(height: 15),
 
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.lightbulb_outline),
+                title: const Text('Quantidade de LEDs na fita'),
+                subtitle: const Text('Padrão: 35 LEDs'),
+                trailing: DropdownButton<int>(
+                  value: _ledCount,
+                  items: const [35, 30, 25, 20, 15]
+                      .map((count) => DropdownMenuItem<int>(
+                            value: count,
+                            child: Text('$count'),
+                          ))
+                      .toList(),
+                  onChanged: manager.isConnected
+                      ? (value) async {
+                          if (value == null) return;
+                          setState(() => _ledCount = value);
+                          await manager.setLedCount(value);
+                        }
+                      : null,
+                ),
+              ),
+            ),
+            const SizedBox(height: 15),
+
             // Card Vibração
             Container(
               padding: const EdgeInsets.all(18),
@@ -136,14 +165,16 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
                     offset: Offset(0, 3),
                   ),
                 ],
-                border: Border.all(color: corVerde.withValues(alpha: 0.3), width: 1.5),
+                border: Border.all(
+                    color: corVerde.withValues(alpha: 0.3), width: 1.5),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.vibration_rounded, color: corLaranja, size: 30),
+                      const Icon(Icons.vibration_rounded,
+                          color: corLaranja, size: 30),
                       const SizedBox(width: 12),
                       const Expanded(
                         child: Text(
@@ -175,7 +206,10 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
                   const SizedBox(height: 10),
                   const Text(
                     'Teste padrões de vibração no PET FEFO:',
-                    style: TextStyle(fontFamily: 'KGPen', fontSize: 14, color: Colors.black87),
+                    style: TextStyle(
+                        fontFamily: 'KGPen',
+                        fontSize: 14,
+                        color: Colors.black87),
                   ),
                   const SizedBox(height: 12),
                   Row(
@@ -183,11 +217,13 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
                     children: [
                       ElevatedButton.icon(
                         icon: const Icon(Icons.touch_app_rounded, size: 18),
-                        label: const Text('1x Curto', style: TextStyle(fontFamily: 'KGPen')),
+                        label: const Text('1x Curto',
+                            style: TextStyle(fontFamily: 'KGPen')),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: corVerde,
                           foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
                         ),
                         onPressed: () {
                           if (manager.isConnected) {
@@ -199,11 +235,13 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
                       ),
                       ElevatedButton.icon(
                         icon: const Icon(Icons.vibration_rounded, size: 18),
-                        label: const Text('2x Duplo', style: TextStyle(fontFamily: 'KGPen')),
+                        label: const Text('2x Duplo',
+                            style: TextStyle(fontFamily: 'KGPen')),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: corLaranja,
                           foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
                         ),
                         onPressed: () {
                           if (manager.isConnected) {
@@ -223,74 +261,80 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
 
             // Card Faces do FEFO
             if (manager.developerModeEnabled) ...[
-            Container(
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.9),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 8,
-                    offset: Offset(0, 3),
-                  ),
-                ],
-                border: Border.all(color: corVerde.withValues(alpha: 0.3), width: 1.5),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.face_rounded, color: corLaranja, size: 30),
-                      const SizedBox(width: 12),
-                      const Expanded(
-                        child: Text(
-                          'Exibir Faces no FEFO',
-                          style: TextStyle(
-                            fontFamily: 'KGPen',
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: corVerde,
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 8,
+                      offset: Offset(0, 3),
+                    ),
+                  ],
+                  border: Border.all(
+                      color: corVerde.withValues(alpha: 0.3), width: 1.5),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.face_rounded,
+                            color: corLaranja, size: 30),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Text(
+                            'Exibir Faces no FEFO',
+                            style: TextStyle(
+                              fontFamily: 'KGPen',
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: corVerde,
+                            ),
                           ),
                         ),
-                      ),
-                      Switch(
-                        value: _facesAtivas,
-                        activeColor: corLaranja,
-                        onChanged: (val) async {
-                          setState(() => _facesAtivas = val);
-                          if (manager.isConnected) {
-                            await manager.setFaceMode(val);
-                          } else {
-                            _mostrarAvisoBLE(context);
-                          }
+                        Switch(
+                          value: _facesAtivas,
+                          activeColor: corLaranja,
+                          onChanged: (val) async {
+                            setState(() => _facesAtivas = val);
+                            if (manager.isConnected) {
+                              await manager.setFaceMode(val);
+                            } else {
+                              _mostrarAvisoBLE(context);
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Ative ou desative as expressões faciais na tela da CYD do FEFO.',
+                      style: TextStyle(
+                          fontFamily: 'KGPen',
+                          fontSize: 14,
+                          color: Colors.black87),
+                    ),
+                    const SizedBox(height: 14),
+                    Center(
+                      child: BotaoPincelada(
+                        texto: 'Galeria de Faces',
+                        cor: corLaranja,
+                        fontSize: 24,
+                        aoPressionar: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const TelaFacesFefo()),
+                          );
                         },
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    'Ative ou desative as expressões faciais na tela da CYD do FEFO.',
-                    style: TextStyle(fontFamily: 'KGPen', fontSize: 14, color: Colors.black87),
-                  ),
-                  const SizedBox(height: 14),
-                  Center(
-                    child: BotaoPincelada(
-                      texto: 'Galeria de Faces',
-                      cor: corLaranja,
-                      fontSize: 24,
-                      aoPressionar: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const TelaFacesFefo()),
-                        );
-                      },
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
             ],
             const SizedBox(height: 25),
           ],
