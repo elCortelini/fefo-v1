@@ -10,6 +10,7 @@ import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'pages/tela_inicial.dart';
+import 'pages/tela_menu.dart';
 import 'managers/bluetooth_manager.dart';
 import 'services/alarm_service.dart';
 import 'widgets/aviso_bem_vindo_dialog.dart';
@@ -120,6 +121,8 @@ class _MyAppState extends State<MyApp> {
     _manager = Provider.of<BluetoothManager>(context);
 
     if (_manager!.isConnected != _wasConnected) {
+      final connectedNow = _manager!.isConnected;
+      final wasConnected = _wasConnected;
       final lostConnection = _wasConnected &&
           !_manager!.isConnected &&
           !_manager!.uploading &&
@@ -152,6 +155,16 @@ class _MyAppState extends State<MyApp> {
           if (!mounted) return;
           _returnAfterUpdate = false;
           _navigatorKey.currentState?.popUntil((route) => route.isFirst);
+        });
+      }
+
+      if (connectedNow && !wasConnected) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted || !_manager!.isConnected) return;
+          _navigatorKey.currentState?.pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const TelaMenu()),
+            (route) => false,
+          );
         });
       }
     }

@@ -1,25 +1,25 @@
 {
     "schema":  1,
-    "catalogVersion":  18,
+    "catalogVersion":  19,
     "repository":  "FEFO Google Drive",
     "firmware":  {
-                     "version":  "1.083",
+                     "version":  "1.084",
                      "board":  "FEFO_CYD_ESP32",
-                     "arquivo":  "FEFO_Firmware_v1.083.bin",
-                     "tamanho":  1742816,
-                     "checksum":  "6163adb573b87eb382b013f0f74d8d4bc085fd4d74149e71e32147c55d5afe86",
-                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.083.bin",
+                     "arquivo":  "FEFO_Firmware_v1.084.bin",
+                     "tamanho":  1744112,
+                     "checksum":  "c73b4c4abf2597c17148a445d365f8dcb13ca8fba5d04624c49b574bd8a91641",
+                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.084.bin",
                      "obrigatorio":  false,
-                     "notas":  "Versão 1.083: quantidade de LEDs configurável no app, padrão 35, com opções 30, 25, 20 e 15."
+                     "notas":  "Versão 1.084: 10 padrões intensos de vibração com 7 segundos, 10 efeitos LED divertidos, arco-íris preservado e telas de status somente no modo Desenvolvedor."
                  },
     "app":  {
-                "version":  "1.074",
-                "build":  1074,
-                "arquivo":  "FEFO_App_v1.074.apk",
+                "version":  "1.075",
+                "build":  1075,
+                "arquivo":  "FEFO_App_v1.075.apk",
                 "tamanho":  57387755,
-                "checksum":  "0384bb5bdbb2f403eb1966339a27debcd7120c6d2ff25204f86cbb41aaff47e8",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.074.apk",
-                "notas":  "Adiciona a configuração da quantidade de LEDs da fita: 35, 30, 25, 20 ou 15."
+                "checksum":  "151adc9fc89d35fa1012fa7832153f3371e98a06df4c65043f1966f5feeae4b1",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.075.apk",
+                "notas":  "Submenu com 10 vibrações de 7 segundos, fila Tocar todas no Jukebox, áudio persistente com mini-player e menu principal automático ao conectar."
              },
     "audio":  [
                   {

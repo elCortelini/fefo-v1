@@ -291,6 +291,8 @@ class BluetoothManager extends ChangeNotifier {
   bool _developerModeEnabled = false;
   String? _currentFacePath;
   Timer? _audioProgressTimer;
+  List<FefoAudioItem> _audioQueue = const [];
+  int _audioQueueIndex = -1;
   Timer? _keepAliveTimer;
   Timer? _autoReconnectTimer;
   bool _autoReconnectInProgress = false;
@@ -715,6 +717,19 @@ class BluetoothManager extends ChangeNotifier {
         _audioTotalSec = 0;
         _audioPaused = false;
         _audioProgressTimer?.cancel();
+        if (_audioQueueIndex >= 0 && _audioQueueIndex + 1 < _audioQueue.length) {
+          _audioQueueIndex++;
+          final fila = List<FefoAudioItem>.from(_audioQueue);
+          final proximo = _audioQueueIndex;
+          Future<void>.microtask(() async {
+            await playAudio(fila[proximo].token);
+            _audioQueue = fila;
+            _audioQueueIndex = proximo;
+          });
+        } else {
+          _audioQueue = const [];
+          _audioQueueIndex = -1;
+        }
       }
       notifyListeners();
       return;
@@ -870,24 +885,24 @@ class BluetoothManager extends ChangeNotifier {
     if (_ledEffects.isEmpty) {
       _ledEffects.addAll(List.generate(10, (index) {
         const names = [
-          'Vermelho',
-          'Verde',
-          'Azul',
-          'Pisca branco',
-          'Ponto laranja',
-          'Roxo alternado',
+          'Confete neon',
+          'Onda tropical',
+          'Foguete',
+          'Pulsos de festa',
+          'Fogo divertido',
+          'Ping-pong',
           'Arco-íris',
-          'Respiração azul',
-          'Polícia',
-          'Rastro laranja',
+          'Estrelas',
+          'Balada pastel',
+          'Chuva colorida',
         ];
         final id = index + 1;
         return FefoCatalogItem(id: id, name: names[index], command: 'LED $id');
       }));
     }
     if (_vibrationEffects.isEmpty) {
-      _vibrationEffects.addAll(List.generate(5, (index) {
-        const names = ['Leve', 'Curta', 'Média', 'Longa', 'Forte'];
+      _vibrationEffects.addAll(List.generate(10, (index) {
+        const names = ['Metralhadora', 'Batida dupla', 'SOS intenso', 'Onda forte', 'Triplo impacto', 'Sirene', 'Marcha', 'Crescendo', 'Festa', 'Pulso'];
         final id = index + 1;
         return FefoCatalogItem(
           id: id,
@@ -1573,6 +1588,8 @@ class BluetoothManager extends ChangeNotifier {
   }
 
   Future<void> playAudio(String audioRef) async {
+    _audioQueue = const [];
+    _audioQueueIndex = -1;
     _audioSelecionado = audioRef;
     _caminhoAudioAtivo = audioRef;
     await _enviarComandoNormalizado(
@@ -1598,11 +1615,24 @@ class BluetoothManager extends ChangeNotifier {
     await playAudio(audioRef);
   }
 
+  Future<void> tocarTodos(List<FefoAudioItem> audios) async {
+    if (audios.isEmpty) return;
+    _audioQueue = List<FefoAudioItem>.from(audios);
+    _audioQueueIndex = 0;
+    await playAudio(_audioQueue.first.token);
+    // playAudio cancela a fila por ser uma ação manual; restaura a fila para
+    // que o próximo áudio seja iniciado quando o firmware informar IDLE.
+    _audioQueue = List<FefoAudioItem>.from(audios);
+    _audioQueueIndex = 0;
+  }
+
   void selecionarAudio(String audioRef) {
     playAudio(audioRef);
   }
 
   Future<void> stopAudio() async {
+    _audioQueue = const [];
+    _audioQueueIndex = -1;
     await _enviarComandoNormalizado('STOP');
     _audioProgressTimer?.cancel();
     _audioProgress = 0;
@@ -1808,7 +1838,7 @@ class BluetoothManager extends ChangeNotifier {
   }
 
   Future<void> vibrar(int pattern) async {
-    await _enviarComandoNormalizado('VIBRA ${pattern.clamp(1, 5)}');
+    await _enviarComandoNormalizado('VIBRA ${pattern.clamp(1, 10)}');
   }
 
   Future<void> setPanicEnabled(bool enabled) async {
@@ -1867,7 +1897,7 @@ class BluetoothManager extends ChangeNotifier {
 
     if (lower.startsWith('vibracao')) {
       final numero = int.tryParse(lower.replaceAll(RegExp(r'[^0-9]'), ''));
-      return 'VIBRA ${(numero ?? 1).clamp(1, 5)}';
+      return 'VIBRA ${(numero ?? 1).clamp(1, 10)}';
     }
 
     // O firmware atual não possui VIBRA 0/STOP VIBRA; os padrões têm duração

@@ -114,15 +114,7 @@ class _TelaAudiosFefoState extends State<TelaAudiosFefo> {
     const Color corVerde = Color(0xFF318134);
     const Color corLaranja = Color(0xFFDC4900);
 
-    return PopScope<void>(
-      canPop: true,
-      onPopInvokedWithResult: (didPop, result) {
-        if (didPop) {
-          final manager = context.read<BluetoothManager>();
-          if (manager.isConnected) manager.stopAudio();
-        }
-      },
-      child: PaginaBase(
+    return PaginaBase(
         child: Consumer<BluetoothManager>(
           builder: (context, manager, child) {
             final groups = manager.audioGroups;
@@ -182,6 +174,18 @@ class _TelaAudiosFefoState extends State<TelaAudiosFefo> {
                   ),
                 ),
                 const SizedBox(height: 10),
+                if (widget.grupoInicial == 'Jukebox do Fefo' && audios.isNotEmpty && manager.isConnected)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        icon: const Icon(Icons.playlist_play_rounded),
+                        label: const Text('Tocar todas as músicas', style: TextStyle(fontFamily: 'KGPen', fontSize: 17)),
+                        onPressed: () => manager.tocarTodos(audios),
+                      ),
+                    ),
+                  ),
 
                 // Bar de ação superior quando no modo de seleção
                 if (_modoSelecao) ...[
@@ -337,8 +341,7 @@ class _TelaAudiosFefoState extends State<TelaAudiosFefo> {
             );
           },
         ),
-      ),
-    );
+      );
   }
 }
 

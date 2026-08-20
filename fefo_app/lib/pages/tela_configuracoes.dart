@@ -5,6 +5,7 @@ import '../managers/bluetooth_manager.dart';
 import '../widgets/pagina_base.dart';
 import '../widgets/botao_pincelada.dart';
 import 'tela_faces_fefo.dart';
+import 'tela_vibracoes_fefo.dart';
 
 class TelaConfiguracoes extends StatefulWidget {
   const TelaConfiguracoes({super.key});
@@ -168,98 +169,18 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
                 border: Border.all(
                     color: corVerde.withValues(alpha: 0.3), width: 1.5),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.vibration_rounded,
-                          color: corLaranja, size: 30),
-                      const SizedBox(width: 12),
-                      const Expanded(
-                        child: Text(
-                          'Vibração do PET FEFO',
-                          style: TextStyle(
-                            fontFamily: 'KGPen',
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: corVerde,
-                          ),
-                        ),
-                      ),
-                      Switch(
-                        value: _vibracaoAtiva,
-                        activeColor: corLaranja,
-                        onChanged: (val) {
-                          setState(() => _vibracaoAtiva = val);
-                          if (manager.isConnected) {
-                            if (val) {
-                              manager.vibrar(1);
-                            } else {
-                              manager.enviarComando('VIB:0');
-                            }
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    'Teste padrões de vibração no PET FEFO:',
-                    style: TextStyle(
-                        fontFamily: 'KGPen',
-                        fontSize: 14,
-                        color: Colors.black87),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      ElevatedButton.icon(
-                        icon: const Icon(Icons.touch_app_rounded, size: 18),
-                        label: const Text('1x Curto',
-                            style: TextStyle(fontFamily: 'KGPen')),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: corVerde,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                        ),
-                        onPressed: () {
-                          if (manager.isConnected) {
-                            manager.vibrar(1);
-                          } else {
-                            _mostrarAvisoBLE(context);
-                          }
-                        },
-                      ),
-                      ElevatedButton.icon(
-                        icon: const Icon(Icons.vibration_rounded, size: 18),
-                        label: const Text('2x Duplo',
-                            style: TextStyle(fontFamily: 'KGPen')),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: corLaranja,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                        ),
-                        onPressed: () {
-                          if (manager.isConnected) {
-                            manager.vibrar(2);
-                          } else {
-                            _mostrarAvisoBLE(context);
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                ],
+              child: ListTile(
+                leading: const Icon(Icons.vibration_rounded, color: corLaranja, size: 32),
+                title: const Text('Vibrações do PET FEFO', style: TextStyle(fontFamily: 'KGPen', fontSize: 20, fontWeight: FontWeight.bold, color: corVerde)),
+                subtitle: const Text('10 padrões intensos de 7 segundos', style: TextStyle(fontFamily: 'KGPen')),
+                trailing: const Icon(Icons.chevron_right_rounded, color: corLaranja, size: 32),
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TelaVibracoesFefo())),
               ),
             ),
 
             const SizedBox(height: 20),
 
-            // Card Faces do FEFO
+            // Submenu de vibrações do FEFO
             if (manager.developerModeEnabled) ...[
               Container(
                 padding: const EdgeInsets.all(18),
