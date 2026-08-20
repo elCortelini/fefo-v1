@@ -1,6 +1,6 @@
 {
     "schema":  1,
-    "catalogVersion":  19,
+    "catalogVersion":  20,
     "repository":  "FEFO Google Drive",
     "firmware":  {
                      "version":  "1.084",
@@ -13,13 +13,13 @@
                      "notas":  "Versão 1.084: 10 padrões intensos de vibração com 7 segundos, 10 efeitos LED divertidos, arco-íris preservado e telas de status somente no modo Desenvolvedor."
                  },
     "app":  {
-                "version":  "1.075",
-                "build":  1075,
-                "arquivo":  "FEFO_App_v1.075.apk",
+                "version":  "1.076",
+                "build":  1076,
+                "arquivo":  "FEFO_App_v1.076.apk",
                 "tamanho":  57387755,
-                "checksum":  "151adc9fc89d35fa1012fa7832153f3371e98a06df4c65043f1966f5feeae4b1",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.075.apk",
-                "notas":  "Submenu com 10 vibrações de 7 segundos, fila Tocar todas no Jukebox, áudio persistente com mini-player e menu principal automático ao conectar."
+                "checksum":  "19ee1ad55fb15886ad534cbd54e9cd2ce9f352f22b666143ddb46fcc63b2a836",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.076.apk",
+                "notas":  "Correção do fluxo automático de conexão: abre o menu principal sem deixar a tela preta."
              },
     "audio":  [
                   {
