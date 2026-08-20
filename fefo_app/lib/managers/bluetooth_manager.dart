@@ -386,6 +386,10 @@ class BluetoothManager extends ChangeNotifier {
   bool get developerModeEnabled => _developerModeEnabled;
   String? get currentFacePath => _currentFacePath;
   bool? get lastTransferSucceeded => _lastTransferSucceeded;
+  void acknowledgeUpdateResult() {
+    _lastTransferSucceeded = null;
+    notifyListeners();
+  }
   bool get aguardandoReconexao =>
       _lastTransferSucceeded == true && !isConnected && !_uploading;
   int? get sdTotalBytes => _sdTotalBytes;
