@@ -2,6 +2,9 @@ import 'dart:math';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../theme/fefo_theme.dart';
 
 class BotaoPincelada extends StatefulWidget {
   final String texto;
@@ -50,6 +53,11 @@ class _BotaoPinceladaState extends State<BotaoPincelada> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = context.watch<FefoThemeController>().current;
+    final corTematica = widget.cor == const Color(0xFF318134) ||
+            widget.cor == const Color(0xFFDC4900)
+        ? theme.accent
+        : widget.cor;
     final tamanhoFonte = widget.fontSize ?? 47;
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -90,7 +98,7 @@ class _BotaoPinceladaState extends State<BotaoPincelada> {
               duration: const Duration(milliseconds: 80),
               child: CustomPaint(
                 painter: _PinceladaPainter(
-                  cor: widget.cor,
+                  cor: corTematica,
                   corBorda: widget.corBorda,
                 ),
                 child: SizedBox(

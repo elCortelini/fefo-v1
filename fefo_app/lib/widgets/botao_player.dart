@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../managers/bluetooth_manager.dart';
 import 'progresso_operacao.dart';
+import '../theme/fefo_theme.dart';
 
 class BotaoPlayer extends StatelessWidget {
   final String caminhoArquivoPlay;
@@ -26,6 +27,7 @@ class BotaoPlayer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<BluetoothManager>(
       builder: (context, manager, _) {
+        final theme = context.watch<FefoThemeController>().current;
         final active = manager.audioSelecionado == caminhoArquivoPlay;
         final enabled = manager.isConnected;
 
@@ -41,10 +43,10 @@ class BotaoPlayer extends StatelessWidget {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   legenda,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'KGPen',
                     fontSize: 31,
-                    color: Color(0xFF4B5563),
+                    color: theme.mutedText,
                     height: 1.05,
                   ),
                 ),
@@ -57,7 +59,7 @@ class BotaoPlayer extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.fromLTRB(9, 8, 9, 9),
           decoration: BoxDecoration(
-            color: const Color(0xFFFFD89A),
+            color: theme.surface,
             borderRadius: BorderRadius.circular(20),
           ),
           child: Column(
@@ -65,10 +67,10 @@ class BotaoPlayer extends StatelessWidget {
             children: [
               Text(
                 legenda,
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'KGPen',
                   fontSize: 31,
-                  color: Color(0xFF4B5563),
+                  color: theme.mutedText,
                   height: 1.05,
                 ),
               ),
@@ -81,7 +83,7 @@ class BotaoPlayer extends StatelessWidget {
                   _ControlButton(
                     tooltip: manager.audioPaused ? 'Continuar' : 'Reproduzir',
                     icon: Icons.play_arrow_rounded,
-                    color: Colors.black,
+                    color: theme.text,
                     active: manager.audioPlaying,
                     size: 48,
                     onPressed: !enabled
@@ -93,7 +95,7 @@ class BotaoPlayer extends StatelessWidget {
                   _ControlButton(
                     tooltip: manager.audioPaused ? 'Retomar' : 'Pausar',
                     icon: Icons.pause_rounded,
-                    color: Colors.black,
+                    color: theme.text,
                     active: manager.audioPaused,
                     size: 48,
                     onPressed: !enabled
@@ -105,7 +107,7 @@ class BotaoPlayer extends StatelessWidget {
                   _ControlButton(
                     tooltip: 'Parar',
                     icon: Icons.stop_rounded,
-                    color: Colors.black,
+                    color: theme.text,
                     active: manager.audioStopped,
                     size: 48,
                     onPressed: enabled ? manager.stopAudio : null,
@@ -114,7 +116,7 @@ class BotaoPlayer extends StatelessWidget {
                     _ControlButton(
                       tooltip: 'Excluir do FEFO',
                       icon: Icons.delete_outline_rounded,
-                      color: Colors.black,
+                      color: theme.text,
                       active: deletando,
                       size: 48,
                       onPressed: enabled && !deletando ? aoExcluir : null,
@@ -151,6 +153,7 @@ class _PlaybackProgress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = context.watch<FefoThemeController>().current;
     return LayoutBuilder(
       builder: (context, constraints) {
         final maxWidth = constraints.maxWidth;
@@ -170,7 +173,7 @@ class _PlaybackProgress extends StatelessWidget {
                 Container(
                   height: 6,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFB878),
+                    color: theme.accent.withValues(alpha: 0.25),
                     borderRadius: BorderRadius.circular(3),
                   ),
                 ),
@@ -179,7 +182,7 @@ class _PlaybackProgress extends StatelessWidget {
                   child: Container(
                     height: 6,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFDC4900),
+                      color: theme.accent,
                       borderRadius: BorderRadius.circular(3),
                     ),
                   ),
@@ -189,8 +192,8 @@ class _PlaybackProgress extends StatelessWidget {
                   child: Container(
                     width: marker,
                     height: marker,
-                    decoration: const BoxDecoration(
-                      color: Colors.black,
+                    decoration: BoxDecoration(
+                      color: theme.text,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
@@ -230,7 +233,7 @@ class _ControlButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const activeColor = Color(0xFFDC4900);
+    final activeColor = context.watch<FefoThemeController>().current.accent;
     final isEnabled = onPressed != null;
 
     return Tooltip(
@@ -242,7 +245,7 @@ class _ControlButton extends StatelessWidget {
           color: active
               ? activeColor
               : (isEnabled
-                  ? Colors.black.withValues(alpha: 0.07)
+                  ? context.watch<FefoThemeController>().current.text.withValues(alpha: 0.07)
                   : Colors.transparent),
           shape: BoxShape.circle,
         ),

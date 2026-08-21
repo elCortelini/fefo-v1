@@ -1,8 +1,10 @@
 // lib/widgets/botao_verde.dart
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'botao_pincelada.dart';
+import '../theme/fefo_theme.dart';
 
 class BotaoVerde extends StatelessWidget {
   // --- PROPRIEDADES ---
@@ -22,10 +24,11 @@ class BotaoVerde extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = context.watch<FefoThemeController>().current;
     if (texto.trim().toLowerCase() == 'voltar') {
       return BotaoPincelada(
         texto: 'Voltar',
-        cor: const Color(0xFF318134),
+        cor: theme.accent,
         larguraPercentual: 0.72,
         aoPressionar: aoPressionar,
       );
@@ -40,7 +43,7 @@ class BotaoVerde extends StatelessWidget {
           // --- LÓGICA DA COR ---
           // Se uma 'cor' for fornecida no construtor, use-a.
           // Senão, use a cor verde padrão.
-          backgroundColor: cor ?? const Color(0xFF318134),
+          backgroundColor: cor ?? theme.accent,
           padding: const EdgeInsets.symmetric(
               vertical: 12), // Reduzi o padding para acomodar melhor
           shape: RoundedRectangleBorder(
