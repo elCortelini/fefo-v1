@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../managers/bluetooth_manager.dart';
 import '../widgets/botao_pincelada.dart';
 import '../widgets/pagina_base.dart';
-import 'tela_alarmes.dart';
 import 'tela_audios_fefo.dart';
 import 'tela_cards.dart';
 import 'tela_catalogo_online.dart';
@@ -154,10 +153,6 @@ class _TelaMenuState extends State<TelaMenu> {
                 if (temExploracao) ...[
                   const _TituloSecao(titulo: 'Exploração diária'),
                   const SizedBox(height: 8),
-                  _BotaoMenu(
-                    texto: 'Alarmes',
-                    aoPressionar: () => _abrir(const TelaAlarmes()),
-                  ),
                   _BotaoMenu(
                     texto: 'Aulas do Fefo',
                     aoPressionar: () => _abrir(
