@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../managers/bluetooth_manager.dart';
 import '../widgets/botao_pincelada.dart';
 import '../widgets/pagina_base.dart';
+import '../theme/fefo_theme.dart';
 
 class TelaAudiosFefo extends StatefulWidget {
   final String? grupoInicial;
@@ -111,8 +112,9 @@ class _TelaAudiosFefoState extends State<TelaAudiosFefo> {
 
   @override
   Widget build(BuildContext context) {
-    const Color corVerde = Color(0xFF318134);
-    const Color corLaranja = Color(0xFFDC4900);
+    final theme = context.watch<FefoThemeController>().current;
+    final corVerde = theme.accentSecondary;
+    final corLaranja = theme.accent;
 
     return PaginaBase(
         child: Consumer<BluetoothManager>(
@@ -146,7 +148,7 @@ class _TelaAudiosFefoState extends State<TelaAudiosFefo> {
                           fit: BoxFit.scaleDown,
                           child: Text(
                             widget.grupoInicial ?? 'Áudios no FEFO',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontFamily: 'Billotilde',
                               fontSize: 52,
                               height: 1,
@@ -201,7 +203,7 @@ class _TelaAudiosFefoState extends State<TelaAudiosFefo> {
                       children: [
                         Text(
                           '${_selecionados.length} selecionado(s)',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: 'KGPen',
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -215,7 +217,7 @@ class _TelaAudiosFefoState extends State<TelaAudiosFefo> {
                             _selecionados.length == audios.length
                                 ? 'Desmarcar Todos'
                                 : 'Selecionar Todos',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontFamily: 'KGPen',
                               fontSize: 15,
                               color: corVerde,
@@ -256,7 +258,7 @@ class _TelaAudiosFefoState extends State<TelaAudiosFefo> {
                                           ),
                                           child: Text(
                                             entry.key.trim(),
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                               fontFamily: 'Billotilde',
                                               fontSize: 32,
                                               color: corVerde,
@@ -318,7 +320,7 @@ class _TelaAudiosFefoState extends State<TelaAudiosFefo> {
                             icon: const Icon(Icons.delete_forever_rounded, size: 26),
                             label: Text(
                               'Deletar ${_selecionados.length} Selecionado(s)',
-                              style: const TextStyle(
+                  style: TextStyle(
                                 fontFamily: 'KGPen',
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -371,8 +373,9 @@ class _CardAudioItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const corVerde = Color(0xFF318134);
-    const corLaranja = Color(0xFFDC4900);
+    final theme = context.watch<FefoThemeController>().current;
+    final corVerde = theme.accentSecondary;
+    final corLaranja = theme.accent;
 
     final titulo = audio.title.isNotEmpty ? audio.title : audio.fileName;
 
@@ -381,12 +384,12 @@ class _CardAudioItem extends StatelessWidget {
       decoration: BoxDecoration(
         color: selecionado
             ? corLaranja.withValues(alpha: 0.15)
-            : (tocando ? corVerde.withValues(alpha: 0.12) : Colors.white.withValues(alpha: 0.85)),
+            : (tocando ? corVerde.withValues(alpha: 0.12) : theme.surface),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: selecionado
               ? corLaranja
-              : (tocando ? corVerde : Colors.black12),
+              : (tocando ? corVerde : theme.mutedText.withValues(alpha: 0.18)),
           width: selecionado || tocando ? 2 : 1,
         ),
         boxShadow: const [
@@ -406,7 +409,7 @@ class _CardAudioItem extends StatelessWidget {
                 selecionado
                     ? Icons.check_circle_rounded
                     : Icons.radio_button_unchecked_rounded,
-                color: selecionado ? corLaranja : Colors.grey,
+                color: selecionado ? corLaranja : theme.mutedText,
                 size: 28,
               )
             : CircleAvatar(
@@ -423,25 +426,29 @@ class _CardAudioItem extends StatelessWidget {
             fontFamily: 'KGPen',
             fontSize: 18,
             fontWeight: tocando || selecionado ? FontWeight.bold : FontWeight.normal,
-            color: selecionado
+                color: selecionado
                 ? corLaranja
-                : (tocando ? corVerde : Colors.black87),
+                : (tocando ? corVerde : theme.text),
           ),
         ),
         subtitle: audio.group.isNotEmpty
             ? Text(
                 audio.group,
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'KGPen',
                   fontSize: 13,
-                  color: Colors.black54,
+                  color: theme.mutedText,
                 ),
               )
             : null,
         trailing: modoSelecao
             ? null
             : Row(mainAxisSize: MainAxisSize.min, children: [
-                IconButton(tooltip: favorito ? 'Remover favorito' : 'Adicionar favorito', icon: Icon(favorito ? Icons.star_rounded : Icons.star_border_rounded, color: favorito ? corLaranja : corVerde), onPressed: onFavorito),
+                IconButton(
+                  tooltip: favorito ? 'Remover favorito' : 'Adicionar favorito',
+                  icon: Icon(favorito ? Icons.star_rounded : Icons.star_border_rounded, color: favorito ? corLaranja : corVerde),
+                  onPressed: onFavorito,
+                ),
                 IconButton(tooltip: 'Tocar no FEFO', icon: Icon(tocando ? Icons.equalizer_rounded : Icons.play_circle_fill_rounded, color: tocando ? corVerde : corLaranja, size: 36), onPressed: onTap),
               ]),
       ),

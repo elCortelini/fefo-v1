@@ -1,17 +1,20 @@
 // lib/pages/tela_sobre.dart
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'dart:math';
 
 import '../widgets/pagina_base.dart';
 import '../widgets/botao_verde.dart';
 import '../config/app_version.dart';
+import '../theme/fefo_theme.dart';
 
 class TelaSobre extends StatelessWidget {
   const TelaSobre({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = context.watch<FefoThemeController>().current;
     return PaginaBase(
       child: Stack(
         children: [
@@ -44,14 +47,8 @@ class TelaSobre extends StatelessWidget {
                           fontFamily: 'Billotilde',
                           fontSize: 55,
                           height: 1.1,
-                          color: Theme.of(context).colorScheme.secondary,
-                          shadows: [
-                            Shadow(
-                              blurRadius: 10.0,
-                              color: Colors.white,
-                              offset: Offset(0, 0),
-                            ),
-                          ],
+                          color: theme.accentSecondary,
+                          shadows: [Shadow(blurRadius: 10.0, color: theme.background, offset: const Offset(0, 0))],
                         ),
                       ),
                       const SizedBox(height: 25),
@@ -62,18 +59,18 @@ class TelaSobre extends StatelessWidget {
                             horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
                           color:
-                              const Color(0xFFDC4900).withValues(alpha: 0.15),
+                              theme.accent.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                              color: const Color(0xFFDC4900), width: 1.5),
+                              color: theme.accent, width: 1.5),
                         ),
-                        child: const Text(
+                        child: Text(
                           'Versão do App: FEFO App $fefoAppVersionLabel',
                           style: TextStyle(
                             fontFamily: 'KGPen',
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFFDC4900),
+                            color: theme.accent,
                           ),
                         ),
                       ),
@@ -83,11 +80,11 @@ class TelaSobre extends StatelessWidget {
                       // 3. O Texto da História do Fefo
                       RichText(
                         textAlign: TextAlign.center,
-                        text: const TextSpan(
+                        text: TextSpan(
                           style: TextStyle(
                             fontFamily: 'KGPen',
                             fontSize: 22,
-                            color: Color.fromARGB(255, 61, 61, 61),
+                            color: theme.text,
                             height: 1.5, // Espaçamento entre linhas
                           ),
                           children: [

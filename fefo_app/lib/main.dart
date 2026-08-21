@@ -182,7 +182,7 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: fefoTheme.accent,
-          brightness: fefoTheme.useLegacyImage ? Brightness.light : Brightness.dark,
+          brightness: fefoTheme.isDark ? Brightness.dark : Brightness.light,
         ),
         scaffoldBackgroundColor: fefoTheme.background,
         cardColor: fefoTheme.surface,
@@ -198,6 +198,30 @@ class _MyAppState extends State<MyApp> {
           margin: const EdgeInsets.symmetric(vertical: 4),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         ),
+        listTileTheme: ListTileThemeData(
+          textColor: fefoTheme.text,
+          iconColor: fefoTheme.accentSecondary,
+          subtitleTextStyle: TextStyle(color: fefoTheme.mutedText),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        ),
+        dialogTheme: DialogThemeData(
+          backgroundColor: fefoTheme.surface,
+          titleTextStyle: TextStyle(color: fefoTheme.text, fontSize: 22, fontWeight: FontWeight.bold),
+          contentTextStyle: TextStyle(color: fefoTheme.mutedText, fontSize: 16),
+        ),
+        snackBarTheme: SnackBarThemeData(
+          backgroundColor: fefoTheme.surface,
+          contentTextStyle: TextStyle(color: fefoTheme.text),
+          actionTextColor: fefoTheme.accent,
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          labelStyle: TextStyle(color: fefoTheme.mutedText),
+          hintStyle: TextStyle(color: fefoTheme.mutedText),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide(color: fefoTheme.accent, width: 2),
+          ),
+        ),
         navigationBarTheme: NavigationBarThemeData(
           backgroundColor: fefoTheme.surface,
           indicatorColor: fefoTheme.accent.withValues(alpha: 0.22),
@@ -207,14 +231,14 @@ class _MyAppState extends State<MyApp> {
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             backgroundColor: fefoTheme.accent,
-            foregroundColor: fefoTheme.useLegacyImage ? Colors.white : fefoTheme.background,
+            foregroundColor: fefoTheme.isDark ? fefoTheme.background : Colors.white,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
           ),
         ),
         filledButtonTheme: FilledButtonThemeData(
           style: FilledButton.styleFrom(
             backgroundColor: fefoTheme.accent,
-            foregroundColor: fefoTheme.useLegacyImage ? Colors.white : fefoTheme.background,
+            foregroundColor: fefoTheme.isDark ? fefoTheme.background : Colors.white,
           ),
         ),
         sliderTheme: SliderThemeData(
