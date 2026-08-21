@@ -75,6 +75,7 @@
             </intent-filter>
         </receiver>
         <receiver android:name="com.dexterous.flutterlocalnotifications.ActionBroadcastReceiver" android:exported="false" />
+        <receiver android:name=".AlarmCommandReceiver" android:exported="false" />
 
         <meta-data android:name="flutterEmbedding" android:value="2" />
     </application>

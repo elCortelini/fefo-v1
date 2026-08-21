@@ -1,6 +1,6 @@
 {
     "schema":  1,
-    "catalogVersion":  22,
+    "catalogVersion":  23,
     "repository":  "FEFO Google Drive",
     "firmware":  {
                      "version":  "1.085",
@@ -13,13 +13,13 @@
                      "notas":  "Versão 1.085: Ronronar com áudio e vibração protegida por 10 segundos, desligamento dos LEDs e telas técnicas somente no modo Desenvolvedor."
                  },
     "app":  {
-                "version":  "1.078",
-                "build":  1078,
-                "arquivo":  "FEFO_App_v1.078.apk",
-                "tamanho":  57387755,
-                "checksum":  "9e7ba3af4dac43bcfabfa6823adeec037e5cd080b569e97c76d2d0c712c7af87",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.078.apk",
-                "notas":  "Remove a barra inferior e o modo escuro, corrige títulos cortados, deixa Ronronar somente no menu principal e remove as caixas de seleção do catálogo."
+                "version":  "1.079",
+                "build":  1079,
+                "arquivo":  "FEFO_App_v1.079.apk",
+                "tamanho":  57404167,
+                "checksum":  "6aa6f08b754b789676d742b0fcdc292cff6a910f9881be8c8038ba5f9142875d",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.079.apk",
+                "notas":  "O alarme do celular permanece independente do FEFO: o alerta genérico toca mesmo sem conexão, enquanto o app tenta enviar o áudio configurado ao PET quando ele estiver disponível."
              },
     "audio":  [
                   {

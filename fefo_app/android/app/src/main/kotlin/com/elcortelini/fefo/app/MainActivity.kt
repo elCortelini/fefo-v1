@@ -2,6 +2,8 @@ package com.elcortelini.fefo.app
 
 import android.content.Context
 import android.content.Intent
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
@@ -19,9 +21,11 @@ class MainActivity : FlutterActivity() {
     private val channelName = "fefo/wifi"
     private var hotspot: WifiManager.LocalOnlyHotspotReservation? = null
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
+    private var pendingAlarmAudio: String? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        pendingAlarmAudio = intent.getStringExtra(AlarmCommandReceiver.EXTRA_AUDIO)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, channelName)
             .setMethodCallHandler { call, result ->
                 when (call.method) {
@@ -31,9 +35,65 @@ class MainActivity : FlutterActivity() {
                         call.argument<String>("password") ?: "", result)
                     "installApk" -> installApk(call.argument<String>("path") ?: "", result)
                     "disconnect" -> { disconnect(); result.success(true) }
+                    "getPendingAlarm" -> {
+                        val audio = pendingAlarmAudio
+                        pendingAlarmAudio = null
+                        result.success(audio)
+                    }
+                    "scheduleAlarmCommand" -> scheduleAlarmCommand(
+                        call.argument<Int>("id") ?: 0,
+                        call.argument<Long>("atMillis") ?: 0L,
+                        call.argument<String>("audio") ?: "",
+                        result,
+                    )
+                    "cancelAlarmCommand" -> cancelAlarmCommand(
+                        call.argument<Int>("id") ?: 0,
+                        result,
+                    )
                     else -> result.notImplemented()
                 }
             }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        if (intent.action == AlarmCommandReceiver.ACTION_ALARM_COMMAND) {
+            pendingAlarmAudio = intent.getStringExtra(AlarmCommandReceiver.EXTRA_AUDIO)
+        }
+    }
+
+    private fun scheduleAlarmCommand(id: Int, atMillis: Long, audio: String, result: MethodChannel.Result) {
+        try {
+            val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            val intent = Intent(this, AlarmCommandReceiver::class.java).apply {
+                putExtra(AlarmCommandReceiver.EXTRA_AUDIO, audio)
+            }
+            val pending = PendingIntent.getBroadcast(
+                this,
+                AlarmCommandReceiver.requestCode(id),
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, atMillis, pending)
+            result.success(true)
+        } catch (error: Exception) {
+            result.error("ALARM_COMMAND_FAILED", error.message, null)
+        }
+    }
+
+    private fun cancelAlarmCommand(id: Int, result: MethodChannel.Result) {
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(this, AlarmCommandReceiver::class.java)
+        val pending = PendingIntent.getBroadcast(
+            this,
+            AlarmCommandReceiver.requestCode(id),
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        alarmManager.cancel(pending)
+        pending.cancel()
+        result.success(true)
     }
 
     private fun startHotspot(result: MethodChannel.Result) {

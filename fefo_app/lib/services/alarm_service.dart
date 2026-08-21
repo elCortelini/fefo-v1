@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter/services.dart';
 
 import '../models/alarm_model.dart';
 import '../managers/bluetooth_manager.dart';
@@ -23,6 +24,7 @@ class AlarmService {
   BluetoothManager? _bluetoothManager;
   Timer? _timerChecagemLocal;
   final Set<String> _alarmesTocadosNesteMinuto = {};
+  static const MethodChannel _alarmChannel = MethodChannel('fefo/wifi');
 
   Future<void> init(BluetoothManager? bluetoothManager) async {
     if (bluetoothManager != null) {
@@ -82,6 +84,23 @@ class AlarmService {
 
     await _reagendarAlarmesSalvos();
     _iniciarMotorChecagemLocal();
+    await _processarDisparoNativoPendente();
+  }
+
+  Future<void> _processarDisparoNativoPendente() async {
+    try {
+      final audio = await _alarmChannel.invokeMethod<String>('getPendingAlarm');
+      if (audio == null || audio.isEmpty) return;
+      if (_bluetoothManager?.isConnected == true) {
+        await _bluetoothManager!.enviarComando('PLAY $audio');
+      } else if (_bluetoothManager != null &&
+          await _bluetoothManager!.conectarAutomaticamenteAoFefo()) {
+        await _bluetoothManager!.enviarComando('PLAY $audio');
+      }
+      await _reagendarAlarmesSalvos();
+    } catch (e) {
+      log('FEFO: não foi possível enviar o áudio do alarme ao PET: $e');
+    }
   }
 
   Future<void> _reagendarAlarmesSalvos() async {
@@ -233,16 +252,26 @@ class AlarmService {
     await _dispararNotificacao(
       id: idNotificacao,
       title: '⏰ ${alarme.title}',
-      body: 'O FEFO está te chamando!',
+      body: 'Alarme salvo: ${alarme.title}. O celular emitirá o alerta e o FEFO será acionado se estiver disponível.',
       scheduledDate: horarioFinal,
       payload: 'P:${alarme.audioPath}',
     );
+    try {
+      await _alarmChannel.invokeMethod('scheduleAlarmCommand', {
+        'id': idNotificacao,
+        'atMillis': horarioFinal.millisecondsSinceEpoch,
+        'audio': alarme.audioPath,
+      });
+    } catch (e) {
+      log('FEFO: comando auxiliar do alarme não agendado: $e');
+    }
   }
 
   Future<void> cancelarAlarme(int? id) async {
     if (id == null) return;
     try {
       await flutterLocalNotificationsPlugin.cancel(id);
+      await _alarmChannel.invokeMethod('cancelAlarmCommand', {'id': id});
     } catch (_) {}
   }
 }
