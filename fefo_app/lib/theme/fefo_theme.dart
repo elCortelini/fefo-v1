@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-enum FefoThemeId { classico, aurora, oceano, floresta, porDoSol, neve }
+enum FefoThemeId { classico, aurora, oceano, floresta, porDoSol, neve, lavandaClara, mentaClara }
 
 class FefoThemeDefinition {
   final FefoThemeId id;
@@ -15,6 +15,7 @@ class FefoThemeDefinition {
   final Color text;
   final Color mutedText;
   final bool useLegacyImage;
+  final bool isDark;
 
   const FefoThemeDefinition({
     required this.id,
@@ -28,6 +29,7 @@ class FefoThemeDefinition {
     required this.text,
     required this.mutedText,
     this.useLegacyImage = false,
+    this.isDark = true,
   });
 }
 
@@ -44,6 +46,7 @@ const fefoThemes = <FefoThemeDefinition>[
     text: Color(0xFF17212B),
     mutedText: Color(0xFF4B5563),
     useLegacyImage: true,
+    isDark: false,
   ),
   FefoThemeDefinition(
     id: FefoThemeId.aurora,
@@ -104,6 +107,32 @@ const fefoThemes = <FefoThemeDefinition>[
     surface: Color(0xC22D4260),
     text: Color(0xFFF5FAFF),
     mutedText: Color(0xFFB4C4D7),
+  ),
+  FefoThemeDefinition(
+    id: FefoThemeId.lavandaClara,
+    nome: 'Lavanda clara',
+    descricao: 'Tema claro, delicado e acolhedor para leitura confortável.',
+    accent: Color(0xFF7657C5),
+    accentSecondary: Color(0xFF3D8F91),
+    background: Color(0xFFF7F5FF),
+    backgroundSecondary: Color(0xFFDCD6FF),
+    surface: Color(0xEFFFFFFF),
+    text: Color(0xFF25233A),
+    mutedText: Color(0xFF5E6072),
+    isDark: false,
+  ),
+  FefoThemeDefinition(
+    id: FefoThemeId.mentaClara,
+    nome: 'Menta clara',
+    descricao: 'Tema claro com verde-água suave e alto conforto visual.',
+    accent: Color(0xFF197C74),
+    accentSecondary: Color(0xFF3B8F59),
+    background: Color(0xFFF2FBF7),
+    backgroundSecondary: Color(0xFFCBEEDF),
+    surface: Color(0xEFFFFFFF),
+    text: Color(0xFF1D302B),
+    mutedText: Color(0xFF5A6E68),
+    isDark: false,
   ),
 ];
 

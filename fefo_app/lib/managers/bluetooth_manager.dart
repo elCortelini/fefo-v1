@@ -403,8 +403,11 @@ class BluetoothManager extends ChangeNotifier {
       _audioItems.where((item) => _favoritos.contains(item.path)).toList();
 
   Future<void> alternarFavorito(FefoAudioItem item) async {
-    if (!_favoritos.add(item.path)) _favoritos.remove(item.path);
     final prefs = await SharedPreferences.getInstance();
+    // Releia antes de alternar para não perder um toque feito enquanto
+    // as preferências visuais/favoritos ainda estavam sendo carregadas.
+    _favoritos = (prefs.getStringList(_prefKeyFavorites) ?? const []).toSet();
+    if (!_favoritos.add(item.path)) _favoritos.remove(item.path);
     await prefs.setStringList(_prefKeyFavorites, _favoritos.toList());
     notifyListeners();
   }

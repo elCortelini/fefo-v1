@@ -36,7 +36,7 @@ class _TelaMenuState extends State<TelaMenu> {
   Widget build(BuildContext context) {
     final theme = context.watch<FefoThemeController>().current;
     final verde = theme.accentSecondary;
-    const vermelho = Color(0xD5FF0101);
+    final vermelho = theme.accent;
 
     return PaginaBase(
       child: Consumer<BluetoothManager>(
@@ -141,7 +141,7 @@ class _TelaMenuState extends State<TelaMenu> {
                   texto: 'PÂNICO',
                   cor: vermelho,
                   fontSize: 60,
-                  corBorda: Colors.white,
+                  corBorda: theme.text,
                   aoPressionar: () => context
                       .read<BluetoothManager>()
                       .enviarComando('PANIC TRIGGER'),

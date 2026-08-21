@@ -821,15 +821,15 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                 decoration: BoxDecoration(
                   color: selected
-                      ? const Color(0xFFFFD89A)
-                      : Colors.white.withValues(alpha: 0.88),
+                      ? theme.accent.withValues(alpha: 0.14)
+                      : theme.surface,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                       color:
-                          selected ? const Color(0xFFDC4900) : Colors.black12),
-                  boxShadow: const [
+                          selected ? theme.accent : theme.mutedText.withValues(alpha: 0.18)),
+                  boxShadow: [
                     BoxShadow(
-                        color: Colors.black12,
+                        color: theme.background.withValues(alpha: 0.14),
                         blurRadius: 5,
                         offset: Offset(0, 2))
                   ],
@@ -841,24 +841,22 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                         selected
                             ? Icons.check_circle_rounded
                             : Icons.audiotrack_rounded,
-                        color: selected
-                            ? const Color(0xFFDC4900)
-                            : const Color(0xFF318134),
+                        color: selected ? theme.accent : theme.accentSecondary,
                         size: 30,
                       ),
                       title: Text(item.title,
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontFamily: 'KGPen',
                               fontSize: 25,
-                              color: Color(0xFF374151),
+                              color: theme.text,
                               height: 1.05)),
                       subtitle: Text(
                         '${item.menu.isEmpty ? item.type : item.menu} • '
                         '${_formatBytes(item.size)}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: 'KGPen',
                           fontSize: 18,
-                          color: Colors.black87,
+                          color: theme.mutedText,
                         ),
                       ),
                       onLongPress: _busy
