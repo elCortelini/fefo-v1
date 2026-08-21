@@ -10,6 +10,8 @@ namespace fefo {
 class StorageService {
  public:
   bool begin();
+  // Garante a estrutura oficial do FEFO sem formatar nem apagar o cartão.
+  bool initializeFefoLayout();
   bool available() const { return available_; }
   uint64_t capacityBytes() const { return capacityBytes_; }
   uint64_t usedBytes() const { return usedBytes_; }
