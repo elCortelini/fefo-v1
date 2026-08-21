@@ -14,6 +14,7 @@ import 'pages/tela_menu.dart';
 import 'managers/bluetooth_manager.dart';
 import 'services/alarm_service.dart';
 import 'widgets/aviso_bem_vindo_dialog.dart';
+import 'theme/fefo_theme.dart';
 
 @pragma('vm:entry-point')
 void notificationTapBackground(NotificationResponse notificationResponse) {
@@ -60,10 +61,15 @@ void main() async {
   }
 
   final bluetoothManager = BluetoothManager();
+  final themeController = FefoThemeController();
+  await themeController.load();
 
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => bluetoothManager,
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider.value(value: bluetoothManager),
+        ChangeNotifierProvider.value(value: themeController),
+      ],
       child: const MyApp(),
     ),
   );
@@ -119,6 +125,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     _manager = Provider.of<BluetoothManager>(context);
+    final fefoTheme = context.watch<FefoThemeController>().current;
 
     if (_manager!.isConnected != _wasConnected) {
       final connectedNow = _manager!.isConnected;
@@ -173,7 +180,17 @@ class _MyAppState extends State<MyApp> {
       title: 'FEFO',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF318134)),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: fefoTheme.accent,
+          brightness: fefoTheme.useLegacyImage ? Brightness.light : Brightness.dark,
+        ),
+        scaffoldBackgroundColor: fefoTheme.background,
+        cardColor: fefoTheme.surface,
+        canvasColor: fefoTheme.background,
+        textTheme: ThemeData().textTheme.apply(
+              bodyColor: fefoTheme.text,
+              displayColor: fefoTheme.text,
+            ),
         useMaterial3: true,
       ),
       home: const TelaInicial(),
