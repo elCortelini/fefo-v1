@@ -72,7 +72,7 @@ class TelaMeuCorpo extends StatelessWidget {
               fontFamily: 'Billotilde',
               fontSize: 60,
               height: 1.1,
-              color: Color(0xFF318134),
+              color: Theme.of(context).colorScheme.secondary,
             ),
             textAlign: TextAlign.center,
           ),

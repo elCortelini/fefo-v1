@@ -101,12 +101,12 @@ class _TelaConexaoState extends State<TelaConexao> {
         child: Column(
           children: [
             const SizedBox(height: 20),
-            const Text(
+            Text(
               'Conectar FEFO',
               style: TextStyle(
                 fontFamily: 'Billotilde',
                 fontSize: 60,
-                color: corVerde,
+                color: Theme.of(context).colorScheme.secondary,
               ),
               textAlign: TextAlign.center,
             ),

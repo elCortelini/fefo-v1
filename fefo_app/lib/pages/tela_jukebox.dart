@@ -51,13 +51,13 @@ class TelaJukebox extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: FittedBox(
               fit: BoxFit.scaleDown,
-              child: const Text(
+              child: Text(
                 'Jukebox do Fefo',
                 style: TextStyle(
                   fontFamily: 'Billotilde',
                   fontSize: 55,
                   height: 1.0,
-                  color: Color(0xFF318134), // Cor verde do título
+                  color: Theme.of(context).colorScheme.secondary,
                 ),
                 textAlign: TextAlign.center,
               ),

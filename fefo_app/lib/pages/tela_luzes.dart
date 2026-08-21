@@ -54,14 +54,14 @@ class _TelaLuzesState extends State<TelaLuzes> {
         child: Column(
           children: [
             const SizedBox(height: 25),
-            const FittedBox(
+            FittedBox(
               fit: BoxFit.scaleDown,
               child: Text(
                 'Luzes FEFO',
                 style: TextStyle(
                   fontFamily: 'Billotilde',
                   fontSize: 55,
-                  color: Color(0xFF318134),
+                  color: Theme.of(context).colorScheme.secondary,
                 ),
               ),
             ),

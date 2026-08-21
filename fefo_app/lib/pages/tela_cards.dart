@@ -117,7 +117,7 @@ class TelaCards extends StatelessWidget {
         children: [
           const SizedBox(height: 30),
           // TÍTULO DA PÁGINA
-          const Padding(
+          Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.0),
             child: FittedBox(
               fit: BoxFit.scaleDown,
@@ -127,7 +127,7 @@ class TelaCards extends StatelessWidget {
                   fontFamily: 'Billotilde',
                   fontSize: 60,
                   height: 1.1,
-                  color: Color(0xFF318134),
+                  color: Theme.of(context).colorScheme.secondary,
                 ),
                 textAlign: TextAlign.center,
               ),

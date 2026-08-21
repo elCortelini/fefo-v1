@@ -17,7 +17,7 @@ class TelaFavoritos extends StatelessWidget {
           return Column(
             children: [
               const SizedBox(height: 18),
-              const Text('Favoritos', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Billotilde', fontSize: 48, color: Color(0xFF318134))),
+              Text('Favoritos', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Billotilde', fontSize: 48, color: Theme.of(context).colorScheme.secondary)),
               const SizedBox(height: 8),
               const Text('Seus conteúdos favoritos', style: TextStyle(fontFamily: 'KGPen', fontSize: 16)),
               const SizedBox(height: 12),

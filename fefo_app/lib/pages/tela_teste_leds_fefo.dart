@@ -26,13 +26,13 @@ class TelaTesteLedsFefo extends StatelessWidget {
               child: Column(
                 children: [
                   const SizedBox(height: 25),
-                  const Text(
+                  Text(
                     'Teste de LEDs',
                     style: TextStyle(
                       fontFamily: 'Billotilde',
                       fontSize: 55,
                       height: 1.0,
-                      color: corVerde,
+                      color: Theme.of(context).colorScheme.secondary,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -126,7 +126,7 @@ class _Subtitulo extends StatelessWidget {
           fontFamily: 'KGPen',
           fontSize: 22,
           fontWeight: FontWeight.bold,
-          color: Color(0xFF318134),
+          color: Theme.of(context).colorScheme.secondary,
         ),
       ),
     );

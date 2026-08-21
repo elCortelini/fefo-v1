@@ -72,13 +72,13 @@ class TelaDesafios extends StatelessWidget {
         children: [
           const SizedBox(height: 30),
           // --- TÍTULO DA PÁGINA ---
-          const Text(
+          Text(
             'Desafios e Brincadeiras',
             style: TextStyle(
               fontFamily: 'Billotilde',
               fontSize: 50,
               height: 1.1,
-              color: Color(0xFF318134),
+              color: Theme.of(context).colorScheme.secondary,
             ),
             textAlign: TextAlign.center,
           ),
