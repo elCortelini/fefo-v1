@@ -1,9 +1,10 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'botao_pincelada.dart';
+import 'fundo_fefo.dart';
 import 'mini_player.dart';
+import '../theme/fefo_theme.dart';
 
 class PaginaBase extends StatelessWidget {
   final Widget child;
@@ -19,6 +20,8 @@ class PaginaBase extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final fefoTheme = context.watch<FefoThemeController>().current;
+
     return Scaffold(
       bottomNavigationBar: onNavegacao == null
           ? null
@@ -35,18 +38,9 @@ class PaginaBase extends StatelessWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          const DecoratedBox(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/images/background.png'),
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-            child: ColoredBox(color: Colors.black.withAlpha(13)),
-          ),
+          FundoFefo(theme: fefoTheme),
+          if (!fefoTheme.useLegacyImage)
+            ColoredBox(color: fefoTheme.background.withValues(alpha: 0.08)),
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),

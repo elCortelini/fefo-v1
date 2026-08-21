@@ -8,6 +8,7 @@ import 'tela_faces_fefo.dart';
 import 'tela_vibracoes_fefo.dart';
 import '../config/app_version.dart';
 import '../config/firmware_version.dart';
+import '../theme/fefo_theme.dart';
 
 class TelaConfiguracoes extends StatefulWidget {
   const TelaConfiguracoes({super.key});
@@ -20,6 +21,47 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
   bool _vibracaoAtiva = true;
   bool _facesAtivas = true;
   int _ledCount = 35;
+
+  Future<void> _escolherTema(BuildContext context) async {
+    final controller = context.read<FefoThemeController>();
+    final escolhido = await showModalBottomSheet<FefoThemeId>(
+      context: context,
+      showDragHandle: true,
+      backgroundColor: controller.current.surface,
+      builder: (sheetContext) => SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Escolha a aparência',
+                style: TextStyle(
+                  fontFamily: 'Billotilde',
+                  fontSize: 30,
+                  color: controller.current.text,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'O tema é salvo neste aparelho e pode ser trocado quando quiser.',
+                style: TextStyle(color: controller.current.mutedText),
+              ),
+              const SizedBox(height: 12),
+              ...fefoThemes.map(
+                (theme) => _TemaEscolhaTile(
+                  theme: theme,
+                  selecionado: controller.themeId == theme.id,
+                  onTap: () => Navigator.pop(sheetContext, theme.id),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (escolhido != null) await controller.setTheme(escolhido);
+  }
 
   Future<void> _alternarModoDesenvolvedor(
       BuildContext context, BluetoothManager manager, bool enabled) async {
@@ -86,6 +128,8 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
     const corVerde = Color(0xFF318134);
     const corLaranja = Color(0xFFDC4900);
     final manager = context.watch<BluetoothManager>();
+    final themeController = context.watch<FefoThemeController>();
+    final appTheme = themeController.current;
 
     return PaginaBase(
       mostrarBotaoVoltar: true,
@@ -115,6 +159,28 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
               ),
             ),
             const SizedBox(height: 25),
+
+            Card(
+              color: appTheme.surface,
+              child: ListTile(
+                leading: Icon(Icons.palette_outlined, color: appTheme.accent),
+                title: Text(
+                  'Aparência do aplicativo',
+                  style: TextStyle(
+                    fontFamily: 'KGPen',
+                    fontWeight: FontWeight.bold,
+                    color: appTheme.text,
+                  ),
+                ),
+                subtitle: Text(
+                  '${appTheme.nome}  •  fundo dinâmico suave',
+                  style: TextStyle(color: appTheme.mutedText),
+                ),
+                trailing: Icon(Icons.chevron_right_rounded, color: appTheme.accent),
+                onTap: () => _escolherTema(context),
+              ),
+            ),
+            const SizedBox(height: 15),
 
             Card(child: ListTile(
               leading: const Icon(Icons.info_outline_rounded, color: corLaranja),
@@ -277,6 +343,58 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
       const SnackBar(
         content: Text('Conecte ao PET FEFO via Bluetooth para testar.'),
         backgroundColor: Color(0xFFDC4900),
+      ),
+    );
+  }
+}
+
+class _TemaEscolhaTile extends StatelessWidget {
+  final FefoThemeDefinition theme;
+  final bool selecionado;
+  final VoidCallback onTap;
+
+  const _TemaEscolhaTile({
+    required this.theme,
+    required this.selecionado,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: theme.background,
+      margin: const EdgeInsets.only(bottom: 8),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(
+          color: selecionado ? theme.accent : theme.accent.withValues(alpha: 0.18),
+          width: selecionado ? 2 : 1,
+        ),
+      ),
+      child: ListTile(
+        onTap: onTap,
+        leading: Container(
+          width: 48,
+          height: 38,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            gradient: LinearGradient(
+              colors: [theme.backgroundSecondary, theme.accent, theme.accentSecondary],
+            ),
+          ),
+        ),
+        title: Text(
+          theme.nome,
+          style: TextStyle(
+            color: theme.text,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'KGPen',
+          ),
+        ),
+        subtitle: Text(theme.descricao, style: TextStyle(color: theme.mutedText)),
+        trailing: selecionado
+            ? Icon(Icons.check_circle_rounded, color: theme.accent)
+            : Icon(Icons.radio_button_unchecked, color: theme.mutedText),
       ),
     );
   }
