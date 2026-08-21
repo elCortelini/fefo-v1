@@ -23,6 +23,16 @@ class MainActivity : FlutterActivity() {
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
     private var pendingAlarmAudio: String? = null
 
+    override fun onResume() {
+        super.onResume()
+        isInForeground = true
+    }
+
+    override fun onPause() {
+        isInForeground = false
+        super.onPause()
+    }
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         pendingAlarmAudio = intent.getStringExtra(AlarmCommandReceiver.EXTRA_AUDIO)
@@ -163,6 +173,11 @@ class MainActivity : FlutterActivity() {
         manager.bindProcessToNetwork(null)
         networkCallback?.let { try { manager.unregisterNetworkCallback(it) } catch (_: Exception) {} }
         networkCallback = null
+    }
+
+    companion object {
+        @JvmStatic
+        var isInForeground: Boolean = false
     }
 
     private fun installApk(path: String, result: MethodChannel.Result) {
