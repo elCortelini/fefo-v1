@@ -1,6 +1,6 @@
 {
     "schema":  1,
-    "catalogVersion":  24,
+    "catalogVersion":  25,
     "repository":  "FEFO Google Drive",
     "firmware":  {
                      "version":  "1.085",
@@ -13,13 +13,13 @@
                      "notas":  "Versão 1.085: Ronronar com áudio e vibração protegida por 10 segundos, desligamento dos LEDs e telas técnicas somente no modo Desenvolvedor."
                  },
     "app":  {
-                "version":  "1.080",
-                "build":  1080,
-                "arquivo":  "FEFO_App_v1.080.apk",
+                "version":  "1.081",
+                "build":  1081,
+                "arquivo":  "FEFO_App_v1.081.apk",
                 "tamanho":  57404167,
-                "checksum":  "5a2bc0f29186f668282135a74e52be38421b25069ffa7c79efa930dd1c904d55",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.080.apk",
-                "notas":  "Menu principal liberado mesmo sem conexão com o FEFO, com aviso de status e botão para conectar."
+                "checksum":  "4a23a158db5a99b602ffb68eb564590b7305733bbb2f41e4a53c632bbde531e8",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.081.apk",
+                "notas":  "Corrige o encerramento do app durante o disparo do alarme com a tela de alarmes aberta."
              },
     "audio":  [
                   {
