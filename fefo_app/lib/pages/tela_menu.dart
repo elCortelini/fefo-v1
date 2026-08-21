@@ -316,10 +316,10 @@ class _TituloSecao extends StatelessWidget {
       padding: const EdgeInsets.only(top: 10, bottom: 4),
       child: Text(
         titulo,
-        style: const TextStyle(
+        style: TextStyle(
           fontFamily: 'Billotilde',
           fontSize: 40,
-          color: Color(0xFF318134),
+          color: Theme.of(context).colorScheme.secondary,
           fontWeight: FontWeight.bold,
         ),
         textAlign: TextAlign.center,

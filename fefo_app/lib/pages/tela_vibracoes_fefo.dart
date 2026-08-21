@@ -20,7 +20,7 @@ class TelaVibracoesFefo extends StatelessWidget {
       child: Column(
         children: [
           const SizedBox(height: 18),
-          const Text('Vibrações do FEFO', style: TextStyle(fontFamily: 'Billotilde', fontSize: 42, color: Color(0xFF318134))),
+          Text('Vibrações do FEFO', style: TextStyle(fontFamily: 'Billotilde', fontSize: 42, color: Theme.of(context).colorScheme.secondary)),
           const Text('Todos os padrões são intensos e duram 7 segundos.', style: TextStyle(fontFamily: 'KGPen', fontSize: 15)),
           const SizedBox(height: 12),
           Expanded(

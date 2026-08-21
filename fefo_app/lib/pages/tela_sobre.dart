@@ -37,14 +37,14 @@ class TelaSobre extends StatelessWidget {
                       const SizedBox(height: 20),
 
                       // 2. Título da Página
-                      const Text(
+                      Text(
                         'Quem é o Fefo?',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: 'Billotilde',
                           fontSize: 55,
                           height: 1.1,
-                          color: Color(0xFF318134),
+                          color: Theme.of(context).colorScheme.secondary,
                           shadows: [
                             Shadow(
                               blurRadius: 10.0,

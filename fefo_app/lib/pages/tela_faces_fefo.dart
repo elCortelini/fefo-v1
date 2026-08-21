@@ -116,13 +116,13 @@ class _TelaFacesFefoState extends State<TelaFacesFefo> {
       child: Column(
         children: [
           const SizedBox(height: 20),
-          const Text(
+          Text(
             'Faces do Fefo',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontFamily: 'Billotilde',
               fontSize: 52,
-              color: Color(0xFF318134),
+              color: Theme.of(context).colorScheme.secondary,
             ),
           ),
           const Text(

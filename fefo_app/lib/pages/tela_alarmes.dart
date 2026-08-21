@@ -235,12 +235,12 @@ class _TelaAlarmesState extends State<TelaAlarmes> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 10),
-                const Text(
+                Text(
                   'Alarmes',
                   style: TextStyle(
                     fontFamily: 'Billotilde',
                     fontSize: 55,
-                    color: corVerde,
+                    color: Theme.of(context).colorScheme.secondary,
                   ),
                   textAlign: TextAlign.center,
                 ),

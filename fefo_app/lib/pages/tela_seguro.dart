@@ -61,7 +61,7 @@ class TelaSeguro extends StatelessWidget {
               fontFamily: 'Billotilde',
               fontSize: 50,
               height: 1.0,
-              color: Color(0xFF318134),
+            color: Theme.of(context).colorScheme.secondary,
             ),
             textAlign: TextAlign.center,
           ),

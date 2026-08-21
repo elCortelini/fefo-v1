@@ -51,12 +51,12 @@ class TelaTeste extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 12),
-                const Text(
+                Text(
                   'Central de testes',
                   style: TextStyle(
                     fontFamily: 'Billotilde',
                     fontSize: 58,
-                    color: verde,
+                    color: Theme.of(context).colorScheme.secondary,
                   ),
                 ),
                 Text(
@@ -137,7 +137,7 @@ class TelaTeste extends StatelessWidget {
         child: Text(
           texto,
           style: const TextStyle(
-            color: Color(0xFF318134),
+            color: Theme.of(context).colorScheme.secondary,
             fontFamily: 'KGPen',
             fontSize: 23,
             fontWeight: FontWeight.bold,
