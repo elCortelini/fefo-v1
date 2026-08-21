@@ -14,6 +14,7 @@ import 'tela_luzes.dart';
 import 'tela_sobre.dart';
 import 'tela_faces_fefo.dart';
 import 'tela_favoritos.dart';
+import '../theme/fefo_theme.dart';
 
 class TelaMenu extends StatefulWidget {
   const TelaMenu({super.key});
@@ -33,20 +34,21 @@ class _TelaMenuState extends State<TelaMenu> {
 
   @override
   Widget build(BuildContext context) {
-    const verde = Color(0xFF318134);
+    final theme = context.watch<FefoThemeController>().current;
+    final verde = theme.accentSecondary;
     const vermelho = Color(0xD5FF0101);
 
     return PaginaBase(
       child: Consumer<BluetoothManager>(
         builder: (context, manager, _) {
           if (manager.lendoCatalogo) {
-            return const Center(
+            return Center(
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 24),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CircularProgressIndicator(color: Color(0xFFDC4900)),
+                    CircularProgressIndicator(color: theme.accent),
                     SizedBox(height: 24),
                     Text(
                       'Lendo catálogo interno do FEFO...',
@@ -54,7 +56,7 @@ class _TelaMenuState extends State<TelaMenu> {
                       style: TextStyle(
                           fontFamily: 'KGPen',
                           fontSize: 22,
-                          color: Colors.black,
+                          color: theme.text,
                           fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 10),
@@ -64,7 +66,7 @@ class _TelaMenuState extends State<TelaMenu> {
                       style: TextStyle(
                           fontFamily: 'KGPen',
                           fontSize: 16,
-                          color: Colors.black54),
+                          color: theme.mutedText),
                     ),
                   ],
                 ),

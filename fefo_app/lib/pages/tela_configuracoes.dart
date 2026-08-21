@@ -125,11 +125,11 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
 
   @override
   Widget build(BuildContext context) {
-    const corVerde = Color(0xFF318134);
-    const corLaranja = Color(0xFFDC4900);
     final manager = context.watch<BluetoothManager>();
     final themeController = context.watch<FefoThemeController>();
     final appTheme = themeController.current;
+    final corVerde = appTheme.accentSecondary;
+    final corLaranja = appTheme.accent;
 
     return PaginaBase(
       mostrarBotaoVoltar: true,
@@ -139,7 +139,7 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 10),
-            const Text(
+            Text(
               'Configurações',
               style: TextStyle(
                 fontFamily: 'Billotilde',
@@ -183,7 +183,7 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
             const SizedBox(height: 15),
 
             Card(child: ListTile(
-              leading: const Icon(Icons.info_outline_rounded, color: corLaranja),
+              leading: Icon(Icons.info_outline_rounded, color: corLaranja),
               title: const Text('Versões instaladas', style: TextStyle(fontFamily: 'KGPen', fontWeight: FontWeight.bold)),
               subtitle: Text('App $fefoAppVersionLabel  •  Firmware v${manager.firmwareVersion ?? fefoFirmwareVersion}'),
             )),
@@ -244,10 +244,10 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
                     color: corVerde.withValues(alpha: 0.3), width: 1.5),
               ),
               child: ListTile(
-                leading: const Icon(Icons.vibration_rounded, color: corLaranja, size: 32),
-                title: const Text('Vibrações do PET FEFO', style: TextStyle(fontFamily: 'KGPen', fontSize: 20, fontWeight: FontWeight.bold, color: corVerde)),
+                leading: Icon(Icons.vibration_rounded, color: corLaranja, size: 32),
+                title: Text('Vibrações do PET FEFO', style: TextStyle(fontFamily: 'KGPen', fontSize: 20, fontWeight: FontWeight.bold, color: corVerde)),
                 subtitle: const Text('10 padrões intensos de 7 segundos', style: TextStyle(fontFamily: 'KGPen')),
-                trailing: const Icon(Icons.chevron_right_rounded, color: corLaranja, size: 32),
+                trailing: Icon(Icons.chevron_right_rounded, color: corLaranja, size: 32),
                 onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TelaVibracoesFefo())),
               ),
             ),
@@ -276,10 +276,10 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.face_rounded,
+                        Icon(Icons.face_rounded,
                             color: corLaranja, size: 30),
                         const SizedBox(width: 12),
-                        const Expanded(
+                        Expanded(
                           child: Text(
                             'Exibir Faces no FEFO',
                             style: TextStyle(

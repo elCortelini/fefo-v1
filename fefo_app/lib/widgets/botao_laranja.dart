@@ -2,6 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'dart:math';
+import 'package:provider/provider.dart';
+
+import '../theme/fefo_theme.dart';
 
 const Color corLaranja = Color(0xFFDC4900);
 const Color corLaranjaClick = Color(0xFFF89261);
@@ -53,6 +56,7 @@ class BotaoLaranja extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = context.watch<FefoThemeController>().current;
     final double larguraDaTela = MediaQuery.of(context).size.width;
 
     final Widget botao = ElevatedButton(
@@ -62,8 +66,8 @@ class BotaoLaranja extends StatelessWidget {
         aoPressionar();
       },
       style: ElevatedButton.styleFrom(
-        backgroundColor: corLaranja,
-        foregroundColor: corLaranjaClick,
+        backgroundColor: theme.accent,
+        foregroundColor: theme.background,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(50.0),
         ),
@@ -74,7 +78,7 @@ class BotaoLaranja extends StatelessWidget {
         texto,
         style: const TextStyle(
           fontFamily: 'Billotilde',
-          color: corTextoBotao,
+          color: theme.useLegacyImage ? Colors.white : theme.background,
           fontSize: 48,
           height: 1,
         ),

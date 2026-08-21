@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../managers/bluetooth_manager.dart';
+import '../theme/fefo_theme.dart';
 
 class MiniPlayer extends StatefulWidget {
   const MiniPlayer({super.key});
@@ -20,6 +21,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
   Widget build(BuildContext context) {
     return Consumer<BluetoothManager>(
       builder: (context, manager, _) {
+        final theme = context.watch<FefoThemeController>().current;
         final temAudioAtivo = manager.caminhoAudioAtivo != null &&
             manager.caminhoAudioAtivo!.isNotEmpty;
 
@@ -28,8 +30,9 @@ class _MiniPlayerState extends State<MiniPlayer> {
         }
 
         final progress = _draggedProgress ?? manager.audioProgress;
-        const corVerdeCard = Color(0xFFFFE7C2);
-        const corLaranja = Color(0xFFDC4900);
+        final corVerdeCard = theme.surface;
+        final corLaranja = theme.accent;
+        final corTexto = theme.text;
 
         final IconData iconeVolume;
         if (manager.audioVolume == 0) {
@@ -60,7 +63,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                 child: Row(
                   children: [
-                    const Icon(Icons.music_note_rounded,
+                    Icon(Icons.music_note_rounded,
                         color: corLaranja, size: 24),
                     const SizedBox(width: 8),
                     Expanded(
@@ -68,8 +71,8 @@ class _MiniPlayerState extends State<MiniPlayer> {
                         manager.audioAtivoTitulo,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Color(0xFF5A2A00),
+                        style: TextStyle(
+                          color: corTexto,
                           fontFamily: 'KGPen',
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -80,7 +83,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                     Text(
                       '${manager.posTimeFormatted} / ${manager.totalTimeFormatted}',
                       style: TextStyle(
-                        color: const Color(0xFF5A2A00).withValues(alpha: 0.75),
+                        color: corTexto.withValues(alpha: 0.75),
                         fontFamily: 'KGPen',
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -124,16 +127,16 @@ class _MiniPlayerState extends State<MiniPlayer> {
                         padding: const EdgeInsets.only(bottom: 8.0),
                         child: Row(
                           children: [
-                            Icon(iconeVolume, color: const Color(0xFF5A2A00), size: 20),
+                            Icon(iconeVolume, color: corTexto, size: 20),
                             Expanded(
                               child: SliderTheme(
                                 data: SliderThemeData(
                                   trackHeight: 3,
                                   thumbShape: const RoundSliderThumbShape(
                                       enabledThumbRadius: 6),
-                                  activeTrackColor: const Color(0xFF5A2A00),
+                                  activeTrackColor: corTexto,
                                   inactiveTrackColor: const Color(0xFFB9682B).withValues(alpha: 0.25),
-                                  thumbColor: const Color(0xFF5A2A00),
+                                  thumbColor: corTexto,
                                 ),
                                 child: Slider(
                                   value: manager.audioVolume.toDouble(),
@@ -147,8 +150,8 @@ class _MiniPlayerState extends State<MiniPlayer> {
                             ),
                             Text(
                               '${manager.audioVolume}%',
-                              style: const TextStyle(
-                                  color: Color(0xFF5A2A00),
+                              style: TextStyle(
+                                  color: corTexto,
                                   fontFamily: 'KGPen',
                                   fontSize: 14),
                             ),
@@ -161,7 +164,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                         // Botão de Volume Dinâmico
                         IconButton(
                           tooltip: 'Volume',
-                          icon: Icon(iconeVolume, color: const Color(0xFF5A2A00)),
+                          icon: Icon(iconeVolume, color: corTexto),
                           onPressed: () {
                             setState(() => _mostrandoVolume = !_mostrandoVolume);
                           },
@@ -178,7 +181,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                 manager.audioPaused
                                     ? Icons.play_arrow_rounded
                                     : Icons.pause_rounded,
-                                color: const Color(0xFF5A2A00),
+                                color: corTexto,
                                 size: 32,
                               ),
                               onPressed: () {

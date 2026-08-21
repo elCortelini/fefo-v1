@@ -9,6 +9,7 @@ import '../widgets/botao_pincelada.dart';
 import '../widgets/pagina_base.dart';
 import 'tela_conexao.dart';
 import 'tela_menu.dart';
+import '../theme/fefo_theme.dart';
 
 class TelaInicial extends StatelessWidget {
   const TelaInicial({super.key});
@@ -16,8 +17,9 @@ class TelaInicial extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final manager = context.watch<BluetoothManager>();
-    const laranja = Color(0xFFDC4900);
-    const verde = Color(0xFF318134);
+    final theme = context.watch<FefoThemeController>().current;
+    final laranja = theme.accent;
+    final verde = theme.accentSecondary;
 
     return PaginaBase(
       child: SingleChildScrollView(
@@ -132,7 +134,7 @@ class TelaInicial extends StatelessWidget {
             ),
             const SizedBox(height: 40),
             if (Platform.isAndroid)
-              const BotaoPincelada(
+              BotaoPincelada(
                 texto: 'Sair',
                 cor: verde,
                 larguraPercentual: 0.72,

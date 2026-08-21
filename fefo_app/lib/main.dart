@@ -191,6 +191,43 @@ class _MyAppState extends State<MyApp> {
               bodyColor: fefoTheme.text,
               displayColor: fefoTheme.text,
             ),
+        iconTheme: IconThemeData(color: fefoTheme.accentSecondary),
+        cardTheme: CardThemeData(
+          color: fefoTheme.surface,
+          elevation: fefoTheme.useLegacyImage ? 2 : 0,
+          margin: const EdgeInsets.symmetric(vertical: 4),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        ),
+        navigationBarTheme: NavigationBarThemeData(
+          backgroundColor: fefoTheme.surface,
+          indicatorColor: fefoTheme.accent.withValues(alpha: 0.22),
+          labelTextStyle: WidgetStatePropertyAll(TextStyle(color: fefoTheme.text)),
+          iconTheme: WidgetStatePropertyAll(IconThemeData(color: fefoTheme.accent)),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: fefoTheme.accent,
+            foregroundColor: fefoTheme.useLegacyImage ? Colors.white : fefoTheme.background,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+          ),
+        ),
+        filledButtonTheme: FilledButtonThemeData(
+          style: FilledButton.styleFrom(
+            backgroundColor: fefoTheme.accent,
+            foregroundColor: fefoTheme.useLegacyImage ? Colors.white : fefoTheme.background,
+          ),
+        ),
+        sliderTheme: SliderThemeData(
+          activeTrackColor: fefoTheme.accent,
+          thumbColor: fefoTheme.accent,
+          inactiveTrackColor: fefoTheme.accent.withValues(alpha: 0.25),
+        ),
+        switchTheme: SwitchThemeData(
+          thumbColor: WidgetStateProperty.resolveWith((states) =>
+              states.contains(WidgetState.selected) ? fefoTheme.accent : null),
+          trackColor: WidgetStateProperty.resolveWith((states) =>
+              states.contains(WidgetState.selected) ? fefoTheme.accent.withValues(alpha: 0.45) : null),
+        ),
         useMaterial3: true,
       ),
       home: const TelaInicial(),
