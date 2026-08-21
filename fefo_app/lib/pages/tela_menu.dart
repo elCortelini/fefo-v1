@@ -40,45 +40,6 @@ class _TelaMenuState extends State<TelaMenu> {
     return PaginaBase(
       child: Consumer<BluetoothManager>(
         builder: (context, manager, _) {
-          // Trava de segurança: Menu só é liberado com FEFO conectado e catálogo lido
-          if (!manager.isConnected) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.bluetooth_disabled_rounded,
-                        size: 70, color: Color(0xFFDC4900)),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'FEFO Desconectado',
-                      style: TextStyle(
-                          fontFamily: 'Billotilde',
-                          fontSize: 40,
-                          color: verde),
-                    ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'Para acessar os menus e carregar o catálogo atualizado, conecte ao seu PET FEFO.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontFamily: 'KGPen',
-                          fontSize: 20,
-                          color: Colors.black),
-                    ),
-                    const SizedBox(height: 25),
-                    BotaoPincelada(
-                      texto: 'Conectar FEFO',
-                      cor: const Color(0xFFDC4900),
-                      aoPressionar: () => _abrir(const TelaConexao()),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
-
           if (manager.lendoCatalogo) {
             return const Center(
               child: Padding(
@@ -142,6 +103,38 @@ class _TelaMenuState extends State<TelaMenu> {
             child: Column(
               children: [
                 const SizedBox(height: 20),
+                if (!manager.isConnected) ...[
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFDC4900).withValues(alpha: 0.10),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: const Color(0xFFDC4900)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.bluetooth_disabled_rounded,
+                            color: Color(0xFFDC4900)),
+                        const SizedBox(width: 10),
+                        const Expanded(
+                          child: Text(
+                            'FEFO desconectado. O menu continua disponível.',
+                            style: TextStyle(
+                                fontFamily: 'KGPen',
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () => _abrir(const TelaConexao()),
+                          child: const Text('Conectar'),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+                ],
                 // Botão Pânico bem no topo
                 BotaoPincelada(
                   texto: 'PÂNICO',

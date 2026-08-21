@@ -1,4 +1,4 @@
 /// Identidade da versão apresentada ao usuário e usada nos metadados do app.
-const String fefoAppVersionLabel = 'v1.079';
-const String fefoAppVersionName = '1.079';
-const int fefoAppBuildNumber = 1079;
+const String fefoAppVersionLabel = 'v1.080';
+const String fefoAppVersionName = '1.080';
+const int fefoAppBuildNumber = 1080;
