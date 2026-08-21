@@ -1,16 +1,16 @@
 {
     "schema":  1,
-    "catalogVersion":  26,
+    "catalogVersion":  27,
     "repository":  "FEFO Google Drive",
     "firmware":  {
-                     "version":  "1.085",
+                     "version":  "1.086",
                      "board":  "FEFO_CYD_ESP32",
-                     "arquivo":  "FEFO_Firmware_v1.085.bin",
-                     "tamanho":  1744400,
-                     "checksum":  "e8420a5ad6b3e04ec80174e623ac89698eb4d903535259c6e0bacdff50282988",
-                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.085.bin",
+                     "arquivo":  "FEFO_Firmware_v1.086.bin",
+                     "tamanho":  1744976,
+                     "checksum":  "e07aac98ef39c6603cca385bdcc60ca20a9364b2e824b7d0ac9e0ef4c706f156",
+                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.086.bin",
                      "obrigatorio":  false,
-                     "notas":  "Versão 1.085: Ronronar com áudio e vibração protegida por 10 segundos, desligamento dos LEDs e telas técnicas somente no modo Desenvolvedor."
+                     "notas":  "Versão 1.086: inicialização automática e idempotente da estrutura oficial do SDCard, sem formatar nem apagar dados existentes."
                  },
     "app":  {
                 "version":  "1.082",
