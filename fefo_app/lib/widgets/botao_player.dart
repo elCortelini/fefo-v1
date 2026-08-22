@@ -163,8 +163,10 @@ class _PlaybackProgress extends StatelessWidget {
 
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onTapDown: (details) => _onSeek(context, details.globalPosition, maxWidth),
-          onPanUpdate: (details) => _onSeek(context, details.globalPosition, maxWidth),
+          onTapDown: (details) =>
+              _onSeek(context, details.globalPosition, maxWidth),
+          onPanUpdate: (details) =>
+              _onSeek(context, details.globalPosition, maxWidth),
           child: SizedBox(
             height: 28,
             child: Stack(
@@ -245,7 +247,11 @@ class _ControlButton extends StatelessWidget {
           color: active
               ? activeColor
               : (isEnabled
-                  ? context.watch<FefoThemeController>().current.text.withValues(alpha: 0.07)
+                  ? context
+                      .watch<FefoThemeController>()
+                      .current
+                      .text
+                      .withValues(alpha: 0.07)
                   : Colors.transparent),
           shape: BoxShape.circle,
         ),

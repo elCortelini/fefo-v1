@@ -75,7 +75,9 @@ class TelaEditarAlarme extends StatefulWidget {
   static String getNomeAmigavel(String caminhoDoArquivo, BuildContext context) {
     // Tenta encontrar nas opções padrão
     final padrao = opcoesPadrao.firstWhere(
-      (opcao) => opcao.caminhoDoArquivo == caminhoDoArquivo || opcao.caminhoDoArquivo.contains(caminhoDoArquivo),
+      (opcao) =>
+          opcao.caminhoDoArquivo == caminhoDoArquivo ||
+          opcao.caminhoDoArquivo.contains(caminhoDoArquivo),
       orElse: () => const OpcaoDeSom(nomeAmigavel: '', caminhoDoArquivo: ''),
     );
     if (padrao.nomeAmigavel.isNotEmpty) return padrao.nomeAmigavel;
@@ -84,15 +86,21 @@ class TelaEditarAlarme extends StatefulWidget {
     try {
       final manager = context.read<BluetoothManager>();
       final item = manager.audioItems.firstWhere(
-        (audio) => audio.path == caminhoDoArquivo || audio.token == caminhoDoArquivo,
-        orElse: () => FefoAudioItem(id: 0, path: caminhoDoArquivo, catalogTitle: ''),
+        (audio) =>
+            audio.path == caminhoDoArquivo || audio.token == caminhoDoArquivo,
+        orElse: () =>
+            FefoAudioItem(id: 0, path: caminhoDoArquivo, catalogTitle: ''),
       );
       if (item.title.isNotEmpty) return item.title;
     } catch (_) {}
 
     // Formata o token como fallback
     final token = caminhoDoArquivo.split('/').where((p) => p.isNotEmpty).last;
-    return token.replaceAll('_', ' ').replaceAll('-', ' ').replaceAll('.wav', '').trim();
+    return token
+        .replaceAll('_', ' ')
+        .replaceAll('-', ' ')
+        .replaceAll('.wav', '')
+        .trim();
   }
 
   @override
@@ -188,7 +196,9 @@ class _TelaEditarAlarmeState extends State<TelaEditarAlarme> {
     final lista = <OpcaoDeSom>[...TelaEditarAlarme.opcoesPadrao];
 
     for (final item in manager.audioItems) {
-      if (!lista.any((op) => op.caminhoDoArquivo == item.path || op.caminhoDoArquivo == item.token)) {
+      if (!lista.any((op) =>
+          op.caminhoDoArquivo == item.path ||
+          op.caminhoDoArquivo == item.token)) {
         lista.add(
           OpcaoDeSom(
             nomeAmigavel: item.title,
@@ -233,7 +243,9 @@ class _TelaEditarAlarmeState extends State<TelaEditarAlarme> {
               const SizedBox(height: 10),
               Center(
                 child: Text(
-                  widget.alarmeInicial == null ? 'Novo Alarme' : 'Editar Alarme',
+                  widget.alarmeInicial == null
+                      ? 'Novo Alarme'
+                      : 'Editar Alarme',
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontFamily: 'Billotilde',
@@ -250,7 +262,8 @@ class _TelaEditarAlarmeState extends State<TelaEditarAlarme> {
                 borderRadius: BorderRadius.circular(22),
                 child: Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(22),
@@ -319,7 +332,8 @@ class _TelaEditarAlarmeState extends State<TelaEditarAlarme> {
                 ),
                 decoration: InputDecoration(
                   hintText: 'Ex: Hora de Acordar, Escovar Dentes',
-                  hintStyle: const TextStyle(fontFamily: 'KGPen', color: Colors.black38),
+                  hintStyle: const TextStyle(
+                      fontFamily: 'KGPen', color: Colors.black38),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide: const BorderSide(color: corVerde, width: 1.5),
@@ -330,7 +344,8 @@ class _TelaEditarAlarmeState extends State<TelaEditarAlarme> {
                   ),
                   fillColor: Colors.white,
                   filled: true,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 ),
                 onSaved: (value) => _titulo = value ?? '',
               ),
@@ -352,7 +367,9 @@ class _TelaEditarAlarmeState extends State<TelaEditarAlarme> {
                       });
                     },
                     child: Text(
-                      _diasSelecionados.length == 7 ? 'Desmarcar todos' : 'Todos os dias',
+                      _diasSelecionados.length == 7
+                          ? 'Desmarcar todos'
+                          : 'Todos os dias',
                       style: const TextStyle(
                         fontFamily: 'KGPen',
                         fontSize: 14,
@@ -417,12 +434,14 @@ class _TelaEditarAlarmeState extends State<TelaEditarAlarme> {
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: corVerde, width: 1.5),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
                     value: _somSelecionado,
                     isExpanded: true,
-                    icon: const Icon(Icons.arrow_drop_down_circle_rounded, color: corVerde),
+                    icon: const Icon(Icons.arrow_drop_down_circle_rounded,
+                        color: corVerde),
                     style: const TextStyle(
                       fontFamily: 'KGPen',
                       fontSize: 18,
@@ -433,12 +452,14 @@ class _TelaEditarAlarmeState extends State<TelaEditarAlarme> {
                         value: opcao.caminhoDoArquivo,
                         child: Row(
                           children: [
-                            const Icon(Icons.music_note_rounded, color: corLaranja, size: 20),
+                            const Icon(Icons.music_note_rounded,
+                                color: corLaranja, size: 20),
                             const SizedBox(width: 10),
                             Expanded(
                               child: Text(
                                 opcao.nomeAmigavel,
-                                style: const TextStyle(fontFamily: 'KGPen', fontSize: 17),
+                                style: const TextStyle(
+                                    fontFamily: 'KGPen', fontSize: 17),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
@@ -469,7 +490,8 @@ class _TelaEditarAlarmeState extends State<TelaEditarAlarme> {
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Conecte ao PET FEFO via Bluetooth para testar o som.'),
+                          content: Text(
+                              'Conecte ao PET FEFO via Bluetooth para testar o som.'),
                         ),
                       );
                     }
@@ -486,8 +508,10 @@ class _TelaEditarAlarmeState extends State<TelaEditarAlarme> {
                   ),
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: corLaranja, width: 1.5),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20)),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 10),
                   ),
                 ),
               ),

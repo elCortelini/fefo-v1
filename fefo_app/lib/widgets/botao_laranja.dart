@@ -76,7 +76,7 @@ class BotaoLaranja extends StatelessWidget {
       ),
       child: Text(
         texto,
-        style: const TextStyle(
+        style: TextStyle(
           fontFamily: 'Billotilde',
           color: theme.useLegacyImage ? Colors.white : theme.background,
           fontSize: 48,

@@ -418,6 +418,7 @@ class BluetoothManager extends ChangeNotifier {
     await prefs.setBool(_prefKeyDarkMode, enabled);
     notifyListeners();
   }
+
   bool get faceModeEnabled => _faceModeEnabled;
   bool get faceRandomEnabled => _faceRandomEnabled;
   bool get developerModeEnabled => _developerModeEnabled;
@@ -750,7 +751,8 @@ class BluetoothManager extends ChangeNotifier {
         _audioTotalSec = 0;
         _audioPaused = false;
         _audioProgressTimer?.cancel();
-        if (_audioQueueIndex >= 0 && _audioQueueIndex + 1 < _audioQueue.length) {
+        if (_audioQueueIndex >= 0 &&
+            _audioQueueIndex + 1 < _audioQueue.length) {
           _audioQueueIndex++;
           final fila = List<FefoAudioItem>.from(_audioQueue);
           final proximo = _audioQueueIndex;
@@ -935,7 +937,18 @@ class BluetoothManager extends ChangeNotifier {
     }
     if (_vibrationEffects.isEmpty) {
       _vibrationEffects.addAll(List.generate(10, (index) {
-        const names = ['Metralhadora', 'Batida dupla', 'SOS intenso', 'Onda forte', 'Triplo impacto', 'Sirene', 'Marcha', 'Crescendo', 'Festa', 'Pulso'];
+        const names = [
+          'Metralhadora',
+          'Batida dupla',
+          'SOS intenso',
+          'Onda forte',
+          'Triplo impacto',
+          'Sirene',
+          'Marcha',
+          'Crescendo',
+          'Festa',
+          'Pulso'
+        ];
         final id = index + 1;
         return FefoCatalogItem(
           id: id,

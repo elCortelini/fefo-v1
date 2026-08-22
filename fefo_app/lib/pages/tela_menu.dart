@@ -1,301 +1,156 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../design_system/fefo_components.dart';
 import '../managers/bluetooth_manager.dart';
-import '../widgets/botao_pincelada.dart';
+import '../theme/fefo_theme.dart';
 import '../widgets/pagina_base.dart';
 import 'tela_audios_fefo.dart';
 import 'tela_cards.dart';
 import 'tela_catalogo_online.dart';
-import 'tela_configuracoes.dart';
 import 'tela_classicas.dart';
+import 'tela_configuracoes.dart';
 import 'tela_conexao.dart';
-import 'tela_luzes.dart';
-import 'tela_sobre.dart';
 import 'tela_faces_fefo.dart';
 import 'tela_favoritos.dart';
-import '../theme/fefo_theme.dart';
+import 'tela_luzes.dart';
+import 'tela_sobre.dart';
 
-class TelaMenu extends StatefulWidget {
+class TelaMenu extends StatelessWidget {
   const TelaMenu({super.key});
 
-  @override
-  State<TelaMenu> createState() => _TelaMenuState();
-}
+  void _abrir(BuildContext context, Widget page) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+  }
 
-class _TelaMenuState extends State<TelaMenu> {
-  void _abrir(Widget page) =>
-      Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+  bool _temAudio(BluetoothManager manager, String grupo) {
+    final itens = manager.audioGroups[grupo];
+    return itens != null && itens.isNotEmpty;
+  }
 
-  bool _temConteudoAudio(BluetoothManager manager, String nomeGrupo) {
-    final list = manager.audioGroups[nomeGrupo];
-    return list != null && list.isNotEmpty;
+  List<_MenuSection> _secoes(BuildContext context, BluetoothManager manager) {
+    final audio = (String nome) => TelaAudiosFefo(grupoInicial: nome);
+    final exploracao = <_MenuEntry>[
+      _MenuEntry(
+          'Aulas do Fefo', () => _abrir(context, audio('Aulas do Fefo'))),
+      ...[
+        'Desafios e Brincadeiras',
+        'Meu corpo',
+        'Contos de Fefo',
+        'Palavras do Fefo',
+        'Aventuras Seguras',
+        'Minha Rotina',
+        'Conhecendo os animais',
+      ].where((grupo) => _temAudio(manager, grupo)).map(
+            (grupo) => _MenuEntry(grupo, () => _abrir(context, audio(grupo))),
+          ),
+      _MenuEntry('CARDs Interativos', () => _abrir(context, const TelaCards()),
+          icon: Icons.style_rounded),
+    ];
+
+    final estimulos = <_MenuEntry>[
+      if (_temAudio(manager, 'Músicas Clássicas'))
+        _MenuEntry(
+            'Músicas Clássicas', () => _abrir(context, const TelaClassicas())),
+      if (_temAudio(manager, 'Instrumentais e Natureza'))
+        _MenuEntry('Instrumentais e Natureza',
+            () => _abrir(context, audio('Instrumentais e Natureza'))),
+      if (_temAudio(manager, 'Jukebox do Fefo'))
+        _MenuEntry(
+            'Jukebox do Fefo', () => _abrir(context, audio('Jukebox do Fefo'))),
+    ];
+
+    final terapias = <_MenuEntry>[
+      _MenuEntry('Luzes Terapêuticas', () => _abrir(context, const TelaLuzes()),
+          icon: Icons.light_mode_rounded),
+      if (_temAudio(manager, 'Relaxamento'))
+        _MenuEntry('Relaxamento', () => _abrir(context, audio('Relaxamento'))),
+    ];
+
+    return [
+      _MenuSection('Exploração diária', exploracao,
+          icon: Icons.explore_rounded),
+      if (estimulos.isNotEmpty)
+        _MenuSection('Estímulos sonoros', estimulos,
+            icon: Icons.music_note_rounded),
+      _MenuSection('Terapias guiadas', terapias, icon: Icons.spa_rounded),
+      _MenuSection(
+          'Sobre o FEFO',
+          [
+            _MenuEntry('Catálogo online',
+                () => _abrir(context, const TelaCatalogoOnline()),
+                icon: Icons.cloud_download_rounded),
+            _MenuEntry(
+                'Quem é o FEFO', () => _abrir(context, const TelaSobre()),
+                icon: Icons.favorite_rounded),
+            _MenuEntry('Rostinhos do FEFO',
+                () => _abrir(context, const TelaFacesFefo()),
+                icon: Icons.face_rounded),
+            _MenuEntry('Configurações',
+                () => _abrir(context, const TelaConfiguracoes()),
+                icon: Icons.settings_rounded),
+          ],
+          icon: Icons.info_outline_rounded),
+    ];
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = context.watch<FefoThemeController>().current;
-    final verde = theme.accentSecondary;
-    final vermelho = theme.accent;
-
     return PaginaBase(
+      mostrarBotaoVoltar: true,
+      indiceNavegacao: 2,
       child: Consumer<BluetoothManager>(
         builder: (context, manager, _) {
           if (manager.lendoCatalogo) {
-            return Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(color: theme.accent),
-                    SizedBox(height: 24),
-                    Text(
-                      'Lendo catálogo interno do FEFO...',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontFamily: 'KGPen',
-                          fontSize: 22,
-                          color: theme.text,
-                          fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      'Sincronizando áudios e conteúdos do seu PET.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontFamily: 'KGPen',
-                          fontSize: 16,
-                          color: theme.mutedText),
-                    ),
-                  ],
-                ),
-              ),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
-
-          // Exceções com presenças fixas solicitadas: Alarmes, CARDs Interativos, Aulas do Fefo
-          final temDesafios =
-              _temConteudoAudio(manager, 'Desafios e Brincadeiras');
-          final temMeuCorpo = _temConteudoAudio(manager, 'Meu corpo');
-          final temContos = _temConteudoAudio(manager, 'Contos de Fefo');
-          final temPalavras = _temConteudoAudio(manager, 'Palavras do Fefo');
-          final temSeguro = _temConteudoAudio(manager, 'Aventuras Seguras');
-          final temRotina = _temConteudoAudio(manager, 'Minha Rotina');
-          final temAnimais =
-              _temConteudoAudio(manager, 'Conhecendo os animais');
-
-          const temExploracao = true;
-
-          final temClassicas = _temConteudoAudio(manager, 'Músicas Clássicas');
-          final temInstrumentais =
-              _temConteudoAudio(manager, 'Instrumentais e Natureza');
-          final temJukebox = _temConteudoAudio(manager, 'Jukebox do Fefo');
-          final temEstimulos = temClassicas || temInstrumentais || temJukebox;
-
-          final temRelaxamento = _temConteudoAudio(manager, 'Relaxamento');
-          const temLuzes = true;
-          final temTerapias = temRelaxamento || temLuzes;
-
-          const temSobre = true;
-
           return SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.only(top: 8, bottom: 24),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 20),
+                const FefoPageHeader(
+                  title: 'Menu do FEFO',
+                  subtitle: 'Escolha uma atividade para começar.',
+                ),
                 if (!manager.isConnected) ...[
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFDC4900).withValues(alpha: 0.10),
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: const Color(0xFFDC4900)),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.bluetooth_disabled_rounded,
-                            color: Color(0xFFDC4900)),
-                        const SizedBox(width: 10),
-                        const Expanded(
-                          child: Text(
-                            'FEFO desconectado. O menu continua disponível.',
-                            style: TextStyle(
-                                fontFamily: 'KGPen',
-                                fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: () => _abrir(const TelaConexao()),
-                          child: const Text('Conectar'),
-                        ),
-                      ],
+                  FefoStatusBadge(
+                    label: 'FEFO desconectado · menu disponível',
+                    icon: Icons.bluetooth_disabled_rounded,
+                    color: theme.accent,
+                  ),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton.icon(
+                      onPressed: () => _abrir(context, const TelaConexao()),
+                      icon: const Icon(Icons.bluetooth_searching_rounded),
+                      label: const Text('Conectar'),
                     ),
                   ),
-                  const SizedBox(height: 15),
                 ],
-                // Botão Pânico bem no topo
-                BotaoPincelada(
-                  texto: 'PÂNICO',
-                  cor: vermelho,
-                  fontSize: 60,
-                  corBorda: theme.text,
-                  aoPressionar: () => context
-                      .read<BluetoothManager>()
-                      .enviarComando('PANIC TRIGGER'),
+                SizedBox(
+                  height: 76,
+                  child: FilledButton.icon(
+                    style:
+                        FilledButton.styleFrom(backgroundColor: theme.accent),
+                    onPressed: () => manager.enviarComando('PANIC TRIGGER'),
+                    icon: const Icon(Icons.notifications_active_rounded),
+                    label: const Text('PÂNICO'),
+                  ),
                 ),
-                const SizedBox(height: 15),
-                _BotaoMenu(texto: 'Ronronar', aoPressionar: manager.ronronar),
-                _BotaoMenu(texto: 'Favoritos', aoPressionar: () => _abrir(const TelaFavoritos())),
-                const SizedBox(height: 15),
-
-                // SEÇÃO 1: Exploração diária
-                if (temExploracao) ...[
-                  const _TituloSecao(titulo: 'Exploração diária'),
-                  const SizedBox(height: 8),
-                  _BotaoMenu(
-                    texto: 'Aulas do Fefo',
-                    aoPressionar: () => _abrir(
-                      const TelaAudiosFefo(grupoInicial: 'Aulas do Fefo'),
-                    ),
-                  ),
-                  if (temDesafios)
-                    _BotaoMenu(
-                      texto: 'Desafios e Brincadeiras',
-                      aoPressionar: () => _abrir(
-                        const TelaAudiosFefo(
-                            grupoInicial: 'Desafios e Brincadeiras'),
-                      ),
-                    ),
-                  if (temMeuCorpo)
-                    _BotaoMenu(
-                      texto: 'Meu corpo',
-                      aoPressionar: () => _abrir(
-                        const TelaAudiosFefo(grupoInicial: 'Meu corpo'),
-                      ),
-                    ),
-                  if (temContos)
-                    _BotaoMenu(
-                      texto: 'Contos de Fefo',
-                      aoPressionar: () => _abrir(
-                        const TelaAudiosFefo(grupoInicial: 'Contos de Fefo'),
-                      ),
-                    ),
-                  if (temPalavras)
-                    _BotaoMenu(
-                      texto: 'Palavras do Fefo',
-                      aoPressionar: () => _abrir(
-                        const TelaAudiosFefo(grupoInicial: 'Palavras do Fefo'),
-                      ),
-                    ),
-                  if (temSeguro)
-                    _BotaoMenu(
-                      texto: 'Aventuras Seguras',
-                      aoPressionar: () => _abrir(
-                        const TelaAudiosFefo(
-                            grupoInicial: 'Aventuras Seguras'),
-                      ),
-                    ),
-                  if (temRotina)
-                    _BotaoMenu(
-                      texto: 'Minha Rotina',
-                      aoPressionar: () => _abrir(
-                        const TelaAudiosFefo(grupoInicial: 'Minha Rotina'),
-                      ),
-                    ),
-                  if (temAnimais)
-                    _BotaoMenu(
-                      texto: 'Conhecendo os animais',
-                      aoPressionar: () => _abrir(
-                        const TelaAudiosFefo(
-                            grupoInicial: 'Conhecendo os animais'),
-                      ),
-                    ),
-                  _BotaoMenu(
-                    texto: 'CARDs Interativos',
-                    aoPressionar: () => _abrir(const TelaCards()),
-                  ),
-                  const SizedBox(height: 15),
-                ],
-
-                // SEÇÃO 2: Estímulos Sonoros
-                if (temEstimulos) ...[
-                  const _TituloSecao(titulo: 'Estímulos Sonoros'),
-                  const SizedBox(height: 8),
-                  if (temClassicas)
-                    _BotaoMenu(
-                      texto: 'Músicas Clássicas',
-                      aoPressionar: () => _abrir(const TelaClassicas()),
-                    ),
-                  if (temInstrumentais)
-                    _BotaoMenu(
-                      texto: 'Instrumentais e Natureza',
-                      aoPressionar: () => _abrir(
-                        const TelaAudiosFefo(
-                            grupoInicial: 'Instrumentais e Natureza'),
-                      ),
-                    ),
-                  if (temJukebox)
-                    _BotaoMenu(
-                      texto: 'Jukebox do Fefo',
-                      aoPressionar: () => _abrir(
-                        const TelaAudiosFefo(grupoInicial: 'Jukebox do Fefo'),
-                      ),
-                    ),
-                  const SizedBox(height: 15),
-                ],
-
-                // SEÇÃO 3: Terapias guiadas
-                if (temTerapias) ...[
-                  const _TituloSecao(titulo: 'Terapias guiadas'),
-                  const SizedBox(height: 8),
-                  _BotaoMenu(
-                    texto: 'Luzes Terapêuticas',
-                    aoPressionar: () => _abrir(const TelaLuzes()),
-                  ),
-                  if (temRelaxamento)
-                    _BotaoMenu(
-                      texto: 'Relaxamento',
-                      aoPressionar: () => _abrir(
-                        const TelaAudiosFefo(grupoInicial: 'Relaxamento'),
-                      ),
-                    ),
-                  const SizedBox(height: 15),
-                ],
-
-                // SEÇÃO 4: Sobre o Fefo
-                if (temSobre) ...[
-                  const _TituloSecao(titulo: 'Sobre o Fefo'),
-                  const SizedBox(height: 8),
-                  _BotaoMenu(
-                    texto: 'Catálogo online',
-                    aoPressionar: () => _abrir(const TelaCatalogoOnline()),
-                  ),
-                  _BotaoMenu(
-                    texto: 'Quem é o Fefo',
-                    aoPressionar: () => _abrir(const TelaSobre()),
-                  ),
-                  _BotaoMenu(
-                    texto: 'Rostinhos do Fefo',
-                    aoPressionar: () => _abrir(const TelaFacesFefo()),
-                  ),
-                  _BotaoMenu(
-                    texto: 'Configurações',
-                    aoPressionar: () => _abrir(const TelaConfiguracoes()),
-                  ),
-                  const SizedBox(height: 15),
-                ],
-
-                const SizedBox(height: 15),
-                BotaoPincelada(
-                  texto: 'Voltar',
-                  cor: verde,
-                  larguraPercentual: 0.72,
-                  aoPressionar: () => Navigator.pop(context),
-                ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 12),
+                _MenuAction(
+                    label: 'Ronronar',
+                    icon: Icons.pets_rounded,
+                    onPressed: manager.ronronar),
+                _MenuAction(
+                    label: 'Favoritos',
+                    icon: Icons.star_rounded,
+                    onPressed: () => _abrir(context, const TelaFavoritos())),
+                const SizedBox(height: 8),
+                ..._secoes(context, manager)
+                    .map((section) => _MenuSectionView(section: section)),
               ],
             ),
           );
@@ -305,43 +160,74 @@ class _TelaMenuState extends State<TelaMenu> {
   }
 }
 
-class _TituloSecao extends StatelessWidget {
-  final String titulo;
+class _MenuSection {
+  final String title;
+  final List<_MenuEntry> entries;
+  final IconData icon;
 
-  const _TituloSecao({required this.titulo});
+  const _MenuSection(this.title, this.entries, {required this.icon});
+}
+
+class _MenuEntry {
+  final String label;
+  final VoidCallback onPressed;
+  final IconData icon;
+
+  const _MenuEntry(this.label, this.onPressed,
+      {this.icon = Icons.arrow_forward_rounded});
+}
+
+class _MenuSectionView extends StatelessWidget {
+  final _MenuSection section;
+
+  const _MenuSectionView({required this.section});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 10, bottom: 4),
-      child: Text(
-        titulo,
-        style: TextStyle(
-          fontFamily: 'Billotilde',
-          fontSize: 40,
-          color: Theme.of(context).colorScheme.secondary,
-          fontWeight: FontWeight.bold,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 20, bottom: 8),
+          child: Row(
+            children: [
+              Icon(section.icon,
+                  size: 20, color: Theme.of(context).colorScheme.secondary),
+              const SizedBox(width: 8),
+              Text(section.title,
+                  style: Theme.of(context).textTheme.titleMedium),
+            ],
+          ),
         ),
-        textAlign: TextAlign.center,
-      ),
+        ...section.entries.map(
+          (entry) => _MenuAction(
+              label: entry.label, icon: entry.icon, onPressed: entry.onPressed),
+        ),
+      ],
     );
   }
 }
 
-class _BotaoMenu extends StatelessWidget {
-  final String texto;
-  final VoidCallback aoPressionar;
+class _MenuAction extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final VoidCallback onPressed;
 
-  const _BotaoMenu({required this.texto, required this.aoPressionar});
+  const _MenuAction(
+      {required this.label, required this.icon, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: BotaoPincelada(
-        texto: texto,
-        cor: const Color(0xFFDC4900),
-        aoPressionar: aoPressionar,
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Card(
+        margin: EdgeInsets.zero,
+        child: ListTile(
+          onTap: onPressed,
+          leading: Icon(icon),
+          title: Text(label),
+          trailing: const Icon(Icons.chevron_right_rounded),
+        ),
       ),
     );
   }

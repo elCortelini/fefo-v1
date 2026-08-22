@@ -13,7 +13,8 @@ class FundoFefo extends StatefulWidget {
   State<FundoFefo> createState() => _FundoFefoState();
 }
 
-class _FundoFefoState extends State<FundoFefo> with SingleTickerProviderStateMixin {
+class _FundoFefoState extends State<FundoFefo>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     vsync: this,
     duration: const Duration(seconds: 18),
@@ -27,17 +28,6 @@ class _FundoFefoState extends State<FundoFefo> with SingleTickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
-    if (widget.theme.useLegacyImage) {
-      return const DecoratedBox(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/background.png'),
-            fit: BoxFit.cover,
-          ),
-        ),
-      );
-    }
-
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, _) {
@@ -45,9 +35,13 @@ class _FundoFefoState extends State<FundoFefo> with SingleTickerProviderStateMix
         return DecoratedBox(
           decoration: BoxDecoration(
             gradient: RadialGradient(
-              center: Alignment.lerp(const Alignment(0.7, -1.1), const Alignment(-0.2, -0.2), t)!,
+              center: Alignment.lerp(
+                  const Alignment(0.7, -1.1), const Alignment(-0.2, -0.2), t)!,
               radius: 1.35,
-              colors: [widget.theme.backgroundSecondary, widget.theme.background],
+              colors: [
+                widget.theme.backgroundSecondary,
+                widget.theme.background
+              ],
               stops: const [0, 0.82],
             ),
           ),
@@ -66,7 +60,8 @@ class _FundoFefoState extends State<FundoFefo> with SingleTickerProviderStateMix
               ),
               BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 34, sigmaY: 34),
-                child: ColoredBox(color: widget.theme.background.withValues(alpha: 0.18)),
+                child: ColoredBox(
+                    color: widget.theme.background.withValues(alpha: 0.18)),
               ),
             ],
           ),
@@ -79,7 +74,8 @@ class _FundoFefoState extends State<FundoFefo> with SingleTickerProviderStateMix
     return Container(
       width: size,
       height: size,
-      decoration: BoxDecoration(shape: BoxShape.circle, color: color.withValues(alpha: opacity)),
+      decoration: BoxDecoration(
+          shape: BoxShape.circle, color: color.withValues(alpha: opacity)),
     );
   }
 }

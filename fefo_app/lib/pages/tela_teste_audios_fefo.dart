@@ -23,7 +23,7 @@ class TelaTesteAudiosFefo extends StatelessWidget {
           return Column(
             children: [
               const SizedBox(height: 25),
-              const Text(
+              Text(
                 'Teste de Áudios',
                 style: TextStyle(
                   fontFamily: 'Billotilde',

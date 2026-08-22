@@ -133,6 +133,7 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
 
     return PaginaBase(
       mostrarBotaoVoltar: true,
+      indiceNavegacao: 3,
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
         child: Column(
@@ -176,16 +177,21 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
                   '${appTheme.nome}  •  fundo dinâmico suave',
                   style: TextStyle(color: appTheme.mutedText),
                 ),
-                trailing: Icon(Icons.chevron_right_rounded, color: appTheme.accent),
+                trailing:
+                    Icon(Icons.chevron_right_rounded, color: appTheme.accent),
                 onTap: () => _escolherTema(context),
               ),
             ),
             const SizedBox(height: 15),
 
-            Card(child: ListTile(
+            Card(
+                child: ListTile(
               leading: Icon(Icons.info_outline_rounded, color: corLaranja),
-              title: const Text('Versões instaladas', style: TextStyle(fontFamily: 'KGPen', fontWeight: FontWeight.bold)),
-              subtitle: Text('App $fefoAppVersionLabel  •  Firmware v${manager.firmwareVersion ?? fefoFirmwareVersion}'),
+              title: const Text('Versões instaladas',
+                  style: TextStyle(
+                      fontFamily: 'KGPen', fontWeight: FontWeight.bold)),
+              subtitle: Text(
+                  'App $fefoAppVersionLabel  •  Firmware v${manager.firmwareVersion ?? fefoFirmwareVersion}'),
             )),
 
             Card(
@@ -244,11 +250,22 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
                     color: corVerde.withValues(alpha: 0.3), width: 1.5),
               ),
               child: ListTile(
-                leading: Icon(Icons.vibration_rounded, color: corLaranja, size: 32),
-                title: Text('Vibrações do PET FEFO', style: TextStyle(fontFamily: 'KGPen', fontSize: 20, fontWeight: FontWeight.bold, color: corVerde)),
-                subtitle: const Text('10 padrões intensos de 7 segundos', style: TextStyle(fontFamily: 'KGPen')),
-                trailing: Icon(Icons.chevron_right_rounded, color: corLaranja, size: 32),
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TelaVibracoesFefo())),
+                leading:
+                    Icon(Icons.vibration_rounded, color: corLaranja, size: 32),
+                title: Text('Vibrações do PET FEFO',
+                    style: TextStyle(
+                        fontFamily: 'KGPen',
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: corVerde)),
+                subtitle: const Text('10 padrões intensos de 7 segundos',
+                    style: TextStyle(fontFamily: 'KGPen')),
+                trailing: Icon(Icons.chevron_right_rounded,
+                    color: corLaranja, size: 32),
+                onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const TelaVibracoesFefo())),
               ),
             ),
 
@@ -276,8 +293,7 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.face_rounded,
-                            color: corLaranja, size: 30),
+                        Icon(Icons.face_rounded, color: corLaranja, size: 30),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
@@ -367,7 +383,8 @@ class _TemaEscolhaTile extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
         side: BorderSide(
-          color: selecionado ? theme.accent : theme.accent.withValues(alpha: 0.18),
+          color:
+              selecionado ? theme.accent : theme.accent.withValues(alpha: 0.18),
           width: selecionado ? 2 : 1,
         ),
       ),
@@ -379,7 +396,11 @@ class _TemaEscolhaTile extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
             gradient: LinearGradient(
-              colors: [theme.backgroundSecondary, theme.accent, theme.accentSecondary],
+              colors: [
+                theme.backgroundSecondary,
+                theme.accent,
+                theme.accentSecondary
+              ],
             ),
           ),
         ),
@@ -391,7 +412,8 @@ class _TemaEscolhaTile extends StatelessWidget {
             fontFamily: 'KGPen',
           ),
         ),
-        subtitle: Text(theme.descricao, style: TextStyle(color: theme.mutedText)),
+        subtitle:
+            Text(theme.descricao, style: TextStyle(color: theme.mutedText)),
         trailing: selecionado
             ? Icon(Icons.check_circle_rounded, color: theme.accent)
             : Icon(Icons.radio_button_unchecked, color: theme.mutedText),

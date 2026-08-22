@@ -125,9 +125,10 @@ class _TelaConexaoState extends State<TelaConexao> {
             Consumer<BluetoothManager>(
               builder: (context, manager, _) {
                 if (manager.isConnected) {
-                  final nomeConectado = manager.dispositivoConectadoNome.isNotEmpty
-                      ? manager.dispositivoConectadoNome
-                      : 'FEFO BLE';
+                  final nomeConectado =
+                      manager.dispositivoConectadoNome.isNotEmpty
+                          ? manager.dispositivoConectadoNome
+                          : 'FEFO BLE';
                   return Container(
                     margin: const EdgeInsets.symmetric(vertical: 10),
                     padding: const EdgeInsets.all(16),
@@ -141,7 +142,8 @@ class _TelaConexaoState extends State<TelaConexao> {
                         const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.bluetooth_connected, color: corVerde, size: 30),
+                            Icon(Icons.bluetooth_connected,
+                                color: corVerde, size: 30),
                             SizedBox(width: 8),
                             Text(
                               'FEFO CONECTADO',
@@ -173,7 +175,8 @@ class _TelaConexaoState extends State<TelaConexao> {
                                 foregroundColor: Colors.white,
                               ),
                               icon: const Icon(Icons.bluetooth_disabled),
-                              label: const Text('Desconectar', style: TextStyle(fontFamily: 'KGPen')),
+                              label: const Text('Desconectar',
+                                  style: TextStyle(fontFamily: 'KGPen')),
                               onPressed: () async {
                                 await manager.disconnectFromDevice();
                                 _mostrarMensagem('FEFO desconectado.');
@@ -185,7 +188,8 @@ class _TelaConexaoState extends State<TelaConexao> {
                                 foregroundColor: Colors.white,
                               ),
                               icon: const Icon(Icons.refresh),
-                              label: const Text('Reconectar', style: TextStyle(fontFamily: 'KGPen')),
+                              label: const Text('Reconectar',
+                                  style: TextStyle(fontFamily: 'KGPen')),
                               onPressed: () async {
                                 await manager.disconnectFromDevice();
                                 await _buscarFefoBle();

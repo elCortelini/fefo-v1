@@ -58,7 +58,8 @@ class _TelaAudiosFefoState extends State<TelaAudiosFefo> {
     final confirmed = await showDialog<bool>(
           context: context,
           builder: (dialogContext) => AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             title: Text('Excluir $count áudio(s)?'),
             content: const Text(
               'Os arquivos selecionados serão removidos permanentemente do cartão do FEFO.',
@@ -67,12 +68,15 @@ class _TelaAudiosFefoState extends State<TelaAudiosFefo> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(dialogContext, false),
-                child: const Text('Cancelar', style: TextStyle(fontFamily: 'KGPen')),
+                child: const Text('Cancelar',
+                    style: TextStyle(fontFamily: 'KGPen')),
               ),
               FilledButton(
-                style: FilledButton.styleFrom(backgroundColor: Colors.red.shade800),
+                style: FilledButton.styleFrom(
+                    backgroundColor: Colors.red.shade800),
                 onPressed: () => Navigator.pop(dialogContext, true),
-                child: const Text('Excluir Todos', style: TextStyle(fontFamily: 'KGPen')),
+                child: const Text('Excluir Todos',
+                    style: TextStyle(fontFamily: 'KGPen')),
               ),
             ],
           ),
@@ -83,9 +87,7 @@ class _TelaAudiosFefoState extends State<TelaAudiosFefo> {
 
     final paths = _selecionados.toList();
     try {
-      await context
-          .read<BluetoothManager>()
-          .removerVariosAudios(paths);
+      await context.read<BluetoothManager>().removerVariosAudios(paths);
       if (mounted) {
         setState(() {
           _selecionados.clear();
@@ -117,235 +119,248 @@ class _TelaAudiosFefoState extends State<TelaAudiosFefo> {
     final corLaranja = theme.accent;
 
     return PaginaBase(
-        child: Consumer<BluetoothManager>(
-          builder: (context, manager, child) {
-            final groups = manager.audioGroups;
-            final groupNames = widget.grupoInicial == null
-                ? (groups.keys.toList()..sort())
-                : groups.containsKey(widget.grupoInicial)
-                    ? [widget.grupoInicial!]
-                    : <String>[];
-            final audios = groupNames
-                .expand((group) => groups[group] ?? const <FefoAudioItem>[])
-                .toList();
+      child: Consumer<BluetoothManager>(
+        builder: (context, manager, child) {
+          final groups = manager.audioGroups;
+          final groupNames = widget.grupoInicial == null
+              ? (groups.keys.toList()..sort())
+              : groups.containsKey(widget.grupoInicial)
+                  ? [widget.grupoInicial!]
+                  : <String>[];
+          final audios = groupNames
+              .expand((group) => groups[group] ?? const <FefoAudioItem>[])
+              .toList();
 
-            // Agrupar áudios por submenu
-            final Map<String, List<FefoAudioItem>> submenusMap = {};
-            for (final audio in audios) {
-              submenusMap.putIfAbsent(audio.submenu, () => []).add(audio);
-            }
+          // Agrupar áudios por submenu
+          final Map<String, List<FefoAudioItem>> submenusMap = {};
+          for (final audio in audios) {
+            submenusMap.putIfAbsent(audio.submenu, () => []).add(audio);
+          }
 
-            return Column(
-              children: [
-                const SizedBox(height: 20),
-                // Cabeçalho do Menu com Botão de Seleção Múltipla
+          return Column(
+            children: [
+              const SizedBox(height: 20),
+              // Cabeçalho do Menu com Botão de Seleção Múltipla
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          widget.grupoInicial ?? 'Áudios no FEFO',
+                          style: TextStyle(
+                            fontFamily: 'Billotilde',
+                            fontSize: 52,
+                            height: 1,
+                            color: corVerde,
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (audios.isNotEmpty && manager.isConnected) ...[
+                      IconButton(
+                        tooltip: _modoSelecao
+                            ? 'Sair da Seleção'
+                            : 'Seleção Múltipla',
+                        icon: Icon(
+                          _modoSelecao
+                              ? Icons.close_rounded
+                              : Icons.checklist_rounded,
+                          color: _modoSelecao ? Colors.red : corLaranja,
+                          size: 32,
+                        ),
+                        onPressed: _alternarModoSelecao,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              if (widget.grupoInicial == 'Jukebox do Fefo' &&
+                  audios.isNotEmpty &&
+                  manager.isConnected)
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      icon: const Icon(Icons.playlist_play_rounded),
+                      label: const Text('Tocar todas as músicas',
+                          style: TextStyle(fontFamily: 'KGPen', fontSize: 17)),
+                      onPressed: () => manager.tocarTodos(audios),
+                    ),
+                  ),
+                ),
+
+              // Bar de ação superior quando no modo de seleção
+              if (_modoSelecao) ...[
+                Container(
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: corLaranja.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: corLaranja, width: 1.5),
+                  ),
                   child: Row(
                     children: [
-                      Expanded(
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            widget.grupoInicial ?? 'Áudios no FEFO',
-                            style: TextStyle(
-                              fontFamily: 'Billotilde',
-                              fontSize: 52,
-                              height: 1,
-                              color: corVerde,
-                            ),
-                          ),
+                      Text(
+                        '${_selecionados.length} selecionado(s)',
+                        style: TextStyle(
+                          fontFamily: 'KGPen',
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: corLaranja,
                         ),
                       ),
-                      if (audios.isNotEmpty && manager.isConnected) ...[
-                        IconButton(
-                          tooltip: _modoSelecao
-                              ? 'Sair da Seleção'
-                              : 'Seleção Múltipla',
-                          icon: Icon(
-                            _modoSelecao
-                                ? Icons.close_rounded
-                                : Icons.checklist_rounded,
-                            color: _modoSelecao ? Colors.red : corLaranja,
-                            size: 32,
-                          ),
-                          onPressed: _alternarModoSelecao,
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 10),
-                if (widget.grupoInicial == 'Jukebox do Fefo' && audios.isNotEmpty && manager.isConnected)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: FilledButton.icon(
-                        icon: const Icon(Icons.playlist_play_rounded),
-                        label: const Text('Tocar todas as músicas', style: TextStyle(fontFamily: 'KGPen', fontSize: 17)),
-                        onPressed: () => manager.tocarTodos(audios),
-                      ),
-                    ),
-                  ),
-
-                // Bar de ação superior quando no modo de seleção
-                if (_modoSelecao) ...[
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: corLaranja.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: corLaranja, width: 1.5),
-                    ),
-                    child: Row(
-                      children: [
-                        Text(
-                          '${_selecionados.length} selecionado(s)',
+                      const Spacer(),
+                      TextButton(
+                        onPressed: () => _selecionarTodos(audios),
+                        child: Text(
+                          _selecionados.length == audios.length
+                              ? 'Desmarcar Todos'
+                              : 'Selecionar Todos',
                           style: TextStyle(
                             fontFamily: 'KGPen',
-                            fontSize: 16,
+                            fontSize: 15,
+                            color: corVerde,
                             fontWeight: FontWeight.bold,
-                            color: corLaranja,
                           ),
                         ),
-                        const Spacer(),
-                        TextButton(
-                          onPressed: () => _selecionarTodos(audios),
-                          child: Text(
-                            _selecionados.length == audios.length
-                                ? 'Desmarcar Todos'
-                                : 'Selecionar Todos',
-                            style: TextStyle(
-                              fontFamily: 'KGPen',
-                              fontSize: 15,
-                              color: corVerde,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-
-                Expanded(
-                  child: manager.aguardandoReconexao
-                      ? const _MensagemCentral(
-                          texto: 'Concluído. Reconecte o Bluetooth.',
-                        )
-                      : !manager.isConnected && !manager.uploading
-                          ? const _MensagemCentral(
-                              texto:
-                                  'Conecte ao FEFO para carregar os áudios do SDCard.',
-                            )
-                          : audios.isEmpty
-                              ? const _MensagemCentral(
-                                  texto: 'Nenhum áudio instalado neste menu.',
-                                )
-                              : ListView(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 8),
-                                  children: [
-                                    for (final entry in submenusMap.entries) ...[
-                                      if (entry.key.trim().isNotEmpty) ...[
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                            top: 12,
-                                            bottom: 6,
-                                            left: 4,
-                                          ),
-                                          child: Text(
-                                            entry.key.trim(),
-                                            style: TextStyle(
-                                              fontFamily: 'Billotilde',
-                                              fontSize: 32,
-                                              color: corVerde,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                      for (final audio in entry.value) ...[
-                                        _CardAudioItem(
-                                          audio: audio,
-                                          modoSelecao: _modoSelecao,
-                                          selecionado: _selecionados.contains(audio.path),
-                                          tocando: manager.caminhoAudioAtivo == audio.token ||
-                                              manager.caminhoAudioAtivo == audio.path,
-                                          onTap: () {
-                                            if (_modoSelecao) {
-                                              _toggleSelecao(audio.path);
-                                            } else {
-                                              manager.selecionarAudio(audio.token);
-                                            }
-                                          },
-                                          onLongPress: () {
-                                            if (!_modoSelecao) {
-                                              setState(() {
-                                                _modoSelecao = true;
-                                                _selecionados.add(audio.path);
-                                              });
-                                            }
-                                          },
-                                          favorito: manager.isFavorite(audio.path),
-                                          onFavorito: () => manager.alternarFavorito(audio),
-                                        ),
-                                      ],
-                                    ],
-                                  ],
-                                ),
-                ),
-
-                // Painel de ação inferior para exclusão em lote
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 12, top: 8),
-                  child: Column(
-                    children: [
-                      if (_selecionados.isNotEmpty && manager.isConnected) ...[
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 8.0),
-                          child: ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red.shade800,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 24, vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25),
-                              ),
-                              elevation: 4,
-                            ),
-                            icon: const Icon(Icons.delete_forever_rounded, size: 26),
-                            label: Text(
-                              'Deletar ${_selecionados.length} Selecionado(s)',
-                  style: TextStyle(
-                                fontFamily: 'KGPen',
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            onPressed: () => _excluirSelecionados(context),
-                          ),
-                        ),
-                      ],
-                      BotaoPincelada(
-                        texto: 'Voltar',
-                        cor: corVerde,
-                        larguraPercentual: 0.72,
-                        aoPressionar: manager.uploading
-                            ? () {}
-                            : () => Navigator.pop(context),
                       ),
                     ],
                   ),
                 ),
               ],
-            );
-          },
-        ),
-      );
+
+              Expanded(
+                child: manager.aguardandoReconexao
+                    ? const _MensagemCentral(
+                        texto: 'Concluído. Reconecte o Bluetooth.',
+                      )
+                    : !manager.isConnected && !manager.uploading
+                        ? const _MensagemCentral(
+                            texto:
+                                'Conecte ao FEFO para carregar os áudios do SDCard.',
+                          )
+                        : audios.isEmpty
+                            ? const _MensagemCentral(
+                                texto: 'Nenhum áudio instalado neste menu.',
+                              )
+                            : ListView(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 8),
+                                children: [
+                                  for (final entry in submenusMap.entries) ...[
+                                    if (entry.key.trim().isNotEmpty) ...[
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          top: 12,
+                                          bottom: 6,
+                                          left: 4,
+                                        ),
+                                        child: Text(
+                                          entry.key.trim(),
+                                          style: TextStyle(
+                                            fontFamily: 'Billotilde',
+                                            fontSize: 32,
+                                            color: corVerde,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                    for (final audio in entry.value) ...[
+                                      _CardAudioItem(
+                                        audio: audio,
+                                        modoSelecao: _modoSelecao,
+                                        selecionado:
+                                            _selecionados.contains(audio.path),
+                                        tocando: manager.caminhoAudioAtivo ==
+                                                audio.token ||
+                                            manager.caminhoAudioAtivo ==
+                                                audio.path,
+                                        onTap: () {
+                                          if (_modoSelecao) {
+                                            _toggleSelecao(audio.path);
+                                          } else {
+                                            manager
+                                                .selecionarAudio(audio.token);
+                                          }
+                                        },
+                                        onLongPress: () {
+                                          if (!_modoSelecao) {
+                                            setState(() {
+                                              _modoSelecao = true;
+                                              _selecionados.add(audio.path);
+                                            });
+                                          }
+                                        },
+                                        favorito:
+                                            manager.isFavorite(audio.path),
+                                        onFavorito: () =>
+                                            manager.alternarFavorito(audio),
+                                      ),
+                                    ],
+                                  ],
+                                ],
+                              ),
+              ),
+
+              // Painel de ação inferior para exclusão em lote
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12, top: 8),
+                child: Column(
+                  children: [
+                    if (_selecionados.isNotEmpty && manager.isConnected) ...[
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red.shade800,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25),
+                            ),
+                            elevation: 4,
+                          ),
+                          icon: const Icon(Icons.delete_forever_rounded,
+                              size: 26),
+                          label: Text(
+                            'Deletar ${_selecionados.length} Selecionado(s)',
+                            style: TextStyle(
+                              fontFamily: 'KGPen',
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          onPressed: () => _excluirSelecionados(context),
+                        ),
+                      ),
+                    ],
+                    BotaoPincelada(
+                      texto: 'Voltar',
+                      cor: corVerde,
+                      larguraPercentual: 0.72,
+                      aoPressionar: manager.uploading
+                          ? () {}
+                          : () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
   }
 }
 
@@ -413,7 +428,8 @@ class _CardAudioItem extends StatelessWidget {
                 size: 28,
               )
             : CircleAvatar(
-                backgroundColor: tocando ? corVerde : corLaranja.withValues(alpha: 0.15),
+                backgroundColor:
+                    tocando ? corVerde : corLaranja.withValues(alpha: 0.15),
                 child: Icon(
                   tocando ? Icons.volume_up_rounded : Icons.audiotrack_rounded,
                   color: tocando ? Colors.white : corLaranja,
@@ -425,10 +441,9 @@ class _CardAudioItem extends StatelessWidget {
           style: TextStyle(
             fontFamily: 'KGPen',
             fontSize: 18,
-            fontWeight: tocando || selecionado ? FontWeight.bold : FontWeight.normal,
-                color: selecionado
-                ? corLaranja
-                : (tocando ? corVerde : theme.text),
+            fontWeight:
+                tocando || selecionado ? FontWeight.bold : FontWeight.normal,
+            color: selecionado ? corLaranja : (tocando ? corVerde : theme.text),
           ),
         ),
         subtitle: audio.group.isNotEmpty
@@ -446,10 +461,20 @@ class _CardAudioItem extends StatelessWidget {
             : Row(mainAxisSize: MainAxisSize.min, children: [
                 IconButton(
                   tooltip: favorito ? 'Remover favorito' : 'Adicionar favorito',
-                  icon: Icon(favorito ? Icons.star_rounded : Icons.star_border_rounded, color: favorito ? corLaranja : corVerde),
+                  icon: Icon(
+                      favorito ? Icons.star_rounded : Icons.star_border_rounded,
+                      color: favorito ? corLaranja : corVerde),
                   onPressed: onFavorito,
                 ),
-                IconButton(tooltip: 'Tocar no FEFO', icon: Icon(tocando ? Icons.equalizer_rounded : Icons.play_circle_fill_rounded, color: tocando ? corVerde : corLaranja, size: 36), onPressed: onTap),
+                IconButton(
+                    tooltip: 'Tocar no FEFO',
+                    icon: Icon(
+                        tocando
+                            ? Icons.equalizer_rounded
+                            : Icons.play_circle_fill_rounded,
+                        color: tocando ? corVerde : corLaranja,
+                        size: 36),
+                    onPressed: onTap),
               ]),
       ),
     );

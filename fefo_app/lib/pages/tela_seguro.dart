@@ -55,13 +55,13 @@ class TelaSeguro extends StatelessWidget {
         children: [
           // TÍTULO COM ÁREA VERTICAL REDUZIDA
           const SizedBox(height: 15),
-          const Text(
+          Text(
             'Dicas de Segurança',
             style: TextStyle(
               fontFamily: 'Billotilde',
               fontSize: 50,
               height: 1.0,
-            color: Theme.of(context).colorScheme.secondary,
+              color: Theme.of(context).colorScheme.secondary,
             ),
             textAlign: TextAlign.center,
           ),

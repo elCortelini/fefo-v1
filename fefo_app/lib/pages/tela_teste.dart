@@ -137,7 +137,7 @@ class TelaTeste extends StatelessWidget {
         child: Text(
           texto,
           style: const TextStyle(
-            color: Theme.of(context).colorScheme.secondary,
+            color: Colors.white70,
             fontFamily: 'KGPen',
             fontSize: 23,
             fontWeight: FontWeight.bold,

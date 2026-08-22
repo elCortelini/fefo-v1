@@ -310,7 +310,7 @@ class TelaAnimais extends StatelessWidget {
       child: Column(
         children: [
           const SizedBox(height: 25),
-          const Padding(
+          Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.0),
             child: FittedBox(
               fit: BoxFit.scaleDown,
