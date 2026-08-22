@@ -218,6 +218,14 @@ Fechamento da Fase 4 no firmware.
 - `APP PROFILE`.
 - Roadmap reescrito como guia vivo do projeto.
 
+## v1.091
+
+- Subtítulos das seções do Menu Principal centralizados.
+- Subtítulos padronizados com a fonte Billotilde.
+- Cor dos subtítulos vinculada ao tema ativo.
+- Marcas de anotação visual da referência não foram incluídas no aplicativo.
+- APK publicado no catálogo do GitHub.
+
 ## v1.090
 
 - Menu Principal atualizado para usar botões em aparência de pincelada.

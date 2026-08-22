@@ -190,14 +190,27 @@ class _MenuSectionView extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(top: 20, bottom: 8),
-          child: Row(
-            children: [
-              Icon(section.icon,
-                  size: 20, color: Theme.of(context).colorScheme.secondary),
-              const SizedBox(width: 8),
-              Text(section.title,
-                  style: Theme.of(context).textTheme.titleMedium),
-            ],
+          child: Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(section.icon,
+                    size: 20,
+                    color: Theme.of(context).colorScheme.secondary),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    section.title,
+                    textAlign: TextAlign.center,
+                    softWrap: true,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontFamily: 'Billotilde',
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         ...section.entries.map(
