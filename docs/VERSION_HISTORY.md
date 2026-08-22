@@ -218,6 +218,14 @@ Fechamento da Fase 4 no firmware.
 - `APP PROFILE`.
 - Roadmap reescrito como guia vivo do projeto.
 
+## v1.094
+
+- Catálogo Online alinhado visualmente aos cartões do Jukebox do Fefo.
+- Itens do catálogo com ícone, título, subtítulo e ação circular de download.
+- Luzes Terapêuticas reorganizadas em uma coluna.
+- Vibrações do Fefo reorganizadas em uma coluna.
+- APK publicado no catálogo do GitHub.
+
 ## v1.093
 
 - Botão Voltar interno removido das páginas para testar o retorno nativo do Android.
