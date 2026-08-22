@@ -55,6 +55,9 @@ class _BotaoPinceladaState extends State<BotaoPincelada> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.texto.trim().toLowerCase() == 'voltar') {
+      return const SizedBox.shrink();
+    }
     final theme = context.watch<FefoThemeController>().current;
     final corTematica = widget.cor == const Color(0xFF318134) ||
             widget.cor == const Color(0xFFDC4900)

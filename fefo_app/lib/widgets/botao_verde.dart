@@ -26,12 +26,7 @@ class BotaoVerde extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = context.watch<FefoThemeController>().current;
     if (texto.trim().toLowerCase() == 'voltar') {
-      return BotaoPincelada(
-        texto: 'Voltar',
-        cor: theme.accent,
-        larguraPercentual: 0.72,
-        aoPressionar: aoPressionar,
-      );
+      return const SizedBox.shrink();
     }
     return BotaoPincelada(
       texto: texto,

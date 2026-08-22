@@ -137,7 +137,7 @@ class TelaMenu extends StatelessWidget {
                 BotaoPincelada(
                   texto: 'PÂNICO',
                   icone: Icons.notifications_active_rounded,
-                  cor: theme.accent,
+                  cor: Theme.of(context).colorScheme.primary,
                   larguraPercentual: 1,
                   fontSize: 30,
                   aoPressionar: () => manager.enviarComando('PANIC TRIGGER'),

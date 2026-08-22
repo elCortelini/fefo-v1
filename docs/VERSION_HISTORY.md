@@ -218,6 +218,14 @@ Fechamento da Fase 4 no firmware.
 - `APP PROFILE`.
 - Roadmap reescrito como guia vivo do projeto.
 
+## v1.093
+
+- Botão Voltar interno removido das páginas para testar o retorno nativo do Android.
+- Botões de efeitos LED e Vibrações convertidos para pinceladas.
+- Pânico do Menu Principal com contraste reforçado.
+- Títulos e subtítulos de Vibrações ajustados ao padrão Jukebox.
+- APK publicado no catálogo do GitHub.
+
 ## v1.092
 
 - Subtítulos do Menu Principal ampliados, centralizados e com contraste do tema.

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'botao_pincelada.dart';
 import 'fundo_fefo.dart';
 import 'mini_player.dart';
 import '../theme/fefo_theme.dart';
@@ -75,16 +74,6 @@ class PaginaBase extends StatelessWidget {
                     children: [
                       Expanded(child: child),
                       const MiniPlayer(),
-                      if (mostrarBotaoVoltar)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8, bottom: 12),
-                          child: BotaoPincelada(
-                            texto: 'Voltar',
-                            cor: fefoTheme.accent,
-                            larguraPercentual: 0.72,
-                            aoPressionar: () => Navigator.pop(context),
-                          ),
-                        ),
                     ],
                   ),
                 ),
