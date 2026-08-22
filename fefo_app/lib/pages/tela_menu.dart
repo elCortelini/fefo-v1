@@ -5,6 +5,7 @@ import '../design_system/fefo_components.dart';
 import '../managers/bluetooth_manager.dart';
 import '../theme/fefo_theme.dart';
 import '../widgets/pagina_base.dart';
+import '../widgets/botao_pincelada.dart';
 import 'tela_audios_fefo.dart';
 import 'tela_cards.dart';
 import 'tela_catalogo_online.dart';
@@ -218,16 +219,16 @@ class _MenuAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Card(
-        margin: EdgeInsets.zero,
-        child: ListTile(
-          onTap: onPressed,
-          leading: Icon(icon),
-          title: Text(label),
-          trailing: const Icon(Icons.chevron_right_rounded),
-        ),
+      child: BotaoPincelada(
+        texto: label,
+        icone: icon,
+        cor: theme.primary,
+        larguraPercentual: 1,
+        fontSize: 30,
+        aoPressionar: onPressed,
       ),
     );
   }
