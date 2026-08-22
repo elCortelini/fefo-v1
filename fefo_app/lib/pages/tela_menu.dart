@@ -111,7 +111,7 @@ class TelaMenu extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const FefoPageHeader(
-                  title: 'Menu do FEFO',
+                  title: 'Menu Principal',
                   subtitle: 'Escolha uma atividade para começar.',
                 ),
                 if (!manager.isConnected) ...[

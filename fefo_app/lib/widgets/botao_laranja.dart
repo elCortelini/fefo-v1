@@ -1,20 +1,14 @@
-// lib/widgets/botao_laranja.dart
 import 'package:flutter/material.dart';
-import 'package:audioplayers/audioplayers.dart';
-import 'dart:math';
 import 'package:provider/provider.dart';
 
+import 'botao_pincelada.dart';
 import '../theme/fefo_theme.dart';
 
 const Color corLaranja = Color(0xFFDC4900);
 const Color corLaranjaClick = Color(0xFFF89261);
 const Color corTextoBotao = Colors.white;
 
-// Criamos uma única instância para ser reutilizada. É a forma mais eficiente.
-final _player = AudioPlayer();
-// Criamos uma única instância para o gerador aleatório.
-final _random = Random();
-
+/// Compatibilidade para telas antigas, usando o mesmo padrão visual global.
 class BotaoLaranja extends StatelessWidget {
   final String texto;
   final VoidCallback aoPressionar;
@@ -27,74 +21,15 @@ class BotaoLaranja extends StatelessWidget {
     this.larguraPercentual,
   });
 
-  // Função para tocar som, agora mais robusta
-  Future<void> _tocarSom() async {
-    final List<String> sonsDeClique = [
-      'sounds/miado.mp3', // Som 1
-      'sounds/pru.mp3', // Som 2
-    ];
-
-    try {
-      // =======================================================================
-      // MUDANÇA CRÍTICA: Garante que qualquer som tocando pare antes.
-      // Isso evita que o player entre em um estado inconsistente.
-      // =======================================================================
-      await _player.stop();
-
-      final indiceAleatorio = _random.nextInt(sonsDeClique.length);
-      final somEscolhido = sonsDeClique[indiceAleatorio];
-
-      print('Sorteado e tocando: $somEscolhido');
-
-      // Toca o novo som
-      await _player.play(AssetSource(somEscolhido),
-          mode: PlayerMode.lowLatency);
-    } catch (e) {
-      print("Erro ao tocar o som: $e");
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final theme = context.watch<FefoThemeController>().current;
-    final double larguraDaTela = MediaQuery.of(context).size.width;
-
-    final Widget botao = ElevatedButton(
-      // A função onPressed agora chama a função async _tocarSom
-      onPressed: () {
-        _tocarSom();
-        aoPressionar();
-      },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: theme.accent,
-        foregroundColor: theme.background,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(50.0),
-        ),
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        alignment: Alignment.center,
-      ),
-      child: Text(
-        texto,
-        style: TextStyle(
-          fontFamily: 'Billotilde',
-          color: theme.useLegacyImage ? Colors.white : theme.background,
-          fontSize: 48,
-          height: 1,
-        ),
-        textAlign: TextAlign.center,
-      ),
+    final theme = context.watch<FefoThemeController>();
+    return BotaoPincelada(
+      texto: texto,
+      cor: theme.current.accent,
+      larguraPercentual: larguraPercentual ?? .9,
+      fontSize: 36,
+      aoPressionar: aoPressionar,
     );
-
-    if (larguraPercentual != null) {
-      return Center(
-        child: SizedBox(
-          width: larguraDaTela * larguraPercentual!,
-          child: botao,
-        ),
-      );
-    } else {
-      return Center(child: botao);
-    }
   }
 }

@@ -21,7 +21,7 @@ class PaginaBase extends StatelessWidget {
     this.mostrarBotaoVoltar = false,
     this.onNavegacao,
     this.indiceNavegacao = 0,
-    this.mostrarNavegacao = true,
+    this.mostrarNavegacao = false,
   });
 
   @override

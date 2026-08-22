@@ -16,25 +16,38 @@ class FefoPageHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
+    final theme = Theme.of(context);
+    final text = theme.textTheme;
     return Padding(
       padding: const EdgeInsets.only(top: 8, bottom: 20),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: text.headlineSmall),
-                if (subtitle != null) ...[
-                  const SizedBox(height: 6),
-                  Text(subtitle!, style: text.bodyMedium),
-                ],
-              ],
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            softWrap: true,
+            style: text.headlineSmall?.copyWith(
+              fontFamily: 'Billotilde',
+              color: theme.colorScheme.secondary,
             ),
           ),
-          if (trailing != null) trailing!,
+          if (subtitle != null) ...[
+            const SizedBox(height: 6),
+            Text(
+              subtitle!,
+              textAlign: TextAlign.center,
+              softWrap: true,
+              style: text.bodyLarge?.copyWith(
+                fontFamily: 'Billotilde',
+                color: theme.colorScheme.secondary,
+              ),
+            ),
+          ],
+          if (trailing != null) ...[
+            const SizedBox(height: 8),
+            trailing!,
+          ],
         ],
       ),
     );
