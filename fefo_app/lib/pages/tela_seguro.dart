@@ -59,7 +59,7 @@ class TelaSeguro extends StatelessWidget {
             'Dicas de Segurança',
             style: TextStyle(
               fontFamily: 'Billotilde',
-              fontSize: 50,
+              fontSize: 52,
               height: 1.0,
               color: Theme.of(context).colorScheme.secondary,
             ),

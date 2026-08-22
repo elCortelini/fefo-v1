@@ -11,6 +11,7 @@ import '../managers/bluetooth_manager.dart';
 import '../widgets/botao_pincelada.dart';
 import '../widgets/pagina_base.dart';
 import '../widgets/progresso_operacao.dart';
+import '../design_system/fefo_components.dart';
 
 class TelaFacesFefo extends StatefulWidget {
   const TelaFacesFefo({super.key});
@@ -125,28 +126,19 @@ class _TelaFacesFefoState extends State<TelaFacesFefo> {
               color: Theme.of(context).colorScheme.secondary,
             ),
           ),
-          const Text(
-            'Escolha um rostinho para exibir. Após a seleção, o FEFO retorna ao modo aleatório automaticamente.',
-            textAlign: TextAlign.center,
-            style: _faceSubtitleStyle,
+          const FefoPageSubtitle(
+            text:
+                'Escolha um rostinho para exibir. Após a seleção, o FEFO retorna ao modo aleatório automaticamente.',
           ),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               children: [
-                Text(
-                  _status,
-                  textAlign: TextAlign.center,
-                  style: _faceSubtitleStyle,
-                ),
+                FefoPageSubtitle(text: _status),
                 const SizedBox(height: 10),
                 const _SectionTitle('Instaladas no FEFO'),
                 if (installedFaces.isEmpty)
-                  const Text(
-                    'Nenhuma face instalada.',
-                    textAlign: TextAlign.center,
-                    style: _faceSubtitleStyle,
-                  ),
+                  const FefoPageSubtitle(text: 'Nenhuma face instalada.'),
                 _faceGrid(installedFaces, manager: manager),
               ],
             ),
@@ -264,29 +256,13 @@ class _SectionTitle extends StatelessWidget {
   const _SectionTitle(this.text);
 
   @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Text(
-          text,
-          style: const TextStyle(
-            fontFamily: 'KGPen',
-            fontSize: 27,
-            color: Color(0xFF4B5563),
-          ),
-        ),
-      );
+  Widget build(BuildContext context) => FefoSectionHeader(title: text);
 }
 
 const _faceTextStyle = TextStyle(
   fontFamily: 'KGPen',
   fontSize: 23,
   color: Color(0xFF4B5563),
-);
-
-const _faceSubtitleStyle = TextStyle(
-  fontFamily: 'KGPen',
-  fontSize: 17,
-  color: Colors.black87,
 );
 
 class _FaceOnline {

@@ -24,14 +24,15 @@ class TelaFavoritos extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                       fontFamily: 'Billotilde',
-                      fontSize: 48,
+                      fontSize: 52,
                       color: Theme.of(context).colorScheme.secondary)),
               const SizedBox(height: 8),
               Text('Seus conteúdos favoritos',
                   style: TextStyle(
-                      fontFamily: 'KGPen',
-                      fontSize: 16,
-                      color: theme.mutedText)),
+                      fontFamily: 'Billotilde',
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      color: Theme.of(context).colorScheme.secondary)),
               const SizedBox(height: 12),
               Expanded(
                 child: favoritos.isEmpty

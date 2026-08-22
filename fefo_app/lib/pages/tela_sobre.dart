@@ -45,7 +45,7 @@ class TelaSobre extends StatelessWidget {
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: 'Billotilde',
-                          fontSize: 55,
+                          fontSize: 52,
                           height: 1.1,
                           color: theme.accentSecondary,
                           shadows: [

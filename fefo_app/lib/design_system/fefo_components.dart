@@ -29,6 +29,8 @@ class FefoPageHeader extends StatelessWidget {
             softWrap: true,
             style: text.headlineSmall?.copyWith(
               fontFamily: 'Billotilde',
+              fontSize: 52,
+              height: 1.0,
               color: theme.colorScheme.secondary,
             ),
           ),
@@ -75,6 +77,52 @@ class FefoCard extends StatelessWidget {
             borderRadius: FefoRadii.medium,
             child: card,
           );
+  }
+}
+
+class FefoSectionHeader extends StatelessWidget {
+  final String title;
+
+  const FefoSectionHeader({super.key, required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(top: 12, bottom: 10),
+      child: Text(
+        title,
+        textAlign: TextAlign.center,
+        softWrap: true,
+        style: TextStyle(
+          fontFamily: 'Billotilde',
+          fontSize: 26,
+          fontWeight: FontWeight.w700,
+          color: scheme.secondary,
+        ),
+      ),
+    );
+  }
+}
+
+class FefoPageSubtitle extends StatelessWidget {
+  final String text;
+
+  const FefoPageSubtitle({super.key, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      textAlign: TextAlign.center,
+      softWrap: true,
+      style: TextStyle(
+        fontFamily: 'Billotilde',
+        fontSize: 22,
+        fontWeight: FontWeight.w700,
+        color: Theme.of(context).colorScheme.secondary,
+      ),
+    );
   }
 }
 

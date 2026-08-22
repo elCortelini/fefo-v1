@@ -27,7 +27,7 @@ class TelaTesteAudiosFefo extends StatelessWidget {
                 'Teste de Áudios',
                 style: TextStyle(
                   fontFamily: 'Billotilde',
-                  fontSize: 55,
+                  fontSize: 52,
                   height: 1.0,
                   color: Theme.of(context).colorScheme.secondary,
                 ),

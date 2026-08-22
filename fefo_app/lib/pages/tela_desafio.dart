@@ -76,7 +76,7 @@ class TelaDesafios extends StatelessWidget {
             'Desafios e Brincadeiras',
             style: TextStyle(
               fontFamily: 'Billotilde',
-              fontSize: 50,
+              fontSize: 52,
               height: 1.1,
               color: Theme.of(context).colorScheme.secondary,
             ),

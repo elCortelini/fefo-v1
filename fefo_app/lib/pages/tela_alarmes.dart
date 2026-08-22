@@ -239,7 +239,7 @@ class _TelaAlarmesState extends State<TelaAlarmes> {
                   'Alarmes',
                   style: TextStyle(
                     fontFamily: 'Billotilde',
-                    fontSize: 55,
+                    fontSize: 52,
                     color: Theme.of(context).colorScheme.secondary,
                   ),
                   textAlign: TextAlign.center,

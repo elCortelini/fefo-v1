@@ -146,7 +146,7 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
                 'Configurações',
                 style: TextStyle(
                   fontFamily: 'Billotilde',
-                  fontSize: 55,
+                  fontSize: 52,
                   color: corVerde,
                 ),
                 textAlign: TextAlign.center,
@@ -157,8 +157,9 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
               'Ajustes de vibração e exibição do PET FEFO',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontFamily: 'KGPen',
-                fontSize: 15,
+                fontFamily: 'Billotilde',
+                fontSize: 21,
+                fontWeight: FontWeight.w700,
                 color: appTheme.accentSecondary,
               ),
             ),
