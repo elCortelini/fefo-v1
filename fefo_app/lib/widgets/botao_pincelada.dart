@@ -13,6 +13,7 @@ class BotaoPincelada extends StatefulWidget {
   final double larguraPercentual;
   final double? fontSize;
   final Color? corBorda;
+  final IconData? icone;
 
   const BotaoPincelada({
     super.key,
@@ -22,6 +23,7 @@ class BotaoPincelada extends StatefulWidget {
     this.larguraPercentual = 0.9,
     this.fontSize,
     this.corBorda,
+    this.icone,
   });
 
   @override
@@ -79,7 +81,10 @@ class _BotaoPinceladaState extends State<BotaoPincelada> {
           maxLines: 4,
         )..layout(maxWidth: max(120, larguraMaxima - 58));
 
-        final largura = min(larguraMaxima, max(180.0, medidor.width + 68));
+        final largura = min(
+          larguraMaxima,
+          max(180.0, medidor.width + (widget.icone == null ? 68 : 118)),
+        );
         final altura = max(70.0, medidor.height + 34);
 
         return Center(
@@ -110,24 +115,35 @@ class _BotaoPinceladaState extends State<BotaoPincelada> {
                     child: Center(
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
-                        child: Text(
-                          widget.texto,
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          softWrap: false,
-                          style: TextStyle(
-                            fontFamily: 'Billotilde',
-                            color: Colors.white,
-                            fontSize: tamanhoFonte,
-                            height: 0.9,
-                            shadows: const [
-                              Shadow(
-                                color: Colors.black38,
-                                offset: Offset(1, 2),
-                                blurRadius: 3,
-                              ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (widget.icone != null) ...[
+                              Icon(widget.icone,
+                                  color: Colors.white,
+                                  size: tamanhoFonte * .72),
+                              const SizedBox(width: 12),
                             ],
-                          ),
+                            Text(
+                              widget.texto,
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              softWrap: false,
+                              style: TextStyle(
+                                fontFamily: 'Billotilde',
+                                color: Colors.white,
+                                fontSize: tamanhoFonte,
+                                height: 0.9,
+                                shadows: const [
+                                  Shadow(
+                                    color: Colors.black38,
+                                    offset: Offset(1, 2),
+                                    blurRadius: 3,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),

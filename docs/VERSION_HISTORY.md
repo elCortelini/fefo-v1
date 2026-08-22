@@ -218,6 +218,13 @@ Fechamento da Fase 4 no firmware.
 - `APP PROFILE`.
 - Roadmap reescrito como guia vivo do projeto.
 
+## v1.090
+
+- Menu Principal atualizado para usar botões em aparência de pincelada.
+- Ícones preservados nos itens do menu.
+- Largura responsiva para evitar cortes em textos longos.
+- Publicação do APK no catálogo do GitHub.
+
 ## Estado atual
 
 ```text
