@@ -45,23 +45,22 @@ class TelaVibracoesFefo extends StatelessWidget {
                   color: Theme.of(context).colorScheme.secondary)),
           const SizedBox(height: 12),
           Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.all(8),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                  childAspectRatio: 1.65),
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              itemExtent: 92,
               itemCount: _nomes.length,
-              itemBuilder: (context, index) => BotaoPincelada(
-                texto: '${index + 1}. ${_nomes[index]}',
-                icone: Icons.vibration_rounded,
-                cor: Theme.of(context).colorScheme.primary,
-                larguraPercentual: 0.44,
-                fontSize: 23,
-                aoPressionar: manager.isConnected
-                    ? () => manager.vibrar(index + 1)
-                    : () {},
+              itemBuilder: (context, index) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: BotaoPincelada(
+                  texto: '${index + 1}. ${_nomes[index]}',
+                  icone: Icons.vibration_rounded,
+                  cor: Theme.of(context).colorScheme.primary,
+                  larguraPercentual: 0.92,
+                  fontSize: 25,
+                  aoPressionar: manager.isConnected
+                      ? () => manager.vibrar(index + 1)
+                      : () {},
+                ),
               ),
             ),
           ),

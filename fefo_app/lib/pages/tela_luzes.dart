@@ -75,29 +75,27 @@ class _TelaLuzesState extends State<TelaLuzes> {
               },
             ),
             const SizedBox(height: 12),
-            GridView.builder(
+            ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 1.45,
-              ),
+              itemExtent: 94,
               itemCount: _padroes.length,
-              itemBuilder: (context, index) {
+              itemBuilder: (context, index) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Builder(builder: (context) {
                 final padrao = _padroes[index];
                 return BotaoPincelada(
                   texto: padrao.nome,
                   icone: Icons.auto_awesome_rounded,
                   cor: padrao.cor,
-                  larguraPercentual: 0.44,
+                  larguraPercentual: 0.92,
                   fontSize: 22,
                   aoPressionar: manager.isConnected
                       ? () => manager.setLedPattern(padrao.numero)
                       : () {},
                 );
-              },
+                }),
+              ),
             ),
             const SizedBox(height: 28),
             ElevatedButton.icon(

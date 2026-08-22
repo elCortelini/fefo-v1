@@ -11,7 +11,6 @@ import '../managers/bluetooth_manager.dart';
 import '../config/firmware_version.dart';
 import '../config/app_version.dart';
 import '../widgets/botao_verde.dart';
-import '../widgets/botao_pincelada.dart';
 import '../widgets/pagina_base.dart';
 import '../widgets/progresso_operacao.dart';
 import '../theme/fefo_theme.dart';
@@ -876,28 +875,74 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                                   _selectedPaths.add(item.path);
                                 }
                               }),
-                      child: BotaoPincelada(
-                        texto: item.title,
-                        icone: selected
-                            ? Icons.check_circle_rounded
-                            : Icons.audiotrack_rounded,
-                        cor: selected ? theme.accent : theme.accentSecondary,
-                        larguraPercentual: 1,
-                        fontSize: 26,
-                        aoPressionar: _busy
-                            ? () {}
-                            : () => _installItems([item]),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${item.menu.isEmpty ? item.type : item.menu} • '
-                      '${_formatBytes(item.size)}',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontFamily: 'KGPen',
-                        fontSize: 18,
-                        color: theme.mutedText,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(18),
+                        onTap: _busy ? null : () => _installItems([item]),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                          child: Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 26,
+                                backgroundColor: theme.accentSecondary
+                                    .withValues(alpha: .18),
+                                child: Icon(
+                                  selected
+                                      ? Icons.check_circle_rounded
+                                      : Icons.audiotrack_rounded,
+                                  color: selected
+                                      ? theme.accent
+                                      : theme.accentSecondary,
+                                  size: 28,
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      item.title,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontFamily: 'KGPen',
+                                        fontSize: 25,
+                                        color: theme.text,
+                                        height: 1.05,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 3),
+                                    Text(
+                                      '${item.menu.isEmpty ? item.type : item.menu} • '
+                                      '${_formatBytes(item.size)}',
+                                      style: TextStyle(
+                                        fontFamily: 'KGPen',
+                                        fontSize: 17,
+                                        color: theme.mutedText,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              IconButton.filled(
+                                tooltip: selected ? 'Selecionado' : 'Baixar',
+                                onPressed: _busy
+                                    ? null
+                                    : () => _installItems([item]),
+                                style: IconButton.styleFrom(
+                                  backgroundColor: theme.accentSecondary,
+                                  foregroundColor: theme.background,
+                                ),
+                                icon: Icon(selected
+                                    ? Icons.check_rounded
+                                    : Icons.download_rounded),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                     if (itemProgress != null)
