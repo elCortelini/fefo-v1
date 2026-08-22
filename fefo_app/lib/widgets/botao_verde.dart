@@ -33,41 +33,12 @@ class BotaoVerde extends StatelessWidget {
         aoPressionar: aoPressionar,
       );
     }
-    // Pega a largura total da tela
-    final screenWidth = MediaQuery.of(context).size.width;
-
-    return SizedBox(
-      width: screenWidth * larguraPercentual,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          // --- LÓGICA DA COR ---
-          // Se uma 'cor' for fornecida no construtor, use-a.
-          // Senão, use a cor verde padrão.
-          backgroundColor: cor ?? theme.accent,
-          padding: const EdgeInsets.symmetric(
-              vertical: 12), // Reduzi o padding para acomodar melhor
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(50),
-          ),
-          elevation: 5,
-        ),
-        onPressed: aoPressionar,
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(
-            texto,
-            maxLines: 1,
-            softWrap: false,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 36,
-              fontFamily: 'Billotilde',
-              height: 1.1,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ),
-      ),
+    return BotaoPincelada(
+      texto: texto,
+      cor: cor ?? theme.accent,
+      larguraPercentual: larguraPercentual,
+      fontSize: 36,
+      aoPressionar: aoPressionar,
     );
   }
 }
