@@ -87,28 +87,15 @@ class _TelaLuzesState extends State<TelaLuzes> {
               itemCount: _padroes.length,
               itemBuilder: (context, index) {
                 final padrao = _padroes[index];
-                return ElevatedButton(
-                  onPressed: manager.isConnected
+                return BotaoPincelada(
+                  texto: padrao.nome,
+                  icone: Icons.auto_awesome_rounded,
+                  cor: padrao.cor,
+                  larguraPercentual: 0.44,
+                  fontSize: 22,
+                  aoPressionar: manager.isConnected
                       ? () => manager.setLedPattern(padrao.numero)
-                      : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: padrao.cor,
-                    foregroundColor: Colors.black87,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                  ),
-                  child: Center(
-                    child: Text(
-                      padrao.nome,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontFamily: 'KGPen',
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
+                      : () {},
                 );
               },
             ),

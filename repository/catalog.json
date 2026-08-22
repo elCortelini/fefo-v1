@@ -1,6 +1,6 @@
 {
     "schema":  1,
-    "catalogVersion":  36,
+    "catalogVersion":  37,
     "repository":  "FEFO Google Drive",
     "firmware":  {
                      "version":  "1.086",
@@ -13,13 +13,13 @@
                      "notas":  "Versão 1.086: inicialização automática e idempotente da estrutura oficial do SDCard, sem formatar nem apagar dados existentes."
                  },
     "app":  {
-                "version":  "1.092",
-                "build":  1092,
-                "arquivo":  "FEFO_App_v1.092.apk",
+                "version":  "1.093",
+                "build":  1093,
+                "arquivo":  "FEFO_App_v1.093.apk",
                 "tamanho":  56584967,
-                "checksum":  "39e319f9a258d9bf64bb0611a79030f755e8f866db748adfe9843373b2695713",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.092.apk",
-                "notas":  "Subtítulos maiores e contrastantes; Pânico, catálogo e configurações padronizados; player com estado de reprodução animado e Stop na cor temática; Vibrações do Fefo adicionadas ao Menu Principal."
+                "checksum":  "95e4209319e3c3a8f34b0517419c724fed9529809e534fbd7d24a88d9501239a",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.093.apk",
+                "notas":  "Botão Voltar interno removido para teste com a navegação nativa do Android; páginas aproximadas ao padrão Jukebox; efeitos LED e Vibrações com botões em pincelada; Pânico com contraste reforçado."
              },
     "audio":  [
                   {
