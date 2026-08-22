@@ -41,6 +41,8 @@ class FefoPageHeader extends StatelessWidget {
               style: text.bodyLarge?.copyWith(
                 fontFamily: 'Billotilde',
                 color: theme.colorScheme.secondary,
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ],

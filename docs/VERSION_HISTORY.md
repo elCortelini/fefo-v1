@@ -218,6 +218,17 @@ Fechamento da Fase 4 no firmware.
 - `APP PROFILE`.
 - Roadmap reescrito como guia vivo do projeto.
 
+## v1.092
+
+- Subtítulos do Menu Principal ampliados, centralizados e com contraste do tema.
+- Botão Pânico padronizado com os botões em pincelada e fonte dos demais botões.
+- Itens disponíveis do Catálogo Online padronizados com a aparência dos áudios.
+- Áudio ativo no Jukebox recebe indicador animado à direita.
+- Botão Stop do player flutuante usa a mesma cor dos controles de reprodução.
+- Configurações ajustadas ao padrão visual do catálogo, com título responsivo.
+- Vibrações do Fefo adicionadas como item do Menu Principal.
+- APK publicado no catálogo do GitHub.
+
 ## v1.091
 
 - Subtítulos das seções do Menu Principal centralizados.

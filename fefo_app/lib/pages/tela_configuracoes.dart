@@ -140,23 +140,26 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 10),
-            Text(
-              'Configurações',
-              style: TextStyle(
-                fontFamily: 'Billotilde',
-                fontSize: 55,
-                color: corVerde,
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                'Configurações',
+                style: TextStyle(
+                  fontFamily: 'Billotilde',
+                  fontSize: 55,
+                  color: corVerde,
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 4),
-            const Text(
+            Text(
               'Ajustes de vibração e exibição do PET FEFO',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: 'KGPen',
                 fontSize: 15,
-                color: Colors.black87,
+                color: appTheme.accentSecondary,
               ),
             ),
             const SizedBox(height: 25),
@@ -237,7 +240,7 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
             Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.9),
+                color: appTheme.surface,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: const [
                   BoxShadow(
@@ -276,7 +279,7 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
               Container(
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.9),
+                  color: appTheme.surface,
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: const [
                     BoxShadow(

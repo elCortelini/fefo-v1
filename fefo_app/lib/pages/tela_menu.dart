@@ -16,6 +16,7 @@ import 'tela_faces_fefo.dart';
 import 'tela_favoritos.dart';
 import 'tela_luzes.dart';
 import 'tela_sobre.dart';
+import 'tela_vibracoes_fefo.dart';
 
 class TelaMenu extends StatelessWidget {
   const TelaMenu({super.key});
@@ -64,6 +65,9 @@ class TelaMenu extends StatelessWidget {
     final terapias = <_MenuEntry>[
       _MenuEntry('Luzes Terapêuticas', () => _abrir(context, const TelaLuzes()),
           icon: Icons.light_mode_rounded),
+      _MenuEntry('Vibrações do Fefo',
+          () => _abrir(context, const TelaVibracoesFefo()),
+          icon: Icons.vibration_rounded),
       if (_temAudio(manager, 'Relaxamento'))
         _MenuEntry('Relaxamento', () => _abrir(context, audio('Relaxamento'))),
     ];
@@ -130,15 +134,13 @@ class TelaMenu extends StatelessWidget {
                     ),
                   ),
                 ],
-                SizedBox(
-                  height: 76,
-                  child: FilledButton.icon(
-                    style:
-                        FilledButton.styleFrom(backgroundColor: theme.accent),
-                    onPressed: () => manager.enviarComando('PANIC TRIGGER'),
-                    icon: const Icon(Icons.notifications_active_rounded),
-                    label: const Text('PÂNICO'),
-                  ),
+                BotaoPincelada(
+                  texto: 'PÂNICO',
+                  icone: Icons.notifications_active_rounded,
+                  cor: theme.accent,
+                  larguraPercentual: 1,
+                  fontSize: 30,
+                  aoPressionar: () => manager.enviarComando('PANIC TRIGGER'),
                 ),
                 const SizedBox(height: 12),
                 _MenuAction(
@@ -206,6 +208,8 @@ class _MenuSectionView extends StatelessWidget {
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           fontFamily: 'Billotilde',
                           color: Theme.of(context).colorScheme.secondary,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w700,
                         ),
                   ),
                 ),

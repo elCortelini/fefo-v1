@@ -197,9 +197,9 @@ class _MiniPlayerState extends State<MiniPlayer> {
                             // Botão Parar
                             IconButton(
                               tooltip: 'Parar Áudio',
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.stop_rounded,
-                                color: Colors.redAccent,
+                                color: corTexto,
                                 size: 30,
                               ),
                               onPressed: () => manager.stopAudio(),

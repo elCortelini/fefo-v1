@@ -11,6 +11,7 @@ import '../managers/bluetooth_manager.dart';
 import '../config/firmware_version.dart';
 import '../config/app_version.dart';
 import '../widgets/botao_verde.dart';
+import '../widgets/botao_pincelada.dart';
 import '../widgets/pagina_base.dart';
 import '../widgets/progresso_operacao.dart';
 import '../theme/fefo_theme.dart';
@@ -846,7 +847,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                       : null;
               return Container(
                 margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                padding: const EdgeInsets.fromLTRB(8, 10, 8, 8),
                 decoration: BoxDecoration(
                   color: selected
                       ? theme.accent.withValues(alpha: 0.14)
@@ -865,29 +866,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                 ),
                 child: Column(
                   children: [
-                    ListTile(
-                      leading: Icon(
-                        selected
-                            ? Icons.check_circle_rounded
-                            : Icons.audiotrack_rounded,
-                        color: selected ? theme.accent : theme.accentSecondary,
-                        size: 30,
-                      ),
-                      title: Text(item.title,
-                          style: TextStyle(
-                              fontFamily: 'KGPen',
-                              fontSize: 25,
-                              color: theme.text,
-                              height: 1.05)),
-                      subtitle: Text(
-                        '${item.menu.isEmpty ? item.type : item.menu} • '
-                        '${_formatBytes(item.size)}',
-                        style: TextStyle(
-                          fontFamily: 'KGPen',
-                          fontSize: 18,
-                          color: theme.mutedText,
-                        ),
-                      ),
+                    GestureDetector(
                       onLongPress: _busy
                           ? null
                           : () => setState(() {
@@ -897,7 +876,29 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                                   _selectedPaths.add(item.path);
                                 }
                               }),
-                      onTap: _busy ? null : () => _installItems([item]),
+                      child: BotaoPincelada(
+                        texto: item.title,
+                        icone: selected
+                            ? Icons.check_circle_rounded
+                            : Icons.audiotrack_rounded,
+                        cor: selected ? theme.accent : theme.accentSecondary,
+                        larguraPercentual: 1,
+                        fontSize: 26,
+                        aoPressionar: _busy
+                            ? () {}
+                            : () => _installItems([item]),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${item.menu.isEmpty ? item.type : item.menu} • '
+                      '${_formatBytes(item.size)}',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: 'KGPen',
+                        fontSize: 18,
+                        color: theme.mutedText,
+                      ),
                     ),
                     if (itemProgress != null)
                       ProgressoOperacao(
