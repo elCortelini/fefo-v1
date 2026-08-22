@@ -39,17 +39,23 @@ class BotaoPlayer extends StatelessWidget {
                 : null,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  legenda,
-                  style: TextStyle(
-                    fontFamily: 'KGPen',
-                    fontSize: 31,
-                    color: theme.mutedText,
-                    height: 1.05,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      legenda,
+                      style: TextStyle(
+                        fontFamily: 'KGPen',
+                        fontSize: 31,
+                        color: theme.mutedText,
+                        height: 1.05,
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 8),
+                  Icon(Icons.play_circle_outline_rounded,
+                      color: theme.accentSecondary, size: 30),
+                ],
               ),
             ),
           );
@@ -65,14 +71,21 @@ class BotaoPlayer extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                legenda,
-                style: TextStyle(
-                  fontFamily: 'KGPen',
-                  fontSize: 31,
-                  color: theme.mutedText,
-                  height: 1.05,
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      legenda,
+                      style: TextStyle(
+                        fontFamily: 'KGPen',
+                        fontSize: 31,
+                        color: theme.mutedText,
+                        height: 1.05,
+                      ),
+                    ),
+                  ),
+                  _AnimatedPlayingIcon(color: theme.accentSecondary),
+                ],
               ),
               const SizedBox(height: 3),
               _PlaybackProgress(value: manager.audioProgress),
@@ -134,6 +147,40 @@ class BotaoPlayer extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _AnimatedPlayingIcon extends StatefulWidget {
+  final Color color;
+
+  const _AnimatedPlayingIcon({required this.color});
+
+  @override
+  State<_AnimatedPlayingIcon> createState() => _AnimatedPlayingIconState();
+}
+
+class _AnimatedPlayingIconState extends State<_AnimatedPlayingIcon>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 900),
+  )..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (_, __) => Transform.scale(
+        scale: 0.88 + (_controller.value * 0.2),
+        child: Icon(Icons.graphic_eq_rounded, color: widget.color, size: 30),
+      ),
     );
   }
 }
