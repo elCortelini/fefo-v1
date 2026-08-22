@@ -162,3 +162,75 @@ class FefoStatusBadge extends StatelessWidget {
     );
   }
 }
+
+class FefoContentCard extends StatelessWidget {
+  final String title;
+  final String? subtitle;
+  final IconData icon;
+  final VoidCallback? onTap;
+  final VoidCallback? onAction;
+  final IconData actionIcon;
+  final Widget? leading;
+  final Widget? trailing;
+  final bool selected;
+
+  const FefoContentCard({
+    super.key,
+    required this.title,
+    this.subtitle,
+    this.icon = Icons.play_arrow_rounded,
+    this.onTap,
+    this.onAction,
+    this.actionIcon = Icons.play_arrow_rounded,
+    this.leading,
+    this.trailing,
+    this.selected = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final accent = scheme.secondary;
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      decoration: BoxDecoration(
+        color: selected ? accent.withValues(alpha: .16) : scheme.surface.withValues(alpha: .92),
+        borderRadius: FefoRadii.medium,
+        border: Border.all(color: selected ? accent : scheme.onSurface.withValues(alpha: .18), width: selected ? 1.8 : 1),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          child: Row(children: [
+            leading ?? CircleAvatar(
+              radius: 23,
+              backgroundColor: accent.withValues(alpha: .18),
+              child: Icon(icon, color: accent, size: 26),
+            ),
+            const SizedBox(width: 13),
+            Expanded(child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(title, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(fontFamily: 'KGPen', fontSize: 25, height: 1.05, color: theme.textTheme.bodyLarge?.color)),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 3),
+                  Text(subtitle!, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(fontFamily: 'KGPen', fontSize: 17, height: 1.05, color: theme.textTheme.bodyMedium?.color?.withValues(alpha: .78))),
+                ],
+              ],
+            )),
+            trailing ?? IconButton.filled(
+              tooltip: 'Abrir',
+              onPressed: onAction ?? onTap,
+              icon: Icon(actionIcon),
+              style: IconButton.styleFrom(backgroundColor: accent, foregroundColor: scheme.onSecondary),
+            ),
+          ]),
+        ),
+      ),
+    );
+  }
+}

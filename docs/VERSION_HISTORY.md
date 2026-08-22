@@ -268,6 +268,13 @@ Fechamento da Fase 4 no firmware.
 - Largura responsiva para evitar cortes em textos longos.
 - Publicação do APK no catálogo do GitHub.
 
+## v1.096
+
+- Cartão de conteúdo compartilhado criado com a estrutura visual da Jukebox.
+- Favoritos, Cards Interativos, Luzes, Vibrações e Rostinhos migrados para o padrão comum.
+- Luzes e Vibrações mantidas com um item por linha; Rostinhos preserva miniaturas, seleção e exclusão.
+- APK publicado no catálogo do GitHub.
+
 ## Estado atual
 
 ```text

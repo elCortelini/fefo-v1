@@ -162,65 +162,39 @@ class _TelaFacesFefoState extends State<TelaFacesFefo> {
     required BluetoothManager manager,
   }) {
     if (faces.isEmpty) return const SizedBox.shrink();
-    return GridView.builder(
+    return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 0.92,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
-      ),
       itemCount: faces.length,
       itemBuilder: (context, index) {
         final face = faces[index];
         final selected = manager.currentFacePath == face.path;
         final deleting =
             manager.uploading && manager.operationPath == face.path;
-        return Card(
-          color: selected ? const Color(0xFFFFD89A) : null,
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: !_busy ? () => manager.showFace(face.path) : null,
-            child: Column(
-              children: [
-                Expanded(
-                  child: FutureBuilder<ui.Image?>(
-                    future: _loadThumbnail(face),
-                    builder: (context, snapshot) => snapshot.hasData
-                        ? RawImage(image: snapshot.data, fit: BoxFit.cover)
-                        : const Center(child: CircularProgressIndicator()),
-                  ),
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: Text(
-                          face.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: _faceTextStyle,
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      tooltip: 'Excluir face',
-                      onPressed: manager.uploading
-                          ? null
-                          : () => _confirmarExclusao(face),
-                      icon: const Icon(Icons.delete_outline, color: Colors.red),
-                    ),
-                  ],
-                ),
-                if (deleting)
-                  ProgressoOperacao(
-                    status: 'Deletando',
-                    progresso: manager.uploadProgress,
-                  ),
-              ],
+        return FefoContentCard(
+          title: face.title,
+          subtitle: selected ? 'Face exibida no FEFO' : 'Rostinho do FEFO',
+          icon: Icons.face_retouching_natural_rounded,
+          selected: selected,
+          onTap: !_busy ? () => manager.showFace(face.path) : null,
+          leading: SizedBox(
+            width: 72,
+            height: 52,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: FutureBuilder<ui.Image?>(
+                future: _loadThumbnail(face),
+                builder: (context, snapshot) => snapshot.hasData
+                    ? RawImage(image: snapshot.data, fit: BoxFit.cover)
+                    : const Center(child: CircularProgressIndicator()),
+              ),
             ),
+          ),
+          trailing: IconButton(
+            tooltip: 'Excluir face',
+            onPressed: manager.uploading ? null : () => _confirmarExclusao(face),
+            icon: const Icon(Icons.delete_outline_rounded),
+            color: Theme.of(context).colorScheme.secondary,
           ),
         );
       },
