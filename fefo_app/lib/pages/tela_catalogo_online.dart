@@ -521,7 +521,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
               textAlign: TextAlign.center,
               style: TextStyle(
                   fontFamily: 'Billotilde',
-                  fontSize: 48,
+                  fontSize: 52,
                   color: theme.accentSecondary)),
           const SizedBox(height: 6),
           Text(

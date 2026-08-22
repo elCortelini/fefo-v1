@@ -70,7 +70,7 @@ class TelaMeuCorpo extends StatelessWidget {
             'Meu Corpo',
             style: TextStyle(
               fontFamily: 'Billotilde',
-              fontSize: 60,
+            fontSize: 52,
               height: 1.1,
               color: Theme.of(context).colorScheme.secondary,
             ),

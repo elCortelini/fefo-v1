@@ -34,7 +34,7 @@ class TelaVibracoesFefo extends StatelessWidget {
             child: Text('Vibrações do FEFO',
                 style: TextStyle(
                     fontFamily: 'Billotilde',
-                    fontSize: 48,
+                    fontSize: 52,
                     color: Theme.of(context).colorScheme.secondary)),
           ),
           Text('Todos os padrões são intensos e duram 7 segundos.',

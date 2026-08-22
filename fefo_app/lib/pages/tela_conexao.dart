@@ -105,7 +105,7 @@ class _TelaConexaoState extends State<TelaConexao> {
               'Conectar FEFO',
               style: TextStyle(
                 fontFamily: 'Billotilde',
-                fontSize: 60,
+                fontSize: 52,
                 color: Theme.of(context).colorScheme.secondary,
               ),
               textAlign: TextAlign.center,

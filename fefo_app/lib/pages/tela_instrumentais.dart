@@ -104,7 +104,7 @@ class TelaInstrumentais extends StatelessWidget {
                 'Instrumentais e Natureza',
                 style: TextStyle(
                   fontFamily: 'Billotilde',
-                  fontSize: 55,
+                  fontSize: 52,
                   height: 1.0,
                   color: Theme.of(context).colorScheme.secondary,
                 ),

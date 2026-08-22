@@ -80,7 +80,7 @@ class TelaAulas extends StatelessWidget {
                 'Aulas do Fefo',
                 style: TextStyle(
                   fontFamily: 'Billotilde',
-                  fontSize: 55,
+                  fontSize: 52,
                   height: 1.0,
                   color: Theme.of(context).colorScheme.secondary,
                 ),

@@ -218,6 +218,14 @@ Fechamento da Fase 4 no firmware.
 - `APP PROFILE`.
 - Roadmap reescrito como guia vivo do projeto.
 
+## v1.095
+
+- Títulos principais normalizados para Billotilde, tamanho 52 e cor temática.
+- Subtítulos e cabeçalhos de seção centralizados no design system.
+- Telas independentes, de desenvolvimento e testes incluídas na padronização.
+- Fonte `billotilde_corrigida.otf` aplicada mantendo o nome lógico `Billotilde`.
+- APK publicado no catálogo do GitHub.
+
 ## v1.094
 
 - Catálogo Online alinhado visualmente aos cartões do Jukebox do Fefo.

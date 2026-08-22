@@ -60,7 +60,7 @@ class _TelaLuzesState extends State<TelaLuzes> {
                 'Luzes FEFO',
                 style: TextStyle(
                   fontFamily: 'Billotilde',
-                  fontSize: 55,
+                  fontSize: 52,
                   color: Theme.of(context).colorScheme.secondary,
                 ),
               ),

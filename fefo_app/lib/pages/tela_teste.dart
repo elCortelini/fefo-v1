@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../managers/bluetooth_manager.dart';
 import '../widgets/botao_pincelada.dart';
 import '../widgets/pagina_base.dart';
+import '../design_system/fefo_components.dart';
 
 class TelaTeste extends StatelessWidget {
   const TelaTeste({super.key});
@@ -55,13 +56,17 @@ class TelaTeste extends StatelessWidget {
                   'Central de testes',
                   style: TextStyle(
                     fontFamily: 'Billotilde',
-                    fontSize: 58,
+                    fontSize: 52,
                     color: Theme.of(context).colorScheme.secondary,
                   ),
                 ),
                 Text(
                   manager.statusMensagem,
-                  style: const TextStyle(color: Colors.white70),
+                  style: TextStyle(
+                    fontFamily: 'Billotilde',
+                    fontSize: 21,
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 if (manager.uploading) ...[
@@ -132,18 +137,7 @@ class TelaTeste extends StatelessWidget {
     );
   }
 
-  Widget _titulo(String texto) => Padding(
-        padding: const EdgeInsets.only(top: 25, bottom: 10),
-        child: Text(
-          texto,
-          style: const TextStyle(
-            color: Colors.white70,
-            fontFamily: 'KGPen',
-            fontSize: 23,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      );
+  Widget _titulo(String texto) => FefoSectionHeader(title: texto);
 
   Widget _comando(BuildContext context, String texto, String comando) =>
       Padding(

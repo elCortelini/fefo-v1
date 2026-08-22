@@ -30,7 +30,7 @@ class TelaTesteLedsFefo extends StatelessWidget {
                     'Teste de LEDs',
                     style: TextStyle(
                       fontFamily: 'Billotilde',
-                      fontSize: 55,
+                      fontSize: 52,
                       height: 1.0,
                       color: Theme.of(context).colorScheme.secondary,
                     ),
@@ -40,10 +40,11 @@ class TelaTesteLedsFefo extends StatelessWidget {
                   Text(
                     bluetoothManager.statusMensagem,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontFamily: 'KGPen',
-                      fontSize: 18,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.secondary,
+                      fontFamily: 'Billotilde',
+                      fontSize: 21,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 22),
@@ -134,8 +135,8 @@ class _Subtitulo extends StatelessWidget {
       child: Text(
         texto,
         style: TextStyle(
-          fontFamily: 'KGPen',
-          fontSize: 22,
+          fontFamily: 'Billotilde',
+          fontSize: 26,
           fontWeight: FontWeight.bold,
           color: Theme.of(context).colorScheme.secondary,
         ),
