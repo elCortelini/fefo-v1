@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../managers/bluetooth_manager.dart';
 import 'progresso_operacao.dart';
 import '../theme/fefo_theme.dart';
+import '../design_system/fefo_components.dart';
 
 class BotaoPlayer extends StatelessWidget {
   final String caminhoArquivoPlay;
@@ -12,6 +13,7 @@ class BotaoPlayer extends StatelessWidget {
   final VoidCallback? aoExcluir;
   final bool deletando;
   final double progressoDelete;
+  final String subtitulo;
 
   const BotaoPlayer({
     super.key,
@@ -21,6 +23,7 @@ class BotaoPlayer extends StatelessWidget {
     this.aoExcluir,
     this.deletando = false,
     this.progressoDelete = 0,
+    this.subtitulo = 'Áudio do FEFO',
   });
 
   @override
@@ -32,32 +35,13 @@ class BotaoPlayer extends StatelessWidget {
         final enabled = manager.isConnected;
 
         if (!active) {
-          return InkWell(
-            borderRadius: BorderRadius.circular(10),
-            onTap: enabled
-                ? () => manager.selecionarAudio(caminhoArquivoPlay)
-                : null,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      legenda,
-                      style: TextStyle(
-                        fontFamily: 'KGPen',
-                        fontSize: 31,
-                        color: theme.mutedText,
-                        height: 1.05,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Icon(Icons.play_circle_outline_rounded,
-                      color: theme.accentSecondary, size: 30),
-                ],
-              ),
-            ),
+          return FefoContentCard(
+            title: legenda,
+            subtitle: subtitulo,
+            icon: Icons.music_note_rounded,
+            actionIcon: Icons.play_arrow_rounded,
+            onTap: enabled ? () => manager.selecionarAudio(caminhoArquivoPlay) : null,
+            onAction: enabled ? () => manager.selecionarAudio(caminhoArquivoPlay) : null,
           );
         }
 

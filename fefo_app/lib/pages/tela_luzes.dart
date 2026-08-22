@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../managers/bluetooth_manager.dart';
-import '../widgets/botao_pincelada.dart';
 import '../widgets/controle_deslizante.dart';
 import '../widgets/pagina_base.dart';
+import '../design_system/fefo_components.dart';
 
 class _PadraoLed {
   final String nome;
@@ -78,24 +78,22 @@ class _TelaLuzesState extends State<TelaLuzes> {
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemExtent: 94,
               itemCount: _padroes.length,
-              itemBuilder: (context, index) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Builder(builder: (context) {
+              itemBuilder: (context, index) {
                 final padrao = _padroes[index];
-                return BotaoPincelada(
-                  texto: padrao.nome,
-                  icone: Icons.auto_awesome_rounded,
-                  cor: padrao.cor,
-                  larguraPercentual: 0.92,
-                  fontSize: 22,
-                  aoPressionar: manager.isConnected
+                return FefoContentCard(
+                  title: padrao.nome,
+                  subtitle: 'Efeito de luz ${padrao.numero}',
+                  icon: Icons.auto_awesome_rounded,
+                  actionIcon: Icons.play_arrow_rounded,
+                  onTap: manager.isConnected
                       ? () => manager.setLedPattern(padrao.numero)
-                      : () {},
+                      : null,
+                  onAction: manager.isConnected
+                      ? () => manager.setLedPattern(padrao.numero)
+                      : null,
                 );
-                }),
-              ),
+              },
             ),
             const SizedBox(height: 28),
             ElevatedButton.icon(
@@ -106,12 +104,6 @@ class _TelaLuzesState extends State<TelaLuzes> {
               style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black87,
                   foregroundColor: Colors.white),
-            ),
-            BotaoPincelada(
-              texto: 'Voltar',
-              cor: const Color(0xFF318134),
-              larguraPercentual: 0.72,
-              aoPressionar: () => Navigator.pop(context),
             ),
             const SizedBox(height: 35),
           ],
