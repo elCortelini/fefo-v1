@@ -252,7 +252,8 @@ class AlarmService {
     await _dispararNotificacao(
       id: idNotificacao,
       title: '⏰ ${alarme.title}',
-      body: 'Alarme salvo: ${alarme.title}. O celular emitirá o alerta e o FEFO será acionado se estiver disponível.',
+      body:
+          'Alarme salvo: ${alarme.title}. O celular emitirá o alerta e o FEFO será acionado se estiver disponível.',
       scheduledDate: horarioFinal,
       payload: 'P:${alarme.audioPath}',
     );

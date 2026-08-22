@@ -70,7 +70,9 @@ class DatabaseService {
       final str = prefs.getString(_spKey);
       if (str == null || str.isEmpty) return [];
       final List<dynamic> jsonList = jsonDecode(str);
-      return jsonList.map((j) => AlarmModel.fromJson(j as Map<String, dynamic>)).toList();
+      return jsonList
+          .map((j) => AlarmModel.fromJson(j as Map<String, dynamic>))
+          .toList();
     } catch (e) {
       return [];
     }
@@ -85,7 +87,8 @@ class DatabaseService {
       log("FEFO: Erro ao inserir no SQLite: $e");
     }
 
-    final novoAlarme = alarm.copyWith(id: insertedId ?? DateTime.now().millisecondsSinceEpoch ~/ 1000);
+    final novoAlarme = alarm.copyWith(
+        id: insertedId ?? DateTime.now().millisecondsSinceEpoch ~/ 1000);
     final todos = await readAll();
     todos.add(novoAlarme);
     await _salvarEmSharedPreferences(todos);
@@ -94,7 +97,8 @@ class DatabaseService {
 
   Future<AlarmModel> read(int id) async {
     final todos = await readAll();
-    return todos.firstWhere((a) => a.id == id, orElse: () => throw Exception('ID $id not found'));
+    return todos.firstWhere((a) => a.id == id,
+        orElse: () => throw Exception('ID $id not found'));
   }
 
   Future<List<AlarmModel>> readAll() async {
@@ -134,7 +138,11 @@ class DatabaseService {
     } catch (_) {}
 
     final todos = await readAll();
-    final idx = todos.indexWhere((a) => a.id == alarm.id || (a.title == alarm.title && a.hour == alarm.hour && a.minute == alarm.minute));
+    final idx = todos.indexWhere((a) =>
+        a.id == alarm.id ||
+        (a.title == alarm.title &&
+            a.hour == alarm.hour &&
+            a.minute == alarm.minute));
     if (idx != -1) {
       todos[idx] = alarm;
     } else {
@@ -165,13 +173,15 @@ class DatabaseService {
       final db = await instance.database;
       await db.delete(
         tableAlarms,
-        where: '${AlarmFields.title} = ? AND ${AlarmFields.hour} = ? AND ${AlarmFields.minute} = ?',
+        where:
+            '${AlarmFields.title} = ? AND ${AlarmFields.hour} = ? AND ${AlarmFields.minute} = ?',
         whereArgs: [title, hour, minute],
       );
     } catch (_) {}
 
     final todos = await _lerDeSharedPreferences();
-    todos.removeWhere((a) => a.title == title && a.hour == hour && a.minute == minute);
+    todos.removeWhere(
+        (a) => a.title == title && a.hour == hour && a.minute == minute);
     await _salvarEmSharedPreferences(todos);
     return 1;
   }

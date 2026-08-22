@@ -66,7 +66,7 @@ class TelaMeuCorpo extends StatelessWidget {
       child: Column(
         children: [
           const SizedBox(height: 30),
-          const Text(
+          Text(
             'Meu Corpo',
             style: TextStyle(
               fontFamily: 'Billotilde',

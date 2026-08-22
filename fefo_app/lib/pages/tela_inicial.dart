@@ -32,9 +32,16 @@ class TelaInicial extends StatelessWidget {
             const SizedBox(height: 15),
             if (manager.isConnected && manager.bateriaPercentual != null)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                decoration: BoxDecoration(color: const Color(0xFF318134).withValues(alpha: 0.12), borderRadius: BorderRadius.circular(14)),
-                child: Text('🔋 Bateria: ${manager.bateriaPercentual}%', style: TextStyle(fontFamily: 'KGPen', fontWeight: FontWeight.bold, color: manager.bateriaBaixa ? Colors.red : verde)),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                    color: const Color(0xFF318134).withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(14)),
+                child: Text('🔋 Bateria: ${manager.bateriaPercentual}%',
+                    style: TextStyle(
+                        fontFamily: 'KGPen',
+                        fontWeight: FontWeight.bold,
+                        color: manager.bateriaBaixa ? Colors.red : verde)),
               ),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),

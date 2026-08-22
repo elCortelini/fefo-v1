@@ -68,7 +68,7 @@ class TelaTesteLedsFefo extends StatelessWidget {
                     }).toList(),
                   ),
                   const SizedBox(height: 24),
-                  const _Subtitulo('Efeitos LED'),
+                  _Subtitulo('Efeitos LED'),
                   GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
@@ -82,7 +82,18 @@ class TelaTesteLedsFefo extends StatelessWidget {
                     itemCount: 10,
                     itemBuilder: (context, index) {
                       final numero = index + 1;
-                      const nomes = ['Confete neon', 'Onda tropical', 'Foguete', 'Pulsos de festa', 'Fogo divertido', 'Ping-pong', 'Arco-íris', 'Estrelas', 'Balada pastel', 'Chuva colorida'];
+                      const nomes = [
+                        'Confete neon',
+                        'Onda tropical',
+                        'Foguete',
+                        'Pulsos de festa',
+                        'Fogo divertido',
+                        'Ping-pong',
+                        'Arco-íris',
+                        'Estrelas',
+                        'Balada pastel',
+                        'Chuva colorida'
+                      ];
                       return BotaoPincelada(
                         texto: nomes[index],
                         cor: corLaranja,
@@ -122,7 +133,7 @@ class _Subtitulo extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 12),
       child: Text(
         texto,
-        style: const TextStyle(
+        style: TextStyle(
           fontFamily: 'KGPen',
           fontSize: 22,
           fontWeight: FontWeight.bold,

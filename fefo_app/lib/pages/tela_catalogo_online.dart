@@ -272,8 +272,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
       }
       return;
     }
-    if (!await _confirmarAcao(
-        'Instalar conteúdo?',
+    if (!await _confirmarAcao('Instalar conteúdo?',
         'Os arquivos serão transferidos ao FEFO e ele poderá reiniciar ao concluir.')) {
       return;
     }
@@ -379,8 +378,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
     if (firmware.url.isEmpty || firmware.checksum.isEmpty) {
       return;
     }
-    if (!await _confirmarAcao(
-        'Atualizar firmware?',
+    if (!await _confirmarAcao('Atualizar firmware?',
         'O FEFO será reiniciado durante o processo. Não desligue o aparelho até terminar.')) {
       return;
     }
@@ -442,8 +440,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
 
   Future<void> _installApp(_OnlineApp app) async {
     if (app.url.isEmpty || app.checksum.isEmpty || _busy) return;
-    if (!await _confirmarAcao(
-        'Atualizar aplicativo?',
+    if (!await _confirmarAcao('Atualizar aplicativo?',
         'O Android abrirá a instalação da nova versão do FEFO App.')) {
       return;
     }
@@ -520,17 +517,33 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
         padding: const EdgeInsets.symmetric(horizontal: 4),
         child: Column(children: [
           const SizedBox(height: 18),
-          Text('Catálogo Online', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Billotilde', fontSize: 48, color: theme.accentSecondary)),
+          Text('Catálogo Online',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontFamily: 'Billotilde',
+                  fontSize: 48,
+                  color: theme.accentSecondary)),
           const SizedBox(height: 6),
-          Text('App v$fefoAppVersionName  •  Firmware v${manager.firmwareVersion ?? fefoFirmwareVersion}', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'KGPen', fontSize: 15, color: theme.text)),
+          Text(
+              'App v$fefoAppVersionName  •  Firmware v${manager.firmwareVersion ?? fefoFirmwareVersion}',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontFamily: 'KGPen', fontSize: 15, color: theme.text)),
           Container(
             margin: const EdgeInsets.fromLTRB(12, 12, 12, 8),
             padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(color: theme.surface, borderRadius: BorderRadius.circular(18), border: Border.all(color: theme.accent.withValues(alpha: 0.45))),
+            decoration: BoxDecoration(
+                color: theme.surface,
+                borderRadius: BorderRadius.circular(18),
+                border:
+                    Border.all(color: theme.accent.withValues(alpha: 0.45))),
             child: Row(children: [
               Icon(Icons.sd_storage_rounded, color: theme.accentSecondary),
               const SizedBox(width: 8),
-              Expanded(child: Text('SD livre: ${_formatBytes(manager.sdFreeBytes)}', style: TextStyle(fontWeight: FontWeight.bold, color: theme.text))),
+              Expanded(
+                  child: Text('SD livre: ${_formatBytes(manager.sdFreeBytes)}',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold, color: theme.text))),
             ]),
           ),
           Container(
@@ -570,7 +583,9 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                             style: TextStyle(
                                 fontFamily: 'Billotilde',
                                 fontSize: 38,
-                                color: theme.useLegacyImage ? Colors.white : theme.background,
+                                color: theme.useLegacyImage
+                                    ? Colors.white
+                                    : theme.background,
                                 height: 1)),
                       ),
                       SizedBox(height: 6),
@@ -578,13 +593,19 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                           style: TextStyle(
                               fontFamily: 'KGPen',
                               fontSize: 15,
-                              color: (theme.useLegacyImage ? Colors.white : theme.background).withValues(alpha: 0.78)))
+                              color: (theme.useLegacyImage
+                                      ? Colors.white
+                                      : theme.background)
+                                  .withValues(alpha: 0.78)))
                     ])),
                 IconButton(
                     tooltip: 'Atualizar catálogo',
                     onPressed: _busy ? null : _loadCatalog,
                     icon: Icon(Icons.refresh_rounded,
-                  color: theme.useLegacyImage ? Colors.white : theme.background, size: 28)),
+                        color: theme.useLegacyImage
+                            ? Colors.white
+                            : theme.background,
+                        size: 28)),
               ],
             ),
           ),
@@ -599,21 +620,22 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                   color: theme.surface,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
-                    side: BorderSide(color: theme.accentSecondary.withValues(alpha: 0.45)),
+                    side: BorderSide(
+                        color: theme.accentSecondary.withValues(alpha: 0.45)),
                   ),
                   child: ListTile(
                     leading: Icon(Icons.verified_rounded,
                         color: theme.accentSecondary, size: 30),
-                    title: Text('Aplicativo atualizado', style: TextStyle(color: theme.text)),
-                    subtitle: Text('O FEFO App está na versão mais recente.', style: TextStyle(color: theme.mutedText)),
+                    title: Text('Aplicativo atualizado',
+                        style: TextStyle(color: theme.text)),
+                    subtitle: Text('O FEFO App está na versão mais recente.',
+                        style: TextStyle(color: theme.mutedText)),
                   ),
                 );
               }
               return Card(
                 margin: const EdgeInsets.fromLTRB(16, 10, 16, 4),
-                color: hasUpdate
-                    ? theme.surface
-                    : theme.surface,
+                color: hasUpdate ? theme.surface : theme.surface,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                   side: BorderSide(color: theme.accent.withValues(alpha: 0.4)),
@@ -624,10 +646,14 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(children: [
-                        Icon(Icons.android, color: theme.accentSecondary, size: 30),
+                        Icon(Icons.android,
+                            color: theme.accentSecondary, size: 30),
                         const SizedBox(width: 12),
-                        Expanded(child: Text('FEFO App v${app.version}',
-                            style: TextStyle(fontWeight: FontWeight.bold, color: theme.text))),
+                        Expanded(
+                            child: Text('FEFO App v${app.version}',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: theme.text))),
                       ]),
                       const SizedBox(height: 8),
                       Text(app.notes, style: TextStyle(color: theme.mutedText)),
@@ -635,7 +661,9 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                       Align(
                         alignment: Alignment.centerRight,
                         child: FilledButton(
-                          onPressed: hasUpdate && !_busy ? () => _installApp(app) : null,
+                          onPressed: hasUpdate && !_busy
+                              ? () => _installApp(app)
+                              : null,
                           child: const Text('Atualizar app'),
                         ),
                       ),
@@ -672,9 +700,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
 
               return Card(
                 margin: const EdgeInsets.fromLTRB(16, 10, 16, 4),
-                color: hasUpdate
-                    ? theme.surface
-                    : theme.surface,
+                color: hasUpdate ? theme.surface : theme.surface,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                   side: BorderSide(
@@ -692,7 +718,8 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                       children: [
                         Icon(
                           hasUpdate ? Icons.system_update : Icons.verified_user,
-                        color: hasUpdate ? theme.accent : theme.accentSecondary,
+                          color:
+                              hasUpdate ? theme.accent : theme.accentSecondary,
                           size: 32,
                         ),
                         const SizedBox(width: 12),
@@ -714,7 +741,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                         subtitulo,
                         style: TextStyle(
                           fontSize: 12,
-                              color: theme.mutedText,
+                          color: theme.mutedText,
                         ),
                       ),
                     ),
@@ -722,7 +749,8 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                       alignment: Alignment.centerRight,
                       child: FilledButton(
                         style: FilledButton.styleFrom(
-                          backgroundColor: hasUpdate ? theme.accent : theme.accentSecondary,
+                          backgroundColor:
+                              hasUpdate ? theme.accent : theme.accentSecondary,
                         ),
                         onPressed: habilitado
                             ? () => _installFirmware(firmware)
@@ -825,8 +853,9 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                       : theme.surface,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                      color:
-                          selected ? theme.accent : theme.mutedText.withValues(alpha: 0.18)),
+                      color: selected
+                          ? theme.accent
+                          : theme.mutedText.withValues(alpha: 0.18)),
                   boxShadow: [
                     BoxShadow(
                         color: theme.background.withValues(alpha: 0.14),

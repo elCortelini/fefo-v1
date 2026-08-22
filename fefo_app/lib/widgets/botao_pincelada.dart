@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../theme/fefo_theme.dart';
 
+/// Botão compatível com as telas legadas, agora renderizado pelo tema global.
 class BotaoPincelada extends StatefulWidget {
   final String texto;
   final VoidCallback aoPressionar;
@@ -30,14 +31,13 @@ class BotaoPincelada extends StatefulWidget {
 
 class _BotaoPinceladaState extends State<BotaoPincelada> {
   final _player = AudioPlayer();
-  bool _pressionado = false;
 
   Future<void> _tocarSom() async {
-    final sons = ['sounds/miado.mp3', 'sounds/pru.mp3'];
     try {
       await _player.stop();
       await _player.play(
-        AssetSource(sons[Random().nextInt(sons.length)]),
+        AssetSource(
+            ['sounds/miado.mp3', 'sounds/pru.mp3'][Random().nextInt(2)]),
         mode: PlayerMode.lowLatency,
       );
     } catch (_) {
@@ -54,175 +54,40 @@ class _BotaoPinceladaState extends State<BotaoPincelada> {
   @override
   Widget build(BuildContext context) {
     final theme = context.watch<FefoThemeController>().current;
-    final corTematica = widget.cor == const Color(0xFF318134) ||
-            widget.cor == const Color(0xFFDC4900)
-        ? theme.accent
-        : widget.cor;
-    final tamanhoFonte = widget.fontSize ?? 47;
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final limiteDaTela =
-            MediaQuery.sizeOf(context).width * widget.larguraPercentual;
-        final larguraMaxima = min(constraints.maxWidth, limiteDaTela);
-        final medidor = TextPainter(
-          text: TextSpan(
-            text: widget.texto,
+    final isLegacyAccent = widget.cor == const Color(0xFF318134) ||
+        widget.cor == const Color(0xFFDC4900);
+    final color = isLegacyAccent ? theme.accent : widget.cor;
+    final textColor =
+        ThemeData.estimateBrightnessForColor(color) == Brightness.dark
+            ? Colors.white
+            : Colors.black87;
+
+    return FractionallySizedBox(
+      widthFactor: widget.larguraPercentual.clamp(.5, 1.0).toDouble(),
+      child: SizedBox(
+        height: max(52, (widget.fontSize ?? 18) + 28),
+        child: FilledButton(
+          style: FilledButton.styleFrom(
+            backgroundColor: color,
+            foregroundColor: textColor,
+            side: widget.corBorda == null
+                ? null
+                : BorderSide(color: widget.corBorda!, width: 2),
+          ),
+          onPressed: () {
+            _tocarSom();
+            widget.aoPressionar();
+          },
+          child: Text(
+            widget.texto,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              fontFamily: 'Billotilde',
-              fontSize: tamanhoFonte,
-              height: 0.9,
-            ),
+                fontSize: widget.fontSize ?? 18, fontWeight: FontWeight.w700),
           ),
-          textDirection: TextDirection.ltr,
-          textAlign: TextAlign.center,
-          maxLines: 4,
-        )..layout(maxWidth: max(120, larguraMaxima - 58));
-
-        final largura = min(
-          larguraMaxima,
-          max(180.0, medidor.width + 68),
-        );
-        final altura = max(70.0, medidor.height + 34);
-
-        return Center(
-          child: GestureDetector(
-            onTapDown: (_) => setState(() => _pressionado = true),
-            onTapCancel: () => setState(() => _pressionado = false),
-            onTapUp: (_) {
-              setState(() => _pressionado = false);
-              _tocarSom();
-              widget.aoPressionar();
-            },
-            child: AnimatedScale(
-              scale: _pressionado ? 0.97 : 1,
-              duration: const Duration(milliseconds: 80),
-              child: CustomPaint(
-                painter: _PinceladaPainter(
-                  cor: corTematica,
-                  corBorda: widget.corBorda,
-                ),
-                child: SizedBox(
-                  width: largura,
-                  height: altura,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 30,
-                      vertical: 14,
-                    ),
-                    child: Center(
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          widget.texto,
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          softWrap: false,
-                          style: TextStyle(
-                            fontFamily: 'Billotilde',
-                            color: Colors.white,
-                            fontSize: tamanhoFonte,
-                            height: 0.9,
-                            shadows: const [
-                              Shadow(
-                                color: Colors.black38,
-                                offset: Offset(1, 2),
-                                blurRadius: 3,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        );
-      },
+        ),
+      ),
     );
-  }
-}
-
-class _PinceladaPainter extends CustomPainter {
-  final Color cor;
-  final Color? corBorda;
-
-  const _PinceladaPainter({required this.cor, this.corBorda});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final path = Path()
-      ..moveTo(size.width * 0.035, size.height * 0.18)
-      ..cubicTo(
-        size.width * 0.18,
-        size.height * 0.02,
-        size.width * 0.45,
-        size.height * 0.13,
-        size.width * 0.68,
-        size.height * 0.07,
-      )
-      ..cubicTo(
-        size.width * 0.87,
-        size.height * 0.04,
-        size.width * 0.98,
-        size.height * 0.16,
-        size.width * 0.965,
-        size.height * 0.43,
-      )
-      ..cubicTo(
-        size.width,
-        size.height * 0.63,
-        size.width * 0.94,
-        size.height * 0.91,
-        size.width * 0.72,
-        size.height * 0.87,
-      )
-      ..cubicTo(
-        size.width * 0.48,
-        size.height * 0.96,
-        size.width * 0.23,
-        size.height * 0.82,
-        size.width * 0.04,
-        size.height * 0.91,
-      )
-      ..cubicTo(
-        size.width * 0.015,
-        size.height * 0.7,
-        size.width * 0.005,
-        size.height * 0.39,
-        size.width * 0.035,
-        size.height * 0.18,
-      )
-      ..close();
-
-    final paint = Paint()
-      ..shader = LinearGradient(
-        colors: [
-          Color.lerp(cor, Colors.orangeAccent, 0.18)!,
-          cor,
-          Color.lerp(cor, Colors.white, 0.16)!,
-        ],
-        stops: const [0, 0.72, 1],
-        begin: Alignment.centerLeft,
-        end: Alignment.bottomRight,
-      ).createShader(Offset.zero & size)
-      ..style = PaintingStyle.fill;
-    canvas.drawPath(path, paint);
-
-    if (corBorda != null) {
-      canvas.drawPath(
-        path,
-        Paint()
-          ..color = corBorda!
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 3,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _PinceladaPainter oldDelegate) {
-    return oldDelegate.cor != cor || oldDelegate.corBorda != corBorda;
   }
 }

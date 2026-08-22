@@ -63,8 +63,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                 child: Row(
                   children: [
-                    Icon(Icons.music_note_rounded,
-                        color: corLaranja, size: 24),
+                    Icon(Icons.music_note_rounded, color: corLaranja, size: 24),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -101,7 +100,8 @@ class _MiniPlayerState extends State<MiniPlayer> {
                   overlayShape:
                       const RoundSliderOverlayShape(overlayRadius: 14),
                   activeTrackColor: corLaranja,
-                  inactiveTrackColor: const Color(0xFFB9682B).withValues(alpha: 0.25),
+                  inactiveTrackColor:
+                      const Color(0xFFB9682B).withValues(alpha: 0.25),
                   thumbColor: corLaranja,
                   overlayColor: corLaranja.withValues(alpha: 0.2),
                 ),
@@ -135,7 +135,8 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                   thumbShape: const RoundSliderThumbShape(
                                       enabledThumbRadius: 6),
                                   activeTrackColor: corTexto,
-                                  inactiveTrackColor: const Color(0xFFB9682B).withValues(alpha: 0.25),
+                                  inactiveTrackColor: const Color(0xFFB9682B)
+                                      .withValues(alpha: 0.25),
                                   thumbColor: corTexto,
                                 ),
                                 child: Slider(
@@ -166,7 +167,8 @@ class _MiniPlayerState extends State<MiniPlayer> {
                           tooltip: 'Volume',
                           icon: Icon(iconeVolume, color: corTexto),
                           onPressed: () {
-                            setState(() => _mostrandoVolume = !_mostrandoVolume);
+                            setState(
+                                () => _mostrandoVolume = !_mostrandoVolume);
                           },
                         ),
                         // Botões centrais de reprodução
@@ -174,9 +176,8 @@ class _MiniPlayerState extends State<MiniPlayer> {
                           children: [
                             // Botão Play / Resume / Pause
                             IconButton(
-                              tooltip: manager.audioPaused
-                                  ? 'Continuar'
-                                  : 'Pausar',
+                              tooltip:
+                                  manager.audioPaused ? 'Continuar' : 'Pausar',
                               icon: Icon(
                                 manager.audioPaused
                                     ? Icons.play_arrow_rounded

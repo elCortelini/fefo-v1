@@ -116,8 +116,11 @@ class _TelaLuzesState extends State<TelaLuzes> {
             ElevatedButton.icon(
               onPressed: manager.isConnected ? manager.desligarLeds : null,
               icon: const Icon(Icons.lightbulb_outline_rounded),
-              label: const Text('Desligar LEDs', style: TextStyle(fontFamily: 'KGPen', fontSize: 18)),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.black87, foregroundColor: Colors.white),
+              label: const Text('Desligar LEDs',
+                  style: TextStyle(fontFamily: 'KGPen', fontSize: 18)),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black87,
+                  foregroundColor: Colors.white),
             ),
             BotaoPincelada(
               texto: 'Voltar',

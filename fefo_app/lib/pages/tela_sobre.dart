@@ -48,7 +48,12 @@ class TelaSobre extends StatelessWidget {
                           fontSize: 55,
                           height: 1.1,
                           color: theme.accentSecondary,
-                          shadows: [Shadow(blurRadius: 10.0, color: theme.background, offset: const Offset(0, 0))],
+                          shadows: [
+                            Shadow(
+                                blurRadius: 10.0,
+                                color: theme.background,
+                                offset: const Offset(0, 0))
+                          ],
                         ),
                       ),
                       const SizedBox(height: 25),
@@ -58,11 +63,9 @@ class TelaSobre extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
-                          color:
-                              theme.accent.withValues(alpha: 0.15),
+                          color: theme.accent.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                              color: theme.accent, width: 1.5),
+                          border: Border.all(color: theme.accent, width: 1.5),
                         ),
                         child: Text(
                           'Versão do App: FEFO App $fefoAppVersionLabel',

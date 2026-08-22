@@ -15,6 +15,9 @@ import 'managers/bluetooth_manager.dart';
 import 'services/alarm_service.dart';
 import 'widgets/aviso_bem_vindo_dialog.dart';
 import 'theme/fefo_theme.dart';
+import 'config/fefo_routes.dart';
+import 'pages/tela_favoritos.dart';
+import 'pages/tela_configuracoes.dart';
 
 @pragma('vm:entry-point')
 void notificationTapBackground(NotificationResponse notificationResponse) {
@@ -179,81 +182,13 @@ class _MyAppState extends State<MyApp> {
       navigatorKey: _navigatorKey,
       title: 'FEFO',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: fefoTheme.accent,
-          brightness: fefoTheme.isDark ? Brightness.dark : Brightness.light,
-        ),
-        scaffoldBackgroundColor: fefoTheme.background,
-        cardColor: fefoTheme.surface,
-        canvasColor: fefoTheme.background,
-        textTheme: ThemeData().textTheme.apply(
-              bodyColor: fefoTheme.text,
-              displayColor: fefoTheme.text,
-            ),
-        iconTheme: IconThemeData(color: fefoTheme.accentSecondary),
-        cardTheme: CardThemeData(
-          color: fefoTheme.surface,
-          elevation: fefoTheme.useLegacyImage ? 2 : 0,
-          margin: const EdgeInsets.symmetric(vertical: 4),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        ),
-        listTileTheme: ListTileThemeData(
-          textColor: fefoTheme.text,
-          iconColor: fefoTheme.accentSecondary,
-          subtitleTextStyle: TextStyle(color: fefoTheme.mutedText),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        ),
-        dialogTheme: DialogThemeData(
-          backgroundColor: fefoTheme.surface,
-          titleTextStyle: TextStyle(color: fefoTheme.text, fontSize: 22, fontWeight: FontWeight.bold),
-          contentTextStyle: TextStyle(color: fefoTheme.mutedText, fontSize: 16),
-        ),
-        snackBarTheme: SnackBarThemeData(
-          backgroundColor: fefoTheme.surface,
-          contentTextStyle: TextStyle(color: fefoTheme.text),
-          actionTextColor: fefoTheme.accent,
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          labelStyle: TextStyle(color: fefoTheme.mutedText),
-          hintStyle: TextStyle(color: fefoTheme.mutedText),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: fefoTheme.accent, width: 2),
-          ),
-        ),
-        navigationBarTheme: NavigationBarThemeData(
-          backgroundColor: fefoTheme.surface,
-          indicatorColor: fefoTheme.accent.withValues(alpha: 0.22),
-          labelTextStyle: WidgetStatePropertyAll(TextStyle(color: fefoTheme.text)),
-          iconTheme: WidgetStatePropertyAll(IconThemeData(color: fefoTheme.accent)),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: fefoTheme.accent,
-            foregroundColor: fefoTheme.isDark ? fefoTheme.background : Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
-          ),
-        ),
-        filledButtonTheme: FilledButtonThemeData(
-          style: FilledButton.styleFrom(
-            backgroundColor: fefoTheme.accent,
-            foregroundColor: fefoTheme.isDark ? fefoTheme.background : Colors.white,
-          ),
-        ),
-        sliderTheme: SliderThemeData(
-          activeTrackColor: fefoTheme.accent,
-          thumbColor: fefoTheme.accent,
-          inactiveTrackColor: fefoTheme.accent.withValues(alpha: 0.25),
-        ),
-        switchTheme: SwitchThemeData(
-          thumbColor: WidgetStateProperty.resolveWith((states) =>
-              states.contains(WidgetState.selected) ? fefoTheme.accent : null),
-          trackColor: WidgetStateProperty.resolveWith((states) =>
-              states.contains(WidgetState.selected) ? fefoTheme.accent.withValues(alpha: 0.45) : null),
-        ),
-        useMaterial3: true,
-      ),
+      theme: fefoTheme.toThemeData(),
+      routes: {
+        FefoRoutes.home: (_) => const TelaInicial(),
+        FefoRoutes.favorites: (_) => const TelaFavoritos(),
+        FefoRoutes.contents: (_) => const TelaMenu(),
+        FefoRoutes.settings: (_) => const TelaConfiguracoes(),
+      },
       home: const TelaInicial(),
     );
   }

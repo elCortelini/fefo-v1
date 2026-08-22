@@ -137,7 +137,7 @@ class TelaPalavras extends StatelessWidget {
         children: [
           const SizedBox(height: 25),
           // Título da Página
-          const Padding(
+          Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.0),
             child: FittedBox(
               fit: BoxFit.scaleDown,
