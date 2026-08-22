@@ -22,6 +22,7 @@ class TelaInicial extends StatelessWidget {
     final verde = theme.accentSecondary;
 
     return PaginaBase(
+      mostrarNavegacao: false,
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
