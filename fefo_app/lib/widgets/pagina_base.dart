@@ -63,21 +63,32 @@ class PaginaBase extends StatelessWidget {
           if (!fefoTheme.useLegacyImage)
             ColoredBox(color: fefoTheme.background.withValues(alpha: 0.08)),
           SafeArea(
-            child: Padding(
-              padding:
-                  EdgeInsets.symmetric(horizontal: tokens?.pagePadding ?? 20),
-              child: Center(
-                child: ConstrainedBox(
-                  constraints:
-                      BoxConstraints(maxWidth: tokens?.contentMaxWidth ?? 720),
-                  child: Column(
-                    children: [
-                      Expanded(child: child),
-                      const MiniPlayer(),
-                    ],
+            child: Stack(
+              children: [
+                Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    tokens?.pagePadding ?? 20,
+                    0,
+                    tokens?.pagePadding ?? 20,
+                    112,
+                  ),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                          maxWidth: tokens?.contentMaxWidth ?? 720),
+                      child: child,
+                    ),
                   ),
                 ),
-              ),
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                        maxWidth: tokens?.contentMaxWidth ?? 720),
+                    child: const MiniPlayer(),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

@@ -1,25 +1,25 @@
 {
     "schema":  1,
-    "catalogVersion":  44,
+    "catalogVersion":  45,
     "repository":  "FEFO Google Drive",
     "firmware":  {
-                     "version":  "1.086",
+                     "version":  "1.087",
                      "board":  "FEFO_CYD_ESP32",
-                     "arquivo":  "FEFO_Firmware_v1.086.bin",
-                     "tamanho":  1744976,
-                     "checksum":  "e07aac98ef39c6603cca385bdcc60ca20a9364b2e824b7d0ac9e0ef4c706f156",
-                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.086.bin",
+                     "arquivo":  "FEFO_Firmware_v1.087.bin",
+                     "tamanho":  1745552,
+                     "checksum":  "b41e74b27a4b225c9a6004693c4f7780db987cdce83f0da6487a7c7af1da0ddc",
+                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.087.bin",
                      "obrigatorio":  false,
-                     "notas":  "Versão 1.086: inicialização automática e idempotente da estrutura oficial do SDCard, sem formatar nem apagar dados existentes."
+                     "notas":  "Versão 1.087: preserva o manifesto enviado pelo app, incluindo títulos, menus e submenus, durante o upload e após o reinício."
                  },
     "app":  {
-                "version":  "1.099",
-                "build":  1099,
-                "arquivo":  "FEFO_App_v1.099.apk",
+                "version":  "1.100",
+                "build":  1100,
+                "arquivo":  "FEFO_App_v1.100.apk",
                 "tamanho":  56552431,
-                "checksum":  "503defa785964d89366ae0dee68be8ed182fcbd9b2fa9abe3741db5c26af663a",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.099.apk",
-                "notas":  "Menus e submenus agora são criados automaticamente a partir das informações do catálogo online; instalação preserva a hierarquia dos conteúdos."
+                "checksum":  "578a266bc1c4c9bb91edf67624a639c980da29105e0d0da09171b428cdcb2289",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.100.apk",
+                "notas":  "Menus e submenus dinâmicos, preservação do manifesto após reinício e player flutuante visível também no menu principal."
              },
     "audio":  [
                   {
