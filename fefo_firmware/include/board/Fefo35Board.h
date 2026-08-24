@@ -7,8 +7,8 @@
 namespace fefo::board {
 
 inline constexpr char kBoardName[] = "FEFO-35-V0";
-inline constexpr char kBleName[] = "FEFO_BLE_V1087";
-inline constexpr char kFirmwareVersion[] = "1.087";
+inline constexpr char kBleName[] = "FEFO_BLE_V1088";
+inline constexpr char kFirmwareVersion[] = "1.088";
 inline constexpr char kProtocolVersion[] = "0.1";
 
 // TFT SPI ILI9488 480x320 validada no protótipo com a configuração funcional
