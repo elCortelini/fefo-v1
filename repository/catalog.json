@@ -1,6 +1,6 @@
 {
     "schema":  1,
-    "catalogVersion":  45,
+    "catalogVersion":  46,
     "repository":  "FEFO Google Drive",
     "firmware":  {
                      "version":  "1.087",
@@ -13,13 +13,13 @@
                      "notas":  "Versão 1.087: preserva o manifesto enviado pelo app, incluindo títulos, menus e submenus, durante o upload e após o reinício."
                  },
     "app":  {
-                "version":  "1.100",
-                "build":  1100,
-                "arquivo":  "FEFO_App_v1.100.apk",
+                "version":  "1.101",
+                "build":  1101,
+                "arquivo":  "FEFO_App_v1.101.apk",
                 "tamanho":  56552431,
-                "checksum":  "578a266bc1c4c9bb91edf67624a639c980da29105e0d0da09171b428cdcb2289",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.100.apk",
-                "notas":  "Menus e submenus dinâmicos, preservação do manifesto após reinício e player flutuante visível também no menu principal."
+                "checksum":  "7e0a6a022374a45c4a060bd059b1da38209c2b525dcd55a0f691d840d84613c2",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.101.apk",
+                "notas":  "Corrige a detecção da atualização do app; inclui menus e submenus dinâmicos, preservação do manifesto após reinício e player flutuante no menu principal."
              },
     "audio":  [
                   {
