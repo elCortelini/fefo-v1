@@ -283,6 +283,13 @@ Fechamento da Fase 4 no firmware.
 - Auditoria geral das telas e menus registrada; telas de desenvolvedor seguem os mesmos tokens globais.
 - APK publicado no catálogo do GitHub.
 
+## v1.098
+
+- Peso dos títulos em Billotilde reduzido para 500, evitando aparência pesada e letras muito juntas.
+- Textos corridos mantidos em KGPen para melhorar leitura.
+- Tela “Quem é o Fefo?” migrada para o cabeçalho compartilhado e vinculada ao tema.
+- APK publicado no catálogo do GitHub.
+
 ## Estado atual
 
 ```text
