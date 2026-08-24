@@ -41,7 +41,7 @@
 
                    ],
     "schema":  1,
-    "catalogVersion":  3,
+    "catalogVersion":  4,
     "menus":  [
                   {
                       "id":  "jukebox_fefo",
@@ -168,6 +168,26 @@
                       "arquivo":  "/usr/a/a0015.wav",
                       "tamanho":  7875616,
                       "checksum":  "6a8492bac9b28715d6c421465eb3238a13c1a63ad8faccfc963b8962fe5daefe"
-                  }
+                  },
+                  { "id": "au017", "titulo": "Cabra", "menu": "Conhecendo os animais", "arquivo": "/usr/a/a0016.wav", "tamanho": 758134, "checksum": "38ce1bdbebd0fccf102ba34c4bf4a04a06b5d2845c8927a987cf770aecc8d083" },
+                  { "id": "au018", "titulo": "Cachorro", "menu": "Conhecendo os animais", "arquivo": "/usr/a/a0017.wav", "tamanho": 757982, "checksum": "24b55ea4c17c82fe4012e783cf61090a7f84b46742dbfba21cc74274c44cd096" },
+                  { "id": "au019", "titulo": "Capivara", "menu": "Conhecendo os animais", "arquivo": "/usr/a/a0018.wav", "tamanho": 718546, "checksum": "c451a92a0813576bacd201a84ebca48dd4b6b2207ae32ffa0d624531301f378a" },
+                  { "id": "au020", "titulo": "Cavalo", "menu": "Conhecendo os animais", "arquivo": "/usr/a/a0019.wav", "tamanho": 728988, "checksum": "f8e91ce05ff9563cc9ff25d182a7cb6e770d07ff9364c9e16d9bfca9a1578ce8" },
+                  { "id": "au021", "titulo": "Coelho", "menu": "Conhecendo os animais", "arquivo": "/usr/a/a0020.wav", "tamanho": 719122, "checksum": "daf879b7ac5bf97819a461888bb40aa75dbed02c92f2fef20bef4f366167fc58" },
+                  { "id": "au022", "titulo": "Coruja", "menu": "Conhecendo os animais", "arquivo": "/usr/a/a0021.wav", "tamanho": 787278, "checksum": "6efda6c6e9141bbb898ff12dddefa35c811951e3136fae451ac8570c5b2bc9f8" },
+                  { "id": "au023", "titulo": "Galinha", "menu": "Conhecendo os animais", "arquivo": "/usr/a/a0022.wav", "tamanho": 1049424, "checksum": "5800548a931f0f7e41b5dd2137ead0398bcc5ed57f63ef0f8d70d8f9743998f9" },
+                  { "id": "au024", "titulo": "Gato", "menu": "Conhecendo os animais", "arquivo": "/usr/a/a0023.wav", "tamanho": 952276, "checksum": "236ea1ff5097c5aea5e0b59bb31c53cbd68ad926eca332be34a1c1fd40815da1" },
+                  { "id": "au025", "titulo": "Girafa", "menu": "Conhecendo os animais", "arquivo": "/usr/a/a0024.wav", "tamanho": 1020432, "checksum": "b726344cad54ba460bb792632b171d8613b27ac0a56e5f4fa8c65d3902476936" },
+                  { "id": "au026", "titulo": "Jacaré", "menu": "Conhecendo os animais", "arquivo": "/usr/a/a0025.wav", "tamanho": 884424, "checksum": "234671409c9dc29133455ea3cb9a87516fb9bb5887d6d650e1ee8593759f23cb" },
+                  { "id": "au027", "titulo": "Leão", "menu": "Conhecendo os animais", "arquivo": "/usr/a/a0026.wav", "tamanho": 991288, "checksum": "cc33de8f4205730a85752ab3b6033c5357a872d4b3ef0e5ef40f5cffbbde9235" },
+                  { "id": "au028", "titulo": "Lobo", "menu": "Conhecendo os animais", "arquivo": "/usr/a/a0027.wav", "tamanho": 884424, "checksum": "866284f053724795dafa6d9ede610a2185e2e7f7aa5c002cb56176958575ed57" },
+                  { "id": "au029", "titulo": "Macaco", "menu": "Conhecendo os animais", "arquivo": "/usr/a/a0028.wav", "tamanho": 884424, "checksum": "9a76027ee2d7273fa714707192b0a24abbe522739d1afe01724707624345b33a" },
+                  { "id": "au030", "titulo": "Onça", "menu": "Conhecendo os animais", "arquivo": "/usr/a/a0029.wav", "tamanho": 826136, "checksum": "979945f816003ff5a22bb690a3cbcd59a1b06d94203f800ab2883100c8d5ebc8" },
+                  { "id": "au031", "titulo": "Ovelha", "menu": "Conhecendo os animais", "arquivo": "/usr/a/a0030.wav", "tamanho": 806706, "checksum": "58f1239938d281a04086a453a05e4decc355fa2f40aaf4413d7b54dc227c39b7" },
+                  { "id": "au032", "titulo": "Porco", "menu": "Conhecendo os animais", "arquivo": "/usr/a/a0031.wav", "tamanho": 612412, "checksum": "06169d8171f2deb65c28c942163ec9dd6cc0ca6fc7425eff232ee1355ef5f2a2" },
+                  { "id": "au033", "titulo": "Rato", "menu": "Conhecendo os animais", "arquivo": "/usr/a/a0032.wav", "tamanho": 495684, "checksum": "9cefbb130bb5868eb4b8e61d3262d262457ad79b9b1724b255a1fa76df6d9ab0" },
+                  { "id": "au034", "titulo": "Tamanduá", "menu": "Conhecendo os animais", "arquivo": "/usr/a/a0033.wav", "tamanho": 787278, "checksum": "f4330d6e23521adfd2348fe170c671688731a4d03c9348193b742ad8bb284e18" },
+                  { "id": "au035", "titulo": "Urso", "menu": "Conhecendo os animais", "arquivo": "/usr/a/a0034.wav", "tamanho": 1146724, "checksum": "97effde7ca7c29f600d7ae1d05b521acf36bbf236e885db3f9b722a38d776272" },
+                  { "id": "au036", "titulo": "Vaca", "menu": "Conhecendo os animais", "arquivo": "/usr/a/a0035.wav", "tamanho": 699692, "checksum": "c6e288c417521e83615ce1fabee098594800613630616b54017d0dd6dcd70ba7" }
               ]
 }
