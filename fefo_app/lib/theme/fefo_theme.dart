@@ -54,7 +54,7 @@ class FefoThemeDefinition {
       brightness: scheme.brightness,
       scaffoldBackgroundColor: background,
       canvasColor: background,
-      fontFamily: 'Roboto',
+      fontFamily: 'KGPen',
     );
     final onAccent = scheme.onPrimary;
     return base.copyWith(
@@ -68,6 +68,10 @@ class FefoThemeDefinition {
                     ?.copyWith(fontWeight: FontWeight.w800),
                 titleLarge: base.textTheme.titleLarge
                     ?.copyWith(fontWeight: FontWeight.w700),
+                bodyLarge: base.textTheme.bodyLarge?.copyWith(
+                    fontFamily: 'KGPen', color: text, fontSize: 18),
+                bodyMedium: base.textTheme.bodyMedium?.copyWith(
+                    fontFamily: 'KGPen', color: mutedText, fontSize: 17),
               ),
       cardTheme: CardThemeData(
         color: surface,

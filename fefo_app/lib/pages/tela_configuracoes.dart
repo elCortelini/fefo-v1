@@ -9,6 +9,7 @@ import 'tela_vibracoes_fefo.dart';
 import '../config/app_version.dart';
 import '../config/firmware_version.dart';
 import '../theme/fefo_theme.dart';
+import '../design_system/fefo_components.dart';
 
 class TelaConfiguracoes extends StatefulWidget {
   const TelaConfiguracoes({super.key});
@@ -140,28 +141,9 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 10),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                'Configurações',
-                style: TextStyle(
-                  fontFamily: 'Billotilde',
-                  fontSize: 52,
-                  color: corVerde,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Ajustes de vibração e exibição do PET FEFO',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: 'Billotilde',
-                fontSize: 21,
-                fontWeight: FontWeight.w700,
-                color: appTheme.accentSecondary,
-              ),
+            const FefoPageHeader(
+              title: 'Configurações',
+              subtitle: 'Ajustes de vibração e exibição do PET FEFO',
             ),
             const SizedBox(height: 25),
 

@@ -70,6 +70,39 @@ class FefoSpacing {
   static const compact = EdgeInsets.all(12);
 }
 
+/// Regra única de hierarquia textual do aplicativo.
+/// Toda tela deve usar estes estilos ou os componentes do design system.
+class FefoTypography {
+  static const pageTitleSize = 52.0;
+  static const pageSubtitleSize = 22.0;
+  static const sectionTitleSize = 26.0;
+  static const contentTitleSize = 25.0;
+  static const contentSubtitleSize = 17.0;
+
+  static TextStyle pageTitle(BuildContext context) => TextStyle(
+        fontFamily: 'Billotilde',
+        fontSize: pageTitleSize,
+        height: 1,
+        fontWeight: FontWeight.w700,
+        color: Theme.of(context).colorScheme.secondary,
+      );
+
+  static TextStyle pageSubtitle(BuildContext context) => TextStyle(
+        fontFamily: 'Billotilde',
+        fontSize: pageSubtitleSize,
+        height: 1.1,
+        fontWeight: FontWeight.w700,
+        color: Theme.of(context).colorScheme.secondary,
+      );
+
+  static TextStyle body(BuildContext context) => TextStyle(
+        fontFamily: 'KGPen',
+        fontSize: 18,
+        height: 1.2,
+        color: Theme.of(context).colorScheme.onSurface,
+      );
+}
+
 class FefoRadii {
   static const small = BorderRadius.all(Radius.circular(12));
   static const medium = BorderRadius.all(Radius.circular(18));

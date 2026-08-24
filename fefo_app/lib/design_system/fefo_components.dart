@@ -29,7 +29,7 @@ class FefoPageHeader extends StatelessWidget {
             softWrap: true,
             style: text.headlineSmall?.copyWith(
               fontFamily: 'Billotilde',
-              fontSize: 52,
+              fontSize: FefoTypography.pageTitleSize,
               height: 1.0,
               color: theme.colorScheme.secondary,
             ),
@@ -43,7 +43,7 @@ class FefoPageHeader extends StatelessWidget {
               style: text.bodyLarge?.copyWith(
                 fontFamily: 'Billotilde',
                 color: theme.colorScheme.secondary,
-                fontSize: 22,
+                fontSize: FefoTypography.pageSubtitleSize,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -96,7 +96,7 @@ class FefoSectionHeader extends StatelessWidget {
         softWrap: true,
         style: TextStyle(
           fontFamily: 'Billotilde',
-          fontSize: 26,
+          fontSize: FefoTypography.sectionTitleSize,
           fontWeight: FontWeight.w700,
           color: scheme.secondary,
         ),
@@ -118,7 +118,7 @@ class FefoPageSubtitle extends StatelessWidget {
       softWrap: true,
       style: TextStyle(
         fontFamily: 'Billotilde',
-        fontSize: 22,
+        fontSize: FefoTypography.pageSubtitleSize,
         fontWeight: FontWeight.w700,
         color: Theme.of(context).colorScheme.secondary,
       ),
@@ -215,10 +215,10 @@ class FefoContentCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(title, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(fontFamily: 'KGPen', fontSize: 25, height: 1.05, color: theme.textTheme.bodyLarge?.color)),
+                Text(title, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(fontFamily: 'KGPen', fontSize: FefoTypography.contentTitleSize, height: 1.05, color: theme.textTheme.bodyLarge?.color)),
                 if (subtitle != null) ...[
                   const SizedBox(height: 3),
-                  Text(subtitle!, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(fontFamily: 'KGPen', fontSize: 17, height: 1.05, color: theme.textTheme.bodyMedium?.color?.withValues(alpha: .78))),
+                  Text(subtitle!, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(fontFamily: 'KGPen', fontSize: FefoTypography.contentSubtitleSize, height: 1.05, color: theme.textTheme.bodyMedium?.color?.withValues(alpha: .78))),
                 ],
               ],
             )),

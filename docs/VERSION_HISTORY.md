@@ -275,6 +275,14 @@ Fechamento da Fase 4 no firmware.
 - Luzes e Vibrações mantidas com um item por linha; Rostinhos preserva miniaturas, seleção e exclusão.
 - APK publicado no catálogo do GitHub.
 
+## v1.097
+
+- Design system recebeu a regra única de hierarquia: título 52, subtítulo 22, seção 26, conteúdo 25/17.
+- Tipografia base e cores passam a respeitar o tema ativo por padrão.
+- Configurações, Catálogo Online e Áudios migrados para o cabeçalho padronizado.
+- Auditoria geral das telas e menus registrada; telas de desenvolvedor seguem os mesmos tokens globais.
+- APK publicado no catálogo do GitHub.
+
 ## Estado atual
 
 ```text

@@ -5,6 +5,7 @@ import '../managers/bluetooth_manager.dart';
 import '../widgets/botao_pincelada.dart';
 import '../widgets/pagina_base.dart';
 import '../theme/fefo_theme.dart';
+import '../design_system/fefo_components.dart';
 
 class TelaAudiosFefo extends StatefulWidget {
   final String? grupoInicial;
@@ -141,26 +142,10 @@ class _TelaAudiosFefoState extends State<TelaAudiosFefo> {
             children: [
               const SizedBox(height: 20),
               // Cabeçalho do Menu com Botão de Seleção Múltipla
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          widget.grupoInicial ?? 'Áudios no FEFO',
-                          style: TextStyle(
-                            fontFamily: 'Billotilde',
-                            fontSize: 52,
-                            height: 1,
-                            color: corVerde,
-                          ),
-                        ),
-                      ),
-                    ),
-                    if (audios.isNotEmpty && manager.isConnected) ...[
-                      IconButton(
+              FefoPageHeader(
+                title: widget.grupoInicial ?? 'Áudios no FEFO',
+                trailing: audios.isNotEmpty && manager.isConnected
+                    ? IconButton(
                         tooltip: _modoSelecao
                             ? 'Sair da Seleção'
                             : 'Seleção Múltipla',
@@ -168,14 +153,14 @@ class _TelaAudiosFefoState extends State<TelaAudiosFefo> {
                           _modoSelecao
                               ? Icons.close_rounded
                               : Icons.checklist_rounded,
-                          color: _modoSelecao ? Colors.red : corLaranja,
+                          color: _modoSelecao
+                              ? Theme.of(context).colorScheme.error
+                              : corLaranja,
                           size: 32,
                         ),
                         onPressed: _alternarModoSelecao,
-                      ),
-                    ],
-                  ],
-                ),
+                      )
+                    : null,
               ),
               const SizedBox(height: 10),
               if (widget.grupoInicial == 'Jukebox do Fefo' &&
