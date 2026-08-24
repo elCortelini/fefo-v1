@@ -32,6 +32,20 @@ class TelaMenu extends StatelessWidget {
 
   List<_MenuSection> _secoes(BuildContext context, BluetoothManager manager) {
     final audio = (String nome) => TelaAudiosFefo(grupoInicial: nome);
+    const gruposConhecidos = {
+      'Aulas do Fefo',
+      'Desafios e Brincadeiras',
+      'Meu corpo',
+      'Contos de Fefo',
+      'Palavras do Fefo',
+      'Aventuras Seguras',
+      'Minha Rotina',
+      'Conhecendo os animais',
+      'Músicas Clássicas',
+      'Instrumentais e Natureza',
+      'Jukebox do Fefo',
+      'Relaxamento',
+    };
     final exploracao = <_MenuEntry>[
       _MenuEntry(
           'Aulas do Fefo', () => _abrir(context, audio('Aulas do Fefo'))),
@@ -72,12 +86,31 @@ class TelaMenu extends StatelessWidget {
         _MenuEntry('Relaxamento', () => _abrir(context, audio('Relaxamento'))),
     ];
 
+    final novosMenus = manager.audioGroups.keys
+        .where((grupo) => grupo.trim().isNotEmpty)
+        .where((grupo) => !gruposConhecidos.contains(grupo))
+        .toList()
+      ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+
     return [
       _MenuSection('Exploração diária', exploracao,
           icon: Icons.explore_rounded),
       if (estimulos.isNotEmpty)
         _MenuSection('Estímulos sonoros', estimulos,
             icon: Icons.music_note_rounded),
+      if (novosMenus.isNotEmpty)
+        _MenuSection(
+          'Novos conteúdos',
+          [
+            for (final grupo in novosMenus)
+              _MenuEntry(
+                grupo,
+                () => _abrir(context, audio(grupo)),
+                icon: Icons.auto_awesome_rounded,
+              ),
+          ],
+          icon: Icons.auto_awesome_rounded,
+        ),
       _MenuSection('Terapias guiadas', terapias, icon: Icons.spa_rounded),
       _MenuSection(
           'Sobre o FEFO',
