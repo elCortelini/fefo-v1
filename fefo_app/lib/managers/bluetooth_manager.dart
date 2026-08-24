@@ -175,12 +175,27 @@ class FefoAudioItem {
               rawId?.toString().replaceAll(RegExp(r'[^0-9]'), '') ?? '',
             ) ??
             0;
+    var group = (json['group'] ?? json['menu'])?.toString() ?? '';
+    var submenu = (json['submenu'] ?? json['secao'])?.toString() ?? '';
+    // Catálogos antigos e externos podem representar a hierarquia no próprio
+    // campo menu: "Menu principal > Submenu".
+    if (submenu.trim().isEmpty && group.contains('>')) {
+      final parts = group
+          .split('>')
+          .map((part) => part.trim())
+          .where((part) => part.isNotEmpty)
+          .toList();
+      if (parts.isNotEmpty) {
+        group = parts.first;
+        submenu = parts.skip(1).join(' > ');
+      }
+    }
     return FefoAudioItem(
       id: parsedId,
       path: (json['path'] ?? json['arquivo'])?.toString() ?? '',
       catalogTitle: (json['title'] ?? json['titulo'])?.toString() ?? '',
-      catalogGroup: (json['group'] ?? json['menu'])?.toString() ?? '',
-      catalogSubmenu: (json['submenu'] ?? json['secao'])?.toString() ?? '',
+      catalogGroup: group,
+      catalogSubmenu: submenu,
       checksum: json['checksum']?.toString() ?? '',
     );
   }

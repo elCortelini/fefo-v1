@@ -201,6 +201,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
           'id': audio.id,
           'titulo': audio.title,
           'menu': audio.group,
+          if (audio.submenu.trim().isNotEmpty) 'submenu': audio.submenu,
           'arquivo': audio.path,
           'checksum': audio.checksum,
         });
@@ -981,7 +982,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
 }
 
 class _OnlineItem {
-  final String title, type, path, url, checksum, menu, id;
+  final String title, type, path, url, checksum, menu, submenu, id;
   final int size;
 
   const _OnlineItem(
@@ -991,6 +992,7 @@ class _OnlineItem {
     this.url,
     this.checksum,
     this.menu,
+    this.submenu,
     this.id,
     this.size,
   );
@@ -1002,6 +1004,7 @@ class _OnlineItem {
         'id': id,
         'titulo': title,
         if (menu.isNotEmpty) 'menu': menu,
+        if (submenu.isNotEmpty) 'submenu': submenu,
         'arquivo': path,
         'tamanho': size,
         'checksum': checksum,
@@ -1017,6 +1020,7 @@ class _OnlineItem {
       (map['url'] ?? map['downloadUrl'] ?? '').toString(),
       (map['checksum'] ?? '').toString(),
       (map['menu'] ?? '').toString(),
+      (map['submenu'] ?? map['secao'] ?? '').toString(),
       (map['id'] ?? '').toString(),
       (map['tamanho'] is num) ? (map['tamanho'] as num).toInt() : 0,
     );
