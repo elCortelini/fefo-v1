@@ -147,6 +147,33 @@ File sdOpenPath(const char* path, const char* mode) {
   return file;
 }
 
+bool copySdFile(const char* sourcePath, const char* destinationPath) {
+  File source = sdOpenPath(sourcePath, FILE_READ);
+  if (!source) return false;
+
+  sdRemovePath(destinationPath);
+  File destination = sdOpenPath(destinationPath, FILE_WRITE);
+  if (!destination) {
+    source.close();
+    return false;
+  }
+
+  uint8_t buffer[512];
+  bool ok = true;
+  while (source.available()) {
+    const size_t count = source.read(buffer, sizeof(buffer));
+    if (count == 0 || destination.write(buffer, count) != count) {
+      ok = false;
+      break;
+    }
+  }
+  destination.flush();
+  destination.close();
+  source.close();
+  if (!ok) sdRemovePath(destinationPath);
+  return ok;
+}
+
 bool sdResolveOpenablePath(const char* path, char* output, size_t outputSize) {
   if (path == nullptr || path[0] == '\0') return false;
 
@@ -287,7 +314,13 @@ void AppController::begin() {
   lastAudioDisplayMs_ = 0;
   if (storageReady) {
     scanAudioTestFiles();
-    buildCatalogJson();
+    // O app envia /fefo.json com títulos, menus e submenus. Esse manifesto
+    // é a fonte persistente do catálogo; só reconstruir por varredura quando
+    // ainda não existe um manifesto enviado pelo app.
+    if (!sdExistsPath("/fefo.json") ||
+        !copySdFile("/fefo.json", "/sys/db/fefo.json")) {
+      buildCatalogJson();
+    }
     if (board::kAudioEnabled && board::kAudioBootTestEnabled) {
       startAudioTestSequence();
     }
@@ -1425,7 +1458,12 @@ bool AppController::handleFileCommand(const char* command) {
       scanAudioTestFiles();
       scanFaceFiles();
       buildMediaIndex();
-      buildCatalogJson();
+      if (strcmp(finishedPath, "/fefo.json") == 0 ||
+          strcmp(finishedPath, "fefo.json") == 0) {
+        copySdFile(finishedPath, "/sys/db/fefo.json");
+      } else {
+        buildCatalogJson();
+      }
       logEvent("file_upload", finishedPath);
     }
     if (complete) {
@@ -2665,6 +2703,9 @@ bool AppController::buildCatalogJson() {
   if (!storage_.available() && !storage_.begin()) return false;
   SD.mkdir("/sys");
   SD.mkdir("/sys/db");
+  // Um catálogo reconstruído deixa de ser o manifesto personalizado enviado
+  // pelo app; removê-lo evita que um boot futuro restaure metadados obsoletos.
+  sdRemovePath("/fefo.json");
   scanAudioTestFiles();
   scanFaceFiles();
 
