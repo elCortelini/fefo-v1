@@ -61,11 +61,11 @@ class FefoThemeDefinition {
       textTheme:
           base.textTheme.apply(bodyColor: text, displayColor: text).copyWith(
                 headlineLarge: base.textTheme.headlineLarge
-                    ?.copyWith(fontWeight: FontWeight.w800),
+                    ?.copyWith(fontWeight: FontWeight.w500),
                 headlineMedium: base.textTheme.headlineMedium
-                    ?.copyWith(fontWeight: FontWeight.w800),
+                    ?.copyWith(fontWeight: FontWeight.w500),
                 headlineSmall: base.textTheme.headlineSmall
-                    ?.copyWith(fontWeight: FontWeight.w800),
+                    ?.copyWith(fontWeight: FontWeight.w500),
                 titleLarge: base.textTheme.titleLarge
                     ?.copyWith(fontWeight: FontWeight.w700),
                 bodyLarge: base.textTheme.bodyLarge?.copyWith(
@@ -92,13 +92,16 @@ class FefoThemeDefinition {
         elevation: 0,
         centerTitle: false,
         titleTextStyle: base.textTheme.titleLarge
-            ?.copyWith(color: text, fontWeight: FontWeight.w800),
+            ?.copyWith(color: text, fontWeight: FontWeight.w500),
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: surface,
         shape: const RoundedRectangleBorder(borderRadius: FefoRadii.large),
-        titleTextStyle:
-            TextStyle(color: text, fontSize: 22, fontWeight: FontWeight.w800),
+        titleTextStyle: TextStyle(
+            fontFamily: 'KGPen',
+            color: text,
+            fontSize: 22,
+            fontWeight: FontWeight.w600),
         contentTextStyle: TextStyle(color: mutedText, fontSize: 16),
       ),
       inputDecorationTheme: InputDecorationTheme(

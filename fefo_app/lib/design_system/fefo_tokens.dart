@@ -83,7 +83,7 @@ class FefoTypography {
         fontFamily: 'Billotilde',
         fontSize: pageTitleSize,
         height: 1,
-        fontWeight: FontWeight.w700,
+        fontWeight: FontWeight.w500,
         color: Theme.of(context).colorScheme.secondary,
       );
 

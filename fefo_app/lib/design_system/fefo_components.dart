@@ -31,6 +31,7 @@ class FefoPageHeader extends StatelessWidget {
               fontFamily: 'Billotilde',
               fontSize: FefoTypography.pageTitleSize,
               height: 1.0,
+              fontWeight: FontWeight.w500,
               color: theme.colorScheme.secondary,
             ),
           ),

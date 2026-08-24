@@ -8,6 +8,7 @@ import '../widgets/pagina_base.dart';
 import '../widgets/botao_verde.dart';
 import '../config/app_version.dart';
 import '../theme/fefo_theme.dart';
+import '../design_system/fefo_components.dart';
 
 class TelaSobre extends StatelessWidget {
   const TelaSobre({super.key});
@@ -40,22 +41,7 @@ class TelaSobre extends StatelessWidget {
                       const SizedBox(height: 20),
 
                       // 2. Título da Página
-                      Text(
-                        'Quem é o Fefo?',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontFamily: 'Billotilde',
-                          fontSize: 52,
-                          height: 1.1,
-                          color: theme.accentSecondary,
-                          shadows: [
-                            Shadow(
-                                blurRadius: 10.0,
-                                color: theme.background,
-                                offset: const Offset(0, 0))
-                          ],
-                        ),
-                      ),
+                      const FefoPageHeader(title: 'Quem é o Fefo?'),
                       const SizedBox(height: 25),
 
                       // Selo da Versão do Aplicativo
