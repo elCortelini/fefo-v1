@@ -15,6 +15,7 @@ import '../widgets/pagina_base.dart';
 import '../widgets/progresso_operacao.dart';
 import '../theme/fefo_theme.dart';
 import 'tela_conexao.dart';
+import '../design_system/fefo_components.dart';
 
 class TelaCatalogoOnline extends StatefulWidget {
   const TelaCatalogoOnline({super.key});
@@ -517,18 +518,11 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
         padding: const EdgeInsets.symmetric(horizontal: 4),
         child: Column(children: [
           const SizedBox(height: 18),
-          Text('Catálogo Online',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontFamily: 'Billotilde',
-                  fontSize: 52,
-                  color: theme.accentSecondary)),
-          const SizedBox(height: 6),
-          Text(
-              'App v$fefoAppVersionName  •  Firmware v${manager.firmwareVersion ?? fefoFirmwareVersion}',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontFamily: 'KGPen', fontSize: 15, color: theme.text)),
+          FefoPageHeader(
+            title: 'Catálogo Online',
+            subtitle:
+                'App v$fefoAppVersionName  •  Firmware v${manager.firmwareVersion ?? fefoFirmwareVersion}',
+          ),
           Container(
             margin: const EdgeInsets.fromLTRB(12, 12, 12, 8),
             padding: const EdgeInsets.all(14),
