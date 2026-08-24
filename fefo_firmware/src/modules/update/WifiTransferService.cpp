@@ -135,6 +135,35 @@ void WifiTransferService::handlePushClient(WiFiClient& client, bool& finished) {
   if (received != contentLength || (expectedSha[0] && strcasecmp(expectedSha, actual) != 0)) { SD.remove(temporary); reply(client, 422, received != contentLength ? "SIZE_MISMATCH" : "SHA256_MISMATCH"); client.stop(); return; }
   SD.remove(path);
   if (!SD.rename(temporary, path)) { SD.remove(temporary); reply(client, 500, "RENAME_FAILED"); client.stop(); return; }
+  // O manifesto enviado pelo app precisa virar o catálogo ativo imediatamente.
+  // Sem esta cópia, uma leitura de CATALOG GET antes do próximo boot pode usar
+  // o catálogo físico, que não contém títulos, menus ou submenus.
+  if (strcmp(path, "/fefo.json") == 0) {
+    SD.mkdir("/sys");
+    SD.mkdir("/sys/db");
+    File source = SD.open("/fefo.json", FILE_READ);
+    File active = SD.open("/sys/db/fefo.json", FILE_WRITE);
+    if (!source || !active) {
+      if (source) source.close();
+      if (active) active.close();
+      reply(client, 500, "CATALOG_ACTIVATE_FAILED");
+      client.stop();
+      return;
+    }
+    uint8_t catalogBuffer[1024];
+    while (source.available()) {
+      const size_t count = source.read(catalogBuffer, sizeof(catalogBuffer));
+      if (count == 0 || active.write(catalogBuffer, count) != count) {
+        source.close();
+        active.close();
+        reply(client, 500, "CATALOG_ACTIVATE_FAILED");
+        client.stop();
+        return;
+      }
+    }
+    source.close();
+    active.close();
+  }
   reply(client, 200, "STORED"); client.stop();
 }
 
