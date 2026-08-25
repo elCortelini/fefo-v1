@@ -42,7 +42,7 @@ class FefoPageHeader extends StatelessWidget {
               textAlign: TextAlign.center,
               softWrap: true,
               style: text.bodyLarge?.copyWith(
-                fontFamily: 'Billotilde',
+                fontFamily: 'KGPen',
                 color: theme.colorScheme.secondary,
                 fontSize: FefoTypography.pageSubtitleSize,
                 fontWeight: FontWeight.w700,
@@ -118,7 +118,7 @@ class FefoPageSubtitle extends StatelessWidget {
       textAlign: TextAlign.center,
       softWrap: true,
       style: TextStyle(
-        fontFamily: 'Billotilde',
+        fontFamily: 'KGPen',
         fontSize: FefoTypography.pageSubtitleSize,
         fontWeight: FontWeight.w700,
         color: Theme.of(context).colorScheme.secondary,

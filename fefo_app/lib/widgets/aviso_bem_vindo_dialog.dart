@@ -7,6 +7,8 @@ class AvisoBemVindoDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     return AlertDialog(
       // Cantos arredondados para um visual mais suave
       shape: RoundedRectangleBorder(
@@ -17,12 +19,8 @@ class AvisoBemVindoDialog extends StatelessWidget {
       content: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          // Um gradiente sutil que combina com as cores do seu app
-          gradient: const LinearGradient(
-            colors: [
-              Color(0xFFe8f5e9),
-              Colors.white
-            ], // Verde bem claro para branco
+          gradient: LinearGradient(
+            colors: [scheme.surface, theme.scaffoldBackgroundColor],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -63,9 +61,12 @@ class AvisoBemVindoDialog extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: RichText(
                 textAlign: TextAlign.center,
-                text: const TextSpan(
+                text: TextSpan(
                   style: TextStyle(
-                      fontSize: 16, color: Colors.black87, height: 1.4),
+                      fontFamily: 'KGPen',
+                      fontSize: 16,
+                      color: scheme.onSurface,
+                      height: 1.4),
                   children: [
                     TextSpan(
                       text: 'Seja bem-vindo ao aplicativo ',
@@ -82,7 +83,7 @@ class AvisoBemVindoDialog extends StatelessWidget {
                       text: 'não substitui a supervisão de um adulto',
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFFDC4900)),
+                          color: scheme.secondary),
                     ),
                     TextSpan(
                       text: ', que deverá estar sempre presente.',
@@ -92,14 +93,15 @@ class AvisoBemVindoDialog extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            const Padding(
+            Padding(
               padding: EdgeInsets.symmetric(horizontal: 24.0),
               child: Text(
                 'Estamos aqui para garantir uma experiência divertida e segura!',
                 textAlign: TextAlign.center,
                 style: TextStyle(
+                    fontFamily: 'KGPen',
                     fontSize: 14,
-                    color: Colors.black54,
+                    color: scheme.onSurface.withValues(alpha: .7),
                     fontStyle: FontStyle.italic),
               ),
             ),
@@ -111,17 +113,17 @@ class AvisoBemVindoDialog extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: () => Navigator.of(context).pop(),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFE85809),
+                  backgroundColor: scheme.primary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(50),
                   ),
                   padding:
                       const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
                 ),
-                child: const Text(
+                child: Text(
                   'Entendi',
                   style: TextStyle(
-                      color: Colors.white,
+                      color: scheme.onPrimary,
                       fontFamily: 'Billotilde',
                       fontSize: 40),
                 ),
