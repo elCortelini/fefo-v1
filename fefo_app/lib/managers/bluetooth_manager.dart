@@ -417,6 +417,30 @@ class BluetoothManager extends ChangeNotifier {
   bool get audioStopped => _audioControlState == 'stopped';
   bool get darkMode => _darkMode;
   bool isFavorite(String path) => _favoritos.contains(path);
+
+  bool audioRefAtivo(String ref) {
+    final ativo = _caminhoAudioAtivo ?? _audioSelecionado;
+    if (ativo == null || ativo.trim().isEmpty || ref.trim().isEmpty) {
+      return false;
+    }
+    String normalizar(String value) {
+      final base = value.trim().toLowerCase().split('/').last;
+      return base.replaceFirst(RegExp(r'\.(wav|mp3|ogg)$'), '');
+    }
+
+    return ativo == ref ||
+        ativo == _extrairNomeSemExtensao(ref) ||
+        normalizar(ativo) == normalizar(ref);
+  }
+
+  Future<void> alternarFavoritoPorCaminho(String path) async {
+    await _preferenciasVisuaisFuture;
+    final prefs = await SharedPreferences.getInstance();
+    if (!_favoritos.add(path)) _favoritos.remove(path);
+    notifyListeners();
+    await prefs.setStringList(_prefKeyFavorites, _favoritos.toList());
+  }
+
   List<FefoAudioItem> get favoriteAudios =>
       _audioItems.where((item) => _favoritos.contains(item.path)).toList();
 

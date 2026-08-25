@@ -31,7 +31,7 @@ class BotaoPlayer extends StatelessWidget {
     return Consumer<BluetoothManager>(
       builder: (context, manager, _) {
         final theme = context.watch<FefoThemeController>().current;
-        final active = manager.audioSelecionado == caminhoArquivoPlay;
+        final active = manager.audioRefAtivo(caminhoArquivoPlay);
         final enabled = manager.isConnected;
 
         if (!active) {
@@ -40,8 +40,41 @@ class BotaoPlayer extends StatelessWidget {
             subtitle: subtitulo,
             icon: Icons.music_note_rounded,
             actionIcon: Icons.play_arrow_rounded,
-            onTap: enabled ? () => manager.selecionarAudio(caminhoArquivoPlay) : null,
-            onAction: enabled ? () => manager.selecionarAudio(caminhoArquivoPlay) : null,
+            onTap: enabled
+                ? () => manager.selecionarAudio(caminhoArquivoPlay)
+                : null,
+            onAction: enabled
+                ? () => manager.selecionarAudio(caminhoArquivoPlay)
+                : null,
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  tooltip: manager.isFavorite(caminhoArquivoPlay)
+                      ? 'Remover favorito'
+                      : 'Adicionar favorito',
+                  icon: Icon(
+                    manager.isFavorite(caminhoArquivoPlay)
+                        ? Icons.star_rounded
+                        : Icons.star_border_rounded,
+                    color: theme.accent,
+                  ),
+                  onPressed: () =>
+                      manager.alternarFavoritoPorCaminho(caminhoArquivoPlay),
+                ),
+                IconButton.filled(
+                  tooltip: 'Tocar no FEFO',
+                  onPressed: enabled
+                      ? () => manager.selecionarAudio(caminhoArquivoPlay)
+                      : null,
+                  icon: const Icon(Icons.play_arrow_rounded),
+                  style: IconButton.styleFrom(
+                    backgroundColor: theme.accent,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              ],
+            ),
           );
         }
 
@@ -67,6 +100,19 @@ class BotaoPlayer extends StatelessWidget {
                         height: 1.05,
                       ),
                     ),
+                  ),
+                  IconButton(
+                    tooltip: manager.isFavorite(caminhoArquivoPlay)
+                        ? 'Remover favorito'
+                        : 'Adicionar favorito',
+                    icon: Icon(
+                      manager.isFavorite(caminhoArquivoPlay)
+                          ? Icons.star_rounded
+                          : Icons.star_border_rounded,
+                      color: theme.accent,
+                    ),
+                    onPressed: () =>
+                        manager.alternarFavoritoPorCaminho(caminhoArquivoPlay),
                   ),
                   _AnimatedPlayingIcon(color: theme.accentSecondary),
                 ],
