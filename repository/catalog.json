@@ -13,13 +13,13 @@
                      "notas":  "Versão 1.091: só reinicia após transferência Wi-Fi confirmada; conexão ou /finish sem arquivo não reinicia o PET."
                  },
     "app":  {
-                "version":  "1.108",
-                "build":  1108,
-                "arquivo":  "FEFO_App_v1.108.apk",
-                "tamanho":  56552431,
-                "checksum":  "4befbb3059d3524df72ec1d4931d09107e818b461e44300feb13c2bb2a4779ac",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.108.apk",
-                "notas":  "Não reinicia o PET quando uma gravação Wi-Fi falha; mantém o handshake da última versão funcional e o cache do catálogo."
+                "version":  "1.109",
+                "build":  1109,
+                "arquivo":  "FEFO_App_v1.109.apk",
+                "tamanho":  56003415,
+                "checksum":  "6d35e49b59ca750f08a7a2ef7ac1d8571483648c787847af30bac397fa65d46d",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.109.apk",
+                "notas":  "Restaura a solicitação Wi-Fi da última versão funcional e mantém a proteção contra reinício em falhas."
              },
     "audio":  [
                   {
