@@ -32,9 +32,7 @@ class PaginaBase extends StatelessWidget {
     final temPlayer = manager.caminhoAudioAtivo != null &&
         manager.caminhoAudioAtivo!.isNotEmpty;
     final playerAtivo = temPlayer || manager.audioPlaying || manager.audioPaused;
-    final bottomContentPadding = playerAtivo
-        ? (mostrarBotaoVoltar ? 168.0 : 112.0)
-        : (mostrarBotaoVoltar ? 72.0 : 24.0);
+    final bottomContentPadding = playerAtivo ? 112.0 : 24.0;
 
     return Scaffold(
       bottomNavigationBar: !mostrarNavegacao
@@ -93,24 +91,7 @@ class PaginaBase extends StatelessWidget {
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
                         maxWidth: tokens?.contentMaxWidth ?? 720),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (mostrarBotaoVoltar)
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-                            child: SizedBox(
-                              width: double.infinity,
-                              child: FilledButton.icon(
-                                onPressed: () => Navigator.of(context).maybePop(),
-                                icon: const Icon(Icons.arrow_back_rounded),
-                                label: const Text('Voltar'),
-                              ),
-                            ),
-                          ),
-                        const MiniPlayer(),
-                      ],
-                    ),
+                    child: const MiniPlayer(),
                   ),
                 ),
               ],
