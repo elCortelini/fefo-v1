@@ -1,16 +1,16 @@
 {
     "schema":  1,
-    "catalogVersion":  54,
+    "catalogVersion":  55,
     "repository":  "FEFO Google Drive",
     "firmware":  {
-                     "version":  "1.095",
+                     "version":  "1.096",
                      "board":  "FEFO_CYD_ESP32",
-                     "arquivo":  "FEFO_Firmware_v1.095.bin",
+                     "arquivo":  "FEFO_Firmware_v1.096.bin",
                      "tamanho":  1746656,
-                     "checksum":  "752dfd4fc9bc9bf3c9d105a163d15886301a4392385409be1300a2e0eef0e36d",
-                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.095.bin",
+                     "checksum":  "123a1f1093a1ee2f41813e10c695b758605305ab96b613f0f4690939793511a4",
+                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.096.bin",
                      "obrigatorio":  false,
-                     "notas":  "Versão 1.095: substitui corretamente o catálogo ativo após a transferência, criando menus e submenus sem concatenar manifestos antigos."
+                     "notas":  "Versão 1.096: torna a transferência mais confiável, tolerando pausas de até 60 segundos em arquivos grandes."
                  },
     "app":  {
                 "version":  "1.110",
