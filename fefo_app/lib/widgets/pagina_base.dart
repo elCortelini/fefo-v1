@@ -6,6 +6,7 @@ import 'mini_player.dart';
 import '../theme/fefo_theme.dart';
 import '../design_system/fefo_tokens.dart';
 import '../config/fefo_routes.dart';
+import '../managers/bluetooth_manager.dart';
 
 class PaginaBase extends StatelessWidget {
   final Widget child;
@@ -26,7 +27,14 @@ class PaginaBase extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fefoTheme = context.watch<FefoThemeController>().current;
+    final manager = context.watch<BluetoothManager>();
     final tokens = Theme.of(context).extension<FefoTokens>();
+    final temPlayer = manager.caminhoAudioAtivo != null &&
+        manager.caminhoAudioAtivo!.isNotEmpty;
+    final playerAtivo = temPlayer || manager.audioPlaying || manager.audioPaused;
+    final bottomContentPadding = playerAtivo
+        ? (mostrarBotaoVoltar ? 168.0 : 112.0)
+        : (mostrarBotaoVoltar ? 72.0 : 24.0);
 
     return Scaffold(
       bottomNavigationBar: !mostrarNavegacao
@@ -70,7 +78,7 @@ class PaginaBase extends StatelessWidget {
                     tokens?.pagePadding ?? 20,
                     0,
                     tokens?.pagePadding ?? 20,
-                    112,
+                    bottomContentPadding,
                   ),
                   child: Center(
                     child: ConstrainedBox(
@@ -85,7 +93,24 @@ class PaginaBase extends StatelessWidget {
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
                         maxWidth: tokens?.contentMaxWidth ?? 720),
-                    child: const MiniPlayer(),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (mostrarBotaoVoltar)
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                            child: SizedBox(
+                              width: double.infinity,
+                              child: FilledButton.icon(
+                                onPressed: () => Navigator.of(context).maybePop(),
+                                icon: const Icon(Icons.arrow_back_rounded),
+                                label: const Text('Voltar'),
+                              ),
+                            ),
+                          ),
+                        const MiniPlayer(),
+                      ],
+                    ),
                   ),
                 ),
               ],
