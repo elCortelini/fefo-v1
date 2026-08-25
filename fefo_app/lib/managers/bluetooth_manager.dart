@@ -1143,18 +1143,20 @@ class BluetoothManager extends ChangeNotifier {
       }
       final finishClient = HttpClient();
       try {
-        final finish =
-            await finishClient.postUrl(Uri.parse('http://$ip/finish'));
-        finish.headers.set('X-Fefo-Token', token);
-        finish.contentLength = 0;
         try {
+          final finish =
+              await finishClient.postUrl(Uri.parse('http://$ip/finish'));
+          finish.headers.set('X-Fefo-Token', token);
+          finish.contentLength = 0;
           await (await finish.close()).drain<void>();
         } on SocketException {
           // O FEFO reinicia logo após aceitar /finish e pode encerrar o socket
-          // antes de o Android receber o fim da resposta.
+          // antes de o Android receber a resposta — inclusive durante postUrl.
         } on HttpException {
           // Todos os arquivos já foram confirmados individualmente neste ponto.
           // Uma conexão abortada aqui significa que o reboot foi iniciado.
+        } on TimeoutException {
+          // O reinício pode ocorrer antes de o Android concluir a leitura.
         }
       } finally {
         finishClient.close();
