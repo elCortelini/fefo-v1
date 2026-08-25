@@ -131,7 +131,10 @@ void WifiTransferService::handlePushClient(WiFiClient& client, bool& finished,
   File output = SD.open(temporary, FILE_WRITE);
   if (!output) { reply(client, 500, "SD_OPEN_FAILED"); client.stop(); return; }
   mbedtls_sha256_context sha; mbedtls_sha256_init(&sha); mbedtls_sha256_starts_ret(&sha, 0);
-  uint8_t buffer[4096]; uint32_t received = 0; uint32_t lastData = millis();
+  // A pilha da loopTask da CYD é pequena. Este buffer não pode ser local:
+  // junto com o contexto SHA-256 ele causava stack overflow ao iniciar um PUT.
+  static uint8_t buffer[4096];
+  uint32_t received = 0; uint32_t lastData = millis();
   lastProgressPercent_ = 255;
   if (progressCallback_) progressCallback_(path, 0, contentLength, progressContext_);
   while (received < contentLength && millis() - lastData < 15000) {
@@ -173,7 +176,7 @@ void WifiTransferService::handlePushClient(WiFiClient& client, bool& finished,
       client.stop();
       return;
     }
-    uint8_t catalogBuffer[1024];
+    static uint8_t catalogBuffer[1024];
     while (source.available()) {
       const size_t count = source.read(catalogBuffer, sizeof(catalogBuffer));
       if (count == 0 || active.write(catalogBuffer, count) != count) {
