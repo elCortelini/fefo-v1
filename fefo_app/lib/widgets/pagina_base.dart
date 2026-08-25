@@ -32,7 +32,7 @@ class PaginaBase extends StatelessWidget {
     final temPlayer = manager.caminhoAudioAtivo != null &&
         manager.caminhoAudioAtivo!.isNotEmpty;
     final playerAtivo = temPlayer || manager.audioPlaying || manager.audioPaused;
-    final bottomContentPadding = playerAtivo ? 112.0 : 24.0;
+    final bottomContentPadding = playerAtivo ? 112.0 : 0.0;
 
     return Scaffold(
       bottomNavigationBar: !mostrarNavegacao

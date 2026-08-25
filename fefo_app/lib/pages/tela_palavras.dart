@@ -163,7 +163,7 @@ class TelaPalavras extends StatelessWidget {
             // evitando que o conteúdo fique atrás do botão "Voltar".
             // ====================================================================
             child: Padding(
-              padding: const EdgeInsets.only(bottom: 90.0),
+              padding: EdgeInsets.zero,
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 itemCount: _secoes.length,
