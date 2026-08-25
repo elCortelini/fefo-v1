@@ -266,10 +266,8 @@ class _TelaAudiosFefoState extends State<TelaAudiosFefo> {
                                         modoSelecao: _modoSelecao,
                                         selecionado:
                                             _selecionados.contains(audio.path),
-                                        tocando: manager.caminhoAudioAtivo ==
-                                                audio.token ||
-                                            manager.caminhoAudioAtivo ==
-                                                audio.path,
+                                        tocando:
+                                            manager.audioRefAtivo(audio.path),
                                         onTap: () {
                                           if (_modoSelecao) {
                                             _toggleSelecao(audio.path);
