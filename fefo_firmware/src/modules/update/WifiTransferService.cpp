@@ -43,6 +43,7 @@ bool WifiTransferService::runPushServer() {
   Serial.printf("[WIFI PUSH] %s ativo em %s; heap=%u.\n", apSsid_, WiFi.softAPIP().toString().c_str(), ESP.getFreeHeap());
   setError("AP_READY");
   bool finished = false;
+  bool transferStarted = false;
   const uint32_t started = millis();
   uint32_t lastClientAt = started;
   // Uma transferencia ativa fica dentro de handlePushClient. Fora dela, 45 s
@@ -51,7 +52,7 @@ bool WifiTransferService::runPushServer() {
          millis() - lastClientAt < 45UL * 1000UL) {
     WiFiClient client = server_.available();
     if (client) {
-      handlePushClient(client, finished);
+      handlePushClient(client, finished, transferStarted);
       lastClientAt = millis();
     }
     delay(1);
@@ -65,12 +66,14 @@ void WifiTransferService::reply(WiFiClient& client, int status, const char* mess
   client.printf("HTTP/1.1 %d %s\r\nContent-Type: text/plain\r\nContent-Length: %u\r\nConnection: close\r\n\r\n%s", status, status == 200 ? "OK" : "ERROR", (unsigned)strlen(message), message);
 }
 
-void WifiTransferService::handlePushClient(WiFiClient& client, bool& finished) {
+void WifiTransferService::handlePushClient(WiFiClient& client, bool& finished,
+                                           bool& transferStarted) {
   client.setTimeout(2);
   char line[192]{}, method[12]{}, target[80]{}, path[64]{}, auth[48]{}, expectedSha[68]{};
   uint32_t contentLength = 0;
   size_t n = client.readBytesUntil('\n', line, sizeof(line) - 1); line[n] = 0; trimHttp(line);
   sscanf(line, "%11s %79s", method, target);
+  Serial.printf("[WIFI PUSH] requisicao: %s %s\n", method, target);
   while (client.connected()) {
     n = client.readBytesUntil('\n', line, sizeof(line) - 1); line[n] = 0; trimHttp(line);
     if (!line[0]) break;
@@ -86,6 +89,12 @@ void WifiTransferService::handlePushClient(WiFiClient& client, bool& finished) {
     return;
   }
   if (strcmp(method, "POST") == 0 && strcmp(target, "/finish") == 0) {
+    if (!transferStarted) {
+      setError("FINISH_WITHOUT_TRANSFER");
+      reply(client, 409, "NO_TRANSFER");
+      client.stop();
+      return;
+    }
     setError("OK");
     reply(client, 200, "FINISHED");
     client.flush();
@@ -99,6 +108,7 @@ void WifiTransferService::handlePushClient(WiFiClient& client, bool& finished) {
     else {
       const bool existed = SD.exists(path);
       const bool removed = !existed || SD.remove(path);
+      if (removed) transferStarted = true;
       if (progressCallback_) progressCallback_(path, 1, 1, progressContext_);
       reply(client, removed ? 200 : 500, removed ? "DELETED" : "DELETE_FAILED");
     }
@@ -106,7 +116,7 @@ void WifiTransferService::handlePushClient(WiFiClient& client, bool& finished) {
   }
   if (strcmp(method, "PUT") == 0 && strcmp(target, "/file") == 0 &&
       strcmp(path, "/firmware.bin") == 0) {
-    handleFirmwareUpload(client, contentLength, expectedSha);
+    handleFirmwareUpload(client, contentLength, expectedSha, transferStarted);
     return;
   }
   if (strcmp(method, "PUT") != 0 || strcmp(target, "/file") != 0 || !validPath(path) || !contentLength || !ensureParent(path)) { reply(client, 400, "REQUEST_INVALID"); client.stop(); return; }
@@ -140,6 +150,7 @@ void WifiTransferService::handlePushClient(WiFiClient& client, bool& finished) {
   if (received != contentLength || (expectedSha[0] && strcasecmp(expectedSha, actual) != 0)) { SD.remove(temporary); reply(client, 422, received != contentLength ? "SIZE_MISMATCH" : "SHA256_MISMATCH"); client.stop(); return; }
   SD.remove(path);
   if (!SD.rename(temporary, path)) { SD.remove(temporary); reply(client, 500, "RENAME_FAILED"); client.stop(); return; }
+  transferStarted = true;
   // O manifesto enviado pelo app precisa virar o catálogo ativo imediatamente.
   // Sem esta cópia, uma leitura de CATALOG GET antes do próximo boot pode usar
   // o catálogo físico, que não contém títulos, menus ou submenus.
@@ -174,7 +185,8 @@ void WifiTransferService::handlePushClient(WiFiClient& client, bool& finished) {
 
 void WifiTransferService::handleFirmwareUpload(WiFiClient& client,
                                                uint32_t contentLength,
-                                               const char* expectedSha) {
+                                               const char* expectedSha,
+                                               bool& transferStarted) {
   if (!contentLength) {
     reply(client, 400, "FIRMWARE_METADATA_INVALID");
     client.stop();
@@ -250,6 +262,7 @@ void WifiTransferService::handleFirmwareUpload(WiFiClient& client,
     client.stop();
     return;
   }
+  transferStarted = true;
   reply(client, 200, "FIRMWARE_READY");
   client.flush();
   client.stop();

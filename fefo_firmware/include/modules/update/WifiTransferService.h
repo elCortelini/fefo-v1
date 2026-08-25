@@ -25,9 +25,10 @@ class WifiTransferService {
   bool validPath(const char* path) const;
   bool ensureParent(const char* path);
   void setError(const char* error);
-  void handlePushClient(WiFiClient& client, bool& finished);
+  void handlePushClient(WiFiClient& client, bool& finished,
+                        bool& transferStarted);
   void handleFirmwareUpload(WiFiClient& client, uint32_t contentLength,
-                            const char* expectedSha);
+                            const char* expectedSha, bool& transferStarted);
   void reply(WiFiClient& client, int status, const char* message);
 
   char lastError_[80]{};
