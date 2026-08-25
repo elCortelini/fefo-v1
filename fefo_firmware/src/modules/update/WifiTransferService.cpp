@@ -42,6 +42,7 @@ bool WifiTransferService::runPushServer() {
   server_.begin(); server_.setNoDelay(true);
   Serial.printf("[WIFI PUSH] %s ativo em %s; heap=%u.\n", apSsid_, WiFi.softAPIP().toString().c_str(), ESP.getFreeHeap());
   setError("AP_READY");
+  if (progressCallback_) progressCallback_("Aguardando conexão Wi-Fi", 0, 1, progressContext_);
   bool finished = false;
   bool transferStarted = false;
   const uint32_t started = millis();
@@ -96,6 +97,7 @@ void WifiTransferService::handlePushClient(WiFiClient& client, bool& finished,
       return;
     }
     setError("OK");
+    if (progressCallback_) progressCallback_("Transferência concluída", 1, 1, progressContext_);
     reply(client, 200, "FINISHED");
     client.flush();
     delay(250);

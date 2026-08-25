@@ -3,14 +3,14 @@
     "catalogVersion":  54,
     "repository":  "FEFO Google Drive",
     "firmware":  {
-                     "version":  "1.091",
+                     "version":  "1.092",
                      "board":  "FEFO_CYD_ESP32",
-                     "arquivo":  "FEFO_Firmware_v1.091.bin",
-                     "tamanho":  1746592,
-                     "checksum":  "a9c5498dfc703994e46c4fd97e243742e7ffa051f0c4e4c847f2ff3ac615ebd8",
-                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.091.bin",
+                     "arquivo":  "FEFO_Firmware_v1.092.bin",
+                     "tamanho":  1746720,
+                     "checksum":  "64ffbcd4ced558b738d926d830925c7f13b07ddc3eef601662db1b0fec822d09",
+                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.092.bin",
                      "obrigatorio":  false,
-                     "notas":  "Versão 1.091: só reinicia após transferência Wi-Fi confirmada; conexão ou /finish sem arquivo não reinicia o PET."
+                     "notas":  "Versão 1.092: exibe a tela de atualização desde a conexão Wi-Fi e confirma a conclusão antes do reinício."
                  },
     "app":  {
                 "version":  "1.109",
