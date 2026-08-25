@@ -244,11 +244,13 @@ class BluetoothManager extends ChangeNotifier {
   static const String _prefKeyId = 'fefo_ble_id';
   static const String _prefKeyNome = 'fefo_nome';
   static const String _prefKeyCatalogCache = 'fefo_catalog_cache_json';
+  static const String _prefKeyOnlineCatalogCache = 'fefo_online_catalog_cache';
   static const String _prefKeyFavorites = 'fefo_favorite_audio_paths';
   static const String _prefKeyDarkMode = 'fefo_dark_mode';
 
   BluetoothManager() {
     carregarCatalogoDoCache();
+    _carregarMetadadosCatalogoOnline();
     _preferenciasVisuaisFuture = _carregarPreferenciasVisuais();
   }
 
@@ -272,6 +274,55 @@ class BluetoothManager extends ChangeNotifier {
       developer.log('Erro ao carregar catálogo em cache: $e',
           name: 'BluetoothManager');
     }
+  }
+
+  Future<void> _carregarMetadadosCatalogoOnline() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_prefKeyOnlineCatalogCache);
+      if (raw == null || raw.isEmpty) return;
+      final decoded = jsonDecode(raw);
+      final audios = decoded is Map ? decoded['audio'] : null;
+      if (audios is! List) return;
+      for (final value in audios.whereType<Map>()) {
+        final item = FefoAudioItem.fromJson(Map<String, dynamic>.from(value));
+        if (item.path.isNotEmpty) {
+          _metadadosAudioOnline[_normalizarCaminhoCatalogo(item.path)] = item;
+        }
+      }
+      final atuais = List<FefoAudioItem>.from(_audioItems);
+      for (final item in atuais) {
+        final online =
+            _metadadosAudioOnline[_normalizarCaminhoCatalogo(item.path)];
+        if (online != null) _substituirAudioMesclado(item, online);
+      }
+      notifyListeners();
+    } catch (error) {
+      developer.log('Catálogo online indisponível para metadados: $error',
+          name: 'BluetoothManager');
+    }
+  }
+
+  String _normalizarCaminhoCatalogo(String path) =>
+      path.trim().toLowerCase().replaceAll('\\', '/');
+
+  void _substituirAudioMesclado(FefoAudioItem atual, FefoAudioItem online) {
+    final index = _audioItems.indexWhere((item) => item.path == atual.path);
+    if (index < 0) return;
+    _audioItems[index] = FefoAudioItem(
+      id: online.id == 0 ? atual.id : online.id,
+      path: atual.path,
+      catalogTitle: online.catalogTitle.isEmpty
+          ? atual.catalogTitle
+          : online.catalogTitle,
+      catalogGroup: online.catalogGroup.isEmpty
+          ? atual.catalogGroup
+          : online.catalogGroup,
+      catalogSubmenu: online.catalogSubmenu.isEmpty
+          ? atual.catalogSubmenu
+          : online.catalogSubmenu,
+      checksum: online.checksum.isEmpty ? atual.checksum : online.checksum,
+    );
   }
 
   BluetoothDevice? _connectedDevice;
@@ -302,6 +353,7 @@ class BluetoothManager extends ChangeNotifier {
   final List<FefoAudioItem> _audioItems = [];
   final List<FefoCatalogItem> _ledEffects = [];
   final List<FefoCatalogItem> _vibrationEffects = [];
+  final Map<String, FefoAudioItem> _metadadosAudioOnline = {};
   final List<FefoCatalogItem> _faces = [];
   bool _uploading = false;
   double _uploadProgress = 0;
@@ -1702,6 +1754,20 @@ class BluetoothManager extends ChangeNotifier {
 
   void _adicionarAudioCatalogo(FefoAudioItem item) {
     if (item.path.isEmpty) return;
+    final online = _metadadosAudioOnline[_normalizarCaminhoCatalogo(item.path)];
+    if (online != null &&
+        item.catalogTitle.trim().isEmpty &&
+        item.catalogGroup.trim().isEmpty &&
+        item.catalogSubmenu.trim().isEmpty) {
+      item = FefoAudioItem(
+        id: item.id == 0 ? online.id : item.id,
+        path: item.path,
+        catalogTitle: online.catalogTitle,
+        catalogGroup: online.catalogGroup,
+        catalogSubmenu: online.catalogSubmenu,
+        checksum: online.checksum,
+      );
+    }
     final existente =
         _audioItems.indexWhere((audio) => audio.path == item.path);
     // APP SYNC traz apenas os caminhos do SD. Preserve o título/menu já

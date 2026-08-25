@@ -1,6 +1,6 @@
 {
     "schema":  1,
-    "catalogVersion":  61,
+    "catalogVersion":  62,
     "repository":  "FEFO Google Drive",
     "firmware":  {
                      "version":  "1.098",
@@ -13,13 +13,13 @@
                      "notas":  "Versão 1.098: Ronronar usa a face 2 e mantém a vibração durante a duração do áudio."
                  },
     "app":  {
-                "version":  "1.116",
-                "build":  1116,
-                "arquivo":  "FEFO_App_v1.116.apk",
+                "version":  "1.117",
+                "build":  1117,
+                "arquivo":  "FEFO_App_v1.117.apk",
                 "tamanho":  56036119,
-                "checksum":  "5c6738c5aa4b1b6a45bf830931bcbc5a7aa63618fd1de6ecd06e5d34eabf91b6",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.116.apk",
-                "notas":  "Corrige fontes, popup temático e criação de menus a partir do catálogo online; remove os arquivos de áudio do Ronronar."
+                "checksum":  "27ba1b668f3a6e33c5d263ca98192462f1ee2e1f80e3a122ff56f0836c6c4249",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.117.apk",
+                "notas":  "Corrige a associação dos áudios instalados ao menu e aos nomes definidos no catálogo online."
              },
     "audio":  [
                   {
