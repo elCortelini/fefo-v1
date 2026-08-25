@@ -6,7 +6,6 @@ import 'dart:math';
 
 import '../widgets/pagina_base.dart';
 import '../widgets/botao_verde.dart';
-import '../config/app_version.dart';
 import '../theme/fefo_theme.dart';
 import '../design_system/fefo_components.dart';
 
@@ -42,28 +41,6 @@ class TelaSobre extends StatelessWidget {
 
                       // 2. Título da Página
                       const FefoPageHeader(title: 'Quem é o Fefo?'),
-                      const SizedBox(height: 25),
-
-                      // Selo da Versão do Aplicativo
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: theme.accent.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: theme.accent, width: 1.5),
-                        ),
-                        child: Text(
-                          'Versão do App: FEFO App $fefoAppVersionLabel',
-                          style: TextStyle(
-                            fontFamily: 'KGPen',
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: theme.accent,
-                          ),
-                        ),
-                      ),
-
                       const SizedBox(height: 25),
 
                       // 3. O Texto da História do Fefo

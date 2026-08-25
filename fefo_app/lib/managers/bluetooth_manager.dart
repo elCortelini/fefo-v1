@@ -21,6 +21,7 @@ import 'dart:io'
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -288,6 +289,7 @@ class BluetoothManager extends ChangeNotifier {
   String? _audioSelecionado;
   String? _audioPlayPendente;
   Timer? _audioPlayPendenteTimer;
+  final AudioPlayer _ronronarPlayer = AudioPlayer();
   String _statusMensagem = 'Desconectado';
   String? _ultimoComandoEnviado;
   String? _ultimaRespostaRecebida;
@@ -2008,6 +2010,13 @@ class BluetoothManager extends ChangeNotifier {
   }
 
   Future<void> ronronar() async {
+    try {
+      await _ronronarPlayer.stop();
+      await _ronronarPlayer.play(AssetSource('sounds/ronronar.wav'));
+    } catch (error) {
+      developer.log('Falha ao reproduzir ronronar no app: $error',
+          name: 'BluetoothManager');
+    }
     await _enviarComandoNormalizado('RONRONAR');
   }
 
@@ -2146,6 +2155,7 @@ class BluetoothManager extends ChangeNotifier {
     final device = _connectedDevice;
     _intentionalDisconnect = true;
     _autoReconnectTimer?.cancel();
+    _ronronarPlayer.dispose();
     _autoReconnectTimer = null;
     _cleanup();
     try {
@@ -2214,6 +2224,7 @@ class BluetoothManager extends ChangeNotifier {
     _audioPlayPendenteTimer?.cancel();
     _keepAliveTimer?.cancel();
     _autoReconnectTimer?.cancel();
+    _ronronarPlayer.dispose();
     _connectedDevice?.disconnect();
     super.dispose();
   }

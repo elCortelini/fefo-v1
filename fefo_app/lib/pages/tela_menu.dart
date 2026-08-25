@@ -163,21 +163,13 @@ class TelaMenu extends StatelessWidget {
                     ),
                   ),
                 ],
-                Container(
-                  padding: const EdgeInsets.all(5),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withValues(alpha: .12),
-                    borderRadius: BorderRadius.circular(28),
-                    border: Border.all(color: Colors.red, width: 2),
-                  ),
-                  child: BotaoPincelada(
+                BotaoPincelada(
                     texto: 'PÂNICO',
                     icone: Icons.notifications_active_rounded,
                     cor: Colors.red.shade700,
                     larguraPercentual: 1,
                     fontSize: 36,
                     aoPressionar: () => manager.enviarComando('PANIC TRIGGER'),
-                  ),
                 ),
                 const SizedBox(height: 12),
                 _MenuAction(

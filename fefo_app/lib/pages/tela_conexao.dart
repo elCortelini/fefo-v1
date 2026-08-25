@@ -56,7 +56,6 @@ class _TelaConexaoState extends State<TelaConexao> {
 
     if (manager.isConnected) {
       _mostrarMensagem('Conectado por BLE!', sucesso: true);
-      Navigator.pop(context);
     } else {
       _mostrarMensagem('Falha ao conectar. Tente novamente.', erro: true);
     }
@@ -83,6 +82,9 @@ class _TelaConexaoState extends State<TelaConexao> {
   String _obterTextoBotao(BluetoothManager manager) {
     if (_isCarregando || manager.isScanning) {
       return 'Buscando...';
+    }
+    if (manager.isConnected) {
+      return 'Buscar outros FEFOs';
     }
     if (_devicesList.isNotEmpty) {
       return 'Conectar';
@@ -164,6 +166,12 @@ class _TelaConexaoState extends State<TelaConexao> {
                             fontWeight: FontWeight.bold,
                             color: Colors.black87,
                           ),
+                        ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          'Você pode desconectar ou procurar outro FEFO sem sair desta tela.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontFamily: 'KGPen', fontSize: 16),
                         ),
                         const SizedBox(height: 12),
                         Row(
