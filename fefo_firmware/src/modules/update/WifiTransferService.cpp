@@ -9,6 +9,8 @@
 namespace fefo {
 
 namespace {
+constexpr uint32_t kUploadInactivityTimeoutMs = 60000;
+
 void trimHttp(char* value) {
   if (!value) return;
   size_t n = strlen(value);
@@ -137,7 +139,7 @@ void WifiTransferService::handlePushClient(WiFiClient& client, bool& finished,
   uint32_t received = 0; uint32_t lastData = millis();
   lastProgressPercent_ = 255;
   if (progressCallback_) progressCallback_(path, 0, contentLength, progressContext_);
-  while (received < contentLength && millis() - lastData < 15000) {
+  while (received < contentLength && millis() - lastData < kUploadInactivityTimeoutMs) {
     const int available = client.available();
     if (available <= 0) { delay(1); continue; }
     const size_t wanted = min<size_t>(sizeof(buffer), min<uint32_t>(available, contentLength - received));
@@ -231,7 +233,7 @@ void WifiTransferService::handleFirmwareUpload(WiFiClient& client,
   if (progressCallback_) {
     progressCallback_("Firmware OTA", 0, contentLength, progressContext_);
   }
-  while (received < contentLength && millis() - lastData < 15000) {
+  while (received < contentLength && millis() - lastData < kUploadInactivityTimeoutMs) {
     const int available = client.available();
     if (available <= 0) {
       delay(1);
