@@ -168,6 +168,9 @@ void WifiTransferService::handlePushClient(WiFiClient& client, bool& finished,
     SD.mkdir("/sys");
     SD.mkdir("/sys/db");
     File source = SD.open("/fefo.json", FILE_READ);
+    // FILE_WRITE no FS da SD abre em append. Remova o manifesto anterior para
+    // que o catálogo ativo seja substituído, nunca concatenado.
+    SD.remove("/sys/db/fefo.json");
     File active = SD.open("/sys/db/fefo.json", FILE_WRITE);
     if (!source || !active) {
       if (source) source.close();
