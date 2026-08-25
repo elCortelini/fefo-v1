@@ -1,25 +1,25 @@
 {
     "schema":  1,
-    "catalogVersion":  55,
+    "catalogVersion":  56,
     "repository":  "FEFO Google Drive",
     "firmware":  {
-                     "version":  "1.096",
+                     "version":  "1.097",
                      "board":  "FEFO_CYD_ESP32",
-                     "arquivo":  "FEFO_Firmware_v1.096.bin",
-                     "tamanho":  1746656,
-                     "checksum":  "123a1f1093a1ee2f41813e10c695b758605305ab96b613f0f4690939793511a4",
-                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.096.bin",
+                     "arquivo":  "FEFO_Firmware_v1.097.bin",
+                     "tamanho":  1746512,
+                     "checksum":  "044e0266992152a60c441feb138b1c1968fa7e985103ec16b7d37dae01cf9799",
+                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.097.bin",
                      "obrigatorio":  false,
-                     "notas":  "Versão 1.096: torna a transferência mais confiável, tolerando pausas de até 60 segundos em arquivos grandes."
+                     "notas":  "Versão 1.097: mantém o efeito de LED escolhido durante o áudio e remove o VU meter da reprodução."
                  },
     "app":  {
-                "version":  "1.111",
-                "build":  1111,
-                "arquivo":  "FEFO_App_v1.111.apk",
-                "tamanho":  56019795,
-                "checksum":  "183a7376ff5b6c41d2a0d31538a075978732f0f35cbb4cce649b305adf845fc2",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.111.apk",
-                "notas":  "Aguarda o catálogo completo antes de montar os menus e repete arquivos quando há falhas momentâneas de Wi-Fi."
+                "version":  "1.112",
+                "build":  1112,
+                "arquivo":  "FEFO_App_v1.112.apk",
+                "tamanho":  56036119,
+                "checksum":  "118ad59c4532007d9a908b011e20e1241765c5a78fd41802e39538fce28675e8",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.112.apk",
+                "notas":  "Corrige favoritos, player flutuante, destaque do áudio ativo, fila do Jukebox e abertura automática do menu após conexão."
              },
     "audio":  [
                   {

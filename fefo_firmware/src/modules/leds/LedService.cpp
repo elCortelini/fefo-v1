@@ -130,14 +130,16 @@ void LedService::update(uint32_t nowMs, bool panicActive, bool audioActive,
     return;
   }
 
-  const uint32_t intervalMs = audioActive ? 45u : (panicActive ? 120u : 140u);
+  // A reprodução de áudio não substitui o padrão escolhido pelo usuário.
+  // O VU meter fica restrito ao diagnóstico; em uso normal a fita continua
+  // no arco-íris padrão ou no efeito selecionado.
+  (void)audioActive;
+  (void)audioLevelPercent;
+  const uint32_t intervalMs = panicActive ? 120u : 140u;
   if (nowMs - lastLedUpdateMs_ < intervalMs) return;
   lastLedUpdateMs_ = nowMs;
 
-  if (audioActive) {
-    panicActive_ = false;
-    showAudioVu(audioLevelPercent);
-  } else if (panicActive) {
+  if (panicActive) {
     if (!panicActive_) {
       ledPhase_ = 0;
     }
