@@ -1199,31 +1199,21 @@ class BluetoothManager extends ChangeNotifier {
 
   Future<void> _aguardarServidorWifi(String ip, String token) async {
     Object? lastError;
-    // A rede criada pelo PET não fornece internet. Em alguns Androids a rota
-    // local só fica disponível alguns segundos depois de onAvailable().
-    for (var attempt = 1; attempt <= 30; attempt++) {
+    // Compatibilidade com o transporte que funcionava nas versões anteriores:
+    // basta o PET responder ao socket local; não exigir corpo/status evita que
+    // Android trate o fechamento rápido da resposta como falha da conexão.
+    for (var attempt = 1; attempt <= 15; attempt++) {
       final client = HttpClient()
-        ..connectionTimeout = const Duration(seconds: 3)
-        ..idleTimeout = const Duration(seconds: 3);
+        ..connectionTimeout = const Duration(seconds: 2);
       try {
         final request = await client.getUrl(Uri.parse('http://$ip/ping'));
         request.headers.set('X-Fefo-Token', token);
-        request.headers.set('Connection', 'close');
-        final response = await request.close();
-        final body = await utf8.decoder.bind(response).join();
-        // Firmware antigo ainda não conhece /ping e responde 400, mas isso
-        // confirma que o PET foi encontrado e que a sessão está válida.
-        if ((response.statusCode == HttpStatus.ok && body.trim().isNotEmpty) ||
-            response.statusCode == HttpStatus.badRequest) {
-          return;
-        }
-        lastError = HttpException(
-          'HTTP ${response.statusCode}: ${body.trim()}',
-        );
+        await (await request.close()).drain<void>();
+        return;
       } catch (error) {
         lastError = error;
-        _setStatus('Aguardando rede local do FEFO ($attempt/30)...');
-        await Future<void>.delayed(const Duration(milliseconds: 900));
+        _setStatus('Aguardando servidor do FEFO ($attempt/15)...');
+        await Future<void>.delayed(const Duration(milliseconds: 700));
       } finally {
         client.close(force: true);
       }
