@@ -155,7 +155,7 @@ class TelaClassicas extends StatelessWidget {
           Expanded(
             // 3. Adicionado Padding para criar espaço no final da lista
             child: Padding(
-              padding: const EdgeInsets.only(bottom: 90.0),
+              padding: EdgeInsets.zero,
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 itemCount: _secoes.length,

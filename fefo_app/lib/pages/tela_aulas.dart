@@ -91,7 +91,7 @@ class TelaAulas extends StatelessWidget {
           const SizedBox(height: 25),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.only(bottom: 90.0),
+              padding: EdgeInsets.zero,
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 itemCount: _secoes.length,

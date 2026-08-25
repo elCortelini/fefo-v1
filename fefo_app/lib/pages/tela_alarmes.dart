@@ -264,7 +264,7 @@ class _TelaAlarmesState extends State<TelaAlarmes> {
                           ? _buildEstadoVazio()
                           : ListView.builder(
                               itemCount: _listaDeAlarmes.length,
-                              padding: const EdgeInsets.only(bottom: 90),
+                              padding: EdgeInsets.zero,
                               itemBuilder: (context, index) {
                                 final alarme = _listaDeAlarmes[index];
                                 return _buildCardAlarme(alarme, manager);

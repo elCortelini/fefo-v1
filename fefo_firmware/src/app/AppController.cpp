@@ -368,9 +368,21 @@ void AppController::update() {
     ble_.shutdown();
     delay(300);
     Serial.printf("[WIFI PUSH] Heap apos desligar BLE: %u bytes.\n", ESP.getFreeHeap());
-    wifiTransfer_.runPushServer();
-    delay(250);
-    ESP.restart();
+    const bool transferFinished = wifiTransfer_.runPushServer();
+    Serial.printf("[WIFI PUSH] Sessao encerrada: %s.\n",
+                  transferFinished ? "TRANSFERENCIA_CONCLUIDA"
+                                    : "TRANSFERENCIA_NAO_CONCLUIDA");
+    if (transferFinished) {
+      delay(250);
+      ESP.restart();
+    } else {
+      // Uma falha de descoberta, cancelamento ou timeout não deve derrubar o
+      // PET. O BLE foi desligado apenas para liberar RAM durante o Wi-Fi.
+      ble_.begin();
+      beginWatchdog();
+      transitionTo(SystemState::kReady);
+      Serial.println("[WIFI PUSH] BLE reativado sem reiniciar o PET.");
+    }
   }
 
   bool microphoneSampled = false;

@@ -1,25 +1,25 @@
 {
     "schema":  1,
-    "catalogVersion":  50,
+    "catalogVersion":  51,
     "repository":  "FEFO Google Drive",
     "firmware":  {
-                     "version":  "1.089",
+                     "version":  "1.090",
                      "board":  "FEFO_CYD_ESP32",
-                     "arquivo":  "FEFO_Firmware_v1.089.bin",
-                     "tamanho":  1746240,
-                     "checksum":  "fa0ef15eabc9fe29cd06a183d659967cb907a59f615b58bab7909fff1f323f72",
-                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.089.bin",
+                     "arquivo":  "FEFO_Firmware_v1.090.bin",
+                     "tamanho":  1746464,
+                     "checksum":  "bce5fce4ea2035fc8552a0edf9720bbb6cdb0f92a37e01575ff48ef29ffb75f7",
+                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.090.bin",
                      "obrigatorio":  false,
-                     "notas":  "Versão 1.089: corrige a confirmação da rede Wi-Fi do PET e preserva o manifesto com títulos, menus e submenus."
+                     "notas":  "Versão 1.090: reinicia somente após transferência Wi-Fi concluída; em falhas, reativa o BLE sem reiniciar o PET."
                  },
     "app":  {
-                "version":  "1.104",
-                "build":  1104,
-                "arquivo":  "FEFO_App_v1.104.apk",
+                "version":  "1.105",
+                "build":  1105,
+                "arquivo":  "FEFO_App_v1.105.apk",
                 "tamanho":  56552431,
-                "checksum":  "ca18bb7bc53f24c1c3619e13078293767e6ea02cd96938ad6f4de80fbdd877be",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.104.apk",
-                "notas":  "Corrige o envio Wi-Fi inclusive com firmware antigo e remove o espaço inferior não utilizado das telas."
+                "checksum":  "06f0bce432a00d0af07666e333ca3ddc6b0911a47d32807c98d967b335fa945f",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.105.apk",
+                "notas":  "Corrige falhas de conexão Wi-Fi sem reiniciar o PET e remove os paddings inferiores antigos de todas as telas."
              },
     "audio":  [
                   {
