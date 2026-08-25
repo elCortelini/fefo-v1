@@ -3,14 +3,14 @@
     "catalogVersion":  54,
     "repository":  "FEFO Google Drive",
     "firmware":  {
-                     "version":  "1.094",
+                     "version":  "1.095",
                      "board":  "FEFO_CYD_ESP32",
-                     "arquivo":  "FEFO_Firmware_v1.094.bin",
-                     "tamanho":  1746640,
-                     "checksum":  "dc9ae4802aea9a2d6049d8aee8cde991d119654ac1d97423861d69f41d85a82f",
-                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.094.bin",
+                     "arquivo":  "FEFO_Firmware_v1.095.bin",
+                     "tamanho":  1746656,
+                     "checksum":  "752dfd4fc9bc9bf3c9d105a163d15886301a4392385409be1300a2e0eef0e36d",
+                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.095.bin",
                      "obrigatorio":  false,
-                     "notas":  "Versão 1.094: corrige stack overflow ao iniciar a gravação Wi-Fi, que reiniciava a CYD antes de salvar o arquivo."
+                     "notas":  "Versão 1.095: substitui corretamente o catálogo ativo após a transferência, criando menus e submenus sem concatenar manifestos antigos."
                  },
     "app":  {
                 "version":  "1.110",
