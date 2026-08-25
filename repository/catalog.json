@@ -1,6 +1,6 @@
 {
     "schema":  1,
-    "catalogVersion":  53,
+    "catalogVersion":  54,
     "repository":  "FEFO Google Drive",
     "firmware":  {
                      "version":  "1.090",
@@ -13,13 +13,13 @@
                      "notas":  "Versão 1.090: reinicia somente após transferência Wi-Fi concluída; em falhas, reativa o BLE sem reiniciar o PET."
                  },
     "app":  {
-                "version":  "1.107",
-                "build":  1107,
-                "arquivo":  "FEFO_App_v1.107.apk",
+                "version":  "1.108",
+                "build":  1108,
+                "arquivo":  "FEFO_App_v1.108.apk",
                 "tamanho":  56552431,
-                "checksum":  "015076793333992dc65bbac760fb09d7d09ce046e8a7a3e58ed4afc8e164238d",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.107.apk",
-                "notas":  "Restaura o handshake Wi-Fi da última versão funcional; mantém fallback e cache do catálogo online."
+                "checksum":  "4befbb3059d3524df72ec1d4931d09107e818b461e44300feb13c2bb2a4779ac",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.108.apk",
+                "notas":  "Não reinicia o PET quando uma gravação Wi-Fi falha; mantém o handshake da última versão funcional e o cache do catálogo."
              },
     "audio":  [
                   {
