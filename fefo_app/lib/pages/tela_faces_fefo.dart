@@ -126,9 +126,17 @@ class _TelaFacesFefoState extends State<TelaFacesFefo> {
               color: Theme.of(context).colorScheme.secondary,
             ),
           ),
-          const FefoPageSubtitle(
-            text:
-                'Escolha um rostinho para exibir. Após a seleção, o FEFO retorna ao modo aleatório automaticamente.',
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 14),
+            child: Text(
+              'Escolha um rostinho para exibir. Após a seleção, o FEFO retorna ao modo aleatório automaticamente.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'KGPen',
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ),
           Expanded(
             child: ListView(
@@ -136,7 +144,6 @@ class _TelaFacesFefoState extends State<TelaFacesFefo> {
               children: [
                 FefoPageSubtitle(text: _status),
                 const SizedBox(height: 10),
-                const _SectionTitle('Instaladas no FEFO'),
                 if (installedFaces.isEmpty)
                   const FefoPageSubtitle(text: 'Nenhuma face instalada.'),
                 _faceGrid(installedFaces, manager: manager),

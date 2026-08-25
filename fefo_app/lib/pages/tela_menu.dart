@@ -148,10 +148,6 @@ class TelaMenu extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const FefoPageHeader(
-                  title: 'Menu Principal',
-                  subtitle: 'Escolha uma atividade para começar.',
-                ),
                 if (!manager.isConnected) ...[
                   FefoStatusBadge(
                     label: 'FEFO desconectado · menu disponível',
@@ -167,13 +163,21 @@ class TelaMenu extends StatelessWidget {
                     ),
                   ),
                 ],
-                BotaoPincelada(
-                  texto: 'PÂNICO',
-                  icone: Icons.notifications_active_rounded,
-                  cor: Theme.of(context).colorScheme.primary,
-                  larguraPercentual: 1,
-                  fontSize: 30,
-                  aoPressionar: () => manager.enviarComando('PANIC TRIGGER'),
+                Container(
+                  padding: const EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withValues(alpha: .12),
+                    borderRadius: BorderRadius.circular(28),
+                    border: Border.all(color: Colors.red, width: 2),
+                  ),
+                  child: BotaoPincelada(
+                    texto: 'PÂNICO',
+                    icone: Icons.notifications_active_rounded,
+                    cor: Colors.red.shade700,
+                    larguraPercentual: 1,
+                    fontSize: 36,
+                    aoPressionar: () => manager.enviarComando('PANIC TRIGGER'),
+                  ),
                 ),
                 const SizedBox(height: 12),
                 _MenuAction(

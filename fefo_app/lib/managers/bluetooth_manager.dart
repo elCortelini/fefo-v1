@@ -286,6 +286,8 @@ class BluetoothManager extends ChangeNotifier {
   bool _isScanning = false;
   String? _caminhoAudioAtivo;
   String? _audioSelecionado;
+  String? _audioPlayPendente;
+  Timer? _audioPlayPendenteTimer;
   String _statusMensagem = 'Desconectado';
   String? _ultimoComandoEnviado;
   String? _ultimaRespostaRecebida;
@@ -311,6 +313,8 @@ class BluetoothManager extends ChangeNotifier {
   int _audioTotalSec = 0;
   int _audioVolume = 50;
   int _ledCount = 35;
+  int? _ledPatternSelecionado;
+  int? _vibracaoSelecionada;
   String _audioControlState = 'idle';
   bool _audioPaused = false;
   Set<String> _favoritos = <String>{};
@@ -374,6 +378,8 @@ class BluetoothManager extends ChangeNotifier {
   List<FefoCatalogItem> get ledEffects => List.unmodifiable(_ledEffects);
   List<FefoCatalogItem> get vibrationEffects =>
       List.unmodifiable(_vibrationEffects);
+  int? get ledPatternSelecionado => _ledPatternSelecionado;
+  int? get vibracaoSelecionada => _vibracaoSelecionada;
   List<FefoCatalogItem> get faces => List.unmodifiable(_faces);
   bool get uploading => _uploading;
   double get uploadProgress => _uploadProgress;
@@ -400,9 +406,7 @@ class BluetoothManager extends ChangeNotifier {
       return 'Nenhum áudio em execução';
     }
     for (final item in _audioItems) {
-      if (item.path == _caminhoAudioAtivo ||
-          item.token == _caminhoAudioAtivo ||
-          _caminhoAudioAtivo!.endsWith(item.fileName)) {
+      if (audioRefAtivo(item.path) || audioRefAtivo(item.token)) {
         return item.title.isNotEmpty ? item.title : item.fileName;
       }
     }
@@ -424,13 +428,14 @@ class BluetoothManager extends ChangeNotifier {
       return false;
     }
     String normalizar(String value) {
-      final base = value.trim().toLowerCase().split('/').last;
+      var limpo = value.trim().toLowerCase();
+      if (limpo.startsWith('p:')) limpo = limpo.substring(2).trim();
+      if (limpo.startsWith('play ')) limpo = limpo.substring(5).trim();
+      final base = limpo.split('/').last;
       return base.replaceFirst(RegExp(r'\.(wav|mp3|ogg)$'), '');
     }
 
-    return ativo == ref ||
-        ativo == _extrairNomeSemExtensao(ref) ||
-        normalizar(ativo) == normalizar(ref);
+    return normalizar(ativo) == normalizar(ref);
   }
 
   Future<void> alternarFavoritoPorCaminho(String path) async {
@@ -785,10 +790,21 @@ class BluetoothManager extends ChangeNotifier {
       _audioVolume =
           int.tryParse(_extrairCampo(texto, 'VOL') ?? '') ?? _audioVolume;
       _audioPaused = state == 'PAUSED';
+      if (state == 'PLAYING' || state == 'PAUSED') {
+        _audioPlayPendente = null;
+        _audioPlayPendenteTimer?.cancel();
+        _audioPlayPendenteTimer = null;
+        _audioControlState = state == 'PAUSED' ? 'paused' : 'playing';
+      }
       if (size > 0) {
         _audioProgress = (position / size).clamp(0.0, 1.0);
       }
       if (state == 'IDLE') {
+        // O PET pode enviar um IDLE intermediário enquanto abre o arquivo.
+        if (_audioPlayPendente != null) {
+          notifyListeners();
+          return;
+        }
         _caminhoAudioAtivo = null;
         _audioSelecionado = null;
         _audioProgress = 0;
@@ -1721,6 +1737,13 @@ class BluetoothManager extends ChangeNotifier {
     // do usuário apareça imediatamente em qualquer tela.
     _audioSelecionado = audioRef;
     _caminhoAudioAtivo = audioRef;
+    _audioPlayPendente = audioRef;
+    _audioPlayPendenteTimer?.cancel();
+    _audioPlayPendenteTimer = Timer(const Duration(seconds: 8), () {
+      _audioPlayPendente = null;
+      _audioPlayPendenteTimer = null;
+      notifyListeners();
+    });
     _audioProgress = 0;
     _audioPaused = false;
     _audioControlState = 'playing';
@@ -1773,6 +1796,9 @@ class BluetoothManager extends ChangeNotifier {
     _audioControlState = 'stopped';
     _caminhoAudioAtivo = null;
     _audioSelecionado = null;
+    _audioPlayPendente = null;
+    _audioPlayPendenteTimer?.cancel();
+    _audioPlayPendenteTimer = null;
     notifyListeners();
   }
 
@@ -1969,11 +1995,16 @@ class BluetoothManager extends ChangeNotifier {
   }
 
   Future<void> setLedPattern(int pattern) async {
-    await _enviarComandoNormalizado('LED ${pattern.clamp(1, 10)}');
+    final escolhido = pattern.clamp(1, 10);
+    _ledPatternSelecionado = escolhido;
+    notifyListeners();
+    await _enviarComandoNormalizado('LED $escolhido');
   }
 
   Future<void> desligarLeds() async {
+    _ledPatternSelecionado = null;
     await _enviarComandoNormalizado('LED OFF');
+    notifyListeners();
   }
 
   Future<void> ronronar() async {
@@ -1981,7 +2012,10 @@ class BluetoothManager extends ChangeNotifier {
   }
 
   Future<void> vibrar(int pattern) async {
-    await _enviarComandoNormalizado('VIBRA ${pattern.clamp(1, 10)}');
+    final escolhido = pattern.clamp(1, 10);
+    _vibracaoSelecionada = escolhido;
+    notifyListeners();
+    await _enviarComandoNormalizado('VIBRA $escolhido');
   }
 
   Future<void> setPanicEnabled(bool enabled) async {
@@ -2161,6 +2195,9 @@ class BluetoothManager extends ChangeNotifier {
     _connectedDevice = null;
     _caminhoAudioAtivo = null;
     _audioSelecionado = null;
+    _audioPlayPendente = null;
+    _audioPlayPendenteTimer?.cancel();
+    _audioPlayPendenteTimer = null;
     _audioProgressTimer?.cancel();
     _keepAliveTimer?.cancel();
     _audioProgress = 0;
@@ -2174,6 +2211,7 @@ class BluetoothManager extends ChangeNotifier {
     _txSubscription?.cancel();
     _connectionSubscription?.cancel();
     _audioProgressTimer?.cancel();
+    _audioPlayPendenteTimer?.cancel();
     _keepAliveTimer?.cancel();
     _autoReconnectTimer?.cancel();
     _connectedDevice?.disconnect();

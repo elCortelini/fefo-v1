@@ -1,6 +1,6 @@
 {
     "schema":  1,
-    "catalogVersion":  57,
+    "catalogVersion":  58,
     "repository":  "FEFO Google Drive",
     "firmware":  {
                      "version":  "1.097",
@@ -13,13 +13,13 @@
                      "notas":  "Versão 1.097: mantém o efeito de LED escolhido durante o áudio e remove o VU meter da reprodução."
                  },
     "app":  {
-                "version":  "1.113",
-                "build":  1113,
-                "arquivo":  "FEFO_App_v1.113.apk",
+                "version":  "1.114",
+                "build":  1114,
+                "arquivo":  "FEFO_App_v1.114.apk",
                 "tamanho":  56036119,
-                "checksum":  "fa672394a368b97ac1cc93084de576206a9679f78e61a36cedcf99e67400207b",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.113.apk",
-                "notas":  "Corrige favoritos e faz todos os menus usarem o mesmo player ativo, destaque e player flutuante do Jukebox."
+                "checksum":  "7b25bc1ec969fc74b4bf871c47914e8ea2f0ba038f66d562e7c13fa528c96a30",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.114.apk",
+                "notas":  "Player e destaque imediatos; efeitos visuais para luzes e vibrações; faces com fonte KGPen; menu principal simplificado e Panic destacado."
              },
     "audio":  [
                   {

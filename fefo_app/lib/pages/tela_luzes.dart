@@ -83,8 +83,10 @@ class _TelaLuzesState extends State<TelaLuzes> {
                 final padrao = _padroes[index];
                 return FefoContentCard(
                   title: padrao.nome,
-                  subtitle: 'Efeito de luz ${padrao.numero}',
+                  subtitle: 'Efeito ${padrao.numero} • cor correspondente',
                   icon: Icons.auto_awesome_rounded,
+                  selected: manager.ledPatternSelecionado == padrao.numero,
+                  leading: _LedPreview(padrao: padrao),
                   actionIcon: Icons.play_arrow_rounded,
                   onTap: manager.isConnected
                       ? () => manager.setLedPattern(padrao.numero)
@@ -109,6 +111,39 @@ class _TelaLuzesState extends State<TelaLuzes> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _LedPreview extends StatelessWidget {
+  final _PadraoLed padrao;
+
+  const _LedPreview({required this.padrao});
+
+  @override
+  Widget build(BuildContext context) {
+    final rainbow = padrao.numero == 7;
+    return Container(
+      width: 54,
+      height: 54,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: rainbow
+            ? const SweepGradient(colors: [
+                Colors.red,
+                Colors.yellow,
+                Colors.green,
+                Colors.cyan,
+                Colors.blue,
+                Colors.purple,
+                Colors.red,
+              ])
+            : RadialGradient(colors: [padrao.cor, padrao.cor.withValues(alpha: .25)]),
+        boxShadow: [
+          BoxShadow(color: padrao.cor.withValues(alpha: .45), blurRadius: 10),
+        ],
+      ),
+      child: const Icon(Icons.light_mode_rounded, color: Colors.white, size: 27),
     );
   }
 }
