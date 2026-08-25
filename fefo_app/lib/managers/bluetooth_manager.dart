@@ -1199,23 +1199,35 @@ class BluetoothManager extends ChangeNotifier {
 
   Future<void> _aguardarServidorWifi(String ip, String token) async {
     Object? lastError;
-    for (var attempt = 1; attempt <= 15; attempt++) {
+    // A rede criada pelo PET não fornece internet. Em alguns Androids a rota
+    // local só fica disponível alguns segundos depois de onAvailable().
+    for (var attempt = 1; attempt <= 30; attempt++) {
       final client = HttpClient()
-        ..connectionTimeout = const Duration(seconds: 2);
+        ..connectionTimeout = const Duration(seconds: 3)
+        ..idleTimeout = const Duration(seconds: 3);
       try {
         final request = await client.getUrl(Uri.parse('http://$ip/ping'));
         request.headers.set('X-Fefo-Token', token);
-        await (await request.close()).drain<void>();
-        return;
+        request.headers.set('Connection', 'close');
+        final response = await request.close();
+        final body = await utf8.decoder.bind(response).join();
+        if (response.statusCode == HttpStatus.ok && body.trim().isNotEmpty) {
+          return;
+        }
+        lastError = HttpException(
+          'HTTP ${response.statusCode}: ${body.trim()}',
+        );
       } catch (error) {
         lastError = error;
-        _setStatus('Aguardando servidor do FEFO ($attempt/15)...');
-        await Future<void>.delayed(const Duration(milliseconds: 700));
+        _setStatus('Aguardando rede local do FEFO ($attempt/30)...');
+        await Future<void>.delayed(const Duration(milliseconds: 900));
       } finally {
         client.close(force: true);
       }
     }
-    throw HttpException('Servidor Wi-Fi do FEFO inacessível: $lastError');
+    throw HttpException(
+      'Servidor do FEFO inacessível em $ip. Verifique se o Wi‑Fi do PET foi conectado: $lastError',
+    );
   }
 
   Future<void> enviarArquivosViaHotspot(Map<String, List<int>> arquivos,

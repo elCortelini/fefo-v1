@@ -1,25 +1,25 @@
 {
     "schema":  1,
-    "catalogVersion":  47,
+    "catalogVersion":  48,
     "repository":  "FEFO Google Drive",
     "firmware":  {
-                     "version":  "1.088",
+                     "version":  "1.089",
                      "board":  "FEFO_CYD_ESP32",
-                     "arquivo":  "FEFO_Firmware_v1.088.bin",
-                     "tamanho":  1746128,
-                     "checksum":  "f3ff4f0058cb3c44fbc6db4a7404d307746360cbd011639a75d4ba570273b052",
-                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.088.bin",
+                     "arquivo":  "FEFO_Firmware_v1.089.bin",
+                     "tamanho":  1746240,
+                     "checksum":  "fa0ef15eabc9fe29cd06a183d659967cb907a59f615b58bab7909fff1f323f72",
+                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.089.bin",
                      "obrigatorio":  false,
-                     "notas":  "Versão 1.088: ativa imediatamente o manifesto enviado por Wi-Fi e preserva títulos, menus e submenus após o reinício."
+                     "notas":  "Versão 1.089: corrige a confirmação da rede Wi-Fi do PET e preserva o manifesto com títulos, menus e submenus."
                  },
     "app":  {
-                "version":  "1.101",
-                "build":  1101,
-                "arquivo":  "FEFO_App_v1.101.apk",
+                "version":  "1.102",
+                "build":  1102,
+                "arquivo":  "FEFO_App_v1.102.apk",
                 "tamanho":  56552431,
-                "checksum":  "7e0a6a022374a45c4a060bd059b1da38209c2b525dcd55a0f691d840d84613c2",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.101.apk",
-                "notas":  "Corrige a detecção da atualização do app; inclui menus e submenus dinâmicos, preservação do manifesto após reinício e player flutuante no menu principal."
+                "checksum":  "f5bc69373abaa16b7fa4e90bbff3c7dbf2caefaf76f1fd72d429df7a1ee0092a",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.102.apk",
+                "notas":  "Corrige o envio Wi-Fi ao PET, elimina o espaço vazio inferior das telas e usa o botão Voltar na área reservada."
              },
     "audio":  [
                   {

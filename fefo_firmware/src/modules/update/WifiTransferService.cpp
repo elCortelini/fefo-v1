@@ -80,6 +80,11 @@ void WifiTransferService::handlePushClient(WiFiClient& client, bool& finished) {
     else if (strncasecmp(line, "X-Fefo-Sha256:", 14) == 0) { strlcpy(expectedSha, line + 14, sizeof(expectedSha)); while (expectedSha[0] == ' ') memmove(expectedSha, expectedSha + 1, strlen(expectedSha)); }
   }
   if (strcmp(auth, apToken_) != 0) { reply(client, 403, "TOKEN_INVALID"); client.stop(); return; }
+  if (strcmp(method, "GET") == 0 && strcmp(target, "/ping") == 0) {
+    reply(client, 200, "FEFO_WIFI_READY");
+    client.stop();
+    return;
+  }
   if (strcmp(method, "POST") == 0 && strcmp(target, "/finish") == 0) {
     setError("OK");
     reply(client, 200, "FINISHED");
