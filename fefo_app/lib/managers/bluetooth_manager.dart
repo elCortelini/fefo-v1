@@ -1067,8 +1067,6 @@ class BluetoothManager extends ChangeNotifier {
     _lastTransferSucceeded = null;
     _uploadProgress = 0;
     notifyListeners();
-    String? recoveryIp;
-    String? recoveryToken;
     try {
       final respostaFuture = _aguardarLinha((line) =>
           line.startsWith('OK WIFI PUSH ') || line.startsWith('ERR WIFI'));
@@ -1082,8 +1080,6 @@ class BluetoothManager extends ChangeNotifier {
       if ([ssid, pass, ip, token].any((v) => v == null || v.isEmpty)) {
         throw Exception('Dados da rede FEFO incompletos.');
       }
-      recoveryIp = ip;
-      recoveryToken = token;
       await _wifiChannel.invokeMethod<bool>('connect', {
         'ssid': ssid,
         'password': pass,
@@ -1168,7 +1164,9 @@ class BluetoothManager extends ChangeNotifier {
       _setStatus('Concluído. Reconecte o Bluetooth.');
     } catch (_) {
       _lastTransferSucceeded = false;
-      await _finalizarSessaoWifi(recoveryIp, recoveryToken);
+      // /finish não é cancelamento: no firmware ele confirma a transferência
+      // e reinicia o PET. Em uma falha de rede, apenas desconectamos o Android
+      // e deixamos o servidor expirar para o BLE ser reativado sem reboot.
       rethrow;
     } finally {
       try {
@@ -1178,22 +1176,6 @@ class BluetoothManager extends ChangeNotifier {
       _uploadCurrentPath = null;
       _uploadItemProgress = 0;
       notifyListeners();
-    }
-  }
-
-  Future<void> _finalizarSessaoWifi(String? ip, String? token) async {
-    if (ip == null || token == null) return;
-    final client = HttpClient()..connectionTimeout = const Duration(seconds: 2);
-    try {
-      final request = await client.postUrl(Uri.parse('http://$ip/finish'));
-      request.headers.set('X-Fefo-Token', token);
-      request.contentLength = 0;
-      await (await request.close()).drain<void>();
-    } catch (_) {
-      // Se o servidor não estiver acessível, o firmware v071 encerrará o AP
-      // automaticamente após o prazo de inatividade e reiniciará.
-    } finally {
-      client.close(force: true);
     }
   }
 
