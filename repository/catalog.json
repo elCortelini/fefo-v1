@@ -1,6 +1,6 @@
 {
     "schema":  1,
-    "catalogVersion":  48,
+    "catalogVersion":  49,
     "repository":  "FEFO Google Drive",
     "firmware":  {
                      "version":  "1.089",
@@ -13,13 +13,13 @@
                      "notas":  "Versão 1.089: corrige a confirmação da rede Wi-Fi do PET e preserva o manifesto com títulos, menus e submenus."
                  },
     "app":  {
-                "version":  "1.102",
-                "build":  1102,
-                "arquivo":  "FEFO_App_v1.102.apk",
+                "version":  "1.103",
+                "build":  1103,
+                "arquivo":  "FEFO_App_v1.103.apk",
                 "tamanho":  56552431,
-                "checksum":  "f5bc69373abaa16b7fa4e90bbff3c7dbf2caefaf76f1fd72d429df7a1ee0092a",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.102.apk",
-                "notas":  "Corrige o envio Wi-Fi ao PET, elimina o espaço vazio inferior das telas e usa o botão Voltar na área reservada."
+                "checksum":  "47a3b2d3978f1613e0af67cc1cd9b0e4f93a0f3f73e9ea30ca6d9c86a83c5070",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.103.apk",
+                "notas":  "Corrige o envio Wi-Fi inclusive com firmware antigo, elimina o espaço vazio inferior das telas e usa o botão Voltar na área reservada."
              },
     "audio":  [
                   {
