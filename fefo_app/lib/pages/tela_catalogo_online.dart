@@ -26,8 +26,13 @@ class TelaCatalogoOnline extends StatefulWidget {
 
 class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
   static const _urlKey = 'fefo_catalog_url';
+  static const _catalogCacheKey = 'fefo_online_catalog_cache';
   static const _defaultCatalogUrl =
-      'https://raw.githubusercontent.com/elCortelini/fefo-v1/main/repository/catalog.json';
+    'https://raw.githubusercontent.com/elCortelini/fefo-v1/main/repository/catalog.json';
+  static const _catalogFallbackUrls = [
+    'https://cdn.jsdelivr.net/gh/elCortelini/fefo-v1@main/repository/catalog.json',
+    'https://github.com/elCortelini/fefo-v1/raw/refs/heads/main/repository/catalog.json',
+  ];
 
   final _urlController = TextEditingController();
   final Set<String> _selectedPaths = {};
@@ -101,7 +106,8 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
     void Function(double progress)? onProgress,
   }) async {
     final client = HttpClient()
-      ..connectionTimeout = const Duration(seconds: 20);
+      ..connectionTimeout = const Duration(seconds: 8)
+      ..idleTimeout = const Duration(seconds: 8);
     try {
       final request = await client.getUrl(Uri.parse(rawUrl));
       final response = await request.close();
@@ -128,9 +134,38 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
       _status = 'Buscando catálogo online...';
     });
     try {
-      final bytes = await _download(url);
-      final decoded = jsonDecode(utf8.decode(bytes));
-      if (decoded is! Map) throw const FormatException('JSON inválido');
+      Map<String, dynamic>? decoded;
+      Object? lastError;
+      String? source;
+      final endpoints = <String>{url, ..._catalogFallbackUrls};
+      for (final endpoint in endpoints) {
+        try {
+          final bytes = await _download(endpoint);
+          final parsed = jsonDecode(utf8.decode(bytes));
+          if (parsed is! Map) throw const FormatException('JSON inválido');
+          decoded = Map<String, dynamic>.from(parsed);
+          source = endpoint;
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString(_catalogCacheKey, utf8.decode(bytes));
+          break;
+        } catch (error) {
+          lastError = error;
+        }
+      }
+      if (decoded == null) {
+        final prefs = await SharedPreferences.getInstance();
+        final cached = prefs.getString(_catalogCacheKey);
+        if (cached != null && cached.isNotEmpty) {
+          final parsed = jsonDecode(cached);
+          if (parsed is Map) {
+            decoded = Map<String, dynamic>.from(parsed);
+            source = 'cache local';
+          }
+        }
+      }
+      if (decoded == null) {
+        throw HttpException('Nenhuma fonte do catálogo respondeu: $lastError');
+      }
       final rawItems = <dynamic>[
         ...?decoded['audio'] as List?,
         ...?decoded['faces'] as List?,
@@ -155,7 +190,9 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
         _onlineFirmware = onlineFirmware;
         _onlineApp = onlineApp;
         _selectedPaths.removeWhere((path) => !items.any((e) => e.path == path));
-        _status = '${items.length} item(ns) no catálogo.';
+        _status = source == 'cache local'
+            ? '${items.length} item(ns) no catálogo salvo localmente.'
+            : '${items.length} item(ns) no catálogo.';
       });
     } catch (e) {
       if (mounted) setState(() => _status = 'Falha ao ler catálogo: $e');

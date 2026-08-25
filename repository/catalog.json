@@ -1,6 +1,6 @@
 {
     "schema":  1,
-    "catalogVersion":  51,
+    "catalogVersion":  52,
     "repository":  "FEFO Google Drive",
     "firmware":  {
                      "version":  "1.090",
@@ -13,13 +13,13 @@
                      "notas":  "Versão 1.090: reinicia somente após transferência Wi-Fi concluída; em falhas, reativa o BLE sem reiniciar o PET."
                  },
     "app":  {
-                "version":  "1.105",
-                "build":  1105,
-                "arquivo":  "FEFO_App_v1.105.apk",
+                "version":  "1.106",
+                "build":  1106,
+                "arquivo":  "FEFO_App_v1.106.apk",
                 "tamanho":  56552431,
-                "checksum":  "06f0bce432a00d0af07666e333ca3ddc6b0911a47d32807c98d967b335fa945f",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.105.apk",
-                "notas":  "Corrige falhas de conexão Wi-Fi sem reiniciar o PET e remove os paddings inferiores antigos de todas as telas."
+                "checksum":  "ebf08d040083f88927be5604a13b930d51cf83b01fb376f0c686b14b96b64524",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.106.apk",
+                "notas":  "Corrige catálogo offline quando o GitHub Raw está indisponível, falhas de conexão Wi-Fi sem reiniciar o PET e paddings inferiores antigos."
              },
     "audio":  [
                   {
