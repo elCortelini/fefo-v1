@@ -3,14 +3,14 @@
     "catalogVersion":  54,
     "repository":  "FEFO Google Drive",
     "firmware":  {
-                     "version":  "1.090",
+                     "version":  "1.091",
                      "board":  "FEFO_CYD_ESP32",
-                     "arquivo":  "FEFO_Firmware_v1.090.bin",
-                     "tamanho":  1746464,
-                     "checksum":  "bce5fce4ea2035fc8552a0edf9720bbb6cdb0f92a37e01575ff48ef29ffb75f7",
-                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.090.bin",
+                     "arquivo":  "FEFO_Firmware_v1.091.bin",
+                     "tamanho":  1746592,
+                     "checksum":  "a9c5498dfc703994e46c4fd97e243742e7ffa051f0c4e4c847f2ff3ac615ebd8",
+                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.091.bin",
                      "obrigatorio":  false,
-                     "notas":  "Versão 1.090: reinicia somente após transferência Wi-Fi concluída; em falhas, reativa o BLE sem reiniciar o PET."
+                     "notas":  "Versão 1.091: só reinicia após transferência Wi-Fi confirmada; conexão ou /finish sem arquivo não reinicia o PET."
                  },
     "app":  {
                 "version":  "1.108",
