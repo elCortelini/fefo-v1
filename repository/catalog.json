@@ -1,6 +1,6 @@
 {
     "schema":  1,
-    "catalogVersion":  52,
+    "catalogVersion":  53,
     "repository":  "FEFO Google Drive",
     "firmware":  {
                      "version":  "1.090",
@@ -13,13 +13,13 @@
                      "notas":  "Versão 1.090: reinicia somente após transferência Wi-Fi concluída; em falhas, reativa o BLE sem reiniciar o PET."
                  },
     "app":  {
-                "version":  "1.106",
-                "build":  1106,
-                "arquivo":  "FEFO_App_v1.106.apk",
+                "version":  "1.107",
+                "build":  1107,
+                "arquivo":  "FEFO_App_v1.107.apk",
                 "tamanho":  56552431,
-                "checksum":  "ebf08d040083f88927be5604a13b930d51cf83b01fb376f0c686b14b96b64524",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.106.apk",
-                "notas":  "Corrige catálogo offline quando o GitHub Raw está indisponível, falhas de conexão Wi-Fi sem reiniciar o PET e paddings inferiores antigos."
+                "checksum":  "015076793333992dc65bbac760fb09d7d09ce046e8a7a3e58ed4afc8e164238d",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.107.apk",
+                "notas":  "Restaura o handshake Wi-Fi da última versão funcional; mantém fallback e cache do catálogo online."
              },
     "audio":  [
                   {
