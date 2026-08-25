@@ -331,6 +331,7 @@ class BluetoothManager extends ChangeNotifier {
   int? _sdUsedBytes;
   int? _sdFreeBytes;
   final List<Completer<String>> _lineWaiters = [];
+  Completer<void>? _catalogReadCompleter;
 
   bool get isConnected => _connectedDevice != null && _rxCharacteristic != null;
   bool consumeUnexpectedDisconnect() {
@@ -641,7 +642,9 @@ class BluetoothManager extends ChangeNotifier {
       _setStatus('Conectado por BLE. Pronto para comandos.');
       _iniciarKeepAlive();
       await enviarComando('APP SYNC');
-      await enviarComando('CATALOG GET');
+      // Só libera a conexão para as telas depois que o catálogo inteiro foi
+      // recebido; caso contrário o menu pode ser montado com a lista antiga.
+      await lerCatalogoAtualizado();
       await setVolume(50);
     } catch (e) {
       _setStatus('Falha ao conectar BLE: $e');
@@ -869,6 +872,9 @@ class BluetoothManager extends ChangeNotifier {
       _recebendoCatalogo = false;
       _aplicarCatalogoJson(_catalogoJsonLines.join('\n'));
       _catalogoJsonLines.clear();
+      final completed = _catalogReadCompleter;
+      _catalogReadCompleter = null;
+      if (completed != null && !completed.isCompleted) completed.complete();
       notifyListeners();
       return;
     }
@@ -993,6 +999,21 @@ class BluetoothManager extends ChangeNotifier {
     await enviarComando('CATALOG GET');
   }
 
+  Future<void> lerCatalogoAtualizado() async {
+    final completed = Completer<void>();
+    _catalogReadCompleter = completed;
+    try {
+      await enviarComando('CATALOG GET');
+      await completed.future.timeout(const Duration(seconds: 8));
+    } on TimeoutException {
+      // O catálogo recebido até aqui continua válido para uso offline.
+    } finally {
+      if (identical(_catalogReadCompleter, completed)) {
+        _catalogReadCompleter = null;
+      }
+    }
+  }
+
   Future<void> enviarArquivo(
     String destino,
     List<int> bytes,
@@ -1110,35 +1131,58 @@ class BluetoothManager extends ChangeNotifier {
         _uploadCurrentPath = entry.key;
         _uploadItemProgress = 0;
         _setStatus('Gravando ${entry.key} no FEFO...');
-        final client = HttpClient()
-          ..connectionTimeout = const Duration(seconds: 10);
-        try {
-          final request = await client.putUrl(Uri.parse('http://$ip/file'));
-          request.headers.set('X-Fefo-Token', token);
-          request.headers.set('X-Fefo-Path', entry.key);
-          final checksum = checksums[entry.key] ?? '';
-          if (checksum.isNotEmpty) {
-            request.headers
-                .set('X-Fefo-Sha256', checksum.replaceFirst('sha256:', ''));
+        Object? lastError;
+        var stored = false;
+        for (var attempt = 1; attempt <= 3 && !stored; attempt++) {
+          final client = HttpClient()
+            ..connectionTimeout = const Duration(seconds: 15);
+          try {
+            final request = await client.putUrl(Uri.parse('http://$ip/file'));
+            request.headers.set('X-Fefo-Token', token);
+            request.headers.set('X-Fefo-Path', entry.key);
+            final checksum = checksums[entry.key] ?? '';
+            if (checksum.isNotEmpty) {
+              request.headers
+                  .set('X-Fefo-Sha256', checksum.replaceFirst('sha256:', ''));
+            }
+            request.contentLength = entry.value.length;
+            const block = 64 * 1024;
+            for (var offset = 0; offset < entry.value.length; offset += block) {
+              final end = (offset + block).clamp(0, entry.value.length).toInt();
+              request.add(entry.value.sublist(offset, end));
+              await request.flush();
+              _uploadProgress = (enviados + end) / total;
+              _uploadItemProgress = end / entry.value.length;
+              notifyListeners();
+            }
+            final response = await request.close();
+            final body = await utf8.decoder.bind(response).join();
+            if (response.statusCode != 200) {
+              throw HttpException('$body (${response.statusCode})');
+            }
+            stored = true;
+            enviados += entry.value.length;
+          } on SocketException catch (error) {
+            lastError = error;
+            if (attempt < 3) {
+              _setStatus(
+                  'Conexão instável; repetindo ${entry.key} ($attempt/3)...');
+              await Future<void>.delayed(const Duration(seconds: 1));
+            }
+          } on TimeoutException catch (error) {
+            lastError = error;
+            if (attempt < 3) {
+              _setStatus(
+                  'Tempo esgotado; repetindo ${entry.key} ($attempt/3)...');
+              await Future<void>.delayed(const Duration(seconds: 1));
+            }
+          } finally {
+            client.close(force: true);
           }
-          request.contentLength = entry.value.length;
-          const block = 64 * 1024;
-          for (var offset = 0; offset < entry.value.length; offset += block) {
-            final end = (offset + block).clamp(0, entry.value.length).toInt();
-            request.add(entry.value.sublist(offset, end));
-            await request.flush();
-            _uploadProgress = (enviados + end) / total;
-            _uploadItemProgress = end / entry.value.length;
-            notifyListeners();
-          }
-          final response = await request.close();
-          final body = await utf8.decoder.bind(response).join();
-          if (response.statusCode != 200) {
-            throw HttpException('$body (${response.statusCode})');
-          }
-          enviados += entry.value.length;
-        } finally {
-          client.close();
+        }
+        if (!stored) {
+          throw lastError ??
+              HttpException('O FEFO não confirmou ${entry.key}.');
         }
       }
       final finishClient = HttpClient();

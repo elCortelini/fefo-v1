@@ -28,7 +28,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
   static const _urlKey = 'fefo_catalog_url';
   static const _catalogCacheKey = 'fefo_online_catalog_cache';
   static const _defaultCatalogUrl =
-    'https://raw.githubusercontent.com/elCortelini/fefo-v1/main/repository/catalog.json';
+      'https://raw.githubusercontent.com/elCortelini/fefo-v1/main/repository/catalog.json';
   static const _catalogFallbackUrls = [
     'https://cdn.jsdelivr.net/gh/elCortelini/fefo-v1@main/repository/catalog.json',
     'https://github.com/elCortelini/fefo-v1/raw/refs/heads/main/repository/catalog.json',
@@ -80,9 +80,8 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
     final manager = context.read<BluetoothManager>();
     if (manager.isConnected) {
       setState(() => _status = 'Lendo arquivos instalados no FEFO...');
-      await manager.enviarComando('CATALOG GET');
+      await manager.lerCatalogoAtualizado();
       await manager.enviarComando('SD INFO');
-      await Future<void>.delayed(const Duration(milliseconds: 700));
     }
     final prefs = await SharedPreferences.getInstance();
     if (!mounted) return;
@@ -932,8 +931,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                               const SizedBox(width: 14),
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       item.title,
@@ -961,9 +959,8 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                               ),
                               IconButton.filled(
                                 tooltip: selected ? 'Selecionado' : 'Baixar',
-                                onPressed: _busy
-                                    ? null
-                                    : () => _installItems([item]),
+                                onPressed:
+                                    _busy ? null : () => _installItems([item]),
                                 style: IconButton.styleFrom(
                                   backgroundColor: theme.accentSecondary,
                                   foregroundColor: theme.background,
