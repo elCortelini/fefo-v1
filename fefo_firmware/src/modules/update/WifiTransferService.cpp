@@ -65,6 +65,11 @@ bool WifiTransferService::runPushServer() {
 
 void WifiTransferService::reply(WiFiClient& client, int status, const char* message) {
   client.printf("HTTP/1.1 %d %s\r\nContent-Type: text/plain\r\nContent-Length: %u\r\nConnection: close\r\n\r\n%s", status, status == 200 ? "OK" : "ERROR", (unsigned)strlen(message), message);
+  // Aguarda a resposta sair do buffer TCP antes de o cliente ser fechado.
+  // Sem isso, o Android pode receber ECONNABORTED mesmo após o arquivo ter
+  // sido gravado corretamente no SD.
+  client.flush();
+  delay(60);
 }
 
 void WifiTransferService::handlePushClient(WiFiClient& client, bool& finished,

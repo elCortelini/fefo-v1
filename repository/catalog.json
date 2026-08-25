@@ -3,23 +3,23 @@
     "catalogVersion":  54,
     "repository":  "FEFO Google Drive",
     "firmware":  {
-                     "version":  "1.092",
+                     "version":  "1.093",
                      "board":  "FEFO_CYD_ESP32",
-                     "arquivo":  "FEFO_Firmware_v1.092.bin",
-                     "tamanho":  1746720,
-                     "checksum":  "64ffbcd4ced558b738d926d830925c7f13b07ddc3eef601662db1b0fec822d09",
-                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.092.bin",
+                     "arquivo":  "FEFO_Firmware_v1.093.bin",
+                     "tamanho":  1746768,
+                     "checksum":  "b041d1fd52dd30f1593d877f6f1ffdf020a2516a230fc3d7023a04aabfdc9660",
+                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.093.bin",
                      "obrigatorio":  false,
-                     "notas":  "Versão 1.092: exibe a tela de atualização desde a conexão Wi-Fi e confirma a conclusão antes do reinício."
+                     "notas":  "Versão 1.093: garante que as respostas Wi-Fi sejam enviadas antes de fechar a conexão, evitando ECONNABORTED durante a gravação."
                  },
     "app":  {
-                "version":  "1.109",
-                "build":  1109,
-                "arquivo":  "FEFO_App_v1.109.apk",
+                "version":  "1.110",
+                "build":  1110,
+                "arquivo":  "FEFO_App_v1.110.apk",
                 "tamanho":  56003415,
-                "checksum":  "6d35e49b59ca750f08a7a2ef7ac1d8571483648c787847af30bac397fa65d46d",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.109.apk",
-                "notas":  "Restaura a solicitação Wi-Fi da última versão funcional e mantém a proteção contra reinício em falhas."
+                "checksum":  "626df920a2896aa0947c0b3a2370a6dd15215b535d591dc8d28089272d076157",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.110.apk",
+                "notas":  "Trata o fechamento do socket provocado pelo reinício normal do PET como conclusão da transferência."
              },
     "audio":  [
                   {
