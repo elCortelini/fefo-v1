@@ -21,7 +21,6 @@ import 'dart:io'
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -289,7 +288,6 @@ class BluetoothManager extends ChangeNotifier {
   String? _audioSelecionado;
   String? _audioPlayPendente;
   Timer? _audioPlayPendenteTimer;
-  final AudioPlayer _ronronarPlayer = AudioPlayer();
   String _statusMensagem = 'Desconectado';
   String? _ultimoComandoEnviado;
   String? _ultimaRespostaRecebida;
@@ -755,7 +753,6 @@ class BluetoothManager extends ChangeNotifier {
     if (texto.startsWith('BEGIN APP SYNC')) {
       _firmwareVersion = _extrairCampo(texto, 'FW') ?? _firmwareVersion;
       _protocolVersion = _extrairCampo(texto, 'PROTO') ?? _protocolVersion;
-      _audioItems.clear();
       _faces.clear();
       notifyListeners();
       return;
@@ -1705,11 +1702,37 @@ class BluetoothManager extends ChangeNotifier {
 
   void _adicionarAudioCatalogo(FefoAudioItem item) {
     if (item.path.isEmpty) return;
+    final existente =
+        _audioItems.indexWhere((audio) => audio.path == item.path);
+    // APP SYNC traz apenas os caminhos do SD. Preserve o título/menu já
+    // carregado do catálogo online em vez de substituí-lo por a0015/Jukebox.
+    if (existente >= 0 &&
+        item.catalogTitle.trim().isEmpty &&
+        item.catalogGroup.trim().isEmpty &&
+        item.catalogSubmenu.trim().isEmpty) {
+      return;
+    }
     final itemEnriquecido = _enriquecerItemComCatalogo(item);
     final idx =
         _audioItems.indexWhere((audio) => audio.path == itemEnriquecido.path);
     if (idx >= 0) {
-      _audioItems[idx] = itemEnriquecido;
+      final anterior = _audioItems[idx];
+      _audioItems[idx] = FefoAudioItem(
+        id: itemEnriquecido.id == 0 ? anterior.id : itemEnriquecido.id,
+        path: itemEnriquecido.path,
+        catalogTitle: itemEnriquecido.catalogTitle.isEmpty
+            ? anterior.catalogTitle
+            : itemEnriquecido.catalogTitle,
+        catalogGroup: itemEnriquecido.catalogGroup.isEmpty
+            ? anterior.catalogGroup
+            : itemEnriquecido.catalogGroup,
+        catalogSubmenu: itemEnriquecido.catalogSubmenu.isEmpty
+            ? anterior.catalogSubmenu
+            : itemEnriquecido.catalogSubmenu,
+        checksum: itemEnriquecido.checksum.isEmpty
+            ? anterior.checksum
+            : itemEnriquecido.checksum,
+      );
     } else {
       _audioItems.add(itemEnriquecido);
     }
@@ -2006,13 +2029,6 @@ class BluetoothManager extends ChangeNotifier {
   }
 
   Future<void> ronronar() async {
-    try {
-      await _ronronarPlayer.stop();
-      await _ronronarPlayer.play(AssetSource('sounds/ronronar.wav'));
-    } catch (error) {
-      developer.log('Falha ao reproduzir ronronar no app: $error',
-          name: 'BluetoothManager');
-    }
     await _enviarComandoNormalizado('RONRONAR');
   }
 
@@ -2151,7 +2167,6 @@ class BluetoothManager extends ChangeNotifier {
     final device = _connectedDevice;
     _intentionalDisconnect = true;
     _autoReconnectTimer?.cancel();
-    _ronronarPlayer.dispose();
     _autoReconnectTimer = null;
     _cleanup();
     try {
@@ -2220,7 +2235,6 @@ class BluetoothManager extends ChangeNotifier {
     _audioPlayPendenteTimer?.cancel();
     _keepAliveTimer?.cancel();
     _autoReconnectTimer?.cancel();
-    _ronronarPlayer.dispose();
     _connectedDevice?.disconnect();
     super.dispose();
   }

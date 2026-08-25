@@ -1,6 +1,6 @@
 {
     "schema":  1,
-    "catalogVersion":  60,
+    "catalogVersion":  61,
     "repository":  "FEFO Google Drive",
     "firmware":  {
                      "version":  "1.098",
@@ -13,13 +13,13 @@
                      "notas":  "Versão 1.098: Ronronar usa a face 2 e mantém a vibração durante a duração do áudio."
                  },
     "app":  {
-                "version":  "1.115",
-                "build":  1115,
-                "arquivo":  "FEFO_App_v1.115.apk",
-                "tamanho":  56410801,
-                "checksum":  "4bf000a1918bd8aadec0735e6d6e1b950d6015f7dfc76848693028ab494918c9",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.115.apk",
-                "notas":  "Ronronar com áudio dedicado; conexão com busca de vários FEFOs; favoritos com desfavoritar; configurações e telas reorganizadas."
+                "version":  "1.116",
+                "build":  1116,
+                "arquivo":  "FEFO_App_v1.116.apk",
+                "tamanho":  56036119,
+                "checksum":  "5c6738c5aa4b1b6a45bf830931bcbc5a7aa63618fd1de6ecd06e5d34eabf91b6",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.116.apk",
+                "notas":  "Corrige fontes, popup temático e criação de menus a partir do catálogo online; remove os arquivos de áudio do Ronronar."
              },
     "audio":  [
                   {
@@ -161,16 +161,6 @@
                       "checksum":  "6a8492bac9b28715d6c421465eb3238a13c1a63ad8faccfc963b8962fe5daefe",
                       "tipo":  "audio",
                       "url":  "https://drive.google.com/uc?export=download\u0026id=12x5RYVLpV-x9ihWVMgKcVO3on960d-tV"
-                  },
-                  {
-                      "id":  "au016",
-                      "titulo":  "Ronronar",
-                      "menu":  "Efeitos Especiais",
-                      "arquivo":  "/usr/a/ronronar.wav",
-                      "tamanho":  640044,
-                      "checksum":  "31204d4eb3ae6243633842a1f6c7b7dbc779aff56863775708da51e2b42370a4",
-                      "tipo":  "audio",
-                      "url":  "https://raw.githubusercontent.com/elCortelini/fefo-v1/main/repository/audio/RONRONAR_10s.wav"
                   },
                   {
                       "id":  "au017", "titulo":  "Cabra", "menu":  "Conhecendo os animais", "arquivo":  "/usr/a/a0016.wav", "tamanho":  758134, "checksum":  "38ce1bdbebd0fccf102ba34c4bf4a04a06b5d2845c8927a987cf770aecc8d083", "tipo":  "audio", "url":  "https://raw.githubusercontent.com/elCortelini/fefo-v1/main/repository/audio/a0016.wav"
