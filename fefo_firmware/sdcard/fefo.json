@@ -106,14 +106,6 @@
                       "checksum":  "b0f3502981ca7f078be8fdf31383b97a728c53f81363f86a7968ee19b061be51"
                   },
                   {
-                      "id":  "au008",
-                      "titulo":  "pipoquinha Disco",
-                      "menu":  "Jukebox do Fefo",
-                      "arquivo":  "/usr/a/a0008.wav",
-                      "tamanho":  4715838,
-                      "checksum":  "8f76e2a8b900cb53c6c875174d655ea016942f011756fa0199e430161752e9ce"
-                  },
-                  {
                       "id":  "au009",
                       "titulo":  "Respeitando os colegas 2",
                       "menu":  "Jukebox do Fefo",

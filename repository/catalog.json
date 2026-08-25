@@ -1,6 +1,6 @@
 {
     "schema":  1,
-    "catalogVersion":  59,
+    "catalogVersion":  60,
     "repository":  "FEFO Google Drive",
     "firmware":  {
                      "version":  "1.098",
@@ -73,16 +73,6 @@
                       "url":  "https://drive.google.com/uc?export=download\u0026id=1gqju5uwoVdkvPTlYTsocmKQZ-tIP5nVX"
                   },
                   {
-                      "id":  "au005_32khz",
-                      "titulo":  "HIGIENE 32 kHz",
-                      "menu":  "Jukebox do Fefo",
-                      "arquivo":  "/usr/a/a0005_32khz.wav",
-                      "tamanho":  7326430,
-                      "checksum":  "7e22f2a327b0280ddd81e3921e4d37f24a0ed9ce7e63911420efee0cf18e04f8",
-                      "tipo":  "audio",
-                      "url":  "https://raw.githubusercontent.com/elCortelini/fefo-v1/main/repository/audio/HIGIENE_32_kHz.wav"
-                  },
-                  {
                       "id":  "au006",
                       "titulo":  "HORA DE DORMIR",
                       "menu":  "Jukebox do Fefo",
@@ -101,16 +91,6 @@
                       "checksum":  "b0f3502981ca7f078be8fdf31383b97a728c53f81363f86a7968ee19b061be51",
                       "tipo":  "audio",
                       "url":  "https://drive.google.com/uc?export=download\u0026id=15cFhpW8dlwcGUB59V6j7z0DVd5NhcnNh"
-                  },
-                  {
-                      "id":  "au008",
-                      "titulo":  "pipoquinha Disco",
-                      "menu":  "Jukebox do Fefo",
-                      "arquivo":  "/usr/a/a0008.wav",
-                      "tamanho":  4715838,
-                      "checksum":  "8f76e2a8b900cb53c6c875174d655ea016942f011756fa0199e430161752e9ce",
-                      "tipo":  "audio",
-                      "url":  "https://drive.google.com/uc?export=download\u0026id=1WeW_WQENRR83LNP0i-zc2usKnTuo53V8"
                   },
                   {
                       "id":  "au009",
