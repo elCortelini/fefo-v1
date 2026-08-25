@@ -1211,7 +1211,10 @@ class BluetoothManager extends ChangeNotifier {
         request.headers.set('Connection', 'close');
         final response = await request.close();
         final body = await utf8.decoder.bind(response).join();
-        if (response.statusCode == HttpStatus.ok && body.trim().isNotEmpty) {
+        // Firmware antigo ainda não conhece /ping e responde 400, mas isso
+        // confirma que o PET foi encontrado e que a sessão está válida.
+        if ((response.statusCode == HttpStatus.ok && body.trim().isNotEmpty) ||
+            response.statusCode == HttpStatus.badRequest) {
           return;
         }
         lastError = HttpException(
