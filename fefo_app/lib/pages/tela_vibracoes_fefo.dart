@@ -21,9 +21,22 @@ class TelaVibracoesFefo extends StatelessWidget {
     'Pulso',
   ];
 
+  static const _cores = [
+    Color(0xFFE85D75),
+    Color(0xFFF08A5D),
+    Color(0xFFE6B566),
+    Color(0xFF8BCB9A),
+    Color(0xFF49A078),
+    Color(0xFF3FA7D6),
+    Color(0xFF5474C4),
+    Color(0xFF8064A2),
+    Color(0xFFB565A7),
+    Color(0xFF4DB6AC),
+  ];
+
   @override
   Widget build(BuildContext context) {
-    final manager = context.read<BluetoothManager>();
+    final manager = context.watch<BluetoothManager>();
     return PaginaBase(
       mostrarBotaoVoltar: true,
       child: Column(
@@ -45,16 +58,29 @@ class TelaVibracoesFefo extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
               itemCount: _nomes.length,
               itemBuilder: (context, index) {
+                final numero = index + 1;
+                final cor = _cores[index];
                 return FefoContentCard(
                   title: '${index + 1}. ${_nomes[index]}',
                   subtitle: 'Vibração do FEFO • 7 segundos',
                   icon: Icons.vibration_rounded,
+                  selected: manager.vibracaoSelecionada == numero,
+                  leading: Container(
+                    width: 54,
+                    height: 54,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: cor.withValues(alpha: .2),
+                      border: Border.all(color: cor, width: 2),
+                    ),
+                    child: Icon(Icons.vibration_rounded, color: cor),
+                  ),
                   actionIcon: Icons.play_arrow_rounded,
                   onTap: manager.isConnected
-                      ? () => manager.vibrar(index + 1)
+                      ? () => manager.vibrar(numero)
                       : null,
                   onAction: manager.isConnected
-                      ? () => manager.vibrar(index + 1)
+                      ? () => manager.vibrar(numero)
                       : null,
                 );
               },
