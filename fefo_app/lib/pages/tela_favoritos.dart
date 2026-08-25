@@ -43,9 +43,16 @@ class TelaFavoritos extends StatelessWidget {
                             title: audio.title,
                             subtitle: audio.group,
                             icon: Icons.star_rounded,
+                            selected: manager.audioRefAtivo(audio.path),
                             actionIcon: Icons.play_arrow_rounded,
                             onTap: manager.isConnected ? () => manager.playAudio(audio.token) : null,
                             onAction: manager.isConnected ? () => manager.playAudio(audio.token) : null,
+                            trailing: IconButton(
+                              tooltip: 'Remover dos favoritos',
+                              icon: Icon(Icons.star_rounded,
+                                  color: theme.accent),
+                              onPressed: () => manager.alternarFavorito(audio),
+                            ),
                           );
                         },
                       ),

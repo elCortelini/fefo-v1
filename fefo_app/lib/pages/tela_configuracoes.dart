@@ -5,7 +5,6 @@ import '../managers/bluetooth_manager.dart';
 import '../widgets/pagina_base.dart';
 import '../widgets/botao_pincelada.dart';
 import 'tela_faces_fefo.dart';
-import 'tela_vibracoes_fefo.dart';
 import '../config/app_version.dart';
 import '../config/firmware_version.dart';
 import '../theme/fefo_theme.dart';
@@ -218,44 +217,6 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
               ),
             ),
             const SizedBox(height: 15),
-
-            // Card Vibração
-            Container(
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: appTheme.surface,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 8,
-                    offset: Offset(0, 3),
-                  ),
-                ],
-                border: Border.all(
-                    color: corVerde.withValues(alpha: 0.3), width: 1.5),
-              ),
-              child: ListTile(
-                leading:
-                    Icon(Icons.vibration_rounded, color: corLaranja, size: 32),
-                title: Text('Vibrações do PET FEFO',
-                    style: TextStyle(
-                        fontFamily: 'KGPen',
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: corVerde)),
-                subtitle: const Text('10 padrões intensos de 7 segundos',
-                    style: TextStyle(fontFamily: 'KGPen')),
-                trailing: Icon(Icons.chevron_right_rounded,
-                    color: corLaranja, size: 32),
-                onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => const TelaVibracoesFefo())),
-              ),
-            ),
-
-            const SizedBox(height: 20),
 
             // Submenu de vibrações do FEFO
             if (manager.developerModeEnabled) ...[

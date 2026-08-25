@@ -671,7 +671,8 @@ void AppController::handleBleCommand(const char* command) {
   if (strcasecmp(start, "RONRONAR") == 0) {
     vibration_.clearSafetyLockout();
     vibration_.stop();
-    const bool vibraOk = vibration_.startPattern(11, 10000);
+    showFaceByToken("2");
+    const bool vibraOk = vibration_.startPattern(11, 8500);
     const bool audioOk = playAudioFromBleToken("ronronar");
     sendBleLine(vibraOk && audioOk ? "OK RONRONAR" : "ERR RONRONAR AUDIO_NOT_INSTALLED");
     return;

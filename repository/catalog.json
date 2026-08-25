@@ -1,25 +1,25 @@
 {
     "schema":  1,
-    "catalogVersion":  58,
+    "catalogVersion":  59,
     "repository":  "FEFO Google Drive",
     "firmware":  {
-                     "version":  "1.097",
+                     "version":  "1.098",
                      "board":  "FEFO_CYD_ESP32",
-                     "arquivo":  "FEFO_Firmware_v1.097.bin",
-                     "tamanho":  1746512,
-                     "checksum":  "044e0266992152a60c441feb138b1c1968fa7e985103ec16b7d37dae01cf9799",
-                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.097.bin",
+                     "arquivo":  "FEFO_Firmware_v1.098.bin",
+                     "tamanho":  1746528,
+                     "checksum":  "c453d024d8b38bbc915971ad137a5d62fa50ed705ebe6814ea1df6d024ff8e6f",
+                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.098.bin",
                      "obrigatorio":  false,
-                     "notas":  "Versão 1.097: mantém o efeito de LED escolhido durante o áudio e remove o VU meter da reprodução."
+                     "notas":  "Versão 1.098: Ronronar usa a face 2 e mantém a vibração durante a duração do áudio."
                  },
     "app":  {
-                "version":  "1.114",
-                "build":  1114,
-                "arquivo":  "FEFO_App_v1.114.apk",
-                "tamanho":  56036119,
-                "checksum":  "7b25bc1ec969fc74b4bf871c47914e8ea2f0ba038f66d562e7c13fa528c96a30",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.114.apk",
-                "notas":  "Player e destaque imediatos; efeitos visuais para luzes e vibrações; faces com fonte KGPen; menu principal simplificado e Panic destacado."
+                "version":  "1.115",
+                "build":  1115,
+                "arquivo":  "FEFO_App_v1.115.apk",
+                "tamanho":  56410801,
+                "checksum":  "4bf000a1918bd8aadec0735e6d6e1b950d6015f7dfc76848693028ab494918c9",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.115.apk",
+                "notas":  "Ronronar com áudio dedicado; conexão com busca de vários FEFOs; favoritos com desfavoritar; configurações e telas reorganizadas."
              },
     "audio":  [
                   {
