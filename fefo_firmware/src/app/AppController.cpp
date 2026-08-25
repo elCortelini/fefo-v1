@@ -481,7 +481,7 @@ void AppController::update() {
   // Se estivermos no teste de audio (ou ciclo de faces ativo) e houver
   // faces carregadas, cicla-as
   if (microphoneSampled) {
-    if (diagnosticMode_ && faceFileCount_ == 0) {
+    if (diagnosticMode_ && faceFileCount_ == 0 && !audio_.playbackActive()) {
       display_.showVuMeter(reading.levelPercent, reading.peakPercent, reading.rms,
                            reading.bias, reading.peakToPeak, reading.clipping,
                            motorActive);

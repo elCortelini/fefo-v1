@@ -103,8 +103,33 @@ class _MyAppState extends State<MyApp> {
   final _navigatorKey = GlobalKey<NavigatorState>();
   BluetoothManager? _manager;
   bool _wasConnected = false;
+  bool _abrindoMenuAposConexao = false;
   bool _returnAfterUpdate = false;
   Timer? _returnTimer;
+
+  Future<void> _abrirMenuQuandoCatalogoPronto() async {
+    if (_abrindoMenuAposConexao) return;
+    _abrindoMenuAposConexao = true;
+    try {
+      for (var tentativa = 0; tentativa < 100; tentativa++) {
+        if (!mounted) return;
+        final manager = _manager;
+        if (manager != null &&
+            manager.isConnected &&
+            !manager.isConnecting &&
+            !manager.recebendoCatalogo) {
+          _navigatorKey.currentState?.pushReplacement(
+            MaterialPageRoute(builder: (_) => const TelaMenu()),
+          );
+          return;
+        }
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+      }
+    } finally {
+      _abrindoMenuAposConexao = false;
+    }
+  }
+
   bool _welcomeShown = false;
 
   @override
@@ -170,10 +195,7 @@ class _MyAppState extends State<MyApp> {
 
       if (connectedNow && !wasConnected) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted || !_manager!.isConnected) return;
-          _navigatorKey.currentState?.pushReplacement(
-            MaterialPageRoute(builder: (_) => const TelaMenu()),
-          );
+          _abrirMenuQuandoCatalogoPronto();
         });
       }
     }

@@ -452,15 +452,48 @@ class _CardAudioItem extends StatelessWidget {
                   onPressed: onFavorito,
                 ),
                 IconButton(
-                    tooltip: 'Tocar no FEFO',
-                    icon: Icon(
-                        tocando
-                            ? Icons.equalizer_rounded
-                            : Icons.play_circle_fill_rounded,
-                        color: tocando ? corVerde : corLaranja,
-                        size: 36),
-                    onPressed: onTap),
+                  tooltip: tocando ? 'Tocando agora' : 'Tocar no FEFO',
+                  icon: tocando
+                      ? _AudioPlayingIcon(color: corVerde)
+                      : Icon(Icons.play_circle_fill_rounded,
+                          color: corLaranja, size: 36),
+                  onPressed: onTap,
+                ),
               ]),
+      ),
+    );
+  }
+}
+
+class _AudioPlayingIcon extends StatefulWidget {
+  final Color color;
+
+  const _AudioPlayingIcon({required this.color});
+
+  @override
+  State<_AudioPlayingIcon> createState() => _AudioPlayingIconState();
+}
+
+class _AudioPlayingIconState extends State<_AudioPlayingIcon>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 850),
+  )..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (_, __) => Transform.scale(
+        scale: 0.88 + (_controller.value * 0.14),
+        child: Icon(Icons.graphic_eq_rounded, color: widget.color, size: 36),
       ),
     );
   }

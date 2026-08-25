@@ -249,8 +249,10 @@ class BluetoothManager extends ChangeNotifier {
 
   BluetoothManager() {
     carregarCatalogoDoCache();
-    _carregarPreferenciasVisuais();
+    _preferenciasVisuaisFuture = _carregarPreferenciasVisuais();
   }
+
+  Future<void>? _preferenciasVisuaisFuture;
 
   Future<void> _carregarPreferenciasVisuais() async {
     final prefs = await SharedPreferences.getInstance();
@@ -419,13 +421,13 @@ class BluetoothManager extends ChangeNotifier {
       _audioItems.where((item) => _favoritos.contains(item.path)).toList();
 
   Future<void> alternarFavorito(FefoAudioItem item) async {
+    // Aguarda a leitura inicial para que ela não sobrescreva um toque feito
+    // logo ao abrir a tela.
+    await _preferenciasVisuaisFuture;
     final prefs = await SharedPreferences.getInstance();
-    // Releia antes de alternar para não perder um toque feito enquanto
-    // as preferências visuais/favoritos ainda estavam sendo carregadas.
-    _favoritos = (prefs.getStringList(_prefKeyFavorites) ?? const []).toSet();
     if (!_favoritos.add(item.path)) _favoritos.remove(item.path);
-    await prefs.setStringList(_prefKeyFavorites, _favoritos.toList());
     notifyListeners();
+    await prefs.setStringList(_prefKeyFavorites, _favoritos.toList());
   }
 
   Future<void> setDarkMode(bool enabled) async {
@@ -764,6 +766,7 @@ class BluetoothManager extends ChangeNotifier {
       }
       if (state == 'IDLE') {
         _caminhoAudioAtivo = null;
+        _audioSelecionado = null;
         _audioProgress = 0;
         _audioPosSec = 0;
         _audioTotalSec = 0;
@@ -775,7 +778,7 @@ class BluetoothManager extends ChangeNotifier {
           final fila = List<FefoAudioItem>.from(_audioQueue);
           final proximo = _audioQueueIndex;
           Future<void>.microtask(() async {
-            await playAudio(fila[proximo].token);
+            await _playAudio(fila[proximo].token, resetQueue: false);
             _audioQueue = fila;
             _audioQueueIndex = proximo;
           });
@@ -1682,17 +1685,26 @@ class BluetoothManager extends ChangeNotifier {
   }
 
   Future<void> playAudio(String audioRef) async {
-    _audioQueue = const [];
-    _audioQueueIndex = -1;
+    await _playAudio(audioRef, resetQueue: true);
+  }
+
+  Future<void> _playAudio(String audioRef, {required bool resetQueue}) async {
+    if (resetQueue) {
+      _audioQueue = const [];
+      _audioQueueIndex = -1;
+    }
+    // Atualiza o player flutuante antes do BLE responder, para que a escolha
+    // do usuário apareça imediatamente em qualquer tela.
     _audioSelecionado = audioRef;
     _caminhoAudioAtivo = audioRef;
+    _audioProgress = 0;
+    _audioPaused = false;
+    _audioControlState = 'playing';
+    notifyListeners();
     await _enviarComandoNormalizado(
       _comandoPlayParaAudio(audioRef),
       origemParaEstado: audioRef,
     );
-    _audioProgress = 0;
-    _audioPaused = false;
-    _audioControlState = 'playing';
     _audioProgressTimer?.cancel();
     _audioProgressTimer =
         Timer.periodic(const Duration(milliseconds: 500), (_) {
@@ -1712,12 +1724,15 @@ class BluetoothManager extends ChangeNotifier {
   Future<void> tocarTodos(List<FefoAudioItem> audios) async {
     if (audios.isEmpty) return;
     _audioQueue = List<FefoAudioItem>.from(audios);
-    _audioQueueIndex = 0;
-    await playAudio(_audioQueue.first.token);
-    // playAudio cancela a fila por ser uma ação manual; restaura a fila para
-    // que o próximo áudio seja iniciado quando o firmware informar IDLE.
-    _audioQueue = List<FefoAudioItem>.from(audios);
-    _audioQueueIndex = 0;
+    final atual = _caminhoAudioAtivo;
+    final indiceAtual = atual == null
+        ? -1
+        : _audioQueue.indexWhere((item) =>
+            item.path == atual ||
+            item.token == atual ||
+            atual.endsWith(item.fileName));
+    _audioQueueIndex = indiceAtual >= 0 ? indiceAtual : 0;
+    await _playAudio(_audioQueue[_audioQueueIndex].token, resetQueue: false);
   }
 
   void selecionarAudio(String audioRef) {
@@ -1732,6 +1747,8 @@ class BluetoothManager extends ChangeNotifier {
     _audioProgress = 0;
     _audioPaused = false;
     _audioControlState = 'stopped';
+    _caminhoAudioAtivo = null;
+    _audioSelecionado = null;
     notifyListeners();
   }
 
