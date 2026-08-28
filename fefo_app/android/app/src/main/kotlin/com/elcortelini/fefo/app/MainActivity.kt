@@ -149,6 +149,10 @@ class MainActivity : FlutterActivity() {
             .setWpa2Passphrase(password).build()
         val request = NetworkRequest.Builder()
             .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+            // O hotspot local do FEFO não anuncia internet. Essas capacidades
+            // mantêm o comportamento que funcionava nos aparelhos antigos.
+            .addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED)
+            .addCapability(NetworkCapabilities.NET_CAPABILITY_TRUSTED)
             .removeCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
             .setNetworkSpecifier(specifier).build()
         var completed = false
@@ -163,7 +167,7 @@ class MainActivity : FlutterActivity() {
                 } }
             }
         }
-        manager.requestNetwork(request, networkCallback!!, 30000)
+        manager.requestNetwork(request, networkCallback!!, 60000)
     }
 
     private fun disconnect() {
