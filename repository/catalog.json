@@ -1,25 +1,25 @@
 {
     "schema":  1,
-    "catalogVersion":  62,
+    "catalogVersion":  63,
     "repository":  "FEFO Google Drive",
     "firmware":  {
-                     "version":  "1.098",
+                     "version":  "1.099",
                      "board":  "FEFO_CYD_ESP32",
-                     "arquivo":  "FEFO_Firmware_v1.098.bin",
+                     "arquivo":  "FEFO_Firmware_v1.099.bin",
                      "tamanho":  1746528,
-                     "checksum":  "c453d024d8b38bbc915971ad137a5d62fa50ed705ebe6814ea1df6d024ff8e6f",
-                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.098.bin",
+                     "checksum":  "a83b271e56064556028e3efe9cae5072fee4d68079347980c2f199e7550e5c4",
+                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.099.bin",
                      "obrigatorio":  false,
-                     "notas":  "Versão 1.098: Ronronar usa a face 2 e mantém a vibração durante a duração do áudio."
+                     "notas":  "Versão 1.099: reforça a estabilidade da transferência Wi-Fi e mantém compatibilidade com o App 1.103 e firmwares antigos."
                  },
     "app":  {
-                "version":  "1.117",
-                "build":  1117,
-                "arquivo":  "FEFO_App_v1.117.apk",
+                "version":  "1.118",
+                "build":  1118,
+                "arquivo":  "FEFO_App_v1.118.apk",
                 "tamanho":  56036119,
-                "checksum":  "27ba1b668f3a6e33c5d263ca98192462f1ee2e1f80e3a122ff56f0836c6c4249",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.117.apk",
-                "notas":  "Corrige a associação dos áudios instalados ao menu e aos nomes definidos no catálogo online."
+                "checksum":  "d8300e648d49aa174cac9f13f009fa5708eeb11450b4adf47df68614601dda87",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.118.apk",
+                "notas":  "Corrige a estabilidade da conexão OTA, com compatibilidade para firmware v1.086 e melhorias para firmwares novos."
              },
     "audio":  [
                   {

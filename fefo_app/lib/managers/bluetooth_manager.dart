@@ -1182,6 +1182,7 @@ class BluetoothManager extends ChangeNotifier {
     _lastTransferSucceeded = null;
     _uploadProgress = 0;
     notifyListeners();
+    final compatibilidadeLegada = _firmwareAntigoParaWifi;
     try {
       final respostaFuture = _aguardarLinha((line) =>
           line.startsWith('OK WIFI PUSH ') || line.startsWith('ERR WIFI'));
@@ -1227,7 +1228,8 @@ class BluetoothManager extends ChangeNotifier {
         _setStatus('Gravando ${entry.key} no FEFO...');
         Object? lastError;
         var stored = false;
-        for (var attempt = 1; attempt <= 3 && !stored; attempt++) {
+        final maxAttempts = compatibilidadeLegada ? 1 : 3;
+        for (var attempt = 1; attempt <= maxAttempts && !stored; attempt++) {
           final client = HttpClient()
             ..connectionTimeout = const Duration(seconds: 15);
           try {
@@ -1258,16 +1260,16 @@ class BluetoothManager extends ChangeNotifier {
             enviados += entry.value.length;
           } on SocketException catch (error) {
             lastError = error;
-            if (attempt < 3) {
+            if (attempt < maxAttempts) {
               _setStatus(
-                  'Conexão instável; repetindo ${entry.key} ($attempt/3)...');
+                  'Conexão instável; repetindo ${entry.key} ($attempt/$maxAttempts)...');
               await Future<void>.delayed(const Duration(seconds: 1));
             }
           } on TimeoutException catch (error) {
             lastError = error;
-            if (attempt < 3) {
+            if (attempt < maxAttempts) {
               _setStatus(
-                  'Tempo esgotado; repetindo ${entry.key} ($attempt/3)...');
+                  'Tempo esgotado; repetindo ${entry.key} ($attempt/$maxAttempts)...');
               await Future<void>.delayed(const Duration(seconds: 1));
             }
           } finally {
@@ -1321,21 +1323,31 @@ class BluetoothManager extends ChangeNotifier {
 
   Future<void> _aguardarServidorWifi(String ip, String token) async {
     Object? lastError;
-    // Compatibilidade com o transporte que funcionava nas versões anteriores:
-    // basta o PET responder ao socket local; não exigir corpo/status evita que
-    // Android trate o fechamento rápido da resposta como falha da conexão.
-    for (var attempt = 1; attempt <= 15; attempt++) {
+    // O firmware antigo não conhece /ping e responde HTTP 400. Essa resposta
+    // é válida: prova que o socket local e a sessão Wi-Fi estão funcionando.
+    // O prazo maior também é necessário para o Android concluir a troca de
+    // rede sem internet antes de abrir a primeira requisição.
+    for (var attempt = 1; attempt <= 30; attempt++) {
       final client = HttpClient()
-        ..connectionTimeout = const Duration(seconds: 2);
+        ..connectionTimeout = const Duration(seconds: 3)
+        ..idleTimeout = const Duration(seconds: 3);
       try {
         final request = await client.getUrl(Uri.parse('http://$ip/ping'));
         request.headers.set('X-Fefo-Token', token);
-        await (await request.close()).drain<void>();
-        return;
+        request.headers.set('Connection', 'close');
+        final response = await request.close();
+        final body = await utf8.decoder.bind(response).join();
+        if ((response.statusCode == HttpStatus.ok && body.trim().isNotEmpty) ||
+            response.statusCode == HttpStatus.badRequest) {
+          return;
+        }
+        lastError = HttpException(
+          'HTTP ${response.statusCode}: ${body.trim()}',
+        );
       } catch (error) {
         lastError = error;
-        _setStatus('Aguardando servidor do FEFO ($attempt/15)...');
-        await Future<void>.delayed(const Duration(milliseconds: 700));
+        _setStatus('Aguardando rede local do FEFO ($attempt/30)...');
+        await Future<void>.delayed(const Duration(milliseconds: 900));
       } finally {
         client.close(force: true);
       }
@@ -1343,6 +1355,16 @@ class BluetoothManager extends ChangeNotifier {
     throw HttpException(
       'Servidor do FEFO inacessível em $ip. Verifique se o Wi‑Fi do PET foi conectado: $lastError',
     );
+  }
+
+  bool get _firmwareAntigoParaWifi {
+    final raw = _firmwareVersion;
+    if (raw == null || raw.trim().isEmpty) return true;
+    final match = RegExp(r'(\d+)(?:\.(\d+))?').firstMatch(raw);
+    if (match == null) return true;
+    final major = int.tryParse(match.group(1)!) ?? 0;
+    final minor = int.tryParse(match.group(2) ?? '0') ?? 0;
+    return major < 1 || (major == 1 && minor < 90);
   }
 
   Future<void> enviarArquivosViaHotspot(Map<String, List<int>> arquivos,
