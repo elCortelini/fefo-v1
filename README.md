@@ -6,16 +6,16 @@ Projeto do FEFO Pet para a placa CYD ESP32 de 3,5 polegadas. Este repositório r
 
 | Componente | Versão no código | Artefato local |
 |---|---:|---|
-| Firmware CYD | `0.0.77` / BLE `FEFO_BLE_V077` | `releases/FEFO_Firmware_v077.bin` |
-| Aplicativo Android | `1.0.70+70` (App v070 `com.elcortelini.fefo.app`) | `releases/FEFO_App_v070.apk` |
-| Catálogo remoto | schema 1, revisão 7 | `repository/catalog.json` |
-| Catálogo do cartão | schema 1, revisão 3 | `sdcard/fefo.json` |
+| Firmware CYD | `1.099` / BLE declarado no código | `releases/FEFO_Firmware_v1.099.bin` |
+| Aplicativo Android | `1.118.0+1118` (App v1.118) | `releases/FEFO_App_v1.118.apk` |
+| Catálogo remoto | schema 1, revisão 63 | `repository/catalog.json` |
+| Catálogo do cartão | manifesto local do firmware | `fefo_firmware/sdcard/fefo.json` |
 
 ## Estado resumido
 
 O protótipo funcional oferece controle por BLE, áudio WAV/MP3 pelo microSD, LEDs, vibração, botão de Pânico, catálogo online, transferência temporária por Wi-Fi, atualização OTA e faces RGB565.
 
-Consulte [Histórico de Evolução e Correções](docs/HISTORICO_EVOLUCAO_E_CORRECOES.md) para o histórico das alterações do app e firmware.
+Consulte a [Documentação completa do projeto](docs/DOCUMENTACAO_COMPLETA_PROJETO.md) para a visão consolidada. O [Histórico de Evolução e Correções](docs/HISTORICO_EVOLUCAO_E_CORRECOES.md) preserva o registro cronológico das alterações do app e firmware.
 
 ## Estrutura do repositório
 
