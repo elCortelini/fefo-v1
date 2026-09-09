@@ -1,25 +1,27 @@
 {
     "schema":  1,
-    "catalogVersion":  63,
+    "catalogVersion":  64,
     "repository":  "FEFO Google Drive",
     "firmware":  {
-                     "version":  "1.099",
+                     "version":  "1.100",
                      "board":  "FEFO_CYD_ESP32",
-                     "arquivo":  "FEFO_Firmware_v1.099.bin",
-                     "tamanho":  1746528,
-                     "checksum":  "a83b271e56064556028e3efe9cae5072fee4d68079347980c2f199e7550e5c4",
-                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.099.bin",
+                     "arquivo":  "FEFO_Firmware_v1.100.bin",
+                     "tamanho":  1771760,
+                     "checksum":  "0b5fd789c080a5ead369a4ce4aad1cf8c50397577f5e21f2fa2c8d43428150d5",
+                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.100.bin",
                      "obrigatorio":  false,
-                     "notas":  "Versão 1.099: reforça a estabilidade da transferência Wi-Fi e mantém compatibilidade com o App 1.103 e firmwares antigos."
+                     "assinatura":  "kQGiJDb5Ga6yzTeGahPIP9mgB+kY5XsCiSgjMr/LqxgquMM1jZ/t/3x32aUaVxFtnhODVPlRHA7zYVBVg3RWqJ9ato3XgOowG0qn4HcVh8PUeH7Lsgp48LTbmSpr7I3ekNno16q9jy9m64lKx0sEN63wmgXTObOrkv/SMXwuoiHpY213VphiaUBLiTRUQXTTMAb+wDDC10/d1QdkO2/xaZsKdgRm7Bwu2LxCEAxfR/TaRCTA4B+8PwzUaZWwifpk5hDguFF3kUPx/lcjEde2FCGUqkJh8FZgxO8eDnKIDzcS4cg/o1PbL/a6vBYITtRKbt8qzuiRQT+w62xul2Kmug==",
+                     "notas":  "Versão 1.100: reforça BLE seguro, transferência autenticada e proteção da atualização."
                  },
     "app":  {
-                "version":  "1.118",
-                "build":  1118,
-                "arquivo":  "FEFO_App_v1.118.apk",
-                "tamanho":  56036119,
-                "checksum":  "d8300e648d49aa174cac9f13f009fa5708eeb11450b4adf47df68614601dda87",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.118.apk",
-                "notas":  "Corrige a estabilidade da conexão OTA, com compatibilidade para firmware v1.086 e melhorias para firmwares novos."
+                "version":  "1.119",
+                "build":  1119,
+                "arquivo":  "FEFO_App_v1.119.apk",
+                "tamanho":  56052503,
+                "checksum":  "b22fba022ad08ad7eb6755fa4795a66b7d9fff6b345f62fc7dbee96bf6efeb9e",
+                "assinatura":  "S7cRH1egXuqIg7aZpCd3dp67lBYvfMcdJV+3QGEbSO+bOOSZg5tEcnQyHdsdI/7HaP4iFBmHRK2ULTkJGVfWBn7xGpFD5eyLpMe3YsRCABDlIKlKZUlASJGj2Q0YpWK6FVDCdj9lKZyJuFfJgGIkxGiUF2qhczvrQ2OdTnV//06/LJ6DzyPnPCZyEBnRg0IGaCT/t8jmrpNm9Ey271MmcVbWWtrFTWAKOpiB76fIGx3vy5suAtMqopkAhKZ9UwuYITJI9xEAqEZWCs5Akzfaf4xhK0sJCIruHkfmxu+UkarWuLFoCCu14CB2mOM38czMm1rgMKhtxoZFDjWret8Mtg==",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.119.apk",
+                "notas":  "Atualização de segurança: BLE criptografado, downloads assinados e transferência com validação obrigatória."
              },
     "audio":  [
                   {

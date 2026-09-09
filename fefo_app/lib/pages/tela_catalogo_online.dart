@@ -27,6 +27,7 @@ class TelaCatalogoOnline extends StatefulWidget {
 class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
   static const _urlKey = 'fefo_catalog_url';
   static const _catalogCacheKey = 'fefo_online_catalog_cache';
+  static const _catalogSignatureCacheKey = 'fefo_online_catalog_signature';
   static const _defaultCatalogUrl =
       'https://raw.githubusercontent.com/elCortelini/fefo-v1/main/repository/catalog.json';
   static const _catalogFallbackUrls = [
@@ -47,6 +48,16 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
 
   List<int> _manifestBytes(Map<String, dynamic> manifest) =>
       utf8.encode(const JsonEncoder.withIndent('  ').convert(manifest));
+
+  Future<bool> _verifySignedFile(File file, String encodedSignature) async {
+    if (!Platform.isAndroid || encodedSignature.trim().isEmpty) return false;
+    return await const MethodChannel('fefo/wifi')
+            .invokeMethod<bool>('verifySignature', {
+          'path': file.path,
+          'signature': encodedSignature.trim(),
+        }) ??
+        false;
+  }
 
   Future<bool> _confirmarAcao(String titulo, String mensagem) async {
     if (!mounted) return false;
@@ -140,12 +151,26 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
       for (final endpoint in endpoints) {
         try {
           final bytes = await _download(endpoint);
+          final signatureBytes = await _download(
+              endpoint.replaceFirst(RegExp(r'\.json$'), '.json.sig'));
+          final temp = await getTemporaryDirectory();
+          final catalogFile = File(
+              '${temp.path}${Platform.pathSeparator}fefo-catalog-verify.json');
+          await catalogFile.writeAsBytes(bytes, flush: true);
+          final validSignature = await _verifySignedFile(
+              catalogFile, utf8.decode(signatureBytes).trim());
+          await catalogFile.delete().catchError((_) => catalogFile);
+          if (!validSignature) {
+            throw const FormatException('Assinatura do catálogo inválida.');
+          }
           final parsed = jsonDecode(utf8.decode(bytes));
           if (parsed is! Map) throw const FormatException('JSON inválido');
           decoded = Map<String, dynamic>.from(parsed);
           source = endpoint;
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString(_catalogCacheKey, utf8.decode(bytes));
+          await prefs.setString(
+              _catalogSignatureCacheKey, utf8.decode(signatureBytes).trim());
           break;
         } catch (error) {
           lastError = error;
@@ -154,7 +179,19 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
       if (decoded == null) {
         final prefs = await SharedPreferences.getInstance();
         final cached = prefs.getString(_catalogCacheKey);
-        if (cached != null && cached.isNotEmpty) {
+        final cachedSignature = prefs.getString(_catalogSignatureCacheKey);
+        if (cached != null && cached.isNotEmpty && cachedSignature != null) {
+          final temp = await getTemporaryDirectory();
+          final catalogFile = File(
+              '${temp.path}${Platform.pathSeparator}fefo-catalog-cache.json');
+          await catalogFile.writeAsString(cached, flush: true);
+          final validSignature =
+              await _verifySignedFile(catalogFile, cachedSignature);
+          await catalogFile.delete().catchError((_) => catalogFile);
+          if (!validSignature) {
+            throw const FormatException(
+                'Assinatura do catálogo salvo inválida.');
+          }
           final parsed = jsonDecode(cached);
           if (parsed is Map) {
             decoded = Map<String, dynamic>.from(parsed);
@@ -350,6 +387,8 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
       }
       final manifest = _criarManifesto(manager, adicionar: items);
       uploads['/fefo.json'] = _manifestBytes(manifest);
+      checksums['/fefo.json'] =
+          sha256.convert(uploads['/fefo.json']!).toString();
       if (mounted) {
         setState(() => _status = 'Conectando ao Wi-Fi temporário do FEFO...');
       }
@@ -437,6 +476,15 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
         throw const FormatException(
             'Tamanho do firmware diferente do catálogo.');
       }
+      final temp = await getTemporaryDirectory();
+      final firmwareFile = File(
+          '${temp.path}${Platform.pathSeparator}fefo-firmware-${firmware.version}.bin');
+      await firmwareFile.writeAsBytes(bytes, flush: true);
+      if (!await _verifySignedFile(firmwareFile, firmware.signature)) {
+        await firmwareFile.delete().catchError((_) => firmwareFile);
+        throw const FormatException('Assinatura digital do firmware inválida.');
+      }
+      await firmwareFile.delete().catchError((_) => firmwareFile);
       if (mounted) {
         setState(() {
           _activeDownloadPath = null;
@@ -450,6 +498,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
       await manager.enviarArquivosPorWifi(
         {'/firmware.bin': bytes},
         checksums: {'/firmware.bin': firmware.checksum},
+        signatures: {'/firmware.bin': firmware.signature},
       );
       if (mounted) {
         setState(() => _status =
@@ -507,6 +556,9 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
       final apk = File(
           '${temp.path}${Platform.pathSeparator}fefo-app-${app.build}.apk');
       await apk.writeAsBytes(bytes, flush: true);
+      if (!await _verifySignedFile(apk, app.signature)) {
+        throw const FormatException('Assinatura digital do APK inválida.');
+      }
       await const MethodChannel('fefo/wifi').invokeMethod<bool>('installApk', {
         'path': apk.path,
       });
@@ -1062,7 +1114,7 @@ class _OnlineItem {
 }
 
 class _OnlineFirmware {
-  final String version, board, url, checksum, notes;
+  final String version, board, url, checksum, signature, notes;
   final int size;
 
   const _OnlineFirmware({
@@ -1070,6 +1122,7 @@ class _OnlineFirmware {
     required this.board,
     required this.url,
     required this.checksum,
+    required this.signature,
     required this.notes,
     required this.size,
   });
@@ -1080,6 +1133,7 @@ class _OnlineFirmware {
       board: (map['board'] ?? '').toString(),
       url: (map['url'] ?? map['downloadUrl'] ?? '').toString(),
       checksum: (map['checksum'] ?? '').toString(),
+      signature: (map['assinatura'] ?? map['signature'] ?? '').toString(),
       notes: (map['notas'] ?? map['notes'] ?? '').toString(),
       size: map['tamanho'] is num ? (map['tamanho'] as num).toInt() : 0,
     );
@@ -1087,7 +1141,7 @@ class _OnlineFirmware {
 }
 
 class _OnlineApp {
-  final String version, url, checksum, notes;
+  final String version, url, checksum, signature, notes;
   final int build, size;
 
   const _OnlineApp({
@@ -1095,6 +1149,7 @@ class _OnlineApp {
     required this.build,
     required this.url,
     required this.checksum,
+    required this.signature,
     required this.size,
     required this.notes,
   });
@@ -1104,6 +1159,7 @@ class _OnlineApp {
         build: (map['build'] as num?)?.toInt() ?? 0,
         url: (map['url'] ?? map['downloadUrl'] ?? '').toString(),
         checksum: (map['checksum'] ?? '').toString(),
+        signature: (map['assinatura'] ?? map['signature'] ?? '').toString(),
         size: (map['tamanho'] as num?)?.toInt() ?? 0,
         notes: (map['notas'] ?? map['notes'] ?? '').toString(),
       );

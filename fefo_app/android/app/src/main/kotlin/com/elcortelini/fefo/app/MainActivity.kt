@@ -13,6 +13,11 @@ import android.net.wifi.WifiNetworkSpecifier
 import android.os.Build
 import androidx.core.content.FileProvider
 import java.io.File
+import java.io.FileInputStream
+import java.security.KeyFactory
+import java.security.Signature
+import java.security.spec.X509EncodedKeySpec
+import android.util.Base64
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -44,6 +49,11 @@ class MainActivity : FlutterActivity() {
                     "connect" -> connect(call.argument<String>("ssid") ?: "",
                         call.argument<String>("password") ?: "", result)
                     "installApk" -> installApk(call.argument<String>("path") ?: "", result)
+                    "verifySignature" -> verifySignature(
+                        call.argument<String>("path") ?: "",
+                        call.argument<String>("signature") ?: "",
+                        result,
+                    )
                     "disconnect" -> { disconnect(); result.success(true) }
                     "getPendingAlarm" -> {
                         val audio = pendingAlarmAudio
@@ -180,6 +190,15 @@ class MainActivity : FlutterActivity() {
     companion object {
         @JvmStatic
         var isInForeground: Boolean = false
+
+        private const val PUBLIC_KEY_B64 =
+            "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwjEBYsAzRNBSzaaXmjbm" +
+            "Cy+nMbkEDa13BVIH7T9EgYTBK6onDEmutxzbHSnd9+O35r1nxJZkcGYpHLrb5fBU" +
+            "gc44Txe3HUYdhy4OzezOn0PbdTILNVNEc9nXtRwSaHaGgZucfy1VI4luF39xmX9F" +
+            "Y9zYhYeJSXB537dQ1PkfPikUT+k8YZOYG6/x3bwBywgivfq2eMFpHkpDjoneHaRp" +
+            "iz9sjC4xA4mxqyxmOSkTbWWAPkd2xF1E+vAduGo6q8VSZImuvBezf1QNvXSUT9us" +
+            "W/avA55BICkDIc+lfJY/ohvsoLKdhxnYlVVs81NIdxSL2TYvoEKbYxd6k7bGIbp+" +
+            "CQIDAQAB"
     }
 
     private fun installApk(path: String, result: MethodChannel.Result) {
@@ -200,4 +219,27 @@ class MainActivity : FlutterActivity() {
             result.error("APK_INSTALL_FAILED", error.message, null)
         }
     }
+
+    private fun verifySignature(path: String, encodedSignature: String,
+        result: MethodChannel.Result) {
+        try {
+            val signature = Signature.getInstance("SHA256withRSA")
+            val keyBytes = Base64.decode(PUBLIC_KEY_B64, Base64.DEFAULT)
+            val key = KeyFactory.getInstance("RSA")
+                .generatePublic(X509EncodedKeySpec(keyBytes))
+            signature.initVerify(key)
+            FileInputStream(File(path)).use { input ->
+                val buffer = ByteArray(8192)
+                var count = input.read(buffer)
+                while (count > 0) {
+                    signature.update(buffer, 0, count)
+                    count = input.read(buffer)
+                }
+            }
+            result.success(signature.verify(Base64.decode(encodedSignature, Base64.DEFAULT)))
+        } catch (error: Exception) {
+            result.error("SIGNATURE_VERIFY_FAILED", error.message, false)
+        }
+    }
+
 }

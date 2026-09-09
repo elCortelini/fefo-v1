@@ -5,16 +5,46 @@
 #include <WiFi.h>
 #include <esp_task_wdt.h>
 #include <mbedtls/sha256.h>
+#include <mbedtls/base64.h>
+#include <mbedtls/pk.h>
+
+#include "security/FefoUpdateKey.h"
 
 namespace fefo {
 
 namespace {
 constexpr uint32_t kUploadInactivityTimeoutMs = 60000;
+constexpr uint32_t kMaxFirmwareBytes = 0x1E0000;
+constexpr uint32_t kMaxAudioBytes = 8UL * 1024UL * 1024UL;
+constexpr uint32_t kMaxFaceBytes = 2UL * 1024UL * 1024UL;
+constexpr uint32_t kMaxCatalogBytes = 256UL * 1024UL;
 
 void trimHttp(char* value) {
   if (!value) return;
   size_t n = strlen(value);
   while (n && (value[n - 1] == '\r' || value[n - 1] == '\n' || value[n - 1] == ' ')) value[--n] = 0;
+}
+
+bool verifyReleaseSignature(const uint8_t* digest, const char* encoded) {
+  if (digest == nullptr || encoded == nullptr || strlen(encoded) == 0) return false;
+  uint8_t signature[256]{};
+  size_t signatureLength = 0;
+  if (mbedtls_base64_decode(signature, sizeof(signature), &signatureLength,
+                            reinterpret_cast<const unsigned char*>(encoded),
+                            strlen(encoded)) != 0 || signatureLength != sizeof(signature)) {
+    return false;
+  }
+  mbedtls_pk_context key;
+  mbedtls_pk_init(&key);
+  const int parsed = mbedtls_pk_parse_public_key(
+      &key, reinterpret_cast<const unsigned char*>(kFefoUpdatePublicKeyPem),
+      strlen(kFefoUpdatePublicKeyPem) + 1);
+  const int verified = parsed == 0
+      ? mbedtls_pk_verify(&key, MBEDTLS_MD_SHA256, digest, 32, signature,
+                          signatureLength)
+      : -1;
+  mbedtls_pk_free(&key);
+  return verified == 0;
 }
 }
 
@@ -31,7 +61,9 @@ void WifiTransferService::setError(const char* error) {
 bool WifiTransferService::configurePush() {
   const uint64_t mac = ESP.getEfuseMac();
   snprintf(apSsid_, sizeof(apSsid_), "FEFO_WIFI_%04X", (unsigned)(mac & 0xFFFF));
-  snprintf(apPassword_, sizeof(apPassword_), "Fefo%08X", (unsigned)(mac & 0xFFFFFFFF));
+  snprintf(apPassword_, sizeof(apPassword_), "Fefo%08X%08X",
+           static_cast<unsigned>(esp_random()),
+           static_cast<unsigned>(esp_random()));
   snprintf(apToken_, sizeof(apToken_), "%08X%08X", esp_random(), esp_random());
   return true;
 }
@@ -61,6 +93,9 @@ bool WifiTransferService::runPushServer() {
     delay(1);
   }
   server_.stop(); WiFi.softAPdisconnect(true); WiFi.mode(WIFI_OFF);
+  // Credenciais e token só valem durante a sessão atual.
+  memset(apPassword_, 0, sizeof(apPassword_));
+  memset(apToken_, 0, sizeof(apToken_));
   if (!finished) setError("AP_TIMEOUT");
   return finished;
 }
@@ -77,7 +112,7 @@ void WifiTransferService::reply(WiFiClient& client, int status, const char* mess
 void WifiTransferService::handlePushClient(WiFiClient& client, bool& finished,
                                            bool& transferStarted) {
   client.setTimeout(2);
-  char line[192]{}, method[12]{}, target[80]{}, path[64]{}, auth[48]{}, expectedSha[68]{};
+  char line[512]{}, method[12]{}, target[80]{}, path[64]{}, auth[48]{}, expectedSha[68]{}, signature[400]{};
   uint32_t contentLength = 0;
   size_t n = client.readBytesUntil('\n', line, sizeof(line) - 1); line[n] = 0; trimHttp(line);
   sscanf(line, "%11s %79s", method, target);
@@ -89,6 +124,7 @@ void WifiTransferService::handlePushClient(WiFiClient& client, bool& finished,
     else if (strncasecmp(line, "X-Fefo-Path:", 12) == 0) { strlcpy(path, line + 12, sizeof(path)); while (path[0] == ' ') memmove(path, path + 1, strlen(path)); }
     else if (strncasecmp(line, "X-Fefo-Token:", 13) == 0) { strlcpy(auth, line + 13, sizeof(auth)); while (auth[0] == ' ') memmove(auth, auth + 1, strlen(auth)); }
     else if (strncasecmp(line, "X-Fefo-Sha256:", 14) == 0) { strlcpy(expectedSha, line + 14, sizeof(expectedSha)); while (expectedSha[0] == ' ') memmove(expectedSha, expectedSha + 1, strlen(expectedSha)); }
+    else if (strncasecmp(line, "X-Fefo-Signature:", 18) == 0) { strlcpy(signature, line + 18, sizeof(signature)); while (signature[0] == ' ') memmove(signature, signature + 1, strlen(signature)); }
   }
   if (strcmp(auth, apToken_) != 0) { reply(client, 403, "TOKEN_INVALID"); client.stop(); return; }
   if (strcmp(method, "GET") == 0 && strcmp(target, "/ping") == 0) {
@@ -125,10 +161,28 @@ void WifiTransferService::handlePushClient(WiFiClient& client, bool& finished,
   }
   if (strcmp(method, "PUT") == 0 && strcmp(target, "/file") == 0 &&
       strcmp(path, "/firmware.bin") == 0) {
-    handleFirmwareUpload(client, contentLength, expectedSha, transferStarted);
+    if (strlen(expectedSha) != 64 || contentLength > kMaxFirmwareBytes) {
+      reply(client, 400, "FIRMWARE_METADATA_INVALID");
+      client.stop();
+      return;
+    }
+    if (signature[0] == '\0') {
+      reply(client, 400, "FIRMWARE_SIGNATURE_REQUIRED");
+      client.stop();
+      return;
+    }
+    handleFirmwareUpload(client, contentLength, expectedSha, signature, transferStarted);
     return;
   }
   if (strcmp(method, "PUT") != 0 || strcmp(target, "/file") != 0 || !validPath(path) || !contentLength || !ensureParent(path)) { reply(client, 400, "REQUEST_INVALID"); client.stop(); return; }
+  if (strlen(expectedSha) != 64 ||
+      (strncmp(path, "/usr/a/", 7) == 0 && contentLength > kMaxAudioBytes) ||
+      (strncmp(path, "/usr/f/", 7) == 0 && contentLength > kMaxFaceBytes) ||
+      (strcmp(path, "/fefo.json") == 0 && contentLength > kMaxCatalogBytes)) {
+    reply(client, 400, "FILE_METADATA_INVALID");
+    client.stop();
+    return;
+  }
   char temporary[72]{}; snprintf(temporary, sizeof(temporary), "%s.part", path); SD.remove(temporary);
   File output = SD.open(temporary, FILE_WRITE);
   if (!output) { reply(client, 500, "SD_OPEN_FAILED"); client.stop(); return; }
@@ -201,6 +255,7 @@ void WifiTransferService::handlePushClient(WiFiClient& client, bool& finished,
 void WifiTransferService::handleFirmwareUpload(WiFiClient& client,
                                                uint32_t contentLength,
                                                const char* expectedSha,
+                                               const char* signature,
                                                bool& transferStarted) {
   if (!contentLength) {
     reply(client, 400, "FIRMWARE_METADATA_INVALID");
@@ -264,11 +319,14 @@ void WifiTransferService::handleFirmwareUpload(WiFiClient& client,
   for (int i = 0; i < 32; ++i) {
     snprintf(actual + i * 2, 3, "%02x", digest[i]);
   }
-  if (received != contentLength || (hasExpectedSha && strcasecmp(expectedSha, actual) != 0)) {
+  if (received != contentLength || !hasExpectedSha || strcasecmp(expectedSha, actual) != 0 ||
+      !verifyReleaseSignature(digest, signature)) {
     Update.abort();
-    reply(client, 422,
-          received != contentLength ? "OTA_SIZE_MISMATCH"
-                                    : "OTA_SHA256_MISMATCH");
+    const char* error = received != contentLength
+        ? "OTA_SIZE_MISMATCH"
+        : (strcasecmp(expectedSha, actual) != 0 ? "OTA_SHA256_MISMATCH"
+                                                 : "OTA_SIGNATURE_INVALID");
+    reply(client, 422, error);
     client.stop();
     return;
   }

@@ -28,13 +28,14 @@ class WifiTransferService {
   void handlePushClient(WiFiClient& client, bool& finished,
                         bool& transferStarted);
   void handleFirmwareUpload(WiFiClient& client, uint32_t contentLength,
-                            const char* expectedSha, bool& transferStarted);
+                            const char* expectedSha, const char* signature,
+                            bool& transferStarted);
   void reply(WiFiClient& client, int status, const char* message);
 
   char lastError_[80]{};
   WiFiServer server_{80};
   char apSsid_[32]{};
-  char apPassword_[20]{};
+  char apPassword_[32]{};
   char apToken_[24]{};
   ProgressCallback progressCallback_{nullptr};
   void* progressContext_{nullptr};
