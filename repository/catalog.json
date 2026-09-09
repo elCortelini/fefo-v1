@@ -1,6 +1,8 @@
 {
     "schema":  1,
-    "catalogVersion":  66,
+    "catalogVersion":  68,
+    "assinaturaCatalogo":  "Xj48zd84w1fxEwz9xh57r4FljHZyqDdmppMJpcFNG1bIHHqFvbaIxnLONZPY/ZSRsJz+Vkk4b41smeoTWn3baN9ByL5G5dv6964q3xtYoMDQKZsrNdBB7QDH7AIBUJ2KB/h/8o03mo9aJhecgTVTHgL3SfIKlEg/ZjLBr1FaPb13HwzBftbWEQzjnKy3bnctKAk4x/6ovlHmqI4mY4krd1hTesjNoXOE8fjarBpRB/Op8rZEuLtTVIuf3IoCn1imFc/HECBe9GYT9foq2nGoU9/w9+MZ1g6K1jjEwlsdeJAo+UPdixOq4YItm0+Q0pgGoZVTUUlMn2QTz4rZrjqYhA==",
+    "assinaturaCatalogoCanonica":  "Pb74WWZpz4ign+F7DVFUBIPKyoCHbq+ovfvjDsgV0rJkKjyWp1XeVunwjOfmWYEXHSjcpVqsX1jdldCsVJNByQe8Bo6knbBHY3RzbEhkO8/LYN32hDLrYRxIqW1Pl03VJoEbqSf1ZgqHh+C0tsVcqfs3CRqIZ2Ggd7+K6a45IzXplUJBSNE0b3NCJ6Z/9yUK/MHRpj5YqQWNkdaL6i8ytBzKhlYP+JXT32vSRSjSYwAti5DI6iTqufzSncUwDElNS3Xq5QfcIWVHGH51WIYRz1DJ0LX0iHfFg/Qxrr2mIQn0CGj8ULWUBpDBM9unRl3sA7VLCZPuVto+dEJ7GDcdDA==",
     "repository":  "FEFO Google Drive",
     "firmware":  {
                      "version":  "1.100",
@@ -14,14 +16,14 @@
                      "notas":  "Versão 1.100: reforça BLE seguro, transferência autenticada e proteção da atualização."
                  },
     "app":  {
-                "version":  "1.121",
-                "build":  1121,
-                "arquivo":  "FEFO_App_v1.121.apk",
+                "version":  "1.123",
+                "build":  1123,
+                "arquivo":  "FEFO_App_v1.123.apk",
                 "tamanho":  56199959,
-                "checksum":  "f08a16a94001d57aa12034b2df46b653511e5e0968b0542e0404eeef794bf08b",
+                "checksum":  "05d10fa4b5b9c0194dc07c4118da2a46f4fe849f11b6ca1ac2691edbaccf6331",
                 "assinatura":  "g84ivnvZcuZy7St7uiXzTcx1yie2AmCyX4F7fq1nYqI5L9WBmLILWHh0gUX/+f7qPL3FGrYq2mHFCpkbMbcYUmHiXPkStn9FpolKCCqURhbEq0pkRotXqkP4FoaUXil2M/Lxy4eIC70BATvKPx5xnSMqJCGpZYcLfF76egrtncu3XeezkVS1PzqR4GD8NUOkj3kDNPKPshZjKXi8pM7dIqlnysq38rpN6sq3Ty2eoWQQ4kl7KMK8OKf3Ge1QMOdaa4Qt4I5feLs6469yKY6vPhBrWn+UAZvQ28g8O7lGed39x7F/w0QCxUA/+VhrMOQjQLJ0MD1NgY5fMJUrttSyaw==",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.121.apk",
-                "notas":  "Correção definitiva da validação do catálogo online e atualização de segurança."
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.123.apk",
+                "notas":  "Validação autocontida e canônica do catálogo online."
              },
     "audio":  [
                   {

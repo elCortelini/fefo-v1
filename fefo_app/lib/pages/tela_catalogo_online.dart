@@ -86,6 +86,24 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
     }
   }
 
+  Future<bool> _verifyInlineCatalogSignature(Uint8List bytes) async {
+    try {
+      final decoded = jsonDecode(utf8.decode(bytes));
+      if (decoded is! Map) return false;
+      final catalog = Map<String, dynamic>.from(decoded);
+      final signature = (catalog.remove('assinaturaCatalogoCanonica') ??
+              catalog.remove('assinaturaCatalogo') ?? '')
+          .toString();
+      catalog.remove('assinaturaCatalogo');
+      if (signature.isEmpty) return false;
+      final canonical = utf8.encode(jsonEncode(catalog));
+      return await _verifyCatalogBytes(Uint8List.fromList(canonical), signature,
+          'fefo-catalog-canonical.json');
+    } catch (_) {
+      return false;
+    }
+  }
+
   Future<bool> _confirmarAcao(String titulo, String mensagem) async {
     if (!mounted) return false;
     return await showDialog<bool>(
@@ -190,7 +208,8 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
           final bytes = await _download(catalogUrl);
           final signatureBytes = await _download(signatureUrl);
           final validSignature = await _verifyCatalogBytes(bytes,
-              utf8.decode(signatureBytes).trim(), 'fefo-catalog-verify.json');
+                  utf8.decode(signatureBytes).trim(), 'fefo-catalog-verify.json') ||
+              await _verifyInlineCatalogSignature(bytes);
           if (!validSignature) {
             throw const FormatException('Assinatura do catálogo inválida.');
           }
@@ -212,10 +231,10 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
         final cached = prefs.getString(_catalogCacheKey);
         final cachedSignature = prefs.getString(_catalogSignatureCacheKey);
         if (cached != null && cached.isNotEmpty && cachedSignature != null) {
+          final cachedBytes = Uint8List.fromList(utf8.encode(cached));
           final validSignature = await _verifyCatalogBytes(
-              Uint8List.fromList(utf8.encode(cached)),
-              cachedSignature,
-              'fefo-catalog-cache.json');
+                  cachedBytes, cachedSignature, 'fefo-catalog-cache.json') ||
+              await _verifyInlineCatalogSignature(cachedBytes);
           if (!validSignature) {
             await prefs.remove(_catalogCacheKey);
             await prefs.remove(_catalogSignatureCacheKey);
