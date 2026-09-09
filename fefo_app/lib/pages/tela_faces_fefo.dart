@@ -129,7 +129,7 @@ class _TelaFacesFefoState extends State<TelaFacesFefo> {
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 14),
             child: Text(
-              'Escolha um rostinho para exibir. Após a seleção, o FEFO retorna ao modo aleatório automaticamente.',
+              'Escolha um rostinho para exibir. Após a seleção, o Fefo retorna ao modo aleatório automaticamente.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: 'KGPen',
@@ -180,7 +180,7 @@ class _TelaFacesFefoState extends State<TelaFacesFefo> {
             manager.uploading && manager.operationPath == face.path;
         return FefoContentCard(
           title: face.title,
-          subtitle: selected ? 'Face exibida no FEFO' : 'Rostinho do FEFO',
+          subtitle: selected ? 'Face exibida no Fefo' : 'Rostinho do Fefo',
           icon: Icons.face_retouching_natural_rounded,
           selected: selected,
           onTap: !_busy ? () => manager.showFace(face.path) : null,
@@ -213,7 +213,7 @@ class _TelaFacesFefoState extends State<TelaFacesFefo> {
           context: context,
           builder: (dialogContext) => AlertDialog(
             title: const Text('Excluir face?'),
-            content: Text('${face.title}\n\nA face será removida do FEFO.'),
+            content: Text('${face.title}\n\nA face será removida do Fefo.'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(dialogContext, false),

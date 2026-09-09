@@ -73,10 +73,10 @@ class TelaInicial extends StatelessWidget {
                   const SizedBox(width: 8),
                   Text(
                     manager.isConnected
-                        ? 'FEFO conectado'
+                        ? 'Fefo conectado'
                         : (manager.isConnecting
-                            ? 'Procurando o FEFO...'
-                            : 'FEFO desconectado'),
+                            ? 'Procurando o Fefo...'
+                            : 'Fefo desconectado'),
                     style: const TextStyle(
                       fontFamily: 'KGPen',
                       fontSize: 16,

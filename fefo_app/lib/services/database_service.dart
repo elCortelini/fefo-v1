@@ -60,7 +60,7 @@ class DatabaseService {
       final jsonList = alarmes.map((a) => a.toJson()).toList();
       await prefs.setString(_spKey, jsonEncode(jsonList));
     } catch (e) {
-      log("FEFO: Erro ao salvar em SharedPreferences: $e");
+      log("Fefo: Erro ao salvar em SharedPreferences: $e");
     }
   }
 
@@ -84,7 +84,7 @@ class DatabaseService {
       final db = await instance.database;
       insertedId = await db.insert(tableAlarms, alarm.toJson());
     } catch (e) {
-      log("FEFO: Erro ao inserir no SQLite: $e");
+      log("Fefo: Erro ao inserir no SQLite: $e");
     }
 
     final novoAlarme = alarm.copyWith(
@@ -109,7 +109,7 @@ class DatabaseService {
       final result = await db.query(tableAlarms, orderBy: orderBy);
       alarmes = result.map((json) => AlarmModel.fromJson(json)).toList();
     } catch (e) {
-      log("FEFO: Erro ao ler SQLite: $e");
+      log("Fefo: Erro ao ler SQLite: $e");
     }
 
     if (alarmes.isEmpty) {

@@ -68,7 +68,7 @@ class FefoThemeDefinition {
             headlineSmall: base.textTheme.headlineSmall
                 ?.copyWith(fontWeight: FontWeight.w500),
             titleLarge: base.textTheme.titleLarge
-                ?.copyWith(fontWeight: FontWeight.w700),
+                ?.copyWith(fontWeight: FontWeight.w500),
             bodyLarge: base.textTheme.bodyLarge
                 ?.copyWith(fontFamily: 'KGPen', color: text, fontSize: 18),
             bodyMedium: base.textTheme.bodyMedium
@@ -173,8 +173,8 @@ class FefoThemeDefinition {
 const fefoThemes = <FefoThemeDefinition>[
   FefoThemeDefinition(
     id: FefoThemeId.classico,
-    nome: 'Clássico FEFO',
-    descricao: 'Identidade original do FEFO, com leitura mais limpa.',
+    nome: 'Clássico Fefo',
+    descricao: 'Identidade original do Fefo, com leitura mais limpa.',
     accent: Color(0xFFDC4900),
     accentSecondary: Color(0xFF318134),
     background: Color(0xFFFFF4DF),
@@ -249,8 +249,8 @@ const fefoThemes = <FefoThemeDefinition>[
     id: FefoThemeId.lavandaClara,
     nome: 'Lavanda clara',
     descricao: 'Tema claro, delicado e acolhedor para leitura confortável.',
-    accent: Color(0xFFDC4900),
-    accentSecondary: Color(0xFF318134),
+    accent: Color(0xFF7657C5),
+    accentSecondary: Color(0xFF3D8F91),
     background: Color(0xFFF7F5FF),
     backgroundSecondary: Color(0xFFDCD6FF),
     surface: Color(0xEFFFFFFF),

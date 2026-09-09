@@ -42,7 +42,7 @@ class TelaTeste extends StatelessWidget {
               children: [
                 const SizedBox(height: 24),
                 Text(
-                  'FEFO Firm v${firmware.split('.').last.padLeft(3, '0')} - App v038',
+                  'Fefo Firm v${firmware.split('.').last.padLeft(3, '0')} - App v038',
                   style: const TextStyle(
                     color: verde,
                     fontFamily: 'KGPen',

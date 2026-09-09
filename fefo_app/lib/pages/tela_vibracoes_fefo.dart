@@ -44,7 +44,7 @@ class TelaVibracoesFefo extends StatelessWidget {
           const SizedBox(height: 18),
           FittedBox(
             fit: BoxFit.scaleDown,
-            child: Text('Vibrações do FEFO',
+            child: Text('Vibrações do Fefo',
                 style: TextStyle(
                     fontFamily: 'Billotilde',
                     fontSize: 52,
@@ -62,7 +62,7 @@ class TelaVibracoesFefo extends StatelessWidget {
                 final cor = _cores[index];
                 return FefoContentCard(
                   title: '${index + 1}. ${_nomes[index]}',
-                  subtitle: 'Vibração do FEFO • 7 segundos',
+                  subtitle: 'Vibração do Fefo • 7 segundos',
                   icon: Icons.vibration_rounded,
                   selected: manager.vibracaoSelecionada == numero,
                   leading: Container(

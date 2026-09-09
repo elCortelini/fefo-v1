@@ -50,7 +50,7 @@ class _TelaAlarmesState extends State<TelaAlarmes> {
         });
       }
     } catch (e) {
-      log("FEFO: Erro ao recarregar alarmes: $e");
+      log("Fefo: Erro ao recarregar alarmes: $e");
       if (mounted) {
         setState(() => _estaCarregando = false);
       }
@@ -182,7 +182,7 @@ class _TelaAlarmesState extends State<TelaAlarmes> {
         await DatabaseService.instance
             .deleteByTitleAndTime(tituloOriginal, horaOriginal, minutoOriginal);
       } catch (e) {
-        log("FEFO: Erro ao deletar alarme: $e");
+        log("Fefo: Erro ao deletar alarme: $e");
       }
 
       await _recarregarAlarmes();
@@ -422,7 +422,7 @@ class _TelaAlarmesState extends State<TelaAlarmes> {
             ),
           ),
 
-          // SOM DO FEFO ASSOCIADO
+          // SOM DO Fefo ASSOCIADO
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
             child: Row(
@@ -508,9 +508,9 @@ class _TelaAlarmesState extends State<TelaAlarmes> {
                     ),
                   ),
                 ),
-                // Botão Testar no FEFO
+                // Botão Testar no Fefo
                 IconButton(
-                  tooltip: 'Testar no FEFO',
+                  tooltip: 'Testar no Fefo',
                   icon: const Icon(Icons.play_circle_fill_rounded,
                       color: corLaranja, size: 26),
                   onPressed: () {
@@ -518,7 +518,7 @@ class _TelaAlarmesState extends State<TelaAlarmes> {
                       manager.playAudio(alarme.audioPath);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Tocando "${alarme.title}" no FEFO...'),
+                          content: Text('Tocando "${alarme.title}" no Fefo...'),
                           duration: const Duration(seconds: 2),
                         ),
                       );
@@ -526,7 +526,7 @@ class _TelaAlarmesState extends State<TelaAlarmes> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text(
-                              'Conecte ao PET FEFO via Bluetooth para testar o alarme.'),
+                              'Conecte ao PET Fefo via Bluetooth para testar o alarme.'),
                         ),
                       );
                     }

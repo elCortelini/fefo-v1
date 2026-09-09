@@ -113,15 +113,15 @@ class TelaMenu extends StatelessWidget {
         ),
       _MenuSection('Terapias guiadas', terapias, icon: Icons.spa_rounded),
       _MenuSection(
-          'Sobre o FEFO',
+          'Sobre o Fefo',
           [
             _MenuEntry('Catálogo online',
                 () => _abrir(context, const TelaCatalogoOnline()),
                 icon: Icons.cloud_download_rounded),
             _MenuEntry(
-                'Quem é o FEFO', () => _abrir(context, const TelaSobre()),
+                'Quem é o Fefo', () => _abrir(context, const TelaSobre()),
                 icon: Icons.favorite_rounded),
-            _MenuEntry('Rostinhos do FEFO',
+            _MenuEntry('Rostinhos do Fefo',
                 () => _abrir(context, const TelaFacesFefo()),
                 icon: Icons.face_rounded),
             _MenuEntry('Configurações',
@@ -150,7 +150,7 @@ class TelaMenu extends StatelessWidget {
               children: [
                 if (!manager.isConnected) ...[
                   FefoStatusBadge(
-                    label: 'FEFO desconectado · menu disponível',
+                    label: 'Fefo desconectado · menu disponível',
                     icon: Icons.bluetooth_disabled_rounded,
                     color: theme.accent,
                   ),
@@ -238,7 +238,7 @@ class _MenuSectionView extends StatelessWidget {
                             fontFamily: 'Billotilde',
                             color: Theme.of(context).colorScheme.secondary,
                             fontSize: 32,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w500,
                           ),
                     ),
                   ),

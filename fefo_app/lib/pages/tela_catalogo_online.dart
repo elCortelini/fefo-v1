@@ -135,7 +135,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
   Future<void> _initialize() async {
     final manager = context.read<BluetoothManager>();
     if (manager.isConnected) {
-      setState(() => _status = 'Lendo arquivos instalados no FEFO...');
+      setState(() => _status = 'Lendo arquivos instalados no Fefo...');
       await manager.lerCatalogoAtualizado();
       await manager.enviarComando('SD INFO');
     }
@@ -379,7 +379,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
   Future<bool> _ensurePetConnected(BluetoothManager manager) async {
     if (manager.isConnected) return true;
     if (mounted) {
-      setState(() => _status = 'Conectando automaticamente ao PET FEFO...');
+      setState(() => _status = 'Conectando automaticamente ao PET Fefo...');
     }
     final connected = await manager.conectarAutomaticamenteAoFefo();
     if (!connected && mounted) {
@@ -409,7 +409,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
       return;
     }
     if (!await _confirmarAcao('Instalar conteúdo?',
-        'Os arquivos serão transferidos ao FEFO e ele poderá reiniciar ao concluir.')) {
+        'Os arquivos serão transferidos ao Fefo e ele poderá reiniciar ao concluir.')) {
       return;
     }
     setState(() {
@@ -451,7 +451,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
       checksums['/fefo.json'] =
           sha256.convert(uploads['/fefo.json']!).toString();
       if (mounted) {
-        setState(() => _status = 'Conectando ao Wi-Fi temporário do FEFO...');
+        setState(() => _status = 'Conectando ao Wi-Fi temporário do Fefo...');
       }
       if (!await _ensurePetConnected(manager)) return;
       if (mounted) {
@@ -517,7 +517,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
       return;
     }
     if (!await _confirmarAcao('Atualizar firmware?',
-        'O FEFO será reiniciado durante o processo. Não desligue o aparelho até terminar.')) {
+        'O Fefo será reiniciado durante o processo. Não desligue o aparelho até terminar.')) {
       return;
     }
     setState(() {
@@ -553,7 +553,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
         });
       }
       if (mounted) {
-        setState(() => _status = 'Transferindo firmware ao FEFO...');
+        setState(() => _status = 'Transferindo firmware ao Fefo...');
       }
       if (!await _ensurePetConnected(manager)) return;
       await manager.enviarArquivosPorWifi(
@@ -563,7 +563,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
       );
       if (mounted) {
         setState(() => _status =
-            'Firmware enviado. O FEFO está reiniciando na versão ${firmware.version}.');
+            'Firmware enviado. O Fefo está reiniciando na versão ${firmware.version}.');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -589,7 +589,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
   Future<void> _installApp(_OnlineApp app) async {
     if (app.url.isEmpty || app.checksum.isEmpty || _busy) return;
     if (!await _confirmarAcao('Atualizar aplicativo?',
-        'O Android abrirá a instalação da nova versão do FEFO App.')) {
+        'O Android abrirá a instalação da nova versão do Fefo App.')) {
       return;
     }
     setState(() {
@@ -733,7 +733,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                                 height: 1)),
                       ),
                       SizedBox(height: 6),
-                      Text('Novos conteúdos para o PET FEFO',
+                      Text('Novos conteúdos para o PET Fefo',
                           style: TextStyle(
                               fontFamily: 'KGPen',
                               fontSize: 15,
@@ -772,7 +772,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                         color: theme.accentSecondary, size: 30),
                     title: Text('Aplicativo atualizado',
                         style: TextStyle(color: theme.text)),
-                    subtitle: Text('O FEFO App está na versão mais recente.',
+                    subtitle: Text('O Fefo App está na versão mais recente.',
                         style: TextStyle(color: theme.mutedText)),
                   ),
                 );
@@ -794,7 +794,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                             color: theme.accentSecondary, size: 30),
                         const SizedBox(width: 12),
                         Expanded(
-                            child: Text('FEFO App v${app.version}',
+                            child: Text('Fefo App v${app.version}',
                                 style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: theme.text))),
@@ -869,7 +869,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            'Firmware PET FEFO v${firmware.version}',
+                            'Firmware PET Fefo v${firmware.version}',
                             style: const TextStyle(
                               fontFamily: 'KGPen',
                               fontSize: 16,

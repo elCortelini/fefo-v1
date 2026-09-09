@@ -36,7 +36,7 @@ Future<void> _solicitarTodasPermissoes() async {
       Permission.notification,
     ].request();
   } catch (e) {
-    log("FEFO: Erro permissões: $e");
+    log("Fefo: Erro permissões: $e");
   }
 }
 
@@ -54,13 +54,13 @@ void main() async {
       final dynamic tzData = await FlutterTimezone.getLocalTimezone();
       final String timeZoneName = tzData.toString();
       tz.setLocalLocation(tz.getLocation(timeZoneName));
-      log("FEFO: Timezone configurada para $timeZoneName");
+      log("Fefo: Timezone configurada para $timeZoneName");
     } catch (e) {
-      log("FEFO: Erro timezone, usando fallback: $e");
+      log("Fefo: Erro timezone, usando fallback: $e");
       tz.setLocalLocation(tz.getLocation('America/Sao_Paulo'));
     }
   } catch (e) {
-    log("FEFO: Falha no init TimeZone: $e");
+    log("Fefo: Falha no init TimeZone: $e");
   }
 
   final bluetoothManager = BluetoothManager();
@@ -82,12 +82,12 @@ void main() async {
     try {
       await AlarmService.instance.init(bluetoothManager);
     } catch (e) {
-      log("FEFO: Erro ao inicializar AlarmService: $e");
+      log("Fefo: Erro ao inicializar AlarmService: $e");
     }
     try {
       await _solicitarTodasPermissoes();
     } catch (e) {
-      log("FEFO: Erro ao solicitar permissões: $e");
+      log("Fefo: Erro ao solicitar permissões: $e");
     }
   });
 }
@@ -174,7 +174,7 @@ class _MyAppState extends State<MyApp> {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content:
-                    Text('Conexão com o FEFO perdida. Tentando reconectar...'),
+                    Text('Conexão com o Fefo perdida. Tentando reconectar...'),
                 backgroundColor: Colors.red,
                 duration: Duration(seconds: 5),
               ),
@@ -202,7 +202,7 @@ class _MyAppState extends State<MyApp> {
 
     return MaterialApp(
       navigatorKey: _navigatorKey,
-      title: 'FEFO',
+      title: 'Fefo',
       debugShowCheckedModeBanner: false,
       theme: fefoTheme.toThemeData(),
       routes: {

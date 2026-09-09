@@ -42,13 +42,13 @@ class _TelaConexaoState extends State<TelaConexao> {
     } catch (_) {
       if (mounted) {
         setState(() => _isCarregando = false);
-        _mostrarMensagem('Erro ao buscar FEFO BLE. Ative o Bluetooth.');
+        _mostrarMensagem('Erro ao buscar Fefo BLE. Ative o Bluetooth.');
       }
     }
   }
 
   Future<void> _conectar(ScanResult result) async {
-    _mostrarMensagem('Conectando ao FEFO...');
+    _mostrarMensagem('Conectando ao Fefo...');
     await context.read<BluetoothManager>().connectToDevice(result);
 
     if (!mounted) return;
@@ -84,12 +84,12 @@ class _TelaConexaoState extends State<TelaConexao> {
       return 'Buscando...';
     }
     if (manager.isConnected) {
-      return 'Buscar outros FEFOs';
+      return 'Buscar outros Fefos';
     }
     if (_devicesList.isNotEmpty) {
       return 'Conectar';
     }
-    return 'Buscar FEFO';
+    return 'Buscar Fefo';
   }
 
   @override
@@ -130,7 +130,7 @@ class _TelaConexaoState extends State<TelaConexao> {
                   final nomeConectado =
                       manager.dispositivoConectadoNome.isNotEmpty
                           ? manager.dispositivoConectadoNome
-                          : 'FEFO BLE';
+                          : 'Fefo BLE';
                   return Container(
                     margin: const EdgeInsets.symmetric(vertical: 10),
                     padding: const EdgeInsets.all(16),
@@ -169,7 +169,7 @@ class _TelaConexaoState extends State<TelaConexao> {
                         ),
                         const SizedBox(height: 12),
                         const Text(
-                          'Você pode desconectar ou procurar outro FEFO sem sair desta tela.',
+                          'Você pode desconectar ou procurar outro Fefo sem sair desta tela.',
                           textAlign: TextAlign.center,
                           style: TextStyle(fontFamily: 'KGPen', fontSize: 16),
                         ),
@@ -188,7 +188,7 @@ class _TelaConexaoState extends State<TelaConexao> {
                                   style: TextStyle(fontFamily: 'KGPen')),
                               onPressed: () async {
                                 await manager.disconnectFromDevice();
-                                _mostrarMensagem('FEFO desconectado.');
+                                _mostrarMensagem('Fefo desconectado.');
                               },
                             ),
                             ElevatedButton(
@@ -232,7 +232,7 @@ class _TelaConexaoState extends State<TelaConexao> {
                   : _devicesList.isEmpty
                       ? const Center(
                           child: Text(
-                            'Nenhum FEFO BLE encontrado.',
+                            'Nenhum Fefo BLE encontrado.',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: Colors.black,

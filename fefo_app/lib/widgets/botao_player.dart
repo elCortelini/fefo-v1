@@ -23,7 +23,7 @@ class BotaoPlayer extends StatelessWidget {
     this.aoExcluir,
     this.deletando = false,
     this.progressoDelete = 0,
-    this.subtitulo = 'Áudio do FEFO',
+    this.subtitulo = 'Áudio do Fefo',
   });
 
   @override
@@ -63,7 +63,7 @@ class BotaoPlayer extends StatelessWidget {
                       manager.alternarFavoritoPorCaminho(caminhoArquivoPlay),
                 ),
                 IconButton.filled(
-                  tooltip: 'Tocar no FEFO',
+                  tooltip: 'Tocar no Fefo',
                   onPressed: enabled
                       ? () => manager.selecionarAudio(caminhoArquivoPlay)
                       : null,
@@ -157,7 +157,7 @@ class BotaoPlayer extends StatelessWidget {
                   ),
                   if (aoExcluir != null)
                     _ControlButton(
-                      tooltip: 'Excluir do FEFO',
+                      tooltip: 'Excluir do Fefo',
                       icon: Icons.delete_outline_rounded,
                       color: theme.text,
                       active: deletando,
