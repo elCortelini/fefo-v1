@@ -1,7 +1,7 @@
 name: fefoflutterv1
 description: "Um novo projeto Flutter."
 publish_to: 'none'
-version: 1.123.0+1123
+version: 1.124.0+1124
 
 environment:
   sdk: '>=3.2.0 <4.0.0'

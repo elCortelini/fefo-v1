@@ -9,7 +9,7 @@ class TelaVibracoesFefo extends StatelessWidget {
   const TelaVibracoesFefo({super.key});
 
   static const _nomes = [
-    'Metralhadora',
+    'Pulsinho fofo',
     'Batida dupla',
     'SOS intenso',
     'Onda forte',
@@ -76,12 +76,10 @@ class TelaVibracoesFefo extends StatelessWidget {
                     child: Icon(Icons.vibration_rounded, color: cor),
                   ),
                   actionIcon: Icons.play_arrow_rounded,
-                  onTap: manager.isConnected
-                      ? () => manager.vibrar(numero)
-                      : null,
-                  onAction: manager.isConnected
-                      ? () => manager.vibrar(numero)
-                      : null,
+                  onTap:
+                      manager.isConnected ? () => manager.vibrar(numero) : null,
+                  onAction:
+                      manager.isConnected ? () => manager.vibrar(numero) : null,
                 );
               },
             ),

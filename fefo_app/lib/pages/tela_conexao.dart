@@ -104,7 +104,7 @@ class _TelaConexaoState extends State<TelaConexao> {
           children: [
             const SizedBox(height: 20),
             Text(
-              'Conectar FEFO',
+              'Conectar Fefo',
               style: TextStyle(
                 fontFamily: 'Billotilde',
                 fontSize: 52,
@@ -148,10 +148,10 @@ class _TelaConexaoState extends State<TelaConexao> {
                                 color: corVerde, size: 30),
                             SizedBox(width: 8),
                             Text(
-                              'FEFO CONECTADO',
+                              'Fefo conectado',
                               style: TextStyle(
                                 fontFamily: 'Billotilde',
-                                fontSize: 32,
+                                fontSize: 25,
                                 color: corVerde,
                               ),
                             ),
@@ -174,29 +174,29 @@ class _TelaConexaoState extends State<TelaConexao> {
                           style: TextStyle(fontFamily: 'KGPen', fontSize: 16),
                         ),
                         const SizedBox(height: 12),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        Wrap(
+                          alignment: WrapAlignment.center,
+                          spacing: 10,
+                          runSpacing: 8,
                           children: [
-                            ElevatedButton.icon(
+                            ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.red.shade800,
                                 foregroundColor: Colors.white,
                               ),
-                              icon: const Icon(Icons.bluetooth_disabled),
-                              label: const Text('Desconectar',
+                              child: const Text('Desconectar',
                                   style: TextStyle(fontFamily: 'KGPen')),
                               onPressed: () async {
                                 await manager.disconnectFromDevice();
                                 _mostrarMensagem('FEFO desconectado.');
                               },
                             ),
-                            ElevatedButton.icon(
+                            ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: corLaranja,
                                 foregroundColor: Colors.white,
                               ),
-                              icon: const Icon(Icons.refresh),
-                              label: const Text('Reconectar',
+                              child: const Text('Reconectar',
                                   style: TextStyle(fontFamily: 'KGPen')),
                               onPressed: () async {
                                 await manager.disconnectFromDevice();

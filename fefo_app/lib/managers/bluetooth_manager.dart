@@ -1057,7 +1057,7 @@ class BluetoothManager extends ChangeNotifier {
     if (_vibrationEffects.isEmpty) {
       _vibrationEffects.addAll(List.generate(10, (index) {
         const names = [
-          'Metralhadora',
+          'Pulsinho fofo',
           'Batida dupla',
           'SOS intenso',
           'Onda forte',

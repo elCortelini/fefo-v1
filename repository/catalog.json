@@ -1,28 +1,28 @@
 {
     "schema":  1,
-    "catalogVersion":  68,
+    "catalogVersion":  69,
     "assinaturaCatalogo":  "Xj48zd84w1fxEwz9xh57r4FljHZyqDdmppMJpcFNG1bIHHqFvbaIxnLONZPY/ZSRsJz+Vkk4b41smeoTWn3baN9ByL5G5dv6964q3xtYoMDQKZsrNdBB7QDH7AIBUJ2KB/h/8o03mo9aJhecgTVTHgL3SfIKlEg/ZjLBr1FaPb13HwzBftbWEQzjnKy3bnctKAk4x/6ovlHmqI4mY4krd1hTesjNoXOE8fjarBpRB/Op8rZEuLtTVIuf3IoCn1imFc/HECBe9GYT9foq2nGoU9/w9+MZ1g6K1jjEwlsdeJAo+UPdixOq4YItm0+Q0pgGoZVTUUlMn2QTz4rZrjqYhA==",
-    "assinaturaCatalogoCanonica":  "Pb74WWZpz4ign+F7DVFUBIPKyoCHbq+ovfvjDsgV0rJkKjyWp1XeVunwjOfmWYEXHSjcpVqsX1jdldCsVJNByQe8Bo6knbBHY3RzbEhkO8/LYN32hDLrYRxIqW1Pl03VJoEbqSf1ZgqHh+C0tsVcqfs3CRqIZ2Ggd7+K6a45IzXplUJBSNE0b3NCJ6Z/9yUK/MHRpj5YqQWNkdaL6i8ytBzKhlYP+JXT32vSRSjSYwAti5DI6iTqufzSncUwDElNS3Xq5QfcIWVHGH51WIYRz1DJ0LX0iHfFg/Qxrr2mIQn0CGj8ULWUBpDBM9unRl3sA7VLCZPuVto+dEJ7GDcdDA==",
+    "assinaturaCatalogoCanonica":  "rFC7zTLrkIRwIbq3NXHItYQUjb4/kv6SPHabArInB2XbCA1ynSWXcUymfa3eBujjzwaRbZZN/e0CsQ8sxBX2IEo3s63R8KG5r323pMMNl49Dy5xlrb2LREcttr9qFyPc4idI91ohWr9YGL8W+SsuKwS4ZaENzVEUJLNndNca8xhbjpD654JzN1dkJuq5N7Vialut8Fg8HlLADQOX21VfKJqXfJCGFXH+/BDZO5FJ79hzc3UT9EHEnxQyn+LKyrAvZ69aOLQp0AdwoIW+bJvuM2h7WYdj2BGgMiujqkRSNOM0sDDT9HkrFHkb8Izk4oaR8AruLhsFNEuq54IRPafZyA==",
     "repository":  "FEFO Google Drive",
     "firmware":  {
-                     "version":  "1.100",
+                     "version":  "1.101",
                      "board":  "FEFO_CYD_ESP32",
-                     "arquivo":  "FEFO_Firmware_v1.100.bin",
-                     "tamanho":  1771760,
-                     "checksum":  "0b5fd789c080a5ead369a4ce4aad1cf8c50397577f5e21f2fa2c8d43428150d5",
-                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.100.bin",
+                     "arquivo":  "FEFO_Firmware_v1.101.bin",
+                     "tamanho":  1771744,
+                     "checksum":  "595403c15c818a2f2593c64800f493a0c690ff8a2868d7c46dba2d74baf7082f",
+                     "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.101.bin",
                      "obrigatorio":  false,
-                     "assinatura":  "kQGiJDb5Ga6yzTeGahPIP9mgB+kY5XsCiSgjMr/LqxgquMM1jZ/t/3x32aUaVxFtnhODVPlRHA7zYVBVg3RWqJ9ato3XgOowG0qn4HcVh8PUeH7Lsgp48LTbmSpr7I3ekNno16q9jy9m64lKx0sEN63wmgXTObOrkv/SMXwuoiHpY213VphiaUBLiTRUQXTTMAb+wDDC10/d1QdkO2/xaZsKdgRm7Bwu2LxCEAxfR/TaRCTA4B+8PwzUaZWwifpk5hDguFF3kUPx/lcjEde2FCGUqkJh8FZgxO8eDnKIDzcS4cg/o1PbL/a6vBYITtRKbt8qzuiRQT+w62xul2Kmug==",
-                     "notas":  "Versão 1.100: reforça BLE seguro, transferência autenticada e proteção da atualização."
+                     "assinatura":  "rxKb2o0qipMs0e42CBR7ZF2yDH1uo/Bec838VHV4CTqLZvfw5pBO9YexGLIK1xx0SR5/vDcO/FSquJgH1mZbf5+heSHQtLO3yGdCj+viFP49jQ5K7c+/yeHFtvFl17iKmJcR7dR81pyuuFWbQ41Y6vIvldHYN3u8YwUKhnckqVAET6eQzbgV+fkI1TLcbArq0DWvlK32sUanSEwi9FwWZ3VO8Lx7SCQoQPFtoc853kXUGh4nYKC0OJFlJFEWeFbvOZVmTQ0EJfgbMUhpY46UKhGotUcm0Cf9KvhicCEbxK4PbgFUzNVZ1EIPXy4YZTmNqJIF2EVvLhc4KSX9yX+qqA==",
+                     "notas":  "Versão 1.101: Ronronar silencioso, somente vibração, e BLE seguro."
                  },
     "app":  {
-                "version":  "1.123",
-                "build":  1123,
-                "arquivo":  "FEFO_App_v1.123.apk",
+                "version":  "1.124",
+                "build":  1124,
+                "arquivo":  "FEFO_App_v1.124.apk",
                 "tamanho":  56199959,
-                "checksum":  "05d10fa4b5b9c0194dc07c4118da2a46f4fe849f11b6ca1ac2691edbaccf6331",
-                "assinatura":  "g84ivnvZcuZy7St7uiXzTcx1yie2AmCyX4F7fq1nYqI5L9WBmLILWHh0gUX/+f7qPL3FGrYq2mHFCpkbMbcYUmHiXPkStn9FpolKCCqURhbEq0pkRotXqkP4FoaUXil2M/Lxy4eIC70BATvKPx5xnSMqJCGpZYcLfF76egrtncu3XeezkVS1PzqR4GD8NUOkj3kDNPKPshZjKXi8pM7dIqlnysq38rpN6sq3Ty2eoWQQ4kl7KMK8OKf3Ge1QMOdaa4Qt4I5feLs6469yKY6vPhBrWn+UAZvQ28g8O7lGed39x7F/w0QCxUA/+VhrMOQjQLJ0MD1NgY5fMJUrttSyaw==",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.123.apk",
+                "checksum":  "50025788e14bd3ecc58387344dbc3c48cc5c82d9fc1cc70fefcf2a65075f2f75",
+                "assinatura":  "tSP4ZHKLyB/h5Alss4PIhCJbDhLZl2Tt3uUAuK8bG7v+mbPJGce8Hdu28JeHvqYSSuW4uYRv3Wm/WfaOvDdlNaeKxSYVvbTE0K0Ve0b2urDg7P4D08976MOHOUuT9rMT8Wxx9uN4CcSH6kwmQ/pyFvGOXfEJYakbx2SbUpgWb/UDvnZE+2UYdcdhSE3Fy7gljUUCxJ0BCg4PfkUv6bI3K/I41+783KJzgNsreSxHJiuqBvhecGX+r4eTAfX6vNsuQltJcikowJ/uvEe+Ytg+jyvimO1A43gVhQM5L9/DG9rrRqFDSRuU6XtmrYzc73O6ej6opAkdKOGBGmK3XNca/A==",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.124.apk",
                 "notas":  "Validação autocontida e canônica do catálogo online."
              },
     "audio":  [

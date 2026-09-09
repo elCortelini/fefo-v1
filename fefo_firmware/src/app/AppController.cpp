@@ -673,8 +673,9 @@ void AppController::handleBleCommand(const char* command) {
     vibration_.stop();
     showFaceByToken("2");
     const bool vibraOk = vibration_.startPattern(11, 8500);
-    const bool audioOk = playAudioFromBleToken("ronronar");
-    sendBleLine(vibraOk && audioOk ? "OK RONRONAR" : "ERR RONRONAR AUDIO_NOT_INSTALLED");
+    // O áudio ronronar original não é compatível com o hardware atual e
+    // produzia ruído. O comando agora oferece somente a vibração segura.
+    sendBleLine(vibraOk ? "OK RONRONAR SILENT" : "ERR RONRONAR VIBRATION_FAILED");
     return;
   }
 
@@ -2498,7 +2499,7 @@ bool AppController::handleLedPatternCommand(const char* command) {
 bool AppController::handleVibrationCommand(const char* command) {
   if (strcasecmp(command, "VIBRA?") == 0 ||
       strcasecmp(command, "VIBRA LIST") == 0) {
-    sendBleLine("OK VIBRA 1=Metralhadora 2=Batida 3=SOS 4=Onda 5=Triplo 6=Sirene 7=Marcha 8=Crescendo 9=Festa 10=Pulso");
+    sendBleLine("OK VIBRA 1=Pulsinho fofo 2=Batida 3=SOS 4=Onda 5=Triplo 6=Sirene 7=Marcha 8=Crescendo 9=Festa 10=Pulso");
     return true;
   }
 
@@ -2757,7 +2758,7 @@ bool AppController::buildCatalogJson() {
   file.println("    {\"id\":10,\"name\":\"Chuva colorida\",\"command\":\"LED 10\"}");
   file.println("  ],");
   file.println("  \"vibration_effects\": [");
-  file.println("    {\"id\":1,\"name\":\"Metralhadora\",\"command\":\"VIBRA 1\"},");
+  file.println("    {\"id\":1,\"name\":\"Pulsinho fofo\",\"command\":\"VIBRA 1\"},");
   file.println("    {\"id\":2,\"name\":\"Batida dupla\",\"command\":\"VIBRA 2\"},");
   file.println("    {\"id\":3,\"name\":\"SOS intenso\",\"command\":\"VIBRA 3\"},");
   file.println("    {\"id\":4,\"name\":\"Onda forte\",\"command\":\"VIBRA 4\"},");

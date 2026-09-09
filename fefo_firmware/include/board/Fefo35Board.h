@@ -7,9 +7,9 @@
 namespace fefo::board {
 
 inline constexpr char kBoardName[] = "FEFO-35-V0";
-inline constexpr char kBleName[] = "FEFO_BLE_V1100";
-inline constexpr char kFirmwareVersion[] = "1.100";
-inline constexpr char kProtocolVersion[] = "0.2";
+  inline constexpr char kBleName[] = "FEFO_BLE_V1101";
+  inline constexpr char kFirmwareVersion[] = "1.101";
+  inline constexpr char kProtocolVersion[] = "0.3";
 
 // TFT SPI ILI9488 480x320 validada no protótipo com a configuração funcional
 // derivada do FEFO 190. O touch permanece separado e desabilitado nesta fase.
