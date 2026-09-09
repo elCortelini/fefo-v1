@@ -1,8 +1,8 @@
 {
     "schema":  1,
-    "catalogVersion":  70,
-    "assinaturaCatalogo":  "Xj48zd84w1fxEwz9xh57r4FljHZyqDdmppMJpcFNG1bIHHqFvbaIxnLONZPY/ZSRsJz+Vkk4b41smeoTWn3baN9ByL5G5dv6964q3xtYoMDQKZsrNdBB7QDH7AIBUJ2KB/h/8o03mo9aJhecgTVTHgL3SfIKlEg/ZjLBr1FaPb13HwzBftbWEQzjnKy3bnctKAk4x/6ovlHmqI4mY4krd1hTesjNoXOE8fjarBpRB/Op8rZEuLtTVIuf3IoCn1imFc/HECBe9GYT9foq2nGoU9/w9+MZ1g6K1jjEwlsdeJAo+UPdixOq4YItm0+Q0pgGoZVTUUlMn2QTz4rZrjqYhA==",
-    "assinaturaCatalogoCanonica":  "gSVG+fuN+aPICQ36XKGc309PkNsOf0TSTNKUkTGOAT4Xp+laUeplUmea8E0hzxp5x5klPGrbUnqdWArgUBQ6NprEwR2SiY/2USHNGn8IPn2G3WHAe3TN56tuc+cb9jOyCeSa/Q+7SQp7hfTj0+fD1uS92JmgEp5xAOFo86o/c7YTZUMSvzzXRaQs5SrakVcIGDjWCiNfVgH9IKhakIzT9kJ3oz+S0sIs8UdEtoB5A2FZL/M2DRtPBCkcfqkYBnJJHt6WwVlauc5TgfApQiE7zdrAWySwe2PJsDKIZuTIkpfW/i5KsOLU/kWiSG88Fm1ah34D7ZV1c1aYME+aLrnJsA==",
+    "catalogVersion":  71,
+    "assinaturaCatalogo":  "BgnK1UehZ9SD13aM5fW3a03bihYFGX5sK+b/11TmEvR4YJpCJ+WL4uJ6Zb/452XY1KzClQW7Nv9z3dUwrXgrA2tjpSzngV5KkaFfMFGeyhdvIDSqHSWi441sObKEBvJY/Io8lr+n2hw1imm7aCDz+eAS4qyYZXi8d97V2kKKWnid67o5BTuy1LLA0/1qmdP42MazBKBhfDTSP/ObXXxBRMWOMP7B6arB2F9mzwm12vdycVPE62TbORQr4U/kz6FXRzGUxk2Lk6a7aQuO7MMQ26GQX11U6LYP0DkP2wW9RCgAUjfcOAEoRJZ6lj0MBF8ulE7jo60aTZl3x3OslIc+Mw==",
+    "assinaturaCatalogoCanonica":  "OLgy+rX2YCCs73uIcjPTrKEUQ+8uw0D2Oi/8pNHwA1soRazQ6xNElVp6gEmffOGGvZZf3GVWo/0FHqszTNPxjQAAAu0Ow+QCz4booXwAiJTET6XxAPBa4y4gpcfI3iVsZf8AwdTo9/4E6e/wzG0KPbGVQa1TDVeQB234UAzns0/IrtT5oasjb2yn85cumqakwvT3WfPFD5b7lZn43MkHpSiNLjIovID4DIGxhcYD5Tp6ECq8aFVSrRoltVHVfebBB2tcajE5ZZeiwg9x/BBTeGO7wntEebwR72Ge3K6VvIoXmh2mPp6DuyrlCWcU5x8u7lA7d/3nJTdDyGpfhhnvtA==",
     "repository":  "FEFO Google Drive",
     "firmware":  {
                      "version":  "1.101",
@@ -12,7 +12,7 @@
                      "checksum":  "595403c15c818a2f2593c64800f493a0c690ff8a2868d7c46dba2d74baf7082f",
                      "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.101.bin",
                      "obrigatorio":  false,
-                     "assinatura":  "rxKb2o0qipMs0e42CBR7ZF2yDH1uo/Bec838VHV4CTqLZvfw5pBO9YexGLIK1xx0SR5/vDcO/FSquJgH1mZbf5+heSHQtLO3yGdCj+viFP49jQ5K7c+/yeHFtvFl17iKmJcR7dR81pyuuFWbQ41Y6vIvldHYN3u8YwUKhnckqVAET6eQzbgV+fkI1TLcbArq0DWvlK32sUanSEwi9FwWZ3VO8Lx7SCQoQPFtoc853kXUGh4nYKC0OJFlJFEWeFbvOZVmTQ0EJfgbMUhpY46UKhGotUcm0Cf9KvhicCEbxK4PbgFUzNVZ1EIPXy4YZTmNqJIF2EVvLhc4KSX9yX+qqA==",
+                     "assinatura":  "rxKb2o0qipMs0e42CBR7ZF2yDH1uo/Bec838VHV4CTqLZvfw5pBO9YexGLIK1xx0SR5/vDcO/FSquJgH1mZbf5+heSHQtLO3yGdCj+viFP49jQ5K7c+/yeHFtvFl17iKmJcR7dR81pyuuFWbQ41Y6vIvldHYN3u8YwUKhnckqVAET6eQzbgV+fkI1TLcbArq0DWvlK32sUanSEwi9FwWZ3VO8Lx7SCQoQPFtoc853kXUGh4nYKC0OJFlJFEWeFbvOZVmTQ0EJfgbMUhpY46UKhGotUcm4Cf9KvhicCEbxK4PbgFUzNVZ1EIPXy4YZTmNqJIF2EVvLhc4KSX9yX+qqA==",
                      "notas":  "Versão 1.101: Ronronar silencioso, somente vibração, e BLE seguro."
                  },
     "app":  {
