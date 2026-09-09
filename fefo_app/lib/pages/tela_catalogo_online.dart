@@ -59,6 +59,33 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
         false;
   }
 
+  Future<bool> _verifyCatalogBytes(
+      Uint8List bytes, String encodedSignature, String fileName) async {
+    final temp = await getTemporaryDirectory();
+    final exactFile = File('${temp.path}${Platform.pathSeparator}$fileName');
+    await exactFile.writeAsBytes(bytes, flush: true);
+    try {
+      if (await _verifySignedFile(exactFile, encodedSignature)) return true;
+
+      // Alguns servidores/proxies normalizam BOM e quebras de linha. A
+      // assinatura é aceita somente se conferir com a representação canônica
+      // UTF-8 do catálogo, nunca por ignorar a assinatura.
+      final text = utf8.decode(bytes, allowMalformed: false);
+      final normalized =
+          utf8.encode(text.replaceFirst('\uFEFF', '').replaceAll('\r\n', '\n'));
+      final normalizedFile =
+          File('${temp.path}${Platform.pathSeparator}$fileName.normalized');
+      await normalizedFile.writeAsBytes(normalized, flush: true);
+      try {
+        return await _verifySignedFile(normalizedFile, encodedSignature);
+      } finally {
+        await normalizedFile.delete().catchError((_) => normalizedFile);
+      }
+    } finally {
+      await exactFile.delete().catchError((_) => exactFile);
+    }
+  }
+
   Future<bool> _confirmarAcao(String titulo, String mensagem) async {
     if (!mounted) return false;
     return await showDialog<bool>(
@@ -162,13 +189,8 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
               cacheBuster);
           final bytes = await _download(catalogUrl);
           final signatureBytes = await _download(signatureUrl);
-          final temp = await getTemporaryDirectory();
-          final catalogFile = File(
-              '${temp.path}${Platform.pathSeparator}fefo-catalog-verify.json');
-          await catalogFile.writeAsBytes(bytes, flush: true);
-          final validSignature = await _verifySignedFile(
-              catalogFile, utf8.decode(signatureBytes).trim());
-          await catalogFile.delete().catchError((_) => catalogFile);
+          final validSignature = await _verifyCatalogBytes(bytes,
+              utf8.decode(signatureBytes).trim(), 'fefo-catalog-verify.json');
           if (!validSignature) {
             throw const FormatException('Assinatura do catálogo inválida.');
           }
@@ -190,13 +212,10 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
         final cached = prefs.getString(_catalogCacheKey);
         final cachedSignature = prefs.getString(_catalogSignatureCacheKey);
         if (cached != null && cached.isNotEmpty && cachedSignature != null) {
-          final temp = await getTemporaryDirectory();
-          final catalogFile = File(
-              '${temp.path}${Platform.pathSeparator}fefo-catalog-cache.json');
-          await catalogFile.writeAsString(cached, flush: true);
-          final validSignature =
-              await _verifySignedFile(catalogFile, cachedSignature);
-          await catalogFile.delete().catchError((_) => catalogFile);
+          final validSignature = await _verifyCatalogBytes(
+              Uint8List.fromList(utf8.encode(cached)),
+              cachedSignature,
+              'fefo-catalog-cache.json');
           if (!validSignature) {
             await prefs.remove(_catalogCacheKey);
             await prefs.remove(_catalogSignatureCacheKey);
