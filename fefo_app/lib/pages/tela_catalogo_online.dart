@@ -120,6 +120,11 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
       ..idleTimeout = const Duration(seconds: 8);
     try {
       final request = await client.getUrl(Uri.parse(rawUrl));
+      // O catálogo e o .sig precisam vir da mesma revisão. O GitHub/CDN pode
+      // manter cada arquivo em cache por tempos diferentes, causando uma
+      // combinação inválida (catálogo novo + assinatura antiga).
+      request.headers.set(HttpHeaders.cacheControlHeader, 'no-cache, no-store');
+      request.headers.set(HttpHeaders.pragmaHeader, 'no-cache');
       final response = await request.close();
       if (response.statusCode < 200 || response.statusCode >= 300) {
         throw HttpException('HTTP ${response.statusCode}');
@@ -147,12 +152,16 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
       Map<String, dynamic>? decoded;
       Object? lastError;
       String? source;
+      final cacheBuster = DateTime.now().microsecondsSinceEpoch.toString();
       final endpoints = <String>{url, ..._catalogFallbackUrls};
       for (final endpoint in endpoints) {
         try {
-          final bytes = await _download(endpoint);
-          final signatureBytes = await _download(
-              endpoint.replaceFirst(RegExp(r'\.json$'), '.json.sig'));
+          final catalogUrl = _withCacheBuster(endpoint, cacheBuster);
+          final signatureUrl = _withCacheBuster(
+              endpoint.replaceFirst(RegExp(r'\.json$'), '.json.sig'),
+              cacheBuster);
+          final bytes = await _download(catalogUrl);
+          final signatureBytes = await _download(signatureUrl);
           final temp = await getTemporaryDirectory();
           final catalogFile = File(
               '${temp.path}${Platform.pathSeparator}fefo-catalog-verify.json');
@@ -189,6 +198,8 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
               await _verifySignedFile(catalogFile, cachedSignature);
           await catalogFile.delete().catchError((_) => catalogFile);
           if (!validSignature) {
+            await prefs.remove(_catalogCacheKey);
+            await prefs.remove(_catalogSignatureCacheKey);
             throw const FormatException(
                 'Assinatura do catálogo salvo inválida.');
           }
@@ -235,6 +246,13 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  String _withCacheBuster(String rawUrl, String value) {
+    final uri = Uri.parse(rawUrl);
+    final query = Map<String, String>.from(uri.queryParameters)
+      ..['fefo_catalog_revision'] = value;
+    return uri.replace(queryParameters: query).toString();
   }
 
   Set<String> _installedPaths(BluetoothManager manager) => {
