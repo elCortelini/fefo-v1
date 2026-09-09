@@ -14,6 +14,7 @@ class BotaoPincelada extends StatefulWidget {
   final double? fontSize;
   final Color? corBorda;
   final IconData? icone;
+  final bool somFeedback;
 
   const BotaoPincelada({
     super.key,
@@ -24,6 +25,7 @@ class BotaoPincelada extends StatefulWidget {
     this.fontSize,
     this.corBorda,
     this.icone,
+    this.somFeedback = true,
   });
 
   @override
@@ -82,11 +84,11 @@ class _BotaoPinceladaState extends State<BotaoPincelada> {
           textDirection: TextDirection.ltr,
           textAlign: TextAlign.center,
           maxLines: 4,
-        )..layout(maxWidth: max(120, larguraMaxima - 58));
+        )..layout(maxWidth: max(120, larguraMaxima - 36));
 
         final largura = min(
           larguraMaxima,
-          max(180.0, medidor.width + (widget.icone == null ? 68 : 118)),
+          max(180.0, medidor.width + 68),
         );
         final altura = max(70.0, medidor.height + 34);
 
@@ -96,7 +98,7 @@ class _BotaoPinceladaState extends State<BotaoPincelada> {
             onTapCancel: () => setState(() => _pressionado = false),
             onTapUp: (_) {
               setState(() => _pressionado = false);
-              _tocarSom();
+              if (widget.somFeedback) _tocarSom();
               widget.aoPressionar();
             },
             child: AnimatedScale(
@@ -121,12 +123,6 @@ class _BotaoPinceladaState extends State<BotaoPincelada> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            if (widget.icone != null) ...[
-                              Icon(widget.icone,
-                                  color: Colors.white,
-                                  size: tamanhoFonte * .72),
-                              const SizedBox(width: 12),
-                            ],
                             Text(
                               widget.texto,
                               textAlign: TextAlign.center,

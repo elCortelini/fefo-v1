@@ -31,8 +31,8 @@ O funcionamento diário do FEFO e a organização dos menus devem depender do in
 
 | Componente | Versão atual | Fonte de verdade | Artefato |
 |---|---:|---|---|
-| App Android | `1.119` / build `1119` | `fefo_app/pubspec.yaml` e `fefo_app/lib/config/app_version.dart` | `releases/FEFO_App_v1.119.apk` |
-| Firmware CYD | `1.100` | `fefo_firmware/include/board/Fefo35Board.h` | `releases/FEFO_Firmware_v1.100.bin` |
+| App Android | `1.124` / build `1124` | `fefo_app/pubspec.yaml` e `fefo_app/lib/config/app_version.dart` | `releases/FEFO_App_v1.124.apk` |
+| Firmware CYD | `1.101` | `fefo_firmware/include/board/Fefo35Board.h` | `releases/FEFO_Firmware_v1.101.bin` |
 | Protocolo BLE | `0.1` | `Fefo35Board.h` e protocolo documentado | — |
 | Catálogo online | schema `1`, revisão `63` | `repository/catalog.json` | `repository/catalog.json` |
 | Faces publicadas | `6` | `repository/catalog.json` | itens `fa001` a `fa006` |
@@ -40,7 +40,7 @@ O funcionamento diário do FEFO e a organização dos menus devem depender do in
 
 ### Observação de consistência
 
-O firmware v1.100 alinha o nome BLE, a versão exibida, o binário e o catálogo e passa a exigir enlace BLE criptografado para comandos.
+O firmware v1.101 alinha o nome BLE, a versão exibida, o binário e o catálogo, exige enlace BLE criptografado para comandos e mantém o Ronronar somente por vibração.
 
 ## 3. Histórico de versões
 

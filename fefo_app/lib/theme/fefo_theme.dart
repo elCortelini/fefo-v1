@@ -58,21 +58,22 @@ class FefoThemeDefinition {
     );
     final onAccent = scheme.onPrimary;
     return base.copyWith(
-      textTheme:
-          base.textTheme.apply(bodyColor: text, displayColor: text).copyWith(
-                headlineLarge: base.textTheme.headlineLarge
-                    ?.copyWith(fontWeight: FontWeight.w500),
-                headlineMedium: base.textTheme.headlineMedium
-                    ?.copyWith(fontWeight: FontWeight.w500),
-                headlineSmall: base.textTheme.headlineSmall
-                    ?.copyWith(fontWeight: FontWeight.w500),
-                titleLarge: base.textTheme.titleLarge
-                    ?.copyWith(fontWeight: FontWeight.w700),
-                bodyLarge: base.textTheme.bodyLarge?.copyWith(
-                    fontFamily: 'KGPen', color: text, fontSize: 18),
-                bodyMedium: base.textTheme.bodyMedium?.copyWith(
-                    fontFamily: 'KGPen', color: mutedText, fontSize: 17),
-              ),
+      textTheme: base.textTheme
+          .apply(bodyColor: text, displayColor: text)
+          .copyWith(
+            headlineLarge: base.textTheme.headlineLarge
+                ?.copyWith(fontWeight: FontWeight.w500),
+            headlineMedium: base.textTheme.headlineMedium
+                ?.copyWith(fontWeight: FontWeight.w500),
+            headlineSmall: base.textTheme.headlineSmall
+                ?.copyWith(fontWeight: FontWeight.w500),
+            titleLarge: base.textTheme.titleLarge
+                ?.copyWith(fontWeight: FontWeight.w700),
+            bodyLarge: base.textTheme.bodyLarge
+                ?.copyWith(fontFamily: 'KGPen', color: text, fontSize: 18),
+            bodyMedium: base.textTheme.bodyMedium
+                ?.copyWith(fontFamily: 'KGPen', color: mutedText, fontSize: 17),
+          ),
       cardTheme: CardThemeData(
         color: surface,
         elevation: isDark ? 1 : 0,
@@ -248,8 +249,8 @@ const fefoThemes = <FefoThemeDefinition>[
     id: FefoThemeId.lavandaClara,
     nome: 'Lavanda clara',
     descricao: 'Tema claro, delicado e acolhedor para leitura confortável.',
-    accent: Color(0xFF7657C5),
-    accentSecondary: Color(0xFF3D8F91),
+    accent: Color(0xFFDC4900),
+    accentSecondary: Color(0xFF318134),
     background: Color(0xFFF7F5FF),
     backgroundSecondary: Color(0xFFDCD6FF),
     surface: Color(0xEFFFFFFF),

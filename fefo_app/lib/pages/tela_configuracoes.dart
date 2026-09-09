@@ -142,7 +142,6 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
             const SizedBox(height: 10),
             const FefoPageHeader(
               title: 'Configurações',
-              subtitle: 'Ajustes de vibração e exibição do PET FEFO',
             ),
             const SizedBox(height: 25),
 
@@ -193,30 +192,32 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
             ),
             const SizedBox(height: 15),
 
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.lightbulb_outline),
-                title: const Text('Quantidade de LEDs na fita'),
-                subtitle: const Text('Padrão: 35 LEDs'),
-                trailing: DropdownButton<int>(
-                  value: _ledCount,
-                  items: const [35, 30, 25, 20, 15]
-                      .map((count) => DropdownMenuItem<int>(
-                            value: count,
-                            child: Text('$count'),
-                          ))
-                      .toList(),
-                  onChanged: manager.isConnected
-                      ? (value) async {
-                          if (value == null) return;
-                          setState(() => _ledCount = value);
-                          await manager.setLedCount(value);
-                        }
-                      : null,
+            if (manager.developerModeEnabled) ...[
+              Card(
+                child: ListTile(
+                  leading: const Icon(Icons.lightbulb_outline),
+                  title: const Text('Quantidade de LEDs na fita'),
+                  subtitle: const Text('Padrão: 35 LEDs'),
+                  trailing: DropdownButton<int>(
+                    value: _ledCount,
+                    items: const [35, 30, 25, 20, 15]
+                        .map((count) => DropdownMenuItem<int>(
+                              value: count,
+                              child: Text('$count'),
+                            ))
+                        .toList(),
+                    onChanged: manager.isConnected
+                        ? (value) async {
+                            if (value == null) return;
+                            setState(() => _ledCount = value);
+                            await manager.setLedCount(value);
+                          }
+                        : null,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 15),
+              const SizedBox(height: 15),
+            ],
 
             // Submenu de vibrações do FEFO
             if (manager.developerModeEnabled) ...[

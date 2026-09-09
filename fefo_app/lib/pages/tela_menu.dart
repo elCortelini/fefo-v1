@@ -79,8 +79,8 @@ class TelaMenu extends StatelessWidget {
     final terapias = <_MenuEntry>[
       _MenuEntry('Luzes Terapêuticas', () => _abrir(context, const TelaLuzes()),
           icon: Icons.light_mode_rounded),
-      _MenuEntry('Vibrações do Fefo',
-          () => _abrir(context, const TelaVibracoesFefo()),
+      _MenuEntry(
+          'Vibrações do Fefo', () => _abrir(context, const TelaVibracoesFefo()),
           icon: Icons.vibration_rounded),
       if (_temAudio(manager, 'Relaxamento'))
         _MenuEntry('Relaxamento', () => _abrir(context, audio('Relaxamento'))),
@@ -164,17 +164,18 @@ class TelaMenu extends StatelessWidget {
                   ),
                 ],
                 BotaoPincelada(
-                    texto: 'PÂNICO',
-                    icone: Icons.notifications_active_rounded,
-                    cor: Colors.red.shade700,
-                    larguraPercentual: 1,
-                    fontSize: 36,
-                    aoPressionar: () => manager.enviarComando('PANIC TRIGGER'),
+                  texto: 'PÂNICO',
+                  icone: Icons.notifications_active_rounded,
+                  cor: Colors.red.shade700,
+                  larguraPercentual: 1,
+                  fontSize: 36,
+                  aoPressionar: () => manager.enviarComando('PANIC TRIGGER'),
                 ),
                 const SizedBox(height: 12),
                 _MenuAction(
                     label: 'Ronronar',
                     icon: Icons.pets_rounded,
+                    somFeedback: false,
                     onPressed: manager.ronronar),
                 _MenuAction(
                     label: 'Favoritos',
@@ -225,21 +226,21 @@ class _MenuSectionView extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(section.icon,
-                    size: 20,
-                    color: Theme.of(context).colorScheme.secondary),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: Text(
-                    section.title,
-                    textAlign: TextAlign.center,
-                    softWrap: true,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontFamily: 'Billotilde',
-                          color: Theme.of(context).colorScheme.secondary,
-                          fontSize: 24,
-                          fontWeight: FontWeight.w700,
-                        ),
+                SizedBox(
+                  width: MediaQuery.sizeOf(context).width * .95,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      section.title,
+                      textAlign: TextAlign.center,
+                      softWrap: true,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontFamily: 'Billotilde',
+                            color: Theme.of(context).colorScheme.secondary,
+                            fontSize: 32,
+                            fontWeight: FontWeight.w700,
+                          ),
+                    ),
                   ),
                 ),
               ],
@@ -258,10 +259,14 @@ class _MenuSectionView extends StatelessWidget {
 class _MenuAction extends StatelessWidget {
   final String label;
   final IconData icon;
+  final bool somFeedback;
   final VoidCallback onPressed;
 
   const _MenuAction(
-      {required this.label, required this.icon, required this.onPressed});
+      {required this.label,
+      required this.icon,
+      this.somFeedback = true,
+      required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -271,6 +276,7 @@ class _MenuAction extends StatelessWidget {
       child: BotaoPincelada(
         texto: label,
         icone: icon,
+        somFeedback: somFeedback,
         cor: theme.primary,
         larguraPercentual: 1,
         fontSize: 30,
