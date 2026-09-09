@@ -141,12 +141,13 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
     }
     final prefs = await SharedPreferences.getInstance();
     if (!mounted) return;
-    var savedUrl = prefs.getString(_urlKey);
-    if (savedUrl == null || savedUrl.contains('drive.google.com')) {
-      savedUrl = _defaultCatalogUrl;
-      await prefs.setString(_urlKey, savedUrl);
+    // O endereço salvo pode apontar para uma revisão antiga, ainda válida e
+    // assinada. O catálogo oficial precisa ser sempre a primeira fonte.
+    final savedUrl = prefs.getString(_urlKey);
+    _urlController.text = _defaultCatalogUrl;
+    if (savedUrl != _defaultCatalogUrl) {
+      await prefs.setString(_urlKey, _defaultCatalogUrl);
     }
-    _urlController.text = savedUrl;
     if (_urlController.text.isNotEmpty) await _loadCatalog();
   }
 
@@ -187,7 +188,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
   }
 
   Future<void> _loadCatalog() async {
-    final url = _urlController.text.trim();
+    final url = _defaultCatalogUrl;
     if (url.isEmpty) return;
     setState(() {
       _busy = true;
@@ -197,6 +198,7 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
       Map<String, dynamic>? decoded;
       Object? lastError;
       String? source;
+      var selectedRevision = -1;
       final cacheBuster = DateTime.now().microsecondsSinceEpoch.toString();
       final endpoints = <String>{url, ..._catalogFallbackUrls};
       for (final endpoint in endpoints) {
@@ -215,13 +217,16 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
           }
           final parsed = jsonDecode(utf8.decode(bytes));
           if (parsed is! Map) throw const FormatException('JSON inválido');
-          decoded = Map<String, dynamic>.from(parsed);
+          final candidate = Map<String, dynamic>.from(parsed);
+          final revision = int.tryParse('${candidate['catalogVersion']}') ?? 0;
+          if (decoded != null && revision < selectedRevision) continue;
+          decoded = candidate;
+          selectedRevision = revision;
           source = endpoint;
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString(_catalogCacheKey, utf8.decode(bytes));
           await prefs.setString(
               _catalogSignatureCacheKey, utf8.decode(signatureBytes).trim());
-          break;
         } catch (error) {
           lastError = error;
         }

@@ -31,7 +31,7 @@ O funcionamento diário do FEFO e a organização dos menus devem depender do in
 
 | Componente | Versão atual | Fonte de verdade | Artefato |
 |---|---:|---|---|
-| App Android | `1.124` / build `1124` | `fefo_app/pubspec.yaml` e `fefo_app/lib/config/app_version.dart` | `releases/FEFO_App_v1.124.apk` |
+| App Android | `1.125` / build `1125` | `fefo_app/pubspec.yaml` e `fefo_app/lib/config/app_version.dart` | `releases/FEFO_App_v1.125.apk` |
 | Firmware CYD | `1.101` | `fefo_firmware/include/board/Fefo35Board.h` | `releases/FEFO_Firmware_v1.101.bin` |
 | Protocolo BLE | `0.1` | `Fefo35Board.h` e protocolo documentado | — |
 | Catálogo online | schema `1`, revisão `63` | `repository/catalog.json` | `repository/catalog.json` |
