@@ -1,8 +1,8 @@
 {
     "schema":  1,
-    "catalogVersion":  71,
-    "assinaturaCatalogo":  "BgnK1UehZ9SD13aM5fW3a03bihYFGX5sK+b/11TmEvR4YJpCJ+WL4uJ6Zb/452XY1KzClQW7Nv9z3dUwrXgrA2tjpSzngV5KkaFfMFGeyhdvIDSqHSWi441sObKEBvJY/Io8lr+n2hw1imm7aCDz+eAS4qyYZXi8d97V2kKKWnid67o5BTuy1LLA0/1qmdP42MazBKBhfDTSP/ObXXxBRMWOMP7B6arB2F9mzwm12vdycVPE62TbORQr4U/kz6FXRzGUxk2Lk6a7aQuO7MMQ26GQX11U6LYP0DkP2wW9RCgAUjfcOAEoRJZ6lj0MBF8ulE7jo60aTZl3x3OslIc+Mw==",
-    "assinaturaCatalogoCanonica":  "OLgy+rX2YCCs73uIcjPTrKEUQ+8uw0D2Oi/8pNHwA1soRazQ6xNElVp6gEmffOGGvZZf3GVWo/0FHqszTNPxjQAAAu0Ow+QCz4booXwAiJTET6XxAPBa4y4gpcfI3iVsZf8AwdTo9/4E6e/wzG0KPbGVQa1TDVeQB234UAzns0/IrtT5oasjb2yn85cumqakwvT3WfPFD5b7lZn43MkHpSiNLjIovID4DIGxhcYD5Tp6ECq8aFVSrRoltVHVfebBB2tcajE5ZZeiwg9x/BBTeGO7wntEebwR72Ge3K6VvIoXmh2mPp6DuyrlCWcU5x8u7lA7d/3nJTdDyGpfhhnvtA==",
+    "catalogVersion":  72,
+    "assinaturaCatalogo":  "On+pHxs2DGNftLLJTFw6DI1rhYPoacKj8Wbkd4qNoX0YRqdH79yb4YvwDheBaD1PktxInkuBUf1xepDxksppR9zWOITxLVa11CLRav3oqb3h9YN3OVeUXzYyfdUDJ293n6QhA1qn7DkP0Ws6bCPs6zgdez9Tv3prZvOF8v1hKG1CmvbIkcd5BjrUD1GdVJXgIVPTvqtNP0H3P0dik0grmqgNd6ZLS/UpqpXlW+/zSyhbC2lW6VW2a42JKmLyCIsefa7PghTQuxz8ULRcsCTomKH4CAOIHId8W9u5zyWuwJUbA9U/V2Nn44tYv4pW+E/YuN8ikO+tGwrFOAustHx3Dg==",
+    "assinaturaCatalogoCanonica":  "PxImJrF1OZdzLcmK7EOO5i4NsTxFUy1wonUjpc+AqSj2olnuK2X74tKyCoAmnZAcEKNXvQb2JdkwjTwxytBiaQWi64emobmcxanvoHJa7eD+8nx+bucCcMNmFLT/NBaRUwTMeoMKD/kAVjfLiJ9yEd3Gxty+zKOIKTJvxDbnzP/d3yjPc75uCu1rcyYFALAsGLIxyR55oS2Q+dD5pguKZc3OlR4DJMxS9D88CJhfbGSbFfvsr447UguHlXrEyh0CTDJLDZc26YntcfuZWISPDHWx83hV4zFByksAFwF6paItADc4jcALOroHazi/04vvxpGIvB/SZaBTQt1BJc5aSg==",
     "repository":  "FEFO Google Drive",
     "firmware":  {
                      "version":  "1.101",
@@ -16,14 +16,14 @@
                      "notas":  "Versão 1.101: Ronronar silencioso, somente vibração, e BLE seguro."
                  },
     "app":  {
-                "version":  "1.125",
-                "build":  1125,
-                "arquivo":  "FEFO_App_v1.125.apk",
-                "tamanho":  56199959,
-                "checksum":  "8fbcd6f063dc6d09e2d6ee43f1266ddd73877df09f5a01a5c9796fcdd505b00c",
-                "assinatura":  "nkUnuM6+f244CWbyW9CXg9Q6u9eOZ0sLqac5TApUSdacP/5fYmzzIJzGOZdjDuFMsAo9SLoZmFhEHAh71I2OYks3NxoKulE02+h+Tv5LmeYHI6h5XuUHEiS2jHEXZ03viIrhJq+NqhdtN3PfH5I4QEw/E8YO5iknUXzrMB8ySydpS5Ix4WGZlYvEJZvfck3LTalN7+QKsxRpSSQ28VpG8QSwYji/ME/sXb0si9N+pslg8qKrXuX9IQExo/cxVSDZMbIh9qEO0xMyaIIMytzrhi+YRZYvtowTAGTC6WxhjVDjXYBi9zNXw/BDZvPIQOXCcnEN+ediGC6Y/WUDBvBv5g==",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.125.apk",
-                "notas":  "Validação autocontida e canônica do catálogo online."
+                "version":  "1.126",
+                "build":  1126,
+                "arquivo":  "FEFO_App_v1.126.apk",
+                "tamanho":  56199547,
+                "checksum":  "16b566964c6d766c1cb2b6118ae24b6574f3a15837496c6e47d608578ebd9d15",
+                "assinatura":  "EMu5Lwncmz3gt/QamQzCFPzO4HxPtyT2eT6cfLmaa/ObYte/IUAx5z2Q+c+n3NqzkThP9P3HzekgTOdNnSvlWaB15Zqmynd8C+VGdRdlGOATZ63QHhnRJUvG/lvD8QiUq2z3Hjb5YzGClYatoLqCUIMGbtecFfsGDiSo52OFrijDC/DSdKGnNI6dPN8KkvvI6AZu1hEMSKagiaBCAPrTNs6cS+ny+UzHwxUS3yQmHyI9184RB7ogtAdi0f/3hpc23JxUgNPUH3Mzp1eTNWVD6VhNe/iziUpsIIAQLq95OVr9cZzJhVz2oSEux9STBqQ3+UeJbl2gsRSeHuGIjCDMiw==",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.126.apk",
+                "notas":  "Tipografia leve, marca Fefo padronizada e tema Lavanda clara restaurado."
              },
     "audio":  [
                   {
