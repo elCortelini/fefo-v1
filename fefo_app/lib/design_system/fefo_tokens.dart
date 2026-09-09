@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Tokens visuais do FEFO. As telas devem consumir estes valores, nunca cores
+/// Tokens visuais do Fefo. As telas devem consumir estes valores, nunca cores
 /// ou espaçamentos arbitrários diretamente.
 class FefoTokens extends ThemeExtension<FefoTokens> {
   final Color success;

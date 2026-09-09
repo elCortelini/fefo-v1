@@ -53,7 +53,7 @@ class AlarmService {
             main_app.notificationTapBackground,
       );
     } catch (e) {
-      log("FEFO: Erro ao inicializar flutterLocalNotificationsPlugin: $e");
+      log("Fefo: Erro ao inicializar flutterLocalNotificationsPlugin: $e");
     }
 
     if (Platform.isAndroid) {
@@ -70,7 +70,7 @@ class AlarmService {
         if (androidImplementation != null) {
           const AndroidNotificationChannel channel = AndroidNotificationChannel(
             'alarm_channel_unique_id',
-            'Alarmes Críticos do FEFO',
+            'Alarmes Críticos do Fefo',
             importance: Importance.high,
             playSound: true,
             enableVibration: true,
@@ -78,7 +78,7 @@ class AlarmService {
           await androidImplementation.createNotificationChannel(channel);
         }
       } catch (e) {
-        log("FEFO: Erro ao criar canal de notificação: $e");
+        log("Fefo: Erro ao criar canal de notificação: $e");
       }
     }
 
@@ -99,7 +99,7 @@ class AlarmService {
       }
       await _reagendarAlarmesSalvos();
     } catch (e) {
-      log('FEFO: não foi possível enviar o áudio do alarme ao PET: $e');
+      log('Fefo: não foi possível enviar o áudio do alarme ao PET: $e');
     }
   }
 
@@ -110,7 +110,7 @@ class AlarmService {
         await agendarAlarme(alarme);
       }
     } catch (e) {
-      log('FEFO: Erro ao reagendar alarmes salvos: $e');
+      log('Fefo: Erro ao reagendar alarmes salvos: $e');
     }
   }
 
@@ -145,7 +145,7 @@ class AlarmService {
           _alarmesTocadosNesteMinuto.clear();
         }
       } catch (e) {
-        log("FEFO: Erro no motor de checagem local de alarmes: $e");
+        log("Fefo: Erro no motor de checagem local de alarmes: $e");
       }
     });
   }
@@ -163,7 +163,7 @@ class AlarmService {
       // player Flutter aqui, pois esse callback também pode ocorrer em estado
       // de background e não deve derrubar o processo do App.
     } catch (e) {
-      log("FEFO: Erro ao executar áudio do alarme: $e");
+      log("Fefo: Erro ao executar áudio do alarme: $e");
     }
   }
 
@@ -177,7 +177,7 @@ class AlarmService {
     const details = NotificationDetails(
       android: AndroidNotificationDetails(
         'alarm_channel_unique_id',
-        'Alarmes Críticos do FEFO',
+        'Alarmes Críticos do Fefo',
         importance: Importance.high,
         priority: Priority.high,
         fullScreenIntent: false,
@@ -201,7 +201,7 @@ class AlarmService {
         payload: payload,
       );
     } catch (e) {
-      log('FEFO: Agendamento exato indisponível; usando modo econômico: $e');
+      log('Fefo: Agendamento exato indisponível; usando modo econômico: $e');
       try {
         await flutterLocalNotificationsPlugin.zonedSchedule(
           id,
@@ -215,7 +215,7 @@ class AlarmService {
           payload: payload,
         );
       } catch (fallbackError) {
-        log('FEFO: Erro ao agendar notificação: $fallbackError');
+        log('Fefo: Erro ao agendar notificação: $fallbackError');
       }
     }
   }
@@ -253,7 +253,7 @@ class AlarmService {
       id: idNotificacao,
       title: '⏰ ${alarme.title}',
       body:
-          'Alarme salvo: ${alarme.title}. O celular emitirá o alerta e o FEFO será acionado se estiver disponível.',
+          'Alarme salvo: ${alarme.title}. O celular emitirá o alerta e o Fefo será acionado se estiver disponível.',
       scheduledDate: horarioFinal,
       payload: 'P:${alarme.audioPath}',
     );
@@ -264,7 +264,7 @@ class AlarmService {
         'audio': alarme.audioPath,
       });
     } catch (e) {
-      log('FEFO: comando auxiliar do alarme não agendado: $e');
+      log('Fefo: comando auxiliar do alarme não agendado: $e');
     }
   }
 

@@ -1,6 +1,6 @@
 // lib/managers/bluetooth_manager.dart
 //
-// Gerenciador BLE do FEFO.
+// Gerenciador BLE do Fefo.
 //
 // A placa usa BLE no padrão Nordic UART Service:
 // - RX: característica onde o app escreve comandos.
@@ -133,7 +133,7 @@ class FefoAudioItem {
     if (parts.length == 2) {
       return _normalizarGrupo(parts.first);
     }
-    return 'Áudios do FEFO';
+    return 'Áudios do Fefo';
   }
 
   String get submenu {
@@ -146,7 +146,7 @@ class FefoAudioItem {
       case 'a':
       case 'audio':
       case 'audios':
-        return 'Áudios do FEFO';
+        return 'Áudios do Fefo';
       case 'sys':
       case 'usr':
         return 'Sistema';
@@ -409,7 +409,7 @@ class BluetoothManager extends ChangeNotifier {
     if (_connectedDevice!.platformName.isNotEmpty)
       return _connectedDevice!.platformName;
     if (_connectedDevice!.advName.isNotEmpty) return _connectedDevice!.advName;
-    return 'FEFO BLE';
+    return 'Fefo BLE';
   }
 
   bool get lendoCatalogo => _recebendoCatalogo;
@@ -556,7 +556,7 @@ class BluetoothManager extends ChangeNotifier {
     final platformName = result.device.platformName;
     if (platformName.isNotEmpty) return platformName;
 
-    return 'FEFO BLE (${result.device.remoteId})';
+    return 'Fefo BLE (${result.device.remoteId})';
   }
 
   Future<bool> solicitarPermissoes() async {
@@ -585,7 +585,7 @@ class BluetoothManager extends ChangeNotifier {
 
     _isScanning = true;
     _devicesList.clear();
-    _setStatus('Buscando FEFO por BLE...');
+    _setStatus('Buscando Fefo por BLE...');
 
     try {
       if (!kIsWeb && Platform.isAndroid) {
@@ -619,8 +619,8 @@ class BluetoothManager extends ChangeNotifier {
 
       _setStatus(
         _devicesList.isEmpty
-            ? 'Nenhum FEFO BLE encontrado.'
-            : 'FEFO encontrado. Toque para conectar.',
+            ? 'Nenhum Fefo BLE encontrado.'
+            : 'Fefo encontrado. Toque para conectar.',
       );
     } catch (e) {
       _setStatus('Erro ao buscar BLE: $e');
@@ -630,7 +630,7 @@ class BluetoothManager extends ChangeNotifier {
     }
   }
 
-  /// Localiza e conecta automaticamente ao último FEFO conhecido.
+  /// Localiza e conecta automaticamente ao último Fefo conhecido.
   /// A confirmação visual do usuário não é necessária; permissões do Android
   /// continuam sendo respeitadas quando o sistema ainda não as concedeu.
   Future<bool> conectarAutomaticamenteAoFefo() async {
@@ -648,7 +648,7 @@ class BluetoothManager extends ChangeNotifier {
     final savedId = prefs.getString(_prefKeyId);
     final encontrados = <String, ScanResult>{};
     _isScanning = true;
-    _setStatus('Conectando automaticamente ao PET FEFO...');
+    _setStatus('Conectando automaticamente ao PET Fefo...');
     final subscription = FlutterBluePlus.onScanResults.listen((results) {
       for (final result in results.where(_isFefoScanResult)) {
         encontrados[result.device.remoteId.toString()] = result;
@@ -670,7 +670,7 @@ class BluetoothManager extends ChangeNotifier {
     final result = (savedId != null ? encontrados[savedId] : null) ??
         (encontrados.isEmpty ? null : encontrados.values.first);
     if (result == null) {
-      _setStatus('PET FEFO não encontrado. Ligue o PET e tente novamente.');
+      _setStatus('PET Fefo não encontrado. Ligue o PET e tente novamente.');
       return false;
     }
     await connectToDevice(result);
@@ -706,7 +706,7 @@ class BluetoothManager extends ChangeNotifier {
           _cleanup();
           if (unexpected) {
             _unexpectedDisconnectEvent = true;
-            _setStatus('Conexão BLE perdida. Procurando o FEFO novamente...');
+            _setStatus('Conexão BLE perdida. Procurando o Fefo novamente...');
             _iniciarReconexaoAutomatica();
           }
         }
@@ -758,7 +758,7 @@ class BluetoothManager extends ChangeNotifier {
     }
 
     if (_rxCharacteristic == null || _txCharacteristic == null) {
-      throw Exception('Serviço UART FEFO não encontrado.');
+      throw Exception('Serviço UART Fefo não encontrado.');
     }
   }
 
@@ -790,7 +790,7 @@ class BluetoothManager extends ChangeNotifier {
     }
 
     _interpretarLinhaDeCatalogo(texto);
-    _setStatus('FEFO: $texto');
+    _setStatus('Fefo: $texto');
   }
 
   void _interpretarLinhaDeCatalogo(String texto) {
@@ -1166,7 +1166,7 @@ class BluetoothManager extends ChangeNotifier {
       _lineWaiters.remove(completer);
       if (line.isNotEmpty && aceita(line)) return line;
     }
-    throw TimeoutException('O FEFO nao respondeu ao inicio do Wi-Fi.');
+    throw TimeoutException('O Fefo nao respondeu ao inicio do Wi-Fi.');
   }
 
   Future<void> enviarArquivosPorWifi(Map<String, List<int>> arquivos,
@@ -1175,7 +1175,7 @@ class BluetoothManager extends ChangeNotifier {
       List<String> excluir = const []}) async {
     if (!isConnected) {
       throw StateError(
-          'Conecte novamente ao FEFO antes de iniciar a transferência.');
+          'Conecte novamente ao Fefo antes de iniciar a transferência.');
     }
     if (arquivos.isEmpty) {
       throw ArgumentError('Nenhum arquivo foi preparado para transferência.');
@@ -1199,15 +1199,15 @@ class BluetoothManager extends ChangeNotifier {
       final ip = _extrairCampo(resposta, 'IP');
       final token = _extrairCampo(resposta, 'TOKEN');
       if ([ssid, pass, ip, token].any((v) => v == null || v.isEmpty)) {
-        throw Exception('Dados da rede FEFO incompletos.');
+        throw Exception('Dados da rede Fefo incompletos.');
       }
       await _wifiChannel.invokeMethod<bool>('connect', {
         'ssid': ssid,
         'password': pass,
       });
-      _setStatus('Wi-Fi conectado. Aguardando o servidor do FEFO...');
+      _setStatus('Wi-Fi conectado. Aguardando o servidor do Fefo...');
       await _aguardarServidorWifi(ip!, token!);
-      _setStatus('Wi-Fi do FEFO conectado. Iniciando gravação no SDCard...');
+      _setStatus('Wi-Fi do Fefo conectado. Iniciando gravação no SDCard...');
       for (final path in excluir) {
         final deleteClient = HttpClient();
         try {
@@ -1230,7 +1230,7 @@ class BluetoothManager extends ChangeNotifier {
       for (final entry in arquivos.entries) {
         _uploadCurrentPath = entry.key;
         _uploadItemProgress = 0;
-        _setStatus('Gravando ${entry.key} no FEFO...');
+        _setStatus('Gravando ${entry.key} no Fefo...');
         Object? lastError;
         var stored = false;
         final maxAttempts = compatibilidadeLegada ? 1 : 3;
@@ -1286,7 +1286,7 @@ class BluetoothManager extends ChangeNotifier {
         }
         if (!stored) {
           throw lastError ??
-              HttpException('O FEFO não confirmou ${entry.key}.');
+              HttpException('O Fefo não confirmou ${entry.key}.');
         }
       }
       final finishClient = HttpClient();
@@ -1298,7 +1298,7 @@ class BluetoothManager extends ChangeNotifier {
           finish.contentLength = 0;
           await (await finish.close()).drain<void>();
         } on SocketException {
-          // O FEFO reinicia logo após aceitar /finish e pode encerrar o socket
+          // O Fefo reinicia logo após aceitar /finish e pode encerrar o socket
           // antes de o Android receber a resposta — inclusive durante postUrl.
         } on HttpException {
           // Todos os arquivos já foram confirmados individualmente neste ponto.
@@ -1354,14 +1354,14 @@ class BluetoothManager extends ChangeNotifier {
         );
       } catch (error) {
         lastError = error;
-        _setStatus('Aguardando rede local do FEFO ($attempt/30)...');
+        _setStatus('Aguardando rede local do Fefo ($attempt/30)...');
         await Future<void>.delayed(const Duration(milliseconds: 900));
       } finally {
         client.close(force: true);
       }
     }
     throw HttpException(
-      'Servidor do FEFO inacessível em $ip. Verifique se o Wi‑Fi do PET foi conectado: $lastError',
+      'Servidor do Fefo inacessível em $ip. Verifique se o Wi‑Fi do PET foi conectado: $lastError',
     );
   }
 
@@ -1380,7 +1380,7 @@ class BluetoothManager extends ChangeNotifier {
       List<String> excluir = const []}) async {
     if (!isConnected) {
       throw StateError(
-          'Conecte novamente ao FEFO antes de iniciar a transferência.');
+          'Conecte novamente ao Fefo antes de iniciar a transferência.');
     }
     if (arquivos.isEmpty) {
       throw ArgumentError('Nenhum arquivo foi preparado para transferência.');
@@ -1404,7 +1404,7 @@ class BluetoothManager extends ChangeNotifier {
       }
       if (securityType != 1 && securityType != 2) {
         throw Exception(
-            'O Android criou um hotspot WPA3 incompatível com este FEFO (tipo $securityType).');
+            'O Android criou um hotspot WPA3 incompatível com este Fefo (tipo $securityType).');
       }
       const port = 8080;
       final token = DateTime.now().microsecondsSinceEpoch.toRadixString(16);
@@ -1442,7 +1442,7 @@ class BluetoothManager extends ChangeNotifier {
                 request.response.add(entry.value.sublist(offset, end));
                 await request.response.flush();
                 _uploadProgress = (enviados + end) / total;
-                _setStatus('Enviando ${entry.key} ao FEFO...');
+                _setStatus('Enviando ${entry.key} ao Fefo...');
               }
               enviados += entry.value.length;
             }
@@ -1462,10 +1462,10 @@ class BluetoothManager extends ChangeNotifier {
       await enviarComando('WIFI PULL START $ssid|$password|$port|$token');
       final resposta = await respostaFuture;
       if (!resposta.startsWith('OK ')) throw Exception(resposta);
-      _setStatus('FEFO conectando ao hotspot do celular...');
+      _setStatus('Fefo conectando ao hotspot do celular...');
       final ok = await completed.future.timeout(const Duration(seconds: 50));
-      if (!ok) throw Exception('O FEFO rejeitou a atualização.');
-      _setStatus('Atualização concluída. O FEFO está reiniciando...');
+      if (!ok) throw Exception('O Fefo rejeitou a atualização.');
+      _setStatus('Atualização concluída. O Fefo está reiniciando...');
     } finally {
       await server?.close(force: true);
       try {
@@ -1501,7 +1501,7 @@ class BluetoothManager extends ChangeNotifier {
       throw ArgumentError('Caminho do áudio inválido.');
     }
     if (!isConnected) {
-      throw StateError('Conecte novamente ao FEFO antes de excluir.');
+      throw StateError('Conecte novamente ao Fefo antes de excluir.');
     }
     _operationPath = path;
     notifyListeners();
@@ -1945,7 +1945,7 @@ class BluetoothManager extends ChangeNotifier {
     final validPaths = paths.where((p) => p.isNotEmpty).toSet().toList();
     if (validPaths.isEmpty) return;
     if (!isConnected) {
-      throw StateError('Conecte novamente ao FEFO antes de excluir.');
+      throw StateError('Conecte novamente ao Fefo antes de excluir.');
     }
     for (final path in validPaths) {
       final respostaFuture = _aguardarLinha((line) =>
@@ -1964,10 +1964,10 @@ class BluetoothManager extends ChangeNotifier {
         final confirm = await confirmFuture.timeout(const Duration(seconds: 5));
         if (!confirm.startsWith('OK DELETE')) {
           throw StateError(
-              'O FEFO não confirmou a exclusão de $path: $confirm');
+              'O Fefo não confirmou a exclusão de $path: $confirm');
         }
       } else if (!resp.startsWith('OK DELETE')) {
-        throw StateError('O FEFO não excluiu $path: $resp');
+        throw StateError('O Fefo não excluiu $path: $resp');
       }
       _audioItems.removeWhere((item) => item.path == path);
       await Future<void>.delayed(const Duration(milliseconds: 150));
@@ -1980,7 +1980,7 @@ class BluetoothManager extends ChangeNotifier {
     final validPaths = paths.where((p) => p.isNotEmpty).toList();
     if (validPaths.isEmpty) return;
     if (!isConnected) {
-      throw StateError('Conecte novamente ao FEFO antes de excluir.');
+      throw StateError('Conecte novamente ao Fefo antes de excluir.');
     }
     _operationPath = validPaths.first;
     notifyListeners();
@@ -2150,7 +2150,7 @@ class BluetoothManager extends ChangeNotifier {
     String? origemParaEstado,
   }) async {
     if (!isConnected || _rxCharacteristic == null) {
-      _setStatus('FEFO não conectado.');
+      _setStatus('Fefo não conectado.');
       return;
     }
 

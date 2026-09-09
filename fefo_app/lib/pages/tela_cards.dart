@@ -45,7 +45,7 @@ class TelaCards extends StatelessWidget {
         InfoPlayer(
             legenda: 'Caça às Vogais', caminhoAudio: '/simEnao/letra04.wav'),
         InfoPlayer(
-            legenda: 'Caça-Letrinhas com o FEFO',
+            legenda: 'Caça-Letrinhas com o Fefo',
             caminhoAudio: '/simEnao/letra05.wav'),
         InfoPlayer(
             legenda: 'Jogo do STOP das Letras',
@@ -68,7 +68,7 @@ class TelaCards extends StatelessWidget {
       titulo: 'NÚMEROS',
       players: [
         InfoPlayer(
-            legenda: 'Contando com o FEFO', caminhoAudio: '/simEnao/num01.wav'),
+            legenda: 'Contando com o Fefo', caminhoAudio: '/simEnao/num01.wav'),
         InfoPlayer(
             legenda: 'Encontre o Número', caminhoAudio: '/simEnao/num02.wav'),
         InfoPlayer(

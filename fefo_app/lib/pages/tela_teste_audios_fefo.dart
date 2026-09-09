@@ -38,8 +38,8 @@ class TelaTesteAudiosFefo extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Text(
                   bluetoothManager.isConnected
-                      ? 'Encontrados no FEFO: ${audios.length}\n${bluetoothManager.statusMensagem}'
-                      : 'Conecte ao FEFO para carregar os áudios do SDCard.',
+                      ? 'Encontrados no Fefo: ${audios.length}\n${bluetoothManager.statusMensagem}'
+                      : 'Conecte ao Fefo para carregar os áudios do SDCard.',
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: Colors.white70,

@@ -57,7 +57,7 @@ class _TelaLuzesState extends State<TelaLuzes> {
             FittedBox(
               fit: BoxFit.scaleDown,
               child: Text(
-                'Luzes FEFO',
+                'Luzes Fefo',
                 style: TextStyle(
                   fontFamily: 'Billotilde',
                   fontSize: 52,

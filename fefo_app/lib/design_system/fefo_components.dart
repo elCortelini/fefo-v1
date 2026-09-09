@@ -45,7 +45,7 @@ class FefoPageHeader extends StatelessWidget {
                 fontFamily: 'KGPen',
                 color: theme.colorScheme.secondary,
                 fontSize: FefoTypography.pageSubtitleSize,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],
@@ -98,7 +98,7 @@ class FefoSectionHeader extends StatelessWidget {
         style: TextStyle(
           fontFamily: 'Billotilde',
           fontSize: FefoTypography.sectionTitleSize,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w500,
           color: scheme.secondary,
         ),
       ),
@@ -120,7 +120,7 @@ class FefoPageSubtitle extends StatelessWidget {
       style: TextStyle(
         fontFamily: 'KGPen',
         fontSize: FefoTypography.pageSubtitleSize,
-        fontWeight: FontWeight.w700,
+        fontWeight: FontWeight.w500,
         color: Theme.of(context).colorScheme.secondary,
       ),
     );

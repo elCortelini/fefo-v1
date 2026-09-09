@@ -63,7 +63,7 @@ class _TelaAudiosFefoState extends State<TelaAudiosFefo> {
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             title: Text('Excluir $count áudio(s)?'),
             content: const Text(
-              'Os arquivos selecionados serão removidos permanentemente do cartão do FEFO.',
+              'Os arquivos selecionados serão removidos permanentemente do cartão do Fefo.',
               style: TextStyle(fontFamily: 'KGPen'),
             ),
             actions: [
@@ -143,7 +143,7 @@ class _TelaAudiosFefoState extends State<TelaAudiosFefo> {
               const SizedBox(height: 20),
               // Cabeçalho do Menu com Botão de Seleção Múltipla
               FefoPageHeader(
-                title: widget.grupoInicial ?? 'Áudios no FEFO',
+                title: widget.grupoInicial ?? 'Áudios no Fefo',
                 trailing: audios.isNotEmpty && manager.isConnected
                     ? IconButton(
                         tooltip: _modoSelecao
@@ -231,7 +231,7 @@ class _TelaAudiosFefoState extends State<TelaAudiosFefo> {
                     : !manager.isConnected && !manager.uploading
                         ? const _MensagemCentral(
                             texto:
-                                'Conecte ao FEFO para carregar os áudios do SDCard.',
+                                'Conecte ao Fefo para carregar os áudios do SDCard.',
                           )
                         : audios.isEmpty
                             ? const _MensagemCentral(
@@ -450,7 +450,7 @@ class _CardAudioItem extends StatelessWidget {
                   onPressed: onFavorito,
                 ),
                 IconButton(
-                  tooltip: tocando ? 'Tocando agora' : 'Tocar no FEFO',
+                  tooltip: tocando ? 'Tocando agora' : 'Tocar no Fefo',
                   icon: tocando
                       ? _AudioPlayingIcon(color: corVerde)
                       : Icon(Icons.play_circle_fill_rounded,

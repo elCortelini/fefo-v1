@@ -72,7 +72,7 @@ class AvisoBemVindoDialog extends StatelessWidget {
                       text: 'Seja bem-vindo ao aplicativo ',
                     ),
                     TextSpan(
-                      text: 'FEFO!\n\n',
+                      text: 'Fefo!\n\n',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     TextSpan(

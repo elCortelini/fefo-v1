@@ -184,7 +184,7 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
                 title: const Text('Modo desenvolvedor'),
                 subtitle: Text(manager.developerModeEnabled
                     ? 'Testes e telas de sistema liberados.'
-                    : 'Desativado. O FEFO permanece no modo normal.'),
+                    : 'Desativado. O Fefo permanece no modo normal.'),
                 value: manager.developerModeEnabled,
                 onChanged: (value) =>
                     _alternarModoDesenvolvedor(context, manager, value),
@@ -219,7 +219,7 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
               const SizedBox(height: 15),
             ],
 
-            // Submenu de vibrações do FEFO
+            // Submenu de vibrações do Fefo
             if (manager.developerModeEnabled) ...[
               Container(
                 padding: const EdgeInsets.all(18),
@@ -245,7 +245,7 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            'Exibir Faces no FEFO',
+                            'Exibir Faces no Fefo',
                             style: TextStyle(
                               fontFamily: 'KGPen',
                               fontSize: 20,
@@ -270,7 +270,7 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
                     ),
                     const SizedBox(height: 10),
                     const Text(
-                      'Ative ou desative as expressões faciais na tela da CYD do FEFO.',
+                      'Ative ou desative as expressões faciais na tela da CYD do Fefo.',
                       style: TextStyle(
                           fontFamily: 'KGPen',
                           fontSize: 14,
@@ -305,7 +305,7 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
   void _mostrarAvisoBLE(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Conecte ao PET FEFO via Bluetooth para testar.'),
+        content: Text('Conecte ao PET Fefo via Bluetooth para testar.'),
         backgroundColor: Color(0xFFDC4900),
       ),
     );

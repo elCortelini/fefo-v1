@@ -154,7 +154,7 @@ class _TelaEditarAlarmeState extends State<TelaEditarAlarme> {
 
       final alarmeRetorno = AlarmModel(
         id: widget.alarmeInicial?.id,
-        title: _titulo.trim().isEmpty ? 'Alarme FEFO' : _titulo.trim(),
+        title: _titulo.trim().isEmpty ? 'Alarme Fefo' : _titulo.trim(),
         hour: _horario.hour,
         minute: _horario.minute,
         isActive: widget.alarmeInicial?.isActive ?? true,
@@ -198,7 +198,7 @@ class _TelaEditarAlarmeState extends State<TelaEditarAlarme> {
           OpcaoDeSom(
             nomeAmigavel: item.title,
             caminhoDoArquivo: item.path,
-            grupo: item.group.isNotEmpty ? item.group : 'Áudios do FEFO',
+            grupo: item.group.isNotEmpty ? item.group : 'Áudios do Fefo',
           ),
         );
       }
@@ -421,7 +421,7 @@ class _TelaEditarAlarmeState extends State<TelaEditarAlarme> {
               const SizedBox(height: 28),
 
               // SOM DO ALARME
-              const Text('Som / Música do FEFO', style: tagStyle),
+              const Text('Som / Música do Fefo', style: tagStyle),
               const SizedBox(height: 8),
               Container(
                 decoration: BoxDecoration(
@@ -470,7 +470,7 @@ class _TelaEditarAlarmeState extends State<TelaEditarAlarme> {
               ),
               const SizedBox(height: 12),
 
-              // BOTÃO PARA TESTAR O SOM NO PET FEFO
+              // BOTÃO PARA TESTAR O SOM NO PET Fefo
               Center(
                 child: OutlinedButton.icon(
                   onPressed: () {
@@ -478,7 +478,7 @@ class _TelaEditarAlarmeState extends State<TelaEditarAlarme> {
                       manager.playAudio(_somSelecionado);
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Testando som no FEFO...'),
+                          content: Text('Testando som no Fefo...'),
                           duration: Duration(seconds: 2),
                         ),
                       );
@@ -486,14 +486,14 @@ class _TelaEditarAlarmeState extends State<TelaEditarAlarme> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text(
-                              'Conecte ao PET FEFO via Bluetooth para testar o som.'),
+                              'Conecte ao PET Fefo via Bluetooth para testar o som.'),
                         ),
                       );
                     }
                   },
                   icon: const Icon(Icons.volume_up_rounded, color: corLaranja),
                   label: const Text(
-                    'Testar Som no FEFO Agora',
+                    'Testar Som no Fefo Agora',
                     style: TextStyle(
                       fontFamily: 'KGPen',
                       fontSize: 15,
