@@ -31,8 +31,8 @@ O funcionamento diário do FEFO e a organização dos menus devem depender do in
 
 | Componente | Versão atual | Fonte de verdade | Artefato |
 |---|---:|---|---|
-| App Android | `1.118` / build `1118` | `fefo_app/pubspec.yaml` e `fefo_app/lib/config/app_version.dart` | `releases/FEFO_App_v1.118.apk` |
-| Firmware CYD | `1.099` | `fefo_firmware/include/board/Fefo35Board.h` | `releases/FEFO_Firmware_v1.099.bin` |
+| App Android | `1.119` / build `1119` | `fefo_app/pubspec.yaml` e `fefo_app/lib/config/app_version.dart` | `releases/FEFO_App_v1.119.apk` |
+| Firmware CYD | `1.100` | `fefo_firmware/include/board/Fefo35Board.h` | `releases/FEFO_Firmware_v1.100.bin` |
 | Protocolo BLE | `0.1` | `Fefo35Board.h` e protocolo documentado | — |
 | Catálogo online | schema `1`, revisão `63` | `repository/catalog.json` | `repository/catalog.json` |
 | Faces publicadas | `6` | `repository/catalog.json` | itens `fa001` a `fa006` |
@@ -40,7 +40,7 @@ O funcionamento diário do FEFO e a organização dos menus devem depender do in
 
 ### Observação de consistência
 
-O firmware atual declara a versão `1.099`, mas o nome BLE em `Fefo35Board.h` ainda aparece como `FEFO_BLE_V1098`. Isso deve ser tratado como pendência de consistência antes da próxima release: o nome BLE, a versão exibida, o binário e o catálogo devem usar o mesmo número de release.
+O firmware v1.100 alinha o nome BLE, a versão exibida, o binário e o catálogo e passa a exigir enlace BLE criptografado para comandos.
 
 ## 3. Histórico de versões
 
@@ -62,7 +62,7 @@ O firmware atual declara a versão `1.099`, mas o nome BLE em `Fefo35Board.h` ai
 
 ### Linha do aplicativo
 
-Existem artefatos publicados de `App v1.070` até `App v1.118`, além das versões iniciais de desenvolvimento. As versões intermediárias foram builds de correção e teste; a sequência de artefatos pode ser consultada em `releases/`.
+Existem artefatos publicados de `App v1.070` até `App v1.119`, além das versões iniciais de desenvolvimento. As versões intermediárias foram builds de correção e teste; a sequência de artefatos pode ser consultada em `releases/`.
 
 Principais marcos recentes:
 
@@ -73,7 +73,7 @@ Principais marcos recentes:
 | `v1.104–v1.110` | Correções de conexão e preparação da transferência OTA para firmwares antigos e novos |
 | `v1.111–v1.114` | Transferência mais confiável, player e interface |
 | `v1.115–v1.117` | Ajustes de catálogo, conteúdo e estabilidade de conexão |
-| `v1.118` | Release atualmente anunciada no catálogo; deve ser validada no aparelho antes de substituir a versão estável de referência |
+| `v1.119` | Release com bonding BLE, validação de assinaturas e transferência com checksum obrigatório; deve ser validada no aparelho |
 
 Para a linha do tempo detalhada, consultar também `docs/VERSION_HISTORY.md`, `docs/CHANGELOG.md` e `docs/HISTORICO_EVOLUCAO_E_CORRECOES.md`.
 
@@ -274,4 +274,3 @@ tools/                    scripts de preparação, BLE e validação
 - `docs/VERSION_HISTORY.md` — histórico detalhado de versões.
 - `docs/CHANGELOG.md` — changelog resumido.
 - `docs/FEFO_V0.0.1_ESPECIFICACAO.md` — escopo técnico inicial.
-

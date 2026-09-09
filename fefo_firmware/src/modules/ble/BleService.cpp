@@ -5,6 +5,7 @@
 #include <BLEAdvertising.h>
 #include <BLECharacteristic.h>
 #include <BLEServer.h>
+#include <BLESecurity.h>
 #include <BLEUtils.h>
 #include <cctype>
 #include <cstring>
@@ -108,6 +109,8 @@ BLECharacteristic* addCommandCharacteristic(BLEService* service,
                 BLECharacteristic::PROPERTY_NOTIFY);
   characteristic->setValue(initialValue == nullptr ? "" : initialValue);
   characteristic->setCallbacks(new CommandCallbacks());
+  characteristic->setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED |
+                                       ESP_GATT_PERM_WRITE_ENCRYPTED);
   characteristic->addDescriptor(new BLE2902());
   return characteristic;
 }
@@ -118,6 +121,7 @@ BLECharacteristic* addStatusCharacteristic(BLEService* service,
   BLECharacteristic* characteristic = service->createCharacteristic(
       uuid, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
   characteristic->setValue(initialValue == nullptr ? "" : initialValue);
+  characteristic->setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED);
   characteristic->addDescriptor(new BLE2902());
   return characteristic;
 }
@@ -129,6 +133,16 @@ bool BleService::begin() {
   BLEDevice::init(board::kBleName);
   BLEDevice::setMTU(512);
   BLEDevice::setPower(ESP_PWR_LVL_P9);
+
+  // Exige um link BLE criptografado e persistente antes de expor comandos.
+  // O modo sem entrada/saída mantém a primeira conexão compatível com o
+  // Android; a autorização do dispositivo será complementada pelo bonding.
+  auto* security = new BLESecurity();
+  security->setAuthenticationMode(ESP_LE_AUTH_REQ_SC_BOND);
+  security->setCapability(ESP_IO_CAP_NONE);
+  security->setInitEncryptionKey(ESP_BLE_ENC_KEY_MASK | ESP_BLE_ID_KEY_MASK);
+  security->setRespEncryptionKey(ESP_BLE_ENC_KEY_MASK | ESP_BLE_ID_KEY_MASK);
+  security->setKeySize(16);
 
   BLEServer* server = BLEDevice::createServer();
   server->setCallbacks(new ServerCallbacks());

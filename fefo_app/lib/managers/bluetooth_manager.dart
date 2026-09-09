@@ -21,6 +21,7 @@ import 'dart:io'
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:crypto/crypto.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -712,6 +713,9 @@ class BluetoothManager extends ChangeNotifier {
       });
 
       if (!kIsWeb && Platform.isAndroid) {
+        // O firmware exige BLE criptografado. O Android reaproveita o bond
+        // salvo e só apresenta pareamento na primeira conexão deste PET.
+        await device.createBond();
         await device.requestMtu(512);
       }
 
@@ -1167,6 +1171,7 @@ class BluetoothManager extends ChangeNotifier {
 
   Future<void> enviarArquivosPorWifi(Map<String, List<int>> arquivos,
       {Map<String, String> checksums = const {},
+      Map<String, String> signatures = const {},
       List<String> excluir = const []}) async {
     if (!isConnected) {
       throw StateError(
@@ -1236,10 +1241,13 @@ class BluetoothManager extends ChangeNotifier {
             final request = await client.putUrl(Uri.parse('http://$ip/file'));
             request.headers.set('X-Fefo-Token', token);
             request.headers.set('X-Fefo-Path', entry.key);
-            final checksum = checksums[entry.key] ?? '';
-            if (checksum.isNotEmpty) {
-              request.headers
-                  .set('X-Fefo-Sha256', checksum.replaceFirst('sha256:', ''));
+            final checksum =
+                checksums[entry.key] ?? sha256.convert(entry.value).toString();
+            request.headers
+                .set('X-Fefo-Sha256', checksum.replaceFirst('sha256:', ''));
+            final signature = signatures[entry.key];
+            if (signature != null && signature.isNotEmpty) {
+              request.headers.set('X-Fefo-Signature', signature);
             }
             request.contentLength = entry.value.length;
             const block = 64 * 1024;
