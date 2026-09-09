@@ -1,6 +1,6 @@
 {
     "schema":  1,
-    "catalogVersion":  64,
+    "catalogVersion":  65,
     "repository":  "FEFO Google Drive",
     "firmware":  {
                      "version":  "1.100",
@@ -14,14 +14,14 @@
                      "notas":  "Versão 1.100: reforça BLE seguro, transferência autenticada e proteção da atualização."
                  },
     "app":  {
-                "version":  "1.119",
-                "build":  1119,
-                "arquivo":  "FEFO_App_v1.119.apk",
-                "tamanho":  56052503,
-                "checksum":  "b22fba022ad08ad7eb6755fa4795a66b7d9fff6b345f62fc7dbee96bf6efeb9e",
-                "assinatura":  "S7cRH1egXuqIg7aZpCd3dp67lBYvfMcdJV+3QGEbSO+bOOSZg5tEcnQyHdsdI/7HaP4iFBmHRK2ULTkJGVfWBn7xGpFD5eyLpMe3YsRCABDlIKlKZUlASJGj2Q0YpWK6FVDCdj9lKZyJuFfJgGIkxGiUF2qhczvrQ2OdTnV//06/LJ6DzyPnPCZyEBnRg0IGaCT/t8jmrpNm9Ey271MmcVbWWtrFTWAKOpiB76fIGx3vy5suAtMqopkAhKZ9UwuYITJI9xEAqEZWCs5Akzfaf4xhK0sJCIruHkfmxu+UkarWuLFoCCu14CB2mOM38czMm1rgMKhtxoZFDjWret8Mtg==",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.119.apk",
-                "notas":  "Atualização de segurança: BLE criptografado, downloads assinados e transferência com validação obrigatória."
+                "version":  "1.120",
+                "build":  1120,
+                "arquivo":  "FEFO_App_v1.120.apk",
+                "tamanho":  56118039,
+                "checksum":  "b04cee3a45a5a0089866c0b8553ba7deb05697ebe7738efd2aae5c8f1ad9cd3e",
+                "assinatura":  "FQrg/lvGekOPEqG8MCK+bff3uv+9UGfG/jLktvLcpHRsO41tDmiMnaPq2kn5qZMW22GVo+cMIbzrv+4lyrlRtObS6vhB5ml1Asxo9rqmp3DveGXKXhBsPJ1GVBfLFk04j13s8UO9Vr0Cqzv2HaoTXKWh0j6YyCT+k6AwIKl3DkTM0WIOvpq9L/ejuxsupqxkezTEAUbhPv+hoOoDw2fHpSM2lbGhiVXIZYJ2Gtv/YdMT8Oa8bPdMNBehyP049IreWUomD+OUe62U+pmM4yrvisM1JHkPfHl/ODv3RRwFgQlz94BgMel93gE8GZz7B2r2BxX7PFcs5VGxchcOl40gAA==",
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.120.apk",
+                "notas":  "Correção da validação do catálogo online e atualização de segurança."
              },
     "audio":  [
                   {
