@@ -14,14 +14,14 @@
                      "notas":  "Versão 1.102: suporte à atualização dos áudios internos dos Cards Interativos."
                  },
     "app":  {
-                "version":  "1.126",
-                "build":  1126,
-                "arquivo":  "FEFO_App_v1.126.apk",
+                "version":  "1.127",
+                "build":  1127,
+                "arquivo":  "FEFO_App_v1.127.apk",
                 "tamanho":  56199547,
                 "checksum":  "eb71929849122294b0df79b3e8a9db658389fea3dd29181a5fa30aed30f8195e",
                 "assinatura":  "qSkfd3Fx64aWT7elvnDhr7DX4eAH8qmTAhnm4FQlbVxDc/PrHX/WB90aetlWJdG/AffsvY1beCvgvpIXUcTGB2+08sY35aS6hPxsnZ7Z/pzkHX5jbSJHbEZSYm5QZ9sEU8QAXuygcjQjsVG5h4kyORVgSkmgMtYO14Z1Skd5TdJHiH5AfNdXqsOr+H7dYu/XqvoreBXS7Xj+QGo2fhoXTD988Npgs4NnNH2ggkiTlhddAolQ9ZyUH02DVtESs1lgHJvL171zB2krHUOxFCQWnsEjvcD7fkqck74CF65o9a7Zl79jW18aMLfLc0wazQbi7YITHwZWclt0G+jbDfeQsg==",
-                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.126.apk",
-                "notas":  "Tipografia leve, marca Fefo padronizada e tema Lavanda clara restaurado."
+                "url":  "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.127.apk",
+                "notas":  "Correção da detecção de atualização e suporte inicial aos Cards Interativos."
             },
     "audio":  [
                   {
@@ -422,6 +422,6 @@
                   }
               ],
     "catalogRevision":  "official-73",
-    "assinaturaCatalogoCanonica":  "jiqQ++1W3YBDz/DqrLoRA8T9ePnSCQHu0HLBa450Z/hgZiFEI035cYZRi4CxOUQTNSXkONDAlPQLtN4TBJInIqM+kkinv1S18xD0NQhLXbsP4U1+RFhNgoJG41XUXoKkATH1lffhBXYLh5TOm52BWaEco8GSSeWqFlAKKMLt3/OKlG1QHxYSD0FaqBs7F/me7D7aEzitZMjg2pZ6HHpi6TyUdSyrK1gx89xr8yP8dDWQs5tIjLeVWSeLTpJKRw3zpDt5FgwWmdvjYah6SybC7ZZ8ha2sA9klPLv1ZKBwDqzENWi0FEkvr0/2CXNzxbFiwDFHwoZKfikvL5Ii1dLkyA==",
-    "assinaturaCatalogo":  "jiqQ++1W3YBDz/DqrLoRA8T9ePnSCQHu0HLBa450Z/hgZiFEI035cYZRi4CxOUQTNSXkONDAlPQLtN4TBJInIqM+kkinv1S18xD0NQhLXbsP4U1+RFhNgoJG41XUXoKkATH1lffhBXYLh5TOm52BWaEco8GSSeWqFlAKKMLt3/OKlG1QHxYSD0FaqBs7F/me7D7aEzitZMjg2pZ6HHpi6TyUdSyrK1gx89xr8yP8dDWQs5tIjLeVWSeLTpJKRw3zpDt5FgwWmdvjYah6SybC7ZZ8ha2sA9klPLv1ZKBwDqzENWi0FEkvr0/2CXNzxbFiwDFHwoZKfikvL5Ii1dLkyA=="
+    "assinaturaCatalogoCanonica":  "IIbbIWST23m3ZuLrWHHys7af4eucodslIoFRMmubePCCrvNNcDRtfN69qq2Bljcbc1+BAgcowsYw8mJtQ8icA4Kjrpv0KY8z8Fq/+XCGeUxZ2XRkH6GS+fb159Mofog3p2alWMCuKgH74PZqjQgvX3OQmy1wSJ5S3A6o4hWSDIn3d8zjqPu3X4r4WWumQYUUEJSuaY+H0HTiNRRRY07bwlrRptgbxTCOJRtlrn4s76RSz+/S8sGc0VpyKjTaoYYGCymdT+UE+x4tnBdcstSaB2pnUhIvwoBHA3vcsoQBehsXbTNg108WCQi7WU30T3sRDKhPZBUZ7DOuTfAEfIbSPA==",
+    "assinaturaCatalogo":  "IIbbIWST23m3ZuLrWHHys7af4eucodslIoFRMmubePCCrvNNcDRtfN69qq2Bljcbc1+BAgcowsYw8mJtQ8icA4Kjrpv0KY8z8Fq/+XCGeUxZ2XRkH6GS+fb159Mofog3p2alWMCuKgH74PZqjQgvX3OQmy1wSJ5S3A6o4hWSDIn3d8zjqPu3X4r4WWumQYUUEJSuaY+H0HTiNRRRY07bwlrRptgbxTCOJRtlrn4s76RSz+/S8sGc0VpyKjTaoYYGCymdT+UE+x4tnBdcstSaB2pnUhIvwoBHA3vcsoQBehsXbTNg108WCQi7WU30T3sRDKhPZBUZ7DOuTfAEfIbSPA=="
 }
