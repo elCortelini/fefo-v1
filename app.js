@@ -3,6 +3,7 @@
 // ==========================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
+  initThemeSystem();
   initMobileMenu();
   initFaceSimulator();
   initFaqAccordion();
@@ -44,6 +45,89 @@ function initMobileMenu() {
       toggle.classList.remove('active');
       toggle.setAttribute('aria-expanded', 'false');
     });
+  });
+}
+
+// 0.5. Accessible & Neurofriendly Theme Selection System
+function initThemeSystem() {
+  const wrapper = document.getElementById('theme-switch-wrapper');
+  const toggleBtn = document.getElementById('theme-toggle-btn');
+  const currentIcon = document.getElementById('current-theme-icon');
+  const currentName = document.getElementById('current-theme-name');
+  const options = document.querySelectorAll('.theme-option');
+
+  if (!wrapper || !toggleBtn) return;
+
+  const themes = {
+    galaxy: { name: 'Galáxia', icon: '🌌' },
+    calm: { name: 'Calmo (TEA)', icon: '🌿' },
+    light: { name: 'Solar', icon: '☀️' },
+    contrast: { name: 'Contraste', icon: '⚡' }
+  };
+
+  function applyTheme(themeKey) {
+    const selected = themes[themeKey] ? themeKey : 'galaxy';
+    document.documentElement.setAttribute('data-theme', selected);
+    try {
+      localStorage.setItem('fefo-theme', selected);
+    } catch (e) {}
+
+    if (currentIcon) currentIcon.textContent = themes[selected].icon;
+    if (currentName) currentName.textContent = themes[selected].name;
+
+    options.forEach(opt => {
+      if (opt.getAttribute('data-theme') === selected) {
+        opt.classList.add('active');
+        opt.setAttribute('aria-selected', 'true');
+      } else {
+        opt.classList.remove('active');
+        opt.setAttribute('aria-selected', 'false');
+      }
+    });
+  }
+
+  // Load saved theme or HTML attribute or fallback
+  let savedTheme = 'galaxy';
+  try {
+    savedTheme = localStorage.getItem('fefo-theme') || document.documentElement.getAttribute('data-theme') || 'galaxy';
+  } catch (e) {
+    savedTheme = document.documentElement.getAttribute('data-theme') || 'galaxy';
+  }
+  applyTheme(savedTheme);
+
+  // Toggle dropdown menu
+  toggleBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = wrapper.classList.toggle('open');
+    toggleBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  });
+
+  // Handle option selection
+  options.forEach(opt => {
+    opt.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const themeKey = opt.getAttribute('data-theme');
+      applyTheme(themeKey);
+      wrapper.classList.remove('open');
+      toggleBtn.setAttribute('aria-expanded', 'false');
+    });
+  });
+
+  // Close when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!wrapper.contains(e.target)) {
+      wrapper.classList.remove('open');
+      toggleBtn.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  // Close with keyboard Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && wrapper.classList.contains('open')) {
+      wrapper.classList.remove('open');
+      toggleBtn.setAttribute('aria-expanded', 'false');
+      toggleBtn.focus();
+    }
   });
 }
 
