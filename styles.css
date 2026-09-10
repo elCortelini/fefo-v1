@@ -8,10 +8,11 @@
   --font-heading: 'Outfit', sans-serif;
   --font-body: 'Plus Jakarta Sans', sans-serif;
 
-  /* PDF Dark Palette */
+  /* PDF Dark Palette (Default - Galáxia Neon) */
   --bg-dark: #0d081c;
   --bg-card: rgba(22, 14, 44, 0.75);
   --bg-card-hover: rgba(35, 23, 68, 0.85);
+  --navbar-bg: rgba(13, 8, 28, 0.92);
 
   --purple-main: #8b5cf6;
   --purple-light: #a78bfa;
@@ -39,6 +40,128 @@
   --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --shadow-glass: 0 10px 40px 0 rgba(0, 0, 0, 0.5);
+
+  --bg-gradient: radial-gradient(circle at 10% 10%, rgba(139, 92, 246, 0.2) 0%, transparent 45%),
+    radial-gradient(circle at 90% 60%, rgba(236, 72, 153, 0.18) 0%, transparent 45%),
+    radial-gradient(circle at 50% 95%, rgba(59, 130, 246, 0.15) 0%, transparent 50%);
+}
+
+/* Theme: Sensorial Calmo (Neurofriendly / Relaxante para TEA) */
+html[data-theme="calm"] {
+  --bg-dark: #071716;
+  --bg-card: rgba(13, 38, 35, 0.78);
+  --bg-card-hover: rgba(19, 53, 49, 0.88);
+  --navbar-bg: rgba(7, 23, 22, 0.94);
+  --purple-main: #0d9488;
+  --purple-light: #2dd4bf;
+  --purple-glow: rgba(45, 212, 191, 0.35);
+  --pink-accent: #38bdf8;
+  --pink-glow: rgba(56, 189, 248, 0.35);
+  --emerald-accent: #34d399;
+  --blue-accent: #60a5fa;
+  --amber-accent: #fbbf24;
+  --text-main: #e0f2fe;
+  --text-muted: #94a3b8;
+  --text-bright: #f0fdfa;
+  --border-color: rgba(45, 212, 191, 0.2);
+  --border-glow: rgba(45, 212, 191, 0.4);
+  --bg-gradient: radial-gradient(circle at 10% 10%, rgba(45, 212, 191, 0.15) 0%, transparent 45%),
+    radial-gradient(circle at 90% 60%, rgba(56, 189, 248, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 50% 95%, rgba(16, 185, 129, 0.12) 0%, transparent 50%);
+}
+
+/* Theme: Solar Acolhedor (Modo Claro Leve & Quente) */
+html[data-theme="light"] {
+  --bg-dark: #f8fafc;
+  --bg-card: rgba(255, 255, 255, 0.9);
+  --bg-card-hover: #ffffff;
+  --navbar-bg: rgba(248, 250, 252, 0.95);
+  --purple-main: #7c3aed;
+  --purple-light: #6d28d9;
+  --purple-glow: rgba(124, 58, 237, 0.25);
+  --pink-accent: #db2777;
+  --pink-glow: rgba(219, 39, 119, 0.25);
+  --emerald-accent: #059669;
+  --blue-accent: #2563eb;
+  --amber-accent: #d97706;
+  --text-main: #334155;
+  --text-muted: #64748b;
+  --text-bright: #0f172a;
+  --border-color: rgba(100, 116, 139, 0.22);
+  --border-glow: rgba(124, 58, 237, 0.25);
+  --shadow-glass: 0 10px 30px 0 rgba(0, 0, 0, 0.08);
+  --bg-gradient: radial-gradient(circle at 10% 10%, rgba(124, 58, 237, 0.07) 0%, transparent 45%),
+    radial-gradient(circle at 90% 60%, rgba(219, 39, 119, 0.05) 0%, transparent 45%),
+    radial-gradient(circle at 50% 95%, rgba(37, 99, 235, 0.05) 0%, transparent 50%);
+}
+
+html[data-theme="light"] .gradient-text {
+  background: linear-gradient(135deg, #7c3aed 0%, #db2777 50%, #2563eb 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+html[data-theme="light"] .hero-title,
+html[data-theme="light"] .section-title,
+html[data-theme="light"] h1, html[data-theme="light"] h2, html[data-theme="light"] h3 {
+  color: #0f172a;
+}
+
+html[data-theme="light"] .demo-box,
+html[data-theme="light"] .video-studio-wrapper {
+  background: #ffffff;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="light"] .btn-secondary {
+  background: #f1f5f9;
+  color: #1e293b;
+  border-color: #cbd5e1;
+}
+
+html[data-theme="light"] .btn-secondary:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+html[data-theme="light"] .footer {
+  background: #f1f5f9;
+}
+
+/* Theme: Alto Contraste (Acessibilidade & Baixa Visão) */
+html[data-theme="contrast"] {
+  --bg-dark: #000000;
+  --bg-card: #0a0a0a;
+  --bg-card-hover: #141414;
+  --navbar-bg: #000000;
+  --purple-main: #facc15;
+  --purple-light: #fef08a;
+  --purple-glow: rgba(250, 204, 21, 0.5);
+  --pink-accent: #00f2fe;
+  --pink-glow: rgba(0, 242, 254, 0.5);
+  --emerald-accent: #22c55e;
+  --blue-accent: #38bdf8;
+  --amber-accent: #f59e0b;
+  --text-main: #ffffff;
+  --text-muted: #e4e4e7;
+  --text-bright: #ffffff;
+  --border-color: #facc15;
+  --border-glow: #facc15;
+  --bg-gradient: none;
+}
+
+html[data-theme="contrast"] .gradient-text {
+  background: linear-gradient(135deg, #ffd700 0%, #00f2fe 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+html[data-theme="contrast"] .glass-card,
+html[data-theme="contrast"] .btn,
+html[data-theme="contrast"] .demo-box,
+html[data-theme="contrast"] .video-studio-wrapper {
+  border-width: 2px;
+  border-color: #facc15;
 }
 
 /* Reset & Base */
@@ -59,11 +182,9 @@ body {
   color: var(--text-main);
   line-height: 1.6;
   overflow-x: hidden;
-  background-image:
-    radial-gradient(circle at 10% 10%, rgba(139, 92, 246, 0.2) 0%, transparent 45%),
-    radial-gradient(circle at 90% 60%, rgba(236, 72, 153, 0.18) 0%, transparent 45%),
-    radial-gradient(circle at 50% 95%, rgba(59, 130, 246, 0.15) 0%, transparent 50%);
+  background-image: var(--bg-gradient);
   background-attachment: fixed;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 a {
@@ -204,9 +325,120 @@ h1, h2, h3, h4 {
   width: 100%;
   z-index: 1000;
   padding: 0.8rem 0;
-  background: rgba(13, 8, 28, 0.92);
+  background: var(--navbar-bg, rgba(13, 8, 28, 0.92));
   backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border-color);
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+/* Theme Selector System */
+.theme-switch-wrapper {
+  position: relative;
+  display: inline-block;
+  z-index: 1002;
+  order: 3;
+}
+
+.theme-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-bright);
+  padding: 0.42rem 0.85rem;
+  border-radius: var(--radius-full);
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.theme-toggle-btn:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--purple-light);
+  transform: translateY(-1px);
+}
+
+.theme-arrow {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  transition: transform 0.2s ease;
+}
+
+.theme-switch-wrapper.open .theme-arrow {
+  transform: rotate(180deg);
+}
+
+.theme-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 220px;
+  background: var(--bg-dark);
+  border: 1px solid var(--border-glow);
+  border-radius: var(--radius-md);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(20px);
+  padding: 0.5rem;
+  display: none;
+  flex-direction: column;
+  gap: 0.3rem;
+  animation: modalZoom 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 1005;
+}
+
+.theme-switch-wrapper.open .theme-dropdown {
+  display: flex;
+}
+
+.theme-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.75rem;
+  color: var(--text-main);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+  width: 100%;
+}
+
+.theme-option:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--border-color);
+  color: var(--text-bright);
+}
+
+.theme-option.active {
+  background: rgba(139, 92, 246, 0.2);
+  border-color: var(--purple-main);
+  color: var(--text-bright);
+}
+
+.theme-opt-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.theme-opt-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.theme-opt-info strong {
+  font-size: 0.88rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.theme-opt-info small {
+  font-size: 0.75rem;
+  color: var(--text-muted);
 }
 
 .nav-container {
@@ -262,6 +494,7 @@ h1, h2, h3, h4 {
   display: flex;
   align-items: center;
   gap: 0.6rem;
+  order: 4;
 }
 
 /* Section Spacing */
@@ -363,8 +596,12 @@ section {
   background: linear-gradient(0deg, rgba(13, 8, 28, 0.95) 0%, rgba(13, 8, 28, 0.6) 70%, transparent 100%);
   padding: 1.2rem;
   font-size: 0.88rem;
-  color: var(--text-main);
+  color: #e2e8f0;
   z-index: 2;
+}
+
+.hero-img-caption strong {
+  color: #ffffff;
 }
 
 /* Pillars / Diagnostic Cards Grid */
@@ -1341,10 +1578,15 @@ section {
 }
 
 @media (max-width: 992px) {
-  .nav-toggle {
-    display: flex;
+  .theme-switch-wrapper {
     order: 2;
     margin-left: auto;
+  }
+
+  .nav-toggle {
+    display: flex;
+    order: 3;
+    margin-left: 0.6rem;
   }
 
   .nav-container {
@@ -1357,7 +1599,7 @@ section {
     display: none;
     flex-direction: column;
     width: 100%;
-    order: 3;
+    order: 4;
     background: rgba(15, 10, 32, 0.98);
     border: 1px solid var(--border-glow);
     border-radius: var(--radius-md);
@@ -1379,7 +1621,7 @@ section {
     display: flex;
     flex-direction: column;
     width: 100%;
-    order: 4;
+    order: 5;
     gap: 0.6rem;
     margin-top: 0.6rem;
   }
@@ -1555,5 +1797,19 @@ section {
   .demo-btn {
     font-size: 0.8rem;
     padding: 0.5rem 0.9rem;
+  }
+
+  .theme-name {
+    display: none;
+  }
+
+  .theme-toggle-btn {
+    padding: 0.38rem 0.55rem;
+    font-size: 0.8rem;
+  }
+
+  .theme-dropdown {
+    right: -10px;
+    min-width: 200px;
   }
 }
