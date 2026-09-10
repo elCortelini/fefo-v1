@@ -1,6 +1,6 @@
 {
     "schema":  1,
-    "catalogVersion":  73,
+    "catalogVersion":  74,
     "repository":  "FEFO Google Drive",
     "firmware":  {
                      "version":  "1.102",
@@ -422,6 +422,6 @@
                   }
               ],
     "catalogRevision":  "official-73",
-    "assinaturaCatalogoCanonica":  "Ilm6m1rUqjSx9SxXQuW3LmIwHJ+f008aUsBbajyHLejGeX+zK0LBN3OVaV5x12vQCxaeUQHjs10disVTxaSxWqSrWxKXZh8hhbJqqLuefkQjFgQ1Q4gxSqvPr2F1N5mZKhxeeEea2wmO6lKZQAm4TCRAvzulUswgirWjMbluVz95O76ungt1eGPH1ZVkY7Y9InvK4H4GgygNfKDePhiAHS64nrLxtQKWMzISrnl+JdBf0dKue53r7Lpjo+nZTrPrjaUzVJwkd6NZzB2P78j7X99J/lyJGziBaO5zPhuFyXmCRX+rbIZgUxQ/xWjIK41+S7pxFT8X+8xDeSmCmP5BNw==",
-    "assinaturaCatalogo":  "Ilm6m1rUqjSx9SxXQuW3LmIwHJ+f008aUsBbajyHLejGeX+zK0LBN3OVaV5x12vQCxaeUQHjs10disVTxaSxWqSrWxKXZh8hhbJqqLuefkQjFgQ1Q4gxSqvPr2F1N5mZKhxeeEea2wmO6lKZQAm4TCRAvzulUswgirWjMbluVz95O76ungt1eGPH1ZVkY7Y9InvK4H4GgygNfKDePhiAHS64nrLxtQKWMzISrnl+JdBf0dKue53r7Lpjo+nZTrPrjaUzVJwkd6NZzB2P78j7X99J/lyJGziBaO5zPhuFyXmCRX+rbIZgUxQ/xWjIK41+S7pxFT8X+8xDeSmCmP5BNw=="
+    "assinaturaCatalogoCanonica":  "jiqQ++1W3YBDz/DqrLoRA8T9ePnSCQHu0HLBa450Z/hgZiFEI035cYZRi4CxOUQTNSXkONDAlPQLtN4TBJInIqM+kkinv1S18xD0NQhLXbsP4U1+RFhNgoJG41XUXoKkATH1lffhBXYLh5TOm52BWaEco8GSSeWqFlAKKMLt3/OKlG1QHxYSD0FaqBs7F/me7D7aEzitZMjg2pZ6HHpi6TyUdSyrK1gx89xr8yP8dDWQs5tIjLeVWSeLTpJKRw3zpDt5FgwWmdvjYah6SybC7ZZ8ha2sA9klPLv1ZKBwDqzENWi0FEkvr0/2CXNzxbFiwDFHwoZKfikvL5Ii1dLkyA==",
+    "assinaturaCatalogo":  "jiqQ++1W3YBDz/DqrLoRA8T9ePnSCQHu0HLBa450Z/hgZiFEI035cYZRi4CxOUQTNSXkONDAlPQLtN4TBJInIqM+kkinv1S18xD0NQhLXbsP4U1+RFhNgoJG41XUXoKkATH1lffhBXYLh5TOm52BWaEco8GSSeWqFlAKKMLt3/OKlG1QHxYSD0FaqBs7F/me7D7aEzitZMjg2pZ6HHpi6TyUdSyrK1gx89xr8yP8dDWQs5tIjLeVWSeLTpJKRw3zpDt5FgwWmdvjYah6SybC7ZZ8ha2sA9klPLv1ZKBwDqzENWi0FEkvr0/2CXNzxbFiwDFHwoZKfikvL5Ii1dLkyA=="
 }
