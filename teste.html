@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FEFO Pet — Portfólio Oficial & Tecnologia Assistiva para Crianças Autistas</title>
+  <title>FEFO Pet [Versão Testes] — Novas Funcionalidades Interativas & Acessibilidade</title>
   <meta name="description" content="FEFO é um pet eletrônico assistivo de apoio emocional e educacional para crianças autistas (TEA). Desenvolvido por psicopedagogos e engenheiros de TI para unir tecnologia, afeto e inclusão.">
   <link rel="stylesheet" href="styles.css">
   <script>
@@ -14,7 +14,9 @@
       } catch (e) {}
     })();
   </script>
+  <link rel="stylesheet" href="teste.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="teste.js" defer></script>
 </head>
 <body>
   <!-- 5. Barra de Progresso de Leitura Estilizada -->
@@ -24,57 +26,64 @@
 
   <!-- Navbar com Guias correspondentes aos Capítulos do PortFolio PDF -->
   <nav class="navbar">
+    <!-- Banner de Identificação da Versão de Testes -->
+    <div class="test-version-banner">
+      <div>
+        🧪 <strong>Ambiente de Testes Interativo</strong> — Testando Sugestões 1, 2, 3, 4, 5, 14 e 15.
+        <a href="index.html" style="margin-left: 0.5rem; text-decoration: underline;">Voltar para Versão Original</a>
+      </div>
+      <div class="test-controls-group">
+        <button id="sensory-toggle-btn" class="sensory-btn" aria-pressed="false" title="Modo Calmo Sensorial">
+          <span>🍃 Redução Sensorial</span>
+        </button>
+        <button id="audio-toggle-btn" class="sensory-btn" title="Som dos botões">
+          <span>🔊 Som Ativo</span>
+        </button>
+      </div>
+    </div>
+
     <div class="container nav-container">
       <a href="#" class="logo">
         <span class="logo-badge">FeFo</span> Pet
       </a>
       
-      <!-- Ações Extras de Acessibilidade (Temas + Redução Sensorial + Som) -->
-      <div class="nav-extra-actions">
-        <div class="theme-switch-wrapper" id="theme-switch-wrapper">
-          <button class="theme-toggle-btn" id="theme-toggle-btn" aria-label="Escolher tema visual" aria-expanded="false" aria-haspopup="true">
-            <span class="theme-icon" id="current-theme-icon">🌌</span>
-            <span class="theme-name" id="current-theme-name">Galáxia</span>
-            <span class="theme-arrow">▾</span>
+      <!-- Seletor de Temas Acessíveis / Neurofriendly -->
+      <div class="theme-switch-wrapper" id="theme-switch-wrapper">
+        <button class="theme-toggle-btn" id="theme-toggle-btn" aria-label="Escolher tema visual" aria-expanded="false" aria-haspopup="true">
+          <span class="theme-icon" id="current-theme-icon">🌌</span>
+          <span class="theme-name" id="current-theme-name">Galáxia</span>
+          <span class="theme-arrow">▾</span>
+        </button>
+        <div class="theme-dropdown" id="theme-dropdown" role="menu">
+          <button class="theme-option active" data-theme="galaxy" role="menuitem">
+            <span class="theme-opt-icon">🌌</span>
+            <div class="theme-opt-info">
+              <strong>Galáxia Neon</strong>
+              <small>Padrão oficial escuro</small>
+            </div>
           </button>
-          <div class="theme-dropdown" id="theme-dropdown" role="menu">
-            <button class="theme-option active" data-theme="galaxy" role="menuitem">
-              <span class="theme-opt-icon">🌌</span>
-              <div class="theme-opt-info">
-                <strong>Galáxia Neon</strong>
-                <small>Padrão oficial escuro</small>
-              </div>
-            </button>
-            <button class="theme-option" data-theme="calm" role="menuitem">
-              <span class="theme-opt-icon">🌿</span>
-              <div class="theme-opt-info">
-                <strong>Sensorial Calmo</strong>
-                <small>Tons suaves para autistas</small>
-              </div>
-            </button>
-            <button class="theme-option" data-theme="light" role="menuitem">
-              <span class="theme-opt-icon">☀️</span>
-              <div class="theme-opt-info">
-                <strong>Solar Acolhedor</strong>
-                <small>Modo claro quente e leve</small>
-              </div>
-            </button>
-            <button class="theme-option" data-theme="contrast" role="menuitem">
-              <span class="theme-opt-icon">⚡</span>
-              <div class="theme-opt-info">
-                <strong>Alto Contraste</strong>
-                <small>Máxima acessibilidade</small>
-              </div>
-            </button>
-          </div>
+          <button class="theme-option" data-theme="calm" role="menuitem">
+            <span class="theme-opt-icon">🌿</span>
+            <div class="theme-opt-info">
+              <strong>Sensorial Calmo</strong>
+              <small>Tons suaves para autistas</small>
+            </div>
+          </button>
+          <button class="theme-option" data-theme="light" role="menuitem">
+            <span class="theme-opt-icon">☀️</span>
+            <div class="theme-opt-info">
+              <strong>Solar Acolhedor</strong>
+              <small>Modo claro quente e leve</small>
+            </div>
+          </button>
+          <button class="theme-option" data-theme="contrast" role="menuitem">
+            <span class="theme-opt-icon">⚡</span>
+            <div class="theme-opt-info">
+              <strong>Alto Contraste</strong>
+              <small>Máxima acessibilidade</small>
+            </div>
+          </button>
         </div>
-
-        <button id="sensory-toggle-btn" class="sensory-btn" aria-pressed="false" title="Modo Calmo Sensorial (Sem Movimento)">
-          <span>🍃</span><span class="sensory-text">Calmo</span>
-        </button>
-        <button id="audio-toggle-btn" class="sensory-btn" title="Ligar/Desligar sons lúdicos">
-          <span>🔊</span>
-        </button>
       </div>
 
       <button class="nav-toggle" id="nav-toggle" aria-label="Abrir Menu de Navegação" aria-expanded="false">
