@@ -3,12 +3,49 @@
 // ==========================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
+  initMobileMenu();
   initFaceSimulator();
   initFaqAccordion();
   initSmoothScroll();
   initFefoVideoStudio();
   initRealPhotoGallery();
 });
+
+// 0. Mobile Hamburger Menu Toggle
+function initMobileMenu() {
+  const toggle = document.getElementById('nav-toggle');
+  const navLinks = document.getElementById('nav-links');
+  const navButtons = document.querySelector('.nav-buttons');
+  if (!toggle || !navLinks) return;
+
+  toggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = navLinks.classList.toggle('nav-open');
+    if (navButtons) navButtons.classList.toggle('nav-open');
+    toggle.classList.toggle('active');
+    toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  });
+
+  // Close when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!toggle.contains(e.target) && !navLinks.contains(e.target) && (!navButtons || !navButtons.contains(e.target))) {
+      navLinks.classList.remove('nav-open');
+      if (navButtons) navButtons.classList.remove('nav-open');
+      toggle.classList.remove('active');
+      toggle.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  // Close menu when clicking any nav link
+  document.querySelectorAll('.nav-link, .nav-buttons .btn').forEach(link => {
+    link.addEventListener('click', () => {
+      navLinks.classList.remove('nav-open');
+      if (navButtons) navButtons.classList.remove('nav-open');
+      toggle.classList.remove('active');
+      toggle.setAttribute('aria-expanded', 'false');
+    });
+  });
+}
 
 // 1. FEFO Interactive Screen & Mode Simulator
 function initFaceSimulator() {
@@ -50,6 +87,55 @@ function initFaceSimulator() {
     }
   };
 
+  // Web Audio synthesizer feedback for simulator modes
+  function playModeFeedback(modeKey) {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      const now = ctx.currentTime;
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.linearRampToValueAtTime(0.06, now + 0.05);
+
+      if (modeKey === 'happy') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(523.25, now);
+        osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.15);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+        osc.start(now);
+        osc.stop(now + 0.35);
+      } else if (modeKey === 'calm') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(220, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+        osc.start(now);
+        osc.stop(now + 0.5);
+      } else if (modeKey === 'music') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(440, now);
+        osc.frequency.setValueAtTime(554.37, now + 0.1);
+        osc.frequency.setValueAtTime(659.25, now + 0.2);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+        osc.start(now);
+        osc.stop(now + 0.45);
+      } else if (modeKey === 'panic') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(329.63, now);
+        osc.frequency.linearRampToValueAtTime(440, now + 0.15);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      }
+    } catch (e) {
+      // Audio might require user gesture or be disabled
+    }
+  }
+
   simButtons.forEach(btn => {
     btn.addEventListener('click', () => {
       simButtons.forEach(b => b.classList.remove('active'));
@@ -57,6 +143,8 @@ function initFaceSimulator() {
 
       const modeKey = btn.getAttribute('data-mode');
       const mode = modes[modeKey] || modes.happy;
+
+      playModeFeedback(modeKey);
 
       faceEmoji.style.transform = 'scale(0.8)';
       setTimeout(() => {
@@ -768,12 +856,26 @@ function initRealPhotoGallery() {
     heroImgTrigger.addEventListener('click', () => {
       const imgEl = document.getElementById('hero-img-element');
       openLightbox(
-        imgEl ? imgEl.src : 'images/fefo_dispositivo_ligado_tela.jpg',
-        'FEFO Pet — Protótipo V1 Real em Funcionamento',
-        'Robô assistivo com chassi 3D, tela OLED afetiva e anel de iluminação NeoPixel RGB para cromoterapia.'
+        imgEl ? imgEl.src : 'images/portfolio/page_03_img_03.png',
+        'FEFO Pet — Protótipo Físico V1',
+        'Tecnologia embarcada nacional com expressividade facial na tela, cromoterapia e suporte háptico tátil.'
       );
     });
   }
+
+  // Also attach lightbox to any portfolio card images
+  document.querySelectorAll('.card-img, .material-img, .team-avatar-img, .app-mockup-img, .cause-mascot-img').forEach(img => {
+    img.style.cursor = 'pointer';
+    img.setAttribute('title', 'Clique para ampliar a imagem');
+    img.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const title = img.getAttribute('alt') || 'FEFO Pet';
+      const card = img.closest('.glass-card') || img.parentElement;
+      const descEl = card ? (card.querySelector('p') || card.querySelector('.team-role')) : null;
+      const desc = descEl ? descEl.textContent : '';
+      openLightbox(img.src, title, desc);
+    });
+  });
 
   function openLightbox(src, title, desc) {
     modalImg.src = src;
