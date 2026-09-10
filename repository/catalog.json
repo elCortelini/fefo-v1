@@ -5,15 +5,15 @@
   "assinaturaCatalogoCanonica": "MtNVoFOiUGUTgWYK4pglTkFJr1eC/sGVbWhDeObCkzbD9gcKLJsLRJucA5olyQx9BOjqvwCaHrAB/xhgdw1f4VSoyEbNQvdyBQkmTibHRvBgi1mf9PaJXQlATTIIHRqOZABTR402sHoepZE7PDEtem0uPyoRatcgq3mwXsIgJZK8RIlJlGIMwDIYEs8teCxG2zent54P5xXBPKqtSEn6QtHaJzuhctfm/0j/IJn7pVuvhMtzqmV/eUVsf60k46sdn3EeRbABIwt3lxWlGMofYc2ziU5QEUzRy6vFSrOzTbGfmdR6BZfRUBZpXA28J9wVQfL4gDkgCRCatiZgmpCJZg==",
   "repository": "FEFO Google Drive",
   "firmware": {
-    "version": "1.101",
+    "version": "1.102",
     "board": "FEFO_CYD_ESP32",
-    "arquivo": "FEFO_Firmware_v1.101.bin",
+    "arquivo": "FEFO_Firmware_v1.102.bin",
     "tamanho": 1771744,
     "checksum": "595403c15c818a2f2593c64800f493a0c690ff8a2868d7c46dba2d74baf7082f",
-    "url": "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.101.bin",
+    "url": "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.102.bin",
     "obrigatorio": false,
     "assinatura": "rxKb2o0qipMs0e42CBR7ZF2yDH1uo/Bec838VHV4CTqLZvfw5pBO9YexGLIK1xx0SR5/vDcO/FSquJgH1mZbf5+heSHQtLO3yGdCj+viFP49jQ5K7c+/yeHFtvFl17iKmJcR7dR81pyuuFWbQ41Y6vIvldHYN3u8YwUKhnckqVAET6eQzbgV+fkI1TLcbArq0DWvlK32sUanSEwi9FwWZ3VO8Lx7SCQoQPFtoc853kXUGh4nYKC0OJFlJFEWeFbvOZVmTQ0EJfgbMUhpY46UKhGotUcm4Cf9KvhicCEbxK4PbgFUzNVZ1EIPXy4YZTmNqJIF2EVvLhc4KSX9yX+qqA==",
-    "notas": "Versão 1.101: Ronronar silencioso, somente vibração, e BLE seguro."
+    "notas": "Versão 1.102: suporte à atualização dos áudios internos dos Cards Interativos."
   },
   "app": {
     "version": "1.126",

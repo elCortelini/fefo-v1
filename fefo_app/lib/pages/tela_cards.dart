@@ -1,9 +1,27 @@
 // lib/pages/tela_cards.dart
 
+import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../managers/bluetooth_manager.dart';
 import '../widgets/pagina_base.dart';
 import '../widgets/botao_player.dart';
 import '../widgets/botao_verde.dart';
+
+final _cardsRandom = Random();
+final _sonsAcerto = List<String>.generate(10, (i) => '/sys/a/sys${(i + 1).toString().padLeft(4, '0')}.wav');
+final _sonsErro = List<String>.generate(10, (i) => '/sys/a/sys${(i + 11).toString().padLeft(4, '0')}.wav');
+final _ultimosSonsCards = <String>[];
+
+Future<void> _tocarRespostaCard(BuildContext context, bool acertou) async {
+  final lista = acertou ? _sonsAcerto : _sonsErro;
+  final disponiveis = lista.where((som) => !_ultimosSonsCards.contains(som)).toList();
+  final candidatos = disponiveis.isEmpty ? lista : disponiveis;
+  final som = candidatos[_cardsRandom.nextInt(candidatos.length)];
+  _ultimosSonsCards.add(som);
+  if (_ultimosSonsCards.length >= lista.length) _ultimosSonsCards.clear();
+  try { await context.read<BluetoothManager>().playAudio(som); } catch (_) {}
+}
 
 // Estrutura para os dados de um player
 class InfoPlayer {
@@ -133,7 +151,7 @@ class TelaCards extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 12),
 
           // LISTA DE CARDS EXPANSÍVEIS
           Expanded(
@@ -157,14 +175,14 @@ class TelaCards extends StatelessWidget {
                 Expanded(
                   child: _BotaoAcaoVerde(
                     texto: 'Acertou',
-                    aoPressionar: () {/* TODO: Lógica para acertar */},
+                    aoPressionar: () => _tocarRespostaCard(context, true),
                   ),
                 ),
                 const SizedBox(width: 15),
                 Expanded(
                   child: _BotaoAcaoLaranja(
                     texto: 'Errou',
-                    aoPressionar: () {/* TODO: Lógica para errar */},
+                    aoPressionar: () => _tocarRespostaCard(context, false),
                   ),
                 ),
               ],
@@ -195,25 +213,25 @@ class _CardSecaoExpansivel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Card(
-      elevation: 4,
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      elevation: 2,
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      color: scheme.surface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
       clipBehavior: Clip.antiAlias,
       child: ExpansionTile(
-        leading: Icon(
-          icone,
-          size: 32,
-          color: const Color(0xFFDC4900), // Laranja para combinar com o tema
-        ),
+        tilePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
+        childrenPadding: EdgeInsets.zero,
         title: Text(
           secao.titulo,
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: 'KGPen',
-            fontSize: 26,
-            fontWeight: FontWeight.bold,
+            fontSize: 28,
+            color: scheme.primary,
           ),
         ),
+        trailing: Icon(Icons.expand_more_rounded, color: scheme.primary),
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -224,7 +242,7 @@ class _CardSecaoExpansivel extends StatelessWidget {
                   child: BotaoPlayer(
                     legenda: player.legenda,
                     caminhoArquivoPlay: player.caminhoAudio,
-                    larguraIcone: 35,
+                    larguraIcone: 0,
                   ),
                 );
               }).toList(),
@@ -248,7 +266,7 @@ class _BotaoAcaoVerde extends StatelessWidget {
     return ElevatedButton(
       onPressed: aoPressionar,
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF318134),
+        backgroundColor: Theme.of(context).colorScheme.primary,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         minimumSize: const Size(0, 60),
@@ -280,7 +298,7 @@ class _BotaoAcaoLaranja extends StatelessWidget {
     return ElevatedButton(
       onPressed: aoPressionar,
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFFDC4900),
+        backgroundColor: Theme.of(context).colorScheme.tertiary,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         minimumSize: const Size(0, 60),

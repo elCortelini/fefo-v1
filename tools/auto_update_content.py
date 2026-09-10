@@ -40,6 +40,7 @@ TRACKER_FILE = TOOLS_DIR / '.content_tracker.json'
 
 SDCARD_DIR = ROOT / 'fefo_firmware' / 'sdcard'
 SD_AUDIO_DIR = SDCARD_DIR / 'usr' / 'a'
+SD_SYSTEM_AUDIO_DIR = SDCARD_DIR / 'sys' / 'a'
 SD_FACES_DIR = SDCARD_DIR / 'usr' / 'f'
 SD_VIDEO_DIR = SDCARD_DIR / 'usr' / 'v'
 SD_JSON = SDCARD_DIR / 'fefo.json'
@@ -370,6 +371,7 @@ def main():
     FACES_INBOX.mkdir(parents=True, exist_ok=True)
     VIDEO_INBOX.mkdir(parents=True, exist_ok=True)
     SD_AUDIO_DIR.mkdir(parents=True, exist_ok=True)
+    SD_SYSTEM_AUDIO_DIR.mkdir(parents=True, exist_ok=True)
     SD_FACES_DIR.mkdir(parents=True, exist_ok=True)
     SD_VIDEO_DIR.mkdir(parents=True, exist_ok=True)
     REPO_AUDIO_DIR.mkdir(parents=True, exist_ok=True)
@@ -408,6 +410,7 @@ def main():
             continue
 
         meta = metadata_map.get(src.name.lower(), {})
+        is_system = meta.get('disponibilidade', '').strip().lower() == 'sistema' or meta.get('tipo') == 'system_audio'
         publicar = meta.get('publicar', 'Sim').strip().lower()
         if publicar in ('não', 'nao', 'false', '0', 'n'):
             print(f"[IGNORADO - CSV] Áudio '{src.name}' marcado para NÃO publicar.")
@@ -438,10 +441,13 @@ def main():
                 'observacoes': 'Gerado automaticamente pelo script'
             })
 
-        file_name = f"a{audio_idx:04d}.wav"
+        if is_system and re.fullmatch(r'sys\d{4}', src.stem, re.IGNORECASE):
+            file_name = f"{src.stem.lower()}.wav"
+        else:
+            file_name = f"a{audio_idx:04d}.wav"
         au_id = f"au{audio_idx:03d}"
 
-        sd_dest = SD_AUDIO_DIR / file_name
+        sd_dest = (SD_SYSTEM_AUDIO_DIR if is_system else SD_AUDIO_DIR) / file_name
         repo_dest = REPO_AUDIO_DIR / file_name
 
         convert_audio(src, sd_dest)
@@ -455,7 +461,7 @@ def main():
             "id": au_id,
             "titulo": titulo,
             "menu": menu,
-            "arquivo": f"/usr/a/{file_name}",
+            "arquivo": f"/sys/a/{file_name}" if is_system else f"/usr/a/{file_name}",
             "tamanho": size,
             "checksum": conv_checksum,
             "disponibilidade": meta.get('disponibilidade', 'usuario').strip().lower() or 'usuario',
