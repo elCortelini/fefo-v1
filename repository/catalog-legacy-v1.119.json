@@ -1,0 +1,428 @@
+{
+  "schema": 1,
+  "catalogVersion": 1,
+  "assinaturaCatalogo": "On+pHxs2DGNftLLJTFw6DI1rhYPoacKj8Wbkd4qNoX0YRqdH79yb4YvwDheBaD1PktxInkuBUf1xepDxksppR9zWOITxLVa11CLRav3oqb3h9YN3OVeUXzYyfdUDJ293n6QhA1qn7DkP0Ws6bCPs6zgdez9Tv3prZvOF8v1hKG1CmvbIkcd5BjrUD1GdVJXgIVPTvqtNP0H3P0dik0grmqgNd6ZLS/UpqpXlW+/zSyhbC2lW6VW2a42JKmLyCIsefa7PghTQuxz8ULRcsCTomKH4CAOIHId8W9u5zyWuwJUbA9U/V2Nn44tYv4pW+E/YuN8ikO+tGwrFOAustHx3Dg==",
+  "assinaturaCatalogoCanonica": "TJz7VFQOgDdhCzKBerNliszxXaF+mirqbf6u/4wT2AQdf4NbeW2NxsGfqTitm0JDy4QR2FoYW3zXLbFxClSVI8pSbHyZZ9fg9Zl8xXU7jtbHRf4cR3KFLmuNWhZ/zLnizAgvyrPlqj6XQoDL9hL0RvkKdjvSV/VxcWSvqn4gLyEU4aXhsjLmFy2BfLaTNTk9ucjDmQudU1DSeO7aQ/NQLuUxzaO6utT6BLD0+s4Nss/IlSuwsyFAbvaShjbrpklagrmBmOT5jsZ9MQ5qLB0HzIM1LITYGGqI787bBITl5FCEspxkVl9+fU9Mnds71aEm655CuG1AVtqAFqbPwFFKbA==",
+  "repository": "FEFO Google Drive",
+  "firmware": {
+    "version": "1.101",
+    "board": "FEFO_CYD_ESP32",
+    "arquivo": "FEFO_Firmware_v1.101.bin",
+    "tamanho": 1771744,
+    "checksum": "595403c15c818a2f2593c64800f493a0c690ff8a2868d7c46dba2d74baf7082f",
+    "url": "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_Firmware_v1.101.bin",
+    "obrigatorio": false,
+    "assinatura": "rxKb2o0qipMs0e42CBR7ZF2yDH1uo/Bec838VHV4CTqLZvfw5pBO9YexGLIK1xx0SR5/vDcO/FSquJgH1mZbf5+heSHQtLO3yGdCj+viFP49jQ5K7c+/yeHFtvFl17iKmJcR7dR81pyuuFWbQ41Y6vIvldHYN3u8YwUKhnckqVAET6eQzbgV+fkI1TLcbArq0DWvlK32sUanSEwi9FwWZ3VO8Lx7SCQoQPFtoc853kXUGh4nYKC0OJFlJFEWeFbvOZVmTQ0EJfgbMUhpY46UKhGotUcm4Cf9KvhicCEbxK4PbgFUzNVZ1EIPXy4YZTmNqJIF2EVvLhc4KSX9yX+qqA==",
+    "notas": "Versão 1.101: Ronronar silencioso, somente vibração, e BLE seguro."
+  },
+  "app": {
+    "version": "1.119",
+    "build": 1119,
+    "arquivo": "FEFO_App_v1.119.apk",
+    "tamanho": 56052503,
+    "checksum": "b22fba022ad08ad7eb6755fa4795a66b7d9fff6b345f62fc7dbee96bf6efeb9e",
+    "assinatura": "S7cRH1egXuqIg7aZpCd3dp67lBYvfMcdJV+3QGEbSO+bOOSZg5tEcnQyHdsdI/7HaP4iFBmHRK2ULTkJGVfWBn7xGpFD5eyLpMe3YsRCABDlIKlKZUlASJGj2Q0YpWK6FVDCdj9lKZyJuFfJgGIkxGiUF2qhczvrQ2OdTnV//06/LJ6DzyPnPCZyEBnRg0IGaCT/t8jmrpNm9Ey271MmcVbWWtrFTWAKOpiB76fIGx3vy5suAtMqopkAhKZ9UwuYITJI9xEAqEZWCs5Akzfaf4xhK0sJCIruHkfmxu+UkarWuLFoCCu14CB2mOM38czMm1rgMKhtxoZFDjWret8Mtg==",
+    "url": "https://raw.githubusercontent.com/elCortelini/fefo-v1/main/releases/FEFO_App_v1.119.apk",
+    "notas": "Temporario para migracao de aparelhos com app v1.119."
+  },
+  "audio": [
+    {
+      "id": "au001",
+      "titulo": "AS CORES",
+      "menu": "Jukebox do Fefo",
+      "arquivo": "/usr/a/a0001.wav",
+      "tamanho": 3765156,
+      "checksum": "4fd6d660627bd031b498e3dcd1b9d4392c0806c145de4d27d1d3910dbb37c8e2",
+      "tipo": "audio",
+      "url": "https://drive.google.com/uc?export=download&id=14Oekv-mgHU5Wz-5NoYzzXLSUvA7dpNYd"
+    },
+    {
+      "id": "au002",
+      "titulo": "Brincar com o fefo 2",
+      "menu": "Jukebox do Fefo",
+      "arquivo": "/usr/a/a0002.wav",
+      "tamanho": 5666928,
+      "checksum": "297de09c62ce96e3bf8f59d7669bbc5156a7364c045e21d96bc8edacd9595806",
+      "tipo": "audio",
+      "url": "https://drive.google.com/uc?export=download&id=1QUv40jpY-IIphM-bgwde1vMjh_vD6uv_"
+    },
+    {
+      "id": "au003",
+      "titulo": "COMIDA SAUDAVEL",
+      "menu": "Jukebox do Fefo",
+      "arquivo": "/usr/a/a0003.wav",
+      "tamanho": 4043824,
+      "checksum": "c128bd4e98bf956dba3c77374b06829b1b745ba34651e439a6d24d9deaaca58a",
+      "tipo": "audio",
+      "url": "https://drive.google.com/uc?export=download&id=1P6NDNjqU3hpyp_1GGbEp1r3rbgW40eex"
+    },
+    {
+      "id": "au004",
+      "titulo": "CONHECENDO O CORPO",
+      "menu": "Jukebox do Fefo",
+      "arquivo": "/usr/a/a0004.wav",
+      "tamanho": 5102444,
+      "checksum": "32dc0a0547158dddb1b3cdb32dc0e3775a67138f7f2b427d5f6498b28a3e7f1f",
+      "tipo": "audio",
+      "url": "https://drive.google.com/uc?export=download&id=1Odu5N5jTsMGwhriolwfM2ekDAkI3Xjje"
+    },
+    {
+      "id": "au005",
+      "titulo": "HIGIENE",
+      "menu": "Jukebox do Fefo",
+      "arquivo": "/usr/a/a0005.wav",
+      "tamanho": 5048426,
+      "checksum": "07464c7c63fe0c3a1772a8d3cd4e027d96e6aad5c2cf662a024bff2af2867dd6",
+      "tipo": "audio",
+      "url": "https://drive.google.com/uc?export=download&id=1gqju5uwoVdkvPTlYTsocmKQZ-tIP5nVX"
+    },
+    {
+      "id": "au006",
+      "titulo": "HORA DE DORMIR",
+      "menu": "Jukebox do Fefo",
+      "arquivo": "/usr/a/a0006.wav",
+      "tamanho": 5343076,
+      "checksum": "ad694742d3f686900319b60782cc00f7c419b2ab825c30557d4401bcc0dc2990",
+      "tipo": "audio",
+      "url": "https://drive.google.com/uc?export=download&id=1BnFjFn3B5vBKY51pKCGJT2SblAJM8urv"
+    },
+    {
+      "id": "au007",
+      "titulo": "OS NUMEROS",
+      "menu": "Jukebox do Fefo",
+      "arquivo": "/usr/a/a0007.wav",
+      "tamanho": 4253740,
+      "checksum": "b0f3502981ca7f078be8fdf31383b97a728c53f81363f86a7968ee19b061be51",
+      "tipo": "audio",
+      "url": "https://drive.google.com/uc?export=download&id=15cFhpW8dlwcGUB59V6j7z0DVd5NhcnNh"
+    },
+    {
+      "id": "au009",
+      "titulo": "Respeitando os colegas 2",
+      "menu": "Jukebox do Fefo",
+      "arquivo": "/usr/a/a0009.wav",
+      "tamanho": 4811018,
+      "checksum": "86391cc30895f99867f0b1cabdc4d52fc9e1889987849446f7c2487fc846d3a1",
+      "tipo": "audio",
+      "url": "https://drive.google.com/uc?export=download&id=1bXLbwQMZ06HyDx-ztELgksv2p5-z1Kxc"
+    },
+    {
+      "id": "au010",
+      "titulo": "RESPIRAR",
+      "menu": "Jukebox do Fefo",
+      "arquivo": "/usr/a/a0010.wav",
+      "tamanho": 3961178,
+      "checksum": "b9249d5bec9f707a07463fd4ef19116a429a14b88b5d34b72d1235a5476558db",
+      "tipo": "audio",
+      "url": "https://drive.google.com/uc?export=download&id=1XFZc89KUroUSW9ojjvHp9ox4VtBgqy6S"
+    },
+    {
+      "id": "au011",
+      "titulo": "SONS DOS ANIMAIS",
+      "menu": "Jukebox do Fefo",
+      "arquivo": "/usr/a/a0011.wav",
+      "tamanho": 4904722,
+      "checksum": "5216a7828c1bf3b3eff50a9a89f1a73077a4a41d00426272d42f829e577a828c",
+      "tipo": "audio",
+      "url": "https://drive.google.com/uc?export=download&id=1dPjQAJT3nlWkCuXOU5YIVuf4Bnp50Dvn"
+    },
+    {
+      "id": "au012",
+      "titulo": "contando numeros",
+      "menu": "Jukebox do Fefo 2",
+      "arquivo": "/usr/a/a0012.wav",
+      "tamanho": 8068624,
+      "checksum": "4c0b6f67d9411975bdd232a30b6be36895d3c7cd90311e88a4d833d967823d59",
+      "tipo": "audio",
+      "url": "https://drive.google.com/uc?export=download&id=1Lqfs_38TDiXFmwysmLM-WRnhg4ZBMKVY"
+    },
+    {
+      "id": "au013",
+      "titulo": "cuide dos animais",
+      "menu": "Jukebox do Fefo 2",
+      "arquivo": "/usr/a/a0013.wav",
+      "tamanho": 6478568,
+      "checksum": "f8109b4c50082e8ea54f0a106ebd039a90409bbe352a1733cdddb1fcf98518b4",
+      "tipo": "audio",
+      "url": "https://drive.google.com/uc?export=download&id=18U8HX9k8e6azhjlvtt_u2BCQT5YnzUmm"
+    },
+    {
+      "id": "au014",
+      "titulo": "Dicas de segurança.mp3",
+      "menu": "Jukebox do Fefo 2",
+      "arquivo": "/usr/a/a0014.wav",
+      "tamanho": 6158696,
+      "checksum": "0a79f77e415c9821afb104cb3b11d1caf361284172077b85810a2fa1db22e179",
+      "tipo": "audio",
+      "url": "https://drive.google.com/uc?export=download&id=1S3frzsKkOQZeutQdwwP11pjcFzDVl-2Z"
+    },
+    {
+      "id": "au015",
+      "titulo": "frutas saudaveis",
+      "menu": "Jukebox do Fefo 2",
+      "arquivo": "/usr/a/a0015.wav",
+      "tamanho": 7875616,
+      "checksum": "6a8492bac9b28715d6c421465eb3238a13c1a63ad8faccfc963b8962fe5daefe",
+      "tipo": "audio",
+      "url": "https://drive.google.com/uc?export=download&id=12x5RYVLpV-x9ihWVMgKcVO3on960d-tV"
+    },
+    {
+      "id": "au017",
+      "titulo": "Cabra",
+      "menu": "Conhecendo os animais",
+      "arquivo": "/usr/a/a0016.wav",
+      "tamanho": 758134,
+      "checksum": "38ce1bdbebd0fccf102ba34c4bf4a04a06b5d2845c8927a987cf770aecc8d083",
+      "tipo": "audio",
+      "url": "https://raw.githubusercontent.com/elCortelini/fefo-v1/main/repository/audio/a0016.wav"
+    },
+    {
+      "id": "au018",
+      "titulo": "Cachorro",
+      "menu": "Conhecendo os animais",
+      "arquivo": "/usr/a/a0017.wav",
+      "tamanho": 757982,
+      "checksum": "24b55ea4c17c82fe4012e783cf61090a7f84b46742dbfba21cc74274c44cd096",
+      "tipo": "audio",
+      "url": "https://raw.githubusercontent.com/elCortelini/fefo-v1/main/repository/audio/a0017.wav"
+    },
+    {
+      "id": "au019",
+      "titulo": "Capivara",
+      "menu": "Conhecendo os animais",
+      "arquivo": "/usr/a/a0018.wav",
+      "tamanho": 718546,
+      "checksum": "c451a92a0813576bacd201a84ebca48dd4b6b2207ae32ffa0d624531301f378a",
+      "tipo": "audio",
+      "url": "https://raw.githubusercontent.com/elCortelini/fefo-v1/main/repository/audio/a0018.wav"
+    },
+    {
+      "id": "au020",
+      "titulo": "Cavalo",
+      "menu": "Conhecendo os animais",
+      "arquivo": "/usr/a/a0019.wav",
+      "tamanho": 728988,
+      "checksum": "f8e91ce05ff9563cc9ff25d182a7cb6e770d07ff9364c9e16d9bfca9a1578ce8",
+      "tipo": "audio",
+      "url": "https://raw.githubusercontent.com/elCortelini/fefo-v1/main/repository/audio/a0019.wav"
+    },
+    {
+      "id": "au021",
+      "titulo": "Coelho",
+      "menu": "Conhecendo os animais",
+      "arquivo": "/usr/a/a0020.wav",
+      "tamanho": 719122,
+      "checksum": "daf879b7ac5bf97819a461888bb40aa75dbed02c92f2fef20bef4f366167fc58",
+      "tipo": "audio",
+      "url": "https://raw.githubusercontent.com/elCortelini/fefo-v1/main/repository/audio/a0020.wav"
+    },
+    {
+      "id": "au022",
+      "titulo": "Coruja",
+      "menu": "Conhecendo os animais",
+      "arquivo": "/usr/a/a0021.wav",
+      "tamanho": 787278,
+      "checksum": "6efda6c6e9141bbb898ff12dddefa35c811951e3136fae451ac8570c5b2bc9f8",
+      "tipo": "audio",
+      "url": "https://raw.githubusercontent.com/elCortelini/fefo-v1/main/repository/audio/a0021.wav"
+    },
+    {
+      "id": "au023",
+      "titulo": "Galinha",
+      "menu": "Conhecendo os animais",
+      "arquivo": "/usr/a/a0022.wav",
+      "tamanho": 1049424,
+      "checksum": "5800548a931f0f7e41b5dd2137ead0398bcc5ed57f63ef0f8d70d8f9743998f9",
+      "tipo": "audio",
+      "url": "https://raw.githubusercontent.com/elCortelini/fefo-v1/main/repository/audio/a0022.wav"
+    },
+    {
+      "id": "au024",
+      "titulo": "Gato",
+      "menu": "Conhecendo os animais",
+      "arquivo": "/usr/a/a0023.wav",
+      "tamanho": 952276,
+      "checksum": "236ea1ff5097c5aea5e0b59bb31c53cbd68ad926eca332be34a1c1fd40815da1",
+      "tipo": "audio",
+      "url": "https://raw.githubusercontent.com/elCortelini/fefo-v1/main/repository/audio/a0023.wav"
+    },
+    {
+      "id": "au025",
+      "titulo": "Girafa",
+      "menu": "Conhecendo os animais",
+      "arquivo": "/usr/a/a0024.wav",
+      "tamanho": 1020432,
+      "checksum": "b726344cad54ba460bb792632b171d8613b27ac0a56e5f4fa8c65d3902476936",
+      "tipo": "audio",
+      "url": "https://raw.githubusercontent.com/elCortelini/fefo-v1/main/repository/audio/a0024.wav"
+    },
+    {
+      "id": "au026",
+      "titulo": "Jacaré",
+      "menu": "Conhecendo os animais",
+      "arquivo": "/usr/a/a0025.wav",
+      "tamanho": 884424,
+      "checksum": "234671409c9dc29133455ea3cb9a87516fb9bb5887d6d650e1ee8593759f23cb",
+      "tipo": "audio",
+      "url": "https://raw.githubusercontent.com/elCortelini/fefo-v1/main/repository/audio/a0025.wav"
+    },
+    {
+      "id": "au027",
+      "titulo": "Leão",
+      "menu": "Conhecendo os animais",
+      "arquivo": "/usr/a/a0026.wav",
+      "tamanho": 991288,
+      "checksum": "cc33de8f4205730a85752ab3b6033c5357a872d4b3ef0e5ef40f5cffbbde9235",
+      "tipo": "audio",
+      "url": "https://raw.githubusercontent.com/elCortelini/fefo-v1/main/repository/audio/a0026.wav"
+    },
+    {
+      "id": "au028",
+      "titulo": "Lobo",
+      "menu": "Conhecendo os animais",
+      "arquivo": "/usr/a/a0027.wav",
+      "tamanho": 884424,
+      "checksum": "866284f053724795dafa6d9ede610a2185e2e7f7aa5c002cb56176958575ed57",
+      "tipo": "audio",
+      "url": "https://raw.githubusercontent.com/elCortelini/fefo-v1/main/repository/audio/a0027.wav"
+    },
+    {
+      "id": "au029",
+      "titulo": "Macaco",
+      "menu": "Conhecendo os animais",
+      "arquivo": "/usr/a/a0028.wav",
+      "tamanho": 884424,
+      "checksum": "9a76027ee2d7273fa714707192b0a24abbe522739d1afe01724707624345b33a",
+      "tipo": "audio",
+      "url": "https://raw.githubusercontent.com/elCortelini/fefo-v1/main/repository/audio/a0028.wav"
+    },
+    {
+      "id": "au030",
+      "titulo": "Onça",
+      "menu": "Conhecendo os animais",
+      "arquivo": "/usr/a/a0029.wav",
+      "tamanho": 826136,
+      "checksum": "979945f816003ff5a22bb690a3cbcd59a1b06d94203f800ab2883100c8d5ebc8",
+      "tipo": "audio",
+      "url": "https://raw.githubusercontent.com/elCortelini/fefo-v1/main/repository/audio/a0029.wav"
+    },
+    {
+      "id": "au031",
+      "titulo": "Ovelha",
+      "menu": "Conhecendo os animais",
+      "arquivo": "/usr/a/a0030.wav",
+      "tamanho": 806706,
+      "checksum": "58f1239938d281a04086a453a05e4decc355fa2f40aaf4413d7b54dc227c39b7",
+      "tipo": "audio",
+      "url": "https://raw.githubusercontent.com/elCortelini/fefo-v1/main/repository/audio/a0030.wav"
+    },
+    {
+      "id": "au032",
+      "titulo": "Porco",
+      "menu": "Conhecendo os animais",
+      "arquivo": "/usr/a/a0031.wav",
+      "tamanho": 612412,
+      "checksum": "06169d8171f2deb65c28c942163ec9dd6cc0ca6fc7425eff232ee1355ef5f2a2",
+      "tipo": "audio",
+      "url": "https://raw.githubusercontent.com/elCortelini/fefo-v1/main/repository/audio/a0031.wav"
+    },
+    {
+      "id": "au033",
+      "titulo": "Rato",
+      "menu": "Conhecendo os animais",
+      "arquivo": "/usr/a/a0032.wav",
+      "tamanho": 495684,
+      "checksum": "9cefbb130bb5868eb4b8e61d3262d262457ad79b9b1724b255a1fa76df6d9ab0",
+      "tipo": "audio",
+      "url": "https://raw.githubusercontent.com/elCortelini/fefo-v1/main/repository/audio/a0032.wav"
+    },
+    {
+      "id": "au034",
+      "titulo": "Tamanduá",
+      "menu": "Conhecendo os animais",
+      "arquivo": "/usr/a/a0033.wav",
+      "tamanho": 787278,
+      "checksum": "f4330d6e23521adfd2348fe170c671688731a4d03c9348193b742ad8bb284e18",
+      "tipo": "audio",
+      "url": "https://raw.githubusercontent.com/elCortelini/fefo-v1/main/repository/audio/a0033.wav"
+    },
+    {
+      "id": "au035",
+      "titulo": "Urso",
+      "menu": "Conhecendo os animais",
+      "arquivo": "/usr/a/a0034.wav",
+      "tamanho": 1146724,
+      "checksum": "97effde7ca7c29f600d7ae1d05b521acf36bbf236e885db3f9b722a38d776272",
+      "tipo": "audio",
+      "url": "https://raw.githubusercontent.com/elCortelini/fefo-v1/main/repository/audio/a0034.wav"
+    },
+    {
+      "id": "au036",
+      "titulo": "Vaca",
+      "menu": "Conhecendo os animais",
+      "arquivo": "/usr/a/a0035.wav",
+      "tamanho": 699692,
+      "checksum": "c6e288c417521e83615ce1fabee098594800613630616b54017d0dd6dcd70ba7",
+      "tipo": "audio",
+      "url": "https://raw.githubusercontent.com/elCortelini/fefo-v1/main/repository/audio/a0035.wav"
+    }
+  ],
+  "faces": [
+    {
+      "id": "fa001",
+      "arquivo": "/usr/f/f0001.raw",
+      "tamanho": 307200,
+      "checksum": "9f72256fd03d34243aa1212822ca7687e9180e8cf9b4a3000f932d75cebdb01b",
+      "tipo": "face",
+      "titulo": "Face 1",
+      "url": "https://drive.google.com/uc?export=download&id=15OBWND9XWpPrnLlN59ksyk3tIzWvxAL_"
+    },
+    {
+      "id": "fa002",
+      "arquivo": "/usr/f/f0002.raw",
+      "tamanho": 307200,
+      "checksum": "997f4e5669a66bde2a809ba3cb0ab378df881aa8b0446573aa71c6c9e6b79c98",
+      "tipo": "face",
+      "titulo": "Face 2",
+      "url": "https://drive.google.com/uc?export=download&id=19-mHEwMsxT9yyVQXmTFIYEPbRi-qmug0"
+    },
+    {
+      "id": "fa003",
+      "arquivo": "/usr/f/f0003.raw",
+      "tamanho": 307200,
+      "checksum": "43149c28e4b52669e30ed87dd460a3e0a9273a83c4e682652171f5eada166597",
+      "tipo": "face",
+      "titulo": "Face 3",
+      "url": "https://drive.google.com/uc?export=download&id=1SMzfNlFk8yZht6NpfhErpvV6H31mNnss"
+    },
+    {
+      "id": "fa004",
+      "arquivo": "/usr/f/f0004.raw",
+      "tamanho": 307200,
+      "checksum": "b3a19d89b8bb6dc803cfdeeabc5292d20b71721cfa1d816ed08cf7ff218f5173",
+      "tipo": "face",
+      "titulo": "Face 4",
+      "url": "https://drive.google.com/uc?export=download&id=16Plf_pD4iKzsgUb1VxtHLIfkh6RRKr0O"
+    },
+    {
+      "id": "fa005",
+      "arquivo": "/usr/f/f0005.raw",
+      "tamanho": 307200,
+      "checksum": "02b68d22f79ee8ef8f764e604fb5bb4c277c26f177191a8d8ab1a8963b2e1165",
+      "tipo": "face",
+      "titulo": "Face 5",
+      "url": "https://drive.google.com/uc?export=download&id=1XjZ8Osu-BCIcwRvBibtBoGxITZW2niq2"
+    },
+    {
+      "id": "fa006",
+      "arquivo": "/usr/f/f0006.raw",
+      "tamanho": 307200,
+      "checksum": "892b2aef23541b782b1cf9fafba9d3dec6291504ad7b3b92d678728b5a0cb602",
+      "tipo": "face",
+      "titulo": "Face 6",
+      "url": "https://drive.google.com/uc?export=download&id=17a-gvsWBDEomrp6iqGFBlu4rrg6ov1C2"
+    }
+  ],
+  "catalogChannel": "legacy-app-1.119",
+  "catalogNotice": "Temporario: use apenas para atualizar o Fefo com app v1.119. Primeiro instale o firmware v1.101; depois retorne ao catalogo oficial."
+}
