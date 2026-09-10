@@ -763,7 +763,8 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
             Builder(builder: (context) {
               final app = _onlineApp!;
               const installedVersion = fefoAppBuildNumber;
-              final hasUpdate = app.build > installedVersion;
+              final hasUpdate = app.build > installedVersion ||
+                  _compareVersions(app.version, fefoAppVersionName) > 0;
               if (!hasUpdate) {
                 return Card(
                   margin: const EdgeInsets.fromLTRB(16, 10, 16, 4),
