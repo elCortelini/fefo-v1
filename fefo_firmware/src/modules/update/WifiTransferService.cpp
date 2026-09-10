@@ -343,12 +343,13 @@ void WifiTransferService::handleFirmwareUpload(WiFiClient& client,
 
 bool WifiTransferService::validPath(const char* path) const {
   if (!path || strstr(path, "..") || strlen(path) >= 64) return false;
-  return strncmp(path, "/usr/a/", 7) == 0 || strncmp(path, "/usr/f/", 7) == 0 || strcmp(path, "/fefo.json") == 0;
+  return strncmp(path, "/usr/a/", 7) == 0 || strncmp(path, "/usr/f/", 7) == 0 || strncmp(path, "/sys/a/", 7) == 0 || strcmp(path, "/fefo.json") == 0;
 }
 
 bool WifiTransferService::ensureParent(const char* path) {
   if (strncmp(path, "/usr/a/", 7) == 0) return (SD.exists("/usr") || SD.mkdir("/usr")) && (SD.exists("/usr/a") || SD.mkdir("/usr/a"));
   if (strncmp(path, "/usr/f/", 7) == 0) return (SD.exists("/usr") || SD.mkdir("/usr")) && (SD.exists("/usr/f") || SD.mkdir("/usr/f"));
+  if (strncmp(path, "/sys/a/", 7) == 0) return (SD.exists("/sys") || SD.mkdir("/sys")) && (SD.exists("/sys/a") || SD.mkdir("/sys/a"));
   return true;
 }
 
