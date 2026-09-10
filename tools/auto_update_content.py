@@ -254,7 +254,8 @@ def update_catalog_files(new_audios: list, new_faces: list, new_videos: list = N
             "menu": a["menu"],
             "arquivo": a["arquivo"],
             "tamanho": a["tamanho"],
-            "checksum": a["checksum"]
+            "checksum": a["checksum"],
+            "disponibilidade": a.get("disponibilidade", "usuario")
         })
 
     for f in new_faces:
@@ -303,6 +304,7 @@ def update_catalog_files(new_audios: list, new_faces: list, new_videos: list = N
             "arquivo": a["arquivo"],
             "tamanho": a["tamanho"],
             "checksum": a["checksum"],
+            "disponibilidade": a.get("disponibilidade", "usuario"),
             "tipo": "audio",
             "url": f"{repo_base_url}/audio/{Path(a['arquivo']).name}"
         })
@@ -448,7 +450,8 @@ def main():
             "menu": menu,
             "arquivo": f"/usr/a/{file_name}",
             "tamanho": size,
-            "checksum": conv_checksum
+            "checksum": conv_checksum,
+            "disponibilidade": meta.get('disponibilidade', 'usuario').strip().lower() or 'usuario'
         }
         new_audios.append(item)
         processed_hashes[src_hash] = {"type": "audio", "name": src.name, "id": au_id, "out": file_name}

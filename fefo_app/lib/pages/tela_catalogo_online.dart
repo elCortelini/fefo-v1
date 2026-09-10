@@ -259,7 +259,13 @@ class _TelaCatalogoOnlineState extends State<TelaCatalogoOnline> {
       final rawItems = <dynamic>[
         ...?decoded['audio'] as List?,
         ...?decoded['faces'] as List?,
-      ];
+      ].where((item) {
+        if (item is! Map) return true;
+        return (item['disponibilidade'] ?? item['visibilidade'] ?? 'usuario')
+                .toString()
+                .toLowerCase() !=
+            'sistema';
+      }).toList();
       final items = rawItems.whereType<Map>().map(_OnlineItem.fromJson).toList()
         ..sort((a, b) {
           final menuCompare = a.menu.compareTo(b.menu);
