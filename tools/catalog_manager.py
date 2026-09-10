@@ -8,7 +8,7 @@ INBOX=ROOT/'FEFO_novos_conteudos'; CATALOG=ROOT/'repository/catalog.json'
 
 def write_csv(items):
     INBOX.mkdir(exist_ok=True)
-    for folder in ('audio','faces','video'): (INBOX/folder).mkdir(exist_ok=True)
+    for folder in ('audio','faces','video','system'): (INBOX/folder).mkdir(exist_ok=True)
     fields=['arquivo_origem','titulo','menu_principal','submenu','tipo','disponibilidade','extensao','publicar','observacoes']
     with (INBOX/'Catalogo_Online_Planilha.csv').open('w',encoding='utf-8-sig',newline='') as f:
         w=csv.DictWriter(f,fieldnames=fields,delimiter=';'); w.writeheader()
@@ -39,8 +39,13 @@ def process(metadata, files):
     write_csv(items)
     for name,data in files:
         meta=next((x for x in items if x.get('arquivo_origem')==name),{})
-        kind=meta.get('tipo','audio'); folder={'face':'faces','video':'video'}.get(kind,'audio')
-        (INBOX/folder/name).write_bytes(data)
+        kind=meta.get('tipo','audio')
+        if kind=='system_audio':
+            (INBOX/'system'/name).write_bytes(data)
+            (INBOX/'audio'/name).write_bytes(data)
+        else:
+            folder={'face':'faces','video':'video'}.get(kind,'audio')
+            (INBOX/folder/name).write_bytes(data)
     env=os.environ.copy(); env['FEFO_NO_PUSH']='1'
     result=subprocess.run([sys.executable,str(ROOT/'tools/auto_update_content.py')],cwd=ROOT,env=env,capture_output=True,text=True)
     if result.returncode: raise RuntimeError(result.stderr or result.stdout[-2000:])

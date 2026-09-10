@@ -4,7 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Administrador do catálogo · Fefo</title>
-  <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="uploads.css">
 </head>
 <body>
   <main class="shell">
@@ -28,7 +29,9 @@
         <strong>Arraste arquivos aqui</strong><span>ou toque para escolher vários de uma vez</span>
       </label>
       <p class="hint">O nome é usado como ponto de partida. Exemplo: <code>Conhecendo os animais - Gato - Você sabia.wav</code>.</p>
+      <div class="upload-grid"><label class="upload-type audio-upload"><input type="file" multiple data-kind="audio" accept=".wav,.mp3,.flac,.ogg,.m4a"><b>＋ Áudios</b><span>Adicionar sons do catálogo</span></label><label class="upload-type face-upload"><input type="file" multiple data-kind="face" accept=".png,.jpg,.jpeg,.bmp,.raw,.bin"><b>＋ Rostinhos</b><span>Adicionar faces do Fefo</span></label><label class="upload-type video-upload"><input type="file" multiple data-kind="video" accept=".mp4,.mkv,.avi,.mov,.webm"><b>＋ Vídeos</b><span>Adicionar vídeos</span></label><label class="upload-type system-upload"><input type="file" multiple data-kind="system_audio" accept=".wav,.mp3,.flac,.ogg,.m4a"><b>＋ Sons do sistema</b><span>Uso interno do Fefo</span></label></div>
     </section>
+    <section class="card launcher-card"><p class="eyebrow">GERENCIADOR LOCAL</p><h2>Processar e publicar</h2><p>Para converter arquivos e publicar com segurança, use o gerenciador local no computador.</p><a class="btn primary" href="../Executar_Administrador_Catalogo.cmd" download>Baixar atalho do gerenciador</a><p class="hint">Depois de baixar, abra o arquivo e use os botões Processar catálogo e Publicar catálogo.</p></section>
 
     <section class="card">
       <div class="card-title"><div><p class="eyebrow">REVISÃO</p><h2>Informações do catálogo</h2></div><button class="text-btn" id="clear" type="button">Limpar novos</button></div>
