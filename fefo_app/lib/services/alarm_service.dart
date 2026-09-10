@@ -176,7 +176,9 @@ class AlarmService {
           _bluetoothManager!.isConnected &&
           payload != null &&
           payload.startsWith('P:')) {
-        await _bluetoothManager!.enviarComando(payload);
+        final fallback = payload.substring(2);
+        final audio = await _somDoSistema('alarme_disparo', fallback);
+        await _bluetoothManager!.enviarComando('PLAY $audio');
       }
       // Quando o App está em segundo plano ou sem Bluetooth, o próprio canal
       // da notificação Android reproduz o som do alarme. Não inicializamos um
