@@ -2,7 +2,7 @@
   "schema": 1,
   "catalogVersion": 73,
   "assinaturaCatalogo": "On+pHxs2DGNftLLJTFw6DI1rhYPoacKj8Wbkd4qNoX0YRqdH79yb4YvwDheBaD1PktxInkuBUf1xepDxksppR9zWOITxLVa11CLRav3oqb3h9YN3OVeUXzYyfdUDJ293n6QhA1qn7DkP0Ws6bCPs6zgdez9Tv3prZvOF8v1hKG1CmvbIkcd5BjrUD1GdVJXgIVPTvqtNP0H3P0dik0grmqgNd6ZLS/UpqpXlW+/zSyhbC2lW6VW2a42JKmLyCIsefa7PghTQuxz8ULRcsCTomKH4CAOIHId8W9u5zyWuwJUbA9U/V2Nn44tYv4pW+E/YuN8ikO+tGwrFOAustHx3Dg==",
-  "assinaturaCatalogoCanonica": "oHMUD2QbeJuSCd2RAcSkEUAJdoawuPdwRoEBE9fDJXTMgKnf8cbzkKAxzxUymyMBdm1PEk7O/M0yDJOG0XmMXRu/uVUU3jFVyk2pCHNokG2b1AqFEFCJ/5Ur/XwMIe8MURgWvKfPzHx1Crt5nm97Ychwf/mYQf/YeL7UYHUIi9voEZHGSg6XhCpbOaLDH6BWJFyt737QQ4ZoHMGJGdSV0JSUVGKHJT6umxl+gbqJAcE91PMJZiRJ193r0mTf1upMXU2+f9NwkRK+tb3HLTz5N/GBSti1DC6AYQGVVbURzXy0K0fYND8ybBm1sEjzInUHYQGChZ0+Kr1ZHs6tkmmx/A==",
+  "assinaturaCatalogoCanonica": "MtNVoFOiUGUTgWYK4pglTkFJr1eC/sGVbWhDeObCkzbD9gcKLJsLRJucA5olyQx9BOjqvwCaHrAB/xhgdw1f4VSoyEbNQvdyBQkmTibHRvBgi1mf9PaJXQlATTIIHRqOZABTR402sHoepZE7PDEtem0uPyoRatcgq3mwXsIgJZK8RIlJlGIMwDIYEs8teCxG2zent54P5xXBPKqtSEn6QtHaJzuhctfm/0j/IJn7pVuvhMtzqmV/eUVsf60k46sdn3EeRbABIwt3lxWlGMofYc2ziU5QEUzRy6vFSrOzTbGfmdR6BZfRUBZpXA28J9wVQfL4gDkgCRCatiZgmpCJZg==",
   "repository": "FEFO Google Drive",
   "firmware": {
     "version": "1.101",
@@ -20,8 +20,8 @@
     "build": 1126,
     "arquivo": "FEFO_App_v1.126.apk",
     "tamanho": 56199547,
-    "checksum": "16b566964c6d766c1cb2b6118ae24b6574f3a15837496c6e47d608578ebd9d15",
-    "assinatura": "EMu5Lwncmz3gt/QamQzCFPzO4HxPtyT2eT6cfLmaa/ObYte/IUAx5z2Q+c+n3NqzkThP9P3HzekgTOdNnSvlWaB15Zqmynd8C+VGdRdlGOATZ63QHhnRJUvG/lvD8QiUq2z3Hjb5YzGClYatoLqCUIMGbtecFfsGDiSo52OFrijDC/DSdKGnNI6dPN8KkvvI6AZu1hEMSKagiaBCAPrTNs6cS+ny+UzHwxUS3yQmHyI9184RB7ogtAdi0f/3hpc23JxUgNPUH3Mzp1eTNWVD6VhNe/iziUpsIIAQLq95OVr9cZzJhVz2oSEux9STBqQ3+UeJbl2gsRSeHuGIjCDMiw==",
+    "checksum": "eb71929849122294b0df79b3e8a9db658389fea3dd29181a5fa30aed30f8195e",
+    "assinatura": "qSkfd3Fx64aWT7elvnDhr7DX4eAH8qmTAhnm4FQlbVxDc/PrHX/WB90aetlWJdG/AffsvY1beCvgvpIXUcTGB2+08sY35aS6hPxsnZ7Z/pzkHX5jbSJHbEZSYm5QZ9sEU8QAXuygcjQjsVG5h4kyORVgSkmgMtYO14Z1Skd5TdJHiH5AfNdXqsOr+H7dYu/XqvoreBXS7Xj+QGo2fhoXTD988Npgs4NnNH2ggkiTlhddAolQ9ZyUH02DVtESs1lgHJvL171zB2krHUOxFCQWnsEjvcD7fkqck74CF65o9a7Zl79jW18aMLfLc0wazQbi7YITHwZWclt0G+jbDfeQsg==",
     "url": "https://github.com/elCortelini/fefo-v1/raw/main/releases/FEFO_App_v1.126.apk",
     "notas": "Tipografia leve, marca Fefo padronizada e tema Lavanda clara restaurado."
   },
