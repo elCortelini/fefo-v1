@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Administrador do catálogo · Fefo</title>
+  <link rel="stylesheet" href="catalog-admin/admin.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <a class="back" href="index.html">← Site do Fefo</a>
+      <p class="eyebrow">FEFO PET · ORGANIZAÇÃO</p>
+      <h1>Administrador do catálogo</h1>
+      <p class="lead">Adicione arquivos, confira os dados sugeridos e prepare uma publicação sem editar JSON na mão.</p>
+    </header>
+    <section class="steps"><div><b>1</b><span>Adicionar arquivos</span></div><div><b>2</b><span>Revisar informações</span></div><div><b>3</b><span>Salvar e publicar</span></div></section>
+    <section class="card import-card"><div class="card-title"><div><p class="eyebrow">ENTRADA</p><h2>Novos conteúdos</h2></div><span id="count" class="pill">0 itens</span></div><label class="drop" id="drop"><input id="files" type="file" multiple accept=".wav,.mp3,.flac,.ogg,.m4a,.png,.jpg,.jpeg,.bmp,.raw,.bin,.mp4,.mkv,.avi,.mov,.webm"><strong>Arraste arquivos aqui</strong><span>ou toque para escolher vários de uma vez</span></label><p class="hint">O nome é usado como ponto de partida. Exemplo: <code>Conhecendo os animais - Gato - Você sabia.wav</code>.</p></section>
+    <section class="card"><div class="card-title"><div><p class="eyebrow">REVISÃO</p><h2>Informações do catálogo</h2></div><button class="text-btn" id="clear" type="button">Limpar novos</button></div><div id="empty" class="empty">Nenhum arquivo novo. O catálogo publicado continua preservado.</div><div id="list" class="items"></div></section>
+    <section class="card publish-card"><p class="eyebrow">SAÍDA</p><h2>Preparar publicação</h2><p>Salve a planilha e o cadastro editável. Depois, o processador do projeto converte os arquivos, atualiza o catálogo, assina os dados e pode publicar no GitHub.</p><div class="actions"><button class="btn primary" id="save-folder" type="button">Salvar arquivos no projeto</button><button class="btn secondary" id="export" type="button">Baixar cadastro</button></div><div id="status" class="status" role="status">Pronto para começar.</div><details><summary>Como publicar depois de revisar</summary><p>Coloque os arquivos na pasta <code>FEFO_novos_conteudos/audio</code>, <code>faces</code> ou <code>video</code>. Deixe a planilha ao lado deste painel e execute o atualizador de conteúdo do projeto.</p></details></section>
+  </main>
+  <script src="catalog-admin/admin.js"></script>
+</body>
+</html>
