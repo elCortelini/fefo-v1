@@ -1,7 +1,6 @@
 // lib/services/alarm_service.dart
 
 import 'dart:async';
-import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -9,7 +8,6 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/services.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/alarm_model.dart';
 import '../managers/bluetooth_manager.dart';
@@ -94,10 +92,10 @@ class AlarmService {
       final audio = await _alarmChannel.invokeMethod<String>('getPendingAlarm');
       if (audio == null || audio.isEmpty) return;
       if (_bluetoothManager?.isConnected == true) {
-        await _bluetoothManager!.enviarComando('PLAY ${await _somDoSistema('alarme_disparo', audio)}');
+        await _bluetoothManager!.enviarComando('PLAY $audio');
       } else if (_bluetoothManager != null &&
           await _bluetoothManager!.conectarAutomaticamenteAoFefo()) {
-        await _bluetoothManager!.enviarComando('PLAY ${await _somDoSistema('alarme_disparo', audio)}');
+        await _bluetoothManager!.enviarComando('PLAY $audio');
       }
       await _reagendarAlarmesSalvos();
     } catch (e) {
@@ -105,23 +103,6 @@ class AlarmService {
     }
   }
 
-  Future<String> _somDoSistema(String evento, String fallback) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getString('fefo_online_catalog_cache');
-      if (raw == null) return fallback;
-      final data = jsonDecode(raw);
-      final sounds = data is Map ? data['audio'] : null;
-      if (sounds is List) {
-        for (final item in sounds.whereType<Map>()) {
-          if ((item['disponibilidade'] ?? '').toString().toLowerCase() == 'sistema' && item['evento'] == evento) {
-            return (item['arquivo'] ?? fallback).toString();
-          }
-        }
-      }
-    } catch (_) {}
-    return fallback;
-  }
 
   Future<void> _reagendarAlarmesSalvos() async {
     try {
@@ -176,9 +157,7 @@ class AlarmService {
           _bluetoothManager!.isConnected &&
           payload != null &&
           payload.startsWith('P:')) {
-        final fallback = payload.substring(2);
-        final audio = await _somDoSistema('alarme_disparo', fallback);
-        await _bluetoothManager!.enviarComando('PLAY $audio');
+        await _bluetoothManager!.enviarComando(payload);
       }
       // Quando o App está em segundo plano ou sem Bluetooth, o próprio canal
       // da notificação Android reproduz o som do alarme. Não inicializamos um
