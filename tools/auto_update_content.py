@@ -118,7 +118,7 @@ def append_to_metadata_csv(new_entries: list):
 
     csv_path = CSV_FILE
     file_exists = csv_path.exists()
-    fieldnames = ['arquivo_origem', 'titulo', 'menu_principal', 'submenu', 'tipo', 'extensao', 'publicar', 'observacoes']
+    fieldnames = ['arquivo_origem', 'titulo', 'menu_principal', 'submenu', 'tipo', 'disponibilidade', 'evento', 'extensao', 'publicar', 'observacoes']
 
     with open(csv_path, 'a', encoding='utf-8-sig', newline='') as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames, delimiter=';')
@@ -132,6 +132,8 @@ def append_to_metadata_csv(new_entries: list):
                 'menu_principal': entry.get('menu_principal', ''),
                 'submenu': entry.get('submenu', ''),
                 'tipo': entry.get('tipo', 'audio'),
+                'disponibilidade': entry.get('disponibilidade', 'usuario'),
+                'evento': entry.get('evento', ''),
                 'extensao': entry.get('extensao', ''),
                 'publicar': entry.get('publicar', 'Sim'),
                 'observacoes': entry.get('observacoes', 'Cadastrado automaticamente')
@@ -255,7 +257,8 @@ def update_catalog_files(new_audios: list, new_faces: list, new_videos: list = N
             "arquivo": a["arquivo"],
             "tamanho": a["tamanho"],
             "checksum": a["checksum"],
-            "disponibilidade": a.get("disponibilidade", "usuario")
+            "disponibilidade": a.get("disponibilidade", "usuario"),
+            "evento": a.get("evento", "")
         })
 
     for f in new_faces:
@@ -305,6 +308,7 @@ def update_catalog_files(new_audios: list, new_faces: list, new_videos: list = N
             "tamanho": a["tamanho"],
             "checksum": a["checksum"],
             "disponibilidade": a.get("disponibilidade", "usuario"),
+            "evento": a.get("evento", ""),
             "tipo": "audio",
             "url": f"{repo_base_url}/audio/{Path(a['arquivo']).name}"
         })
@@ -454,7 +458,8 @@ def main():
             "arquivo": f"/usr/a/{file_name}",
             "tamanho": size,
             "checksum": conv_checksum,
-            "disponibilidade": meta.get('disponibilidade', 'usuario').strip().lower() or 'usuario'
+            "disponibilidade": meta.get('disponibilidade', 'usuario').strip().lower() or 'usuario',
+            "evento": meta.get('evento', '').strip()
         }
         new_audios.append(item)
         processed_hashes[src_hash] = {"type": "audio", "name": src.name, "id": au_id, "out": file_name}

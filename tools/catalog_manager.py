@@ -9,7 +9,7 @@ INBOX=ROOT/'FEFO_novos_conteudos'; CATALOG=ROOT/'repository/catalog.json'
 def write_csv(items):
     INBOX.mkdir(exist_ok=True)
     for folder in ('audio','faces','video','system'): (INBOX/folder).mkdir(exist_ok=True)
-    fields=['arquivo_origem','titulo','menu_principal','submenu','tipo','disponibilidade','extensao','publicar','observacoes']
+    fields=['arquivo_origem','titulo','menu_principal','submenu','tipo','disponibilidade','evento','extensao','publicar','observacoes']
     with (INBOX/'Catalogo_Online_Planilha.csv').open('w',encoding='utf-8-sig',newline='') as f:
         w=csv.DictWriter(f,fieldnames=fields,delimiter=';'); w.writeheader()
         for x in items:
@@ -26,7 +26,7 @@ def apply_edits(draft):
             edit=next((x for x in draft if str(x.get('id'))==str(item.get('id'))),None)
             if edit:
                 if edit.get('publicar')=='Não': continue
-                for old,new in [('titulo','titulo'),('menu','menu'),('submenu','submenu'),('arquivo','arquivo')]:
+                for old,new in [('titulo','titulo'),('menu','menu'),('submenu','submenu'),('arquivo','arquivo'),('evento','evento')]:
                     if new in edit and edit[new] is not None: item[old]=edit[new]
             kept.append(item)
         catalog[section]=kept
