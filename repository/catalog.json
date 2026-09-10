@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "catalogVersion": 72,
+  "catalogVersion": 73,
   "assinaturaCatalogo": "On+pHxs2DGNftLLJTFw6DI1rhYPoacKj8Wbkd4qNoX0YRqdH79yb4YvwDheBaD1PktxInkuBUf1xepDxksppR9zWOITxLVa11CLRav3oqb3h9YN3OVeUXzYyfdUDJ293n6QhA1qn7DkP0Ws6bCPs6zgdez9Tv3prZvOF8v1hKG1CmvbIkcd5BjrUD1GdVJXgIVPTvqtNP0H3P0dik0grmqgNd6ZLS/UpqpXlW+/zSyhbC2lW6VW2a42JKmLyCIsefa7PghTQuxz8ULRcsCTomKH4CAOIHId8W9u5zyWuwJUbA9U/V2Nn44tYv4pW+E/YuN8ikO+tGwrFOAustHx3Dg==",
-  "assinaturaCatalogoCanonica": "PxImJrF1OZdzLcmK7EOO5i4NsTxFUy1wonUjpc+AqSj2olnuK2X74tKyCoAmnZAcEKNXvQb2JdkwjTwxytBiaQWi64emobmcxanvoHJa7eD+8nx+bucCcMNmFLT/NBaRUwTMeoMKD/kAVjfLiJ9yEd3Gxty+zKOIKTJvxDbnzP/d3yjPc75uCu1rcyYFALAsGLIxyR55oS2Q+dD5pguKZc3OlR4DJMxS9D88CJhfbGSbFfvsr447UguHlXrEyh0CTDJLDZc26YntcfuZWISPDHWx83hV4zFByksAFwF6paItADc4jcALOroHazi/04vvxpGIvB/SZaBTQt1BJc5aSg==",
+  "assinaturaCatalogoCanonica": "oHMUD2QbeJuSCd2RAcSkEUAJdoawuPdwRoEBE9fDJXTMgKnf8cbzkKAxzxUymyMBdm1PEk7O/M0yDJOG0XmMXRu/uVUU3jFVyk2pCHNokG2b1AqFEFCJ/5Ur/XwMIe8MURgWvKfPzHx1Crt5nm97Ychwf/mYQf/YeL7UYHUIi9voEZHGSg6XhCpbOaLDH6BWJFyt737QQ4ZoHMGJGdSV0JSUVGKHJT6umxl+gbqJAcE91PMJZiRJ193r0mTf1upMXU2+f9NwkRK+tb3HLTz5N/GBSti1DC6AYQGVVbURzXy0K0fYND8ybBm1sEjzInUHYQGChZ0+Kr1ZHs6tkmmx/A==",
   "repository": "FEFO Google Drive",
   "firmware": {
     "version": "1.101",
@@ -422,5 +422,6 @@
       "titulo": "Face 6",
       "url": "https://drive.google.com/uc?export=download&id=17a-gvsWBDEomrp6iqGFBlu4rrg6ov1C2"
     }
-  ]
+  ],
+  "catalogRevision": "official-73"
 }
