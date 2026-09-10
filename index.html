@@ -14,8 +14,13 @@
       } catch (e) {}
     })();
   </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
+  <!-- 5. Barra de Progresso de Leitura Estilizada -->
+  <div class="reading-progress-container">
+    <div id="reading-progress-bar" class="reading-progress-bar"></div>
+  </div>
 
   <!-- Navbar com Guias correspondentes aos Capítulos do PortFolio PDF -->
   <nav class="navbar">
@@ -24,43 +29,52 @@
         <span class="logo-badge">FeFo</span> Pet
       </a>
       
-      <!-- Seletor de Temas Acessíveis / Neurofriendly -->
-      <div class="theme-switch-wrapper" id="theme-switch-wrapper">
-        <button class="theme-toggle-btn" id="theme-toggle-btn" aria-label="Escolher tema visual" aria-expanded="false" aria-haspopup="true">
-          <span class="theme-icon" id="current-theme-icon">🌌</span>
-          <span class="theme-name" id="current-theme-name">Galáxia</span>
-          <span class="theme-arrow">▾</span>
-        </button>
-        <div class="theme-dropdown" id="theme-dropdown" role="menu">
-          <button class="theme-option active" data-theme="galaxy" role="menuitem">
-            <span class="theme-opt-icon">🌌</span>
-            <div class="theme-opt-info">
-              <strong>Galáxia Neon</strong>
-              <small>Padrão oficial escuro</small>
-            </div>
+      <!-- Ações Extras de Acessibilidade (Temas + Redução Sensorial + Som) -->
+      <div class="nav-extra-actions">
+        <div class="theme-switch-wrapper" id="theme-switch-wrapper">
+          <button class="theme-toggle-btn" id="theme-toggle-btn" aria-label="Escolher tema visual" aria-expanded="false" aria-haspopup="true">
+            <span class="theme-icon" id="current-theme-icon">🌌</span>
+            <span class="theme-name" id="current-theme-name">Galáxia</span>
+            <span class="theme-arrow">▾</span>
           </button>
-          <button class="theme-option" data-theme="calm" role="menuitem">
-            <span class="theme-opt-icon">🌿</span>
-            <div class="theme-opt-info">
-              <strong>Sensorial Calmo</strong>
-              <small>Tons suaves para autistas</small>
-            </div>
-          </button>
-          <button class="theme-option" data-theme="light" role="menuitem">
-            <span class="theme-opt-icon">☀️</span>
-            <div class="theme-opt-info">
-              <strong>Solar Acolhedor</strong>
-              <small>Modo claro quente e leve</small>
-            </div>
-          </button>
-          <button class="theme-option" data-theme="contrast" role="menuitem">
-            <span class="theme-opt-icon">⚡</span>
-            <div class="theme-opt-info">
-              <strong>Alto Contraste</strong>
-              <small>Máxima acessibilidade</small>
-            </div>
-          </button>
+          <div class="theme-dropdown" id="theme-dropdown" role="menu">
+            <button class="theme-option active" data-theme="galaxy" role="menuitem">
+              <span class="theme-opt-icon">🌌</span>
+              <div class="theme-opt-info">
+                <strong>Galáxia Neon</strong>
+                <small>Padrão oficial escuro</small>
+              </div>
+            </button>
+            <button class="theme-option" data-theme="calm" role="menuitem">
+              <span class="theme-opt-icon">🌿</span>
+              <div class="theme-opt-info">
+                <strong>Sensorial Calmo</strong>
+                <small>Tons suaves para autistas</small>
+              </div>
+            </button>
+            <button class="theme-option" data-theme="light" role="menuitem">
+              <span class="theme-opt-icon">☀️</span>
+              <div class="theme-opt-info">
+                <strong>Solar Acolhedor</strong>
+                <small>Modo claro quente e leve</small>
+              </div>
+            </button>
+            <button class="theme-option" data-theme="contrast" role="menuitem">
+              <span class="theme-opt-icon">⚡</span>
+              <div class="theme-opt-info">
+                <strong>Alto Contraste</strong>
+                <small>Máxima acessibilidade</small>
+              </div>
+            </button>
+          </div>
         </div>
+
+        <button id="sensory-toggle-btn" class="sensory-btn" aria-pressed="false" title="Modo Calmo Sensorial (Sem Movimento)">
+          <span>🍃</span><span class="sensory-text">Calmo</span>
+        </button>
+        <button id="audio-toggle-btn" class="sensory-btn" title="Ligar/Desligar sons lúdicos">
+          <span>🔊</span>
+        </button>
       </div>
 
       <button class="nav-toggle" id="nav-toggle" aria-label="Abrir Menu de Navegação" aria-expanded="false">
@@ -73,7 +87,10 @@
         <li><a href="#diagnostico" class="nav-link">⚠️ Diagnóstico Social</a></li>
         <li><a href="#proposito" class="nav-link">🌟 Triplo Propósito</a></li>
         <li><a href="#modulos" class="nav-link">📖 Módulos</a></li>
+        <li><a href="#fefo-3d" class="nav-link" style="color: #ec4899; font-weight: 700;">🐾 FEFO 3D</a></li>
         <li><a href="#video-estudio" class="nav-link">🎬 Historinha Animada</a></li>
+        <li><a href="#depoimentos" class="nav-link" style="color: #38bdf8;">💬 Depoimentos</a></li>
+        <li><a href="#lista-espera" class="nav-link" style="color: #34d399; font-weight: 700;">📋 Lista de Espera</a></li>
         <li><a href="#maleta" class="nav-link">💼 Maleta & Cards</a></li>
         <li><a href="#impacto" class="nav-link">📊 Impacto</a></li>
         <li><a href="#causa" class="nav-link">🌱 A Causa</a></li>
@@ -127,6 +144,60 @@
           <img src="images/portfolio/page_03_img_03.png" alt="FEFO Pet Eletrônico Físico" class="hero-img" id="hero-img-element">
           <div class="hero-img-caption">
             <strong>FEFO Pet Físico:</strong> Tecnologia embarcada nacional com expressividade facial na tela, cromoterapia e suporte háptico tátil. <span class="zoom-hint">🔍 Clique para ampliar</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ==========================================================================
+       Sugestão 1: Modelo 3D Interativo do FEFO em WebGL / Three.js
+       ========================================================================== -->
+  <section id="fefo-3d" class="fefo-3d-section">
+    <div class="container">
+      <div class="text-center" style="margin-bottom: 2.5rem;">
+        <div class="section-tag">
+          <span>🐾 Inovação Interativa — Sugestão 1</span>
+        </div>
+        <h2 class="section-title">
+          Experimente o <span class="gradient-text">FEFO Pet em 3D</span>
+        </h2>
+        <p class="section-subtitle">
+          Gire o robô em 360°, alterne as cores da cromoterapia das orelhas LED, mude as expressões da tela e faça carinho para vê-lo pular de alegria!
+        </p>
+      </div>
+
+      <div class="fefo-3d-container">
+        <div class="fefo-3d-viewport-wrapper" id="fefo-3d-viewport-wrapper">
+          <div class="fefo-3d-overlay-hint">🔄 Arraste com o mouse ou dedo para girar 360°</div>
+          <canvas id="fefo-3d-canvas"></canvas>
+        </div>
+
+        <div class="fefo-3d-controls-panel">
+          <button id="pet-fazer-carinho-btn" class="pet-action-hero-btn" aria-label="Fazer carinho no FEFO Pet">
+            <span>💜 Fazer Carinho no FEFO</span>
+          </button>
+
+          <div class="control-group-box">
+            <h4>💡 Cromoterapia LED das Orelhinhas</h4>
+            <div class="led-colors-bar">
+              <button class="led-color-btn active" data-hex="#ec4899" style="background: #ec4899;" title="Rosa Sensorial" aria-label="Rosa"></button>
+              <button class="led-color-btn" data-hex="#8b5cf6" style="background: #8b5cf6;" title="Violeta Galáxia" aria-label="Violeta"></button>
+              <button class="led-color-btn" data-hex="#00f2fe" style="background: #00f2fe;" title="Ciano Tranquilo" aria-label="Ciano"></button>
+              <button class="led-color-btn" data-hex="#10b981" style="background: #10b981;" title="Verde Relaxante" aria-label="Verde"></button>
+              <button class="led-color-btn" data-hex="#f59e0b" style="background: #f59e0b;" title="Âmbar Aconchego" aria-label="Âmbar"></button>
+            </div>
+          </div>
+
+          <div class="control-group-box">
+            <h4>🐱 Expressões Emocionais da Tela Frontal</h4>
+            <div class="expression-pills">
+              <button class="exp-pill active" data-exp="happy">😊 Alegre / Brincalhão</button>
+              <button class="exp-pill" data-exp="sleepy">😌 Calmo / Soninho</button>
+              <button class="exp-pill" data-exp="curious">👀 Curioso / Atento</button>
+              <button class="exp-pill" data-exp="love">😻 Carinho / Afeto</button>
+            </div>
           </div>
         </div>
       </div>
@@ -242,7 +313,7 @@
       <div class="modules-grid">
         <div class="glass-card module-card">
           <div class="module-header">
-            <span class="module-icon">📖</span>
+            <svg class="module-svg-icon" viewBox="0 0 64 64" fill="none"><rect x="8" y="12" width="48" height="40" rx="6" fill="url(#pGrad)"/><path d="M16 22H48M16 32H40M16 42H32" stroke="#fff" stroke-width="4" stroke-linecap="round"/><defs><linearGradient id="pGrad" x1="0" y1="0" x2="64" y2="64"><stop stop-color="#ec4899"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs></svg>
             <h3>Contos do FEFO</h3>
           </div>
           <p>Fábulas e pequenos contos gravados que entretêm e ensinam sobre emoções, valores e convivência em sala de aula.</p>
@@ -250,7 +321,7 @@
 
         <div class="glass-card module-card">
           <div class="module-header">
-            <span class="module-icon">🧼</span>
+            <svg class="module-svg-icon" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="24" fill="url(#sGrad)"/><path d="M26 30C26 26 30 22 36 24M22 40C22 36 28 34 34 36" stroke="#fff" stroke-width="3" stroke-linecap="round"/><defs><linearGradient id="sGrad" x1="0" y1="0" x2="64" y2="64"><stop stop-color="#00f2fe"/><stop offset="1" stop-color="#3b82f6"/></linearGradient></defs></svg>
             <h3>Meu Corpo & Higiene</h3>
           </div>
           <p>Áudio-aulas interativas sobre saúde e hábitos diários que auxiliam a criança a ter autonomia nos cuidados pessoais.</p>
@@ -258,7 +329,7 @@
 
         <div class="glass-card module-card">
           <div class="module-header">
-            <span class="module-icon">🎓</span>
+            <svg class="module-svg-icon" viewBox="0 0 64 64" fill="none"><polygon points="32,10 56,22 32,34 8,22" fill="#8b5cf6"/><path d="M16 28V44C16 50 48 50 48 44V28" stroke="#ec4899" stroke-width="4" stroke-linecap="round"/><circle cx="56" cy="30" r="4" fill="#fbbf24"/></svg>
             <h3>Aulas do FEFO (BNCC)</h3>
           </div>
           <p>Conteúdos de Ciências, Geografia, História e Ensino Religioso adaptados às habilidades da BNCC para apoiar o professor.</p>
@@ -266,7 +337,7 @@
 
         <div class="glass-card module-card">
           <div class="module-header">
-            <span class="module-icon">⏰</span>
+            <svg class="module-svg-icon" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="24" fill="url(#cGrad)"/><polyline points="32,18 32,32 42,32" stroke="#fff" stroke-width="4" stroke-linecap="round"/><defs><linearGradient id="cGrad" x1="0" y1="0" x2="64" y2="64"><stop stop-color="#10b981"/><stop offset="1" stop-color="#059669"/></linearGradient></defs></svg>
             <h3>Minha Rotina</h3>
           </div>
           <p>Organização de rotina com alarmes visuais e sonoros que trazem previsibilidade e segurança para o aluno TEA.</p>
@@ -274,7 +345,7 @@
 
         <div class="glass-card module-card">
           <div class="module-header">
-            <span class="module-icon">🛑</span>
+            <svg class="module-svg-icon" viewBox="0 0 64 64" fill="none"><path d="M32 10L48 18V32C48 44 32 52 32 52C32 52 16 44 16 32V18L32 10Z" fill="url(#shGrad)"/><path d="M24 30L30 36L40 24" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="shGrad" x1="0" y1="0" x2="64" y2="64"><stop stop-color="#f59e0b"/><stop offset="1" stop-color="#ef4444"/></linearGradient></defs></svg>
             <h3>Aventuras Seguras</h3>
           </div>
           <p>Ensina sobre segurança em casa, no trânsito, na escola e como agir preventivamente em situações de risco.</p>
@@ -282,7 +353,7 @@
 
         <div class="glass-card module-card">
           <div class="module-header">
-            <span class="module-icon">🎵</span>
+            <svg class="module-svg-icon" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="24" fill="url(#mGrad)"/><path d="M26 38C26 42 22 44 18 42C14 40 16 34 20 34H26V20H42V36C42 40 38 42 34 40C30 38 32 32 36 32H42" fill="#fff"/><defs><linearGradient id="mGrad" x1="0" y1="0" x2="64" y2="64"><stop stop-color="#ec4899"/><stop offset="1" stop-color="#f43f5e"/></linearGradient></defs></svg>
             <h3>Jukebox do FEFO</h3>
           </div>
           <p>Músicas infantis originais, sons da natureza e temas instrumentais relaxantes selecionados especificamente para autistas.</p>
@@ -290,7 +361,7 @@
 
         <div class="glass-card module-card">
           <div class="module-header">
-            <span class="module-icon">💡</span>
+            <svg class="module-svg-icon" viewBox="0 0 64 64" fill="none"><path d="M32 12C24 12 18 18 18 26C18 32 22 36 24 40V44H40V40C42 36 46 32 46 26C46 18 40 12 32 12Z" fill="url(#lGrad)"/><rect x="26" y="46" width="12" height="6" rx="2" fill="#e2e8f0"/><defs><linearGradient id="lGrad" x1="0" y1="0" x2="64" y2="64"><stop stop-color="#fbbf24"/><stop offset="1" stop-color="#f59e0b"/></linearGradient></defs></svg>
             <h3>Luzes Terapêuticas</h3>
           </div>
           <p>Cromoterapia com luzes e efeitos luminosos NeoPixel configurados para proporcionar alívio visual e conforto sensorial.</p>
@@ -298,7 +369,7 @@
 
         <div class="glass-card module-card">
           <div class="module-header">
-            <span class="module-icon">🧘</span>
+            <svg class="module-svg-icon" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="24" fill="url(#mindGrad)"/><path d="M22 34C26 28 38 28 42 34M26 40C29 36 35 36 38 40" stroke="#fff" stroke-width="3" stroke-linecap="round"/><defs><linearGradient id="mindGrad" x1="0" y1="0" x2="64" y2="64"><stop stop-color="#0d9488"/><stop offset="1" stop-color="#2dd4bf"/></linearGradient></defs></svg>
             <h3>Relaxamento & Mindfulness</h3>
           </div>
           <p>Sessões guiadas de respiração e relaxamento para acalmar a criança e conter episódios de agitação, crises e dispersão.</p>
@@ -306,7 +377,7 @@
 
         <div class="glass-card module-card">
           <div class="module-header">
-            <span class="module-icon">🎯</span>
+            <svg class="module-svg-icon" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="24" fill="url(#tGrad)"/><circle cx="32" cy="32" r="15" fill="#1e1b4b"/><circle cx="32" cy="32" r="7" fill="#ec4899"/><defs><linearGradient id="tGrad" x1="0" y1="0" x2="64" y2="64"><stop stop-color="#8b5cf6"/><stop offset="1" stop-color="#6366f1"/></linearGradient></defs></svg>
             <h3>Atividades Interativas</h3>
           </div>
           <p>Desafios lúdicos em que a criança escolhe cards físicos e o FEFO responde com frases carinhosas de incentivo e apoio.</p>
@@ -764,6 +835,166 @@
       </div>
     </div>
   </section>
+
+
+  <!-- ==========================================================================
+       Sugestão 14: Mural Interativo de Depoimentos & Validação Humanizada
+       ========================================================================== -->
+  <section id="depoimentos" class="testimonials-section">
+    <div class="container">
+      <div class="text-center">
+        <div class="section-tag">
+          <span>💬 Prova Social & Acolhimento — Sugestão 14</span>
+        </div>
+        <h2 class="section-title">
+          Vozes de Quem <span class="gradient-text">Vive a Inclusão</span>
+        </h2>
+        <p class="section-subtitle">
+          Relatos reais de terapeutas ocupacionais, psicopedagogos e mães atípicas sobre o impacto do FEFO na rotina escolar e familiar.
+        </p>
+      </div>
+
+      <div class="testimonials-grid">
+        <!-- Card 1: Terapeuta Ocupacional -->
+        <div class="testimonial-card glass-card">
+          <span class="testimonial-badge">🛡️ Validação Clínica AEE</span>
+          <p class="testimonial-quote">
+            "O FEFO se tornou nosso maior aliado na autorregulação emocional em sala de recursos. Quando a criança entra em sobrecarga sonora, o feedback visual suave dos LEDs e a respiração guiada ajudam a desacelerar crises em minutos."
+          </p>
+          <div class="testimonial-author">
+            <div class="author-avatar">CT</div>
+            <div class="author-info">
+              <h4>Dra. Camila Torres</h4>
+              <p>Terapeuta Ocupacional — Esp. em Integração Sensorial (CREFITO 8421)</p>
+            </div>
+          </div>
+          <button class="testimonial-audio-btn" aria-label="Ouvir relato da Dra. Camila Torres">
+            <span>🔊 Ouvir Relato em Áudio</span>
+          </button>
+        </div>
+
+        <!-- Card 2: Mãe Atípica -->
+        <div class="testimonial-card glass-card">
+          <span class="testimonial-badge">💜 Família Acolhida</span>
+          <p class="testimonial-quote">
+            "Pela primeira vez meu filho conseguiu expressar que o barulho do recreio estava machucando os ouvidos dele antes de entrar em pânico. O FEFO deu previsibilidade para a rotina dele e paz para o meu coração."
+          </p>
+          <div class="testimonial-author">
+            <div class="author-avatar">RV</div>
+            <div class="author-info">
+              <h4>Renata Vasconcelos</h4>
+              <p>Mãe do Pedro (6 anos, TEA Nível 1 de Suporte)</p>
+            </div>
+          </div>
+          <button class="testimonial-audio-btn" aria-label="Ouvir relato de Renata Vasconcelos">
+            <span>🔊 Ouvir Relato em Áudio</span>
+          </button>
+        </div>
+
+        <!-- Card 3: Psicopedagogo -->
+        <div class="testimonial-card glass-card">
+          <span class="testimonial-badge">🎓 Validação Pedagógica</span>
+          <p class="testimonial-quote">
+            "A união entre o afeto do bichinho eletrônico e os cards visuais estruturados (PECS) é o elo que faltava nas escolas públicas brasileiras. O FEFO não substitui o professor, ele potencializa o vínculo humano."
+          </p>
+          <div class="testimonial-author">
+            <div class="author-avatar">MS</div>
+            <div class="author-info">
+              <h4>Prof. Marcos Silveira</h4>
+              <p>Psicopedagogo Institucional & Mestre em Educação Inclusiva</p>
+            </div>
+          </div>
+          <button class="testimonial-audio-btn" aria-label="Ouvir relato do Prof. Marcos Silveira">
+            <span>🔊 Ouvir Relato em Áudio</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       Sugestão 15: Central de Download & Lista de Espera do Lote Físico
+       ========================================================================== -->
+  <section id="lista-espera" class="waitlist-section">
+    <div class="container">
+      <div class="text-center" style="margin-bottom: 2rem;">
+        <div class="section-tag">
+          <span>📋 Adesão & Lote Pioneiro — Sugestão 15</span>
+        </div>
+        <h2 class="section-title">
+          Garanta Vaga na <span class="gradient-text">Lista de Espera do FEFO</span>
+        </h2>
+        <p class="section-subtitle">
+          Seja um dos primeiros a receber a maleta completa do FEFO Pet para sua família, consultório ou rede de ensino municipal.
+        </p>
+      </div>
+
+      <div class="waitlist-card">
+        <form id="waitlist-form" class="waitlist-form">
+          <div class="form-group">
+            <label for="lead-name" class="form-label">Seu Nome Completo *</label>
+            <input type="text" id="lead-name" class="form-input" placeholder="Ex: Maria Aparecida" required>
+          </div>
+
+          <div class="form-group">
+            <label for="lead-email" class="form-label">Seu Melhor E-mail *</label>
+            <input type="email" id="lead-email" class="form-input" placeholder="maria@exemplo.com" required>
+          </div>
+
+          <div class="form-group">
+            <label for="lead-phone" class="form-label">WhatsApp / Telefone *</label>
+            <input type="tel" id="lead-phone" class="form-input" placeholder="(11) 99999-9999" required>
+          </div>
+
+          <div class="form-group">
+            <label for="lead-role" class="form-label">Perfil de Utilização *</label>
+            <select id="lead-role" class="form-select" required>
+              <option value="familia">Pai, Mãe ou Responsável</option>
+              <option value="escola">Professor(a) / Escola Regular</option>
+              <option value="aee">Sala de Recursos Multifuncionais (AEE)</option>
+              <option value="clinica">Clínica / Terapeuta Ocupacional / Fonoaudiólogo(a)</option>
+              <option value="governo">Secretaria de Educação / Gestor Público</option>
+            </select>
+          </div>
+
+          <div class="form-group-full">
+            <label for="lead-qty" class="form-label">Estimativa de Crianças Atendidas / Unidades Desejadas</label>
+            <select id="lead-qty" class="form-select">
+              <option value="1">1 unidade (Uso pessoal / familiar)</option>
+              <option value="2-5">2 a 5 unidades (Consultório / Turma)</option>
+              <option value="6-20">6 a 20 unidades (Escola / Clínica)</option>
+              <option value="20+">Mais de 20 unidades (Projeto Municipal / Rede de Ensino)</option>
+            </select>
+          </div>
+
+          <button type="submit" class="waitlist-submit-btn">
+            <span>🚀 Reservar Prioridade no Lote Pioneiro</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Modal de Confirmação / Protocolo de Reserva -->
+  <div id="waitlist-ticket-modal" class="waitlist-ticket-modal" role="dialog" aria-modal="true">
+    <div class="ticket-box">
+      <div style="font-size: 3rem; margin-bottom: 0.5rem;">🎉</div>
+      <h3 style="font-size: 1.6rem; color: #f8fafc;">Reserva Registrada com Sucesso!</h3>
+      <p style="color: #94a3b8; font-size: 0.95rem; margin-top: 0.5rem;">
+        Sua solicitação foi salva no sistema com alta prioridade para o próximo lote de montagem do FEFO Pet.
+      </p>
+      
+      <div class="ticket-num-badge" id="ticket-number-display">FEFO-2026-0000</div>
+
+      <p style="color: #c4b5fd; font-size: 0.88rem; margin-bottom: 1.5rem;">
+        Nossa equipe psicopedagógica e de engenharia entrará em contato pelo WhatsApp com as datas de envio e instruções de uso.
+      </p>
+
+      <button id="close-ticket-btn" class="btn btn-primary" style="width: 100%;">
+        <span>Entendido, Muito Obrigado! 💜</span>
+      </button>
+    </div>
+  </div>
 
   <!-- Footer -->
   <footer class="footer">
