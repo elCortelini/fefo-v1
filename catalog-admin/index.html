@@ -36,10 +36,17 @@
       <div id="list" class="items"></div>
     </section>
 
+    <section class="card">
+      <div class="card-title"><div><p class="eyebrow">CATÁLOGO PUBLICADO</p><h2>Itens atuais</h2></div><span id="published-count" class="pill">Carregando…</span></div>
+      <div class="toolbar"><input id="search" type="search" placeholder="Buscar por nome, menu ou ID"><select id="filter"><option value="all">Todos os tipos</option><option value="audio">Áudios</option><option value="face">Faces</option><option value="video">Vídeos</option></select></div>
+      <p class="hint">Edite os dados ou marque um item para sair do próximo catálogo. O arquivo original não é apagado.</p>
+      <div id="published" class="items"><div class="empty">Carregando catálogo atual…</div></div>
+    </section>
+
     <section class="card publish-card">
       <p class="eyebrow">SAÍDA</p><h2>Preparar publicação</h2>
       <p>Salve a planilha e o cadastro editável. Depois, o processador do projeto converte os arquivos, atualiza o catálogo, assina os dados e pode publicar no GitHub.</p>
-      <div class="actions"><button class="btn primary" id="save-folder" type="button">Salvar arquivos no projeto</button><button class="btn secondary" id="export" type="button">Baixar cadastro</button></div>
+      <div class="actions"><button class="btn primary" id="save-folder" type="button">Salvar arquivos no projeto</button><button class="btn secondary" id="export" type="button">Baixar revisão</button></div>
       <div id="status" class="status" role="status">Pronto para começar.</div>
       <details><summary>Como publicar depois de revisar</summary><p>Coloque os arquivos na pasta <code>FEFO_novos_conteudos/audio</code>, <code>faces</code> ou <code>video</code>. Deixe a planilha ao lado deste painel e execute o atualizador de conteúdo do projeto. Ele mantém IDs, converte os formatos e atualiza o catálogo oficial.</p></details>
     </section>
