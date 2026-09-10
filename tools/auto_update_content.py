@@ -338,6 +338,9 @@ def update_catalog_files(new_audios: list, new_faces: list, new_videos: list = N
 
 
 def git_push_changes(added_summary: list):
+    if os.environ.get('FEFO_NO_PUSH') == '1':
+        print("[MODO GERENCIADOR] Alterações locais preparadas; publicação aguardando o botão Publicar catálogo.")
+        return
     print("\n--- SINCRONIZANDO COM O GITHUB ---")
     try:
         run(['git', 'add', '-A'], cwd=ROOT, check=True)

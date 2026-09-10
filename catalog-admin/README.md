@@ -14,6 +14,15 @@ O painel não contém a chave privada de assinatura e não publica sozinho a par
 
 Conteúdos marcados como **Somente sistema** continuam registrados, mas são filtrados da lista de downloads do app. A exclusão física pede confirmação e remove as cópias do repositório e do SD card do projeto.
 
+## Fluxo automático
+
+Abra `Executar_Administrador_Catalogo.cmd`. Ele inicia o painel local em `127.0.0.1`, mantendo os arquivos e a chave de assinatura no computador.
+
+- **Processar catálogo** grava os arquivos, converte formatos, aplica o rascunho e prepara a revisão.
+- **Publicar catálogo** assina o catálogo, cria o commit e envia a revisão ao GitHub.
+
+O botão de publicação só funciona no painel local; o painel público continua sendo uma consulta segura.
+
 ## Regra para nomes
 
 - `Titulo.ext` → menu `Jukebox do Fefo`.
