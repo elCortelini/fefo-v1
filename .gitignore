@@ -15,3 +15,21 @@ FEFO_novos_conteudos/audio/*
 !FEFO_novos_conteudos/audio/.gitkeep
 FEFO_novos_conteudos/faces/*
 !FEFO_novos_conteudos/faces/.gitkeep
+
+# Arquivos de modelo 3D pesados e artefatos binários brutos
+*.glb
+*.stl
+*.bin
+*.elf
+*.apk
+*.zip
+*.tar.gz
+*.pdf
+!PortFolio FEFO.pdf
+!releases/FEFO_App_v1.125.apk
+!releases/FEFO_Firmware_v1.101.bin
+!models/fefo_pet.glb
+
+# Uploads temporários locais
+Expressões FEFO v2*.png
+WhatsApp Image*

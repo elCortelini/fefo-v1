@@ -141,7 +141,6 @@ function initFaceSimulator() {
   const simImg = document.getElementById('sim-face-img');
   const faceLabel = document.getElementById('sim-label');
   const simScreen = document.getElementById('sim-screen');
-  const simCounter = document.getElementById('sim-counter');
   const simButtons = document.querySelectorAll('.demo-btn');
 
   if (!simImg || !simScreen) return;
@@ -149,44 +148,49 @@ function initFaceSimulator() {
   const modes = {
     happy: {
       label: 'Alegre / Interativo',
-      images: [
-        'images/expressoes/fefo_exp_alegre_1.png',
-        'images/expressoes/fefo_exp_alegre_2.png',
-        'images/expressoes/fefo_exp_alegre_3.png'
-      ],
+      image: 'images/expressoes/fefo_exp_alegre_1.png',
       border: '#8b5cf6',
       glow: 'rgba(139, 92, 246, 0.45)'
     },
     calm: {
       label: 'Calmo / Relaxante',
-      images: [
-        'images/expressoes/fefo_exp_calmo_1.png',
-        'images/expressoes/fefo_exp_calmo_2.png'
-      ],
+      image: 'images/expressoes/fefo_exp_calmo_1.png',
       border: '#10b981',
       glow: 'rgba(16, 185, 129, 0.45)'
     },
+    smart: {
+      label: 'Esperto / Atento',
+      image: 'images/expressoes/fefo_exp_esperto.png',
+      border: '#f59e0b',
+      glow: 'rgba(245, 158, 11, 0.45)'
+    },
+    sad: {
+      label: 'Triste / Precisa de Carinho',
+      image: 'images/expressoes/fefo_exp_triste.png',
+      border: '#6366f1',
+      glow: 'rgba(99, 102, 241, 0.45)'
+    },
+    eating: {
+      label: 'Comendo / Hora do Lanche',
+      image: 'images/expressoes/fefo_exp_comendo.png',
+      border: '#fbbf24',
+      glow: 'rgba(251, 191, 36, 0.45)'
+    },
     music: {
       label: 'Jukebox do FEFO (Cantando)',
-      images: [
-        'images/expressoes/fefo_exp_jukebox.png'
-      ],
+      image: 'images/expressoes/fefo_exp_jukebox.png',
       border: '#ec4899',
       glow: 'rgba(236, 72, 153, 0.45)'
     },
     panic: {
       label: 'Modo Pânico (Sensor Ruído / Sobrecarga)',
-      images: [
-        'images/expressoes/fefo_exp_panico.png'
-      ],
+      image: 'images/expressoes/fefo_exp_panico.png',
       border: '#ef4444',
       glow: 'rgba(239, 68, 68, 0.6)'
     }
   };
 
   let currentMode = 'happy';
-  let currentFrameIdx = 0;
-  let cycleTimer = null;
 
   // Web Audio synthesizer feedback for simulator modes
   function playModeFeedback(modeKey) {
@@ -216,6 +220,30 @@ function initFaceSimulator() {
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
         osc.start(now);
         osc.stop(now + 0.5);
+      } else if (modeKey === 'smart') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, now); // D5
+        osc.frequency.setValueAtTime(783.99, now + 0.08); // G5
+        osc.frequency.setValueAtTime(987.77, now + 0.16); // B5
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+        osc.start(now);
+        osc.stop(now + 0.38);
+      } else if (modeKey === 'sad') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(349.23, now); // F4
+        osc.frequency.exponentialRampToValueAtTime(261.63, now + 0.35); // C4 down
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+        osc.start(now);
+        osc.stop(now + 0.55);
+      } else if (modeKey === 'eating') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(523.25, now); // C5
+        osc.frequency.setValueAtTime(659.25, now + 0.08); // E5
+        osc.frequency.setValueAtTime(587.33, now + 0.16); // D5
+        osc.frequency.setValueAtTime(783.99, now + 0.24); // G5
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+        osc.start(now);
+        osc.stop(now + 0.4);
       } else if (modeKey === 'music') {
         osc.type = 'sine';
         osc.frequency.setValueAtTime(440, now);
@@ -237,25 +265,15 @@ function initFaceSimulator() {
 
   function updateDisplay(withSound = false) {
     const mode = modes[currentMode] || modes.happy;
-    const imgList = mode.images;
-    if (currentFrameIdx >= imgList.length) currentFrameIdx = 0;
 
     simImg.style.opacity = '0.35';
     simImg.style.transform = 'scale(0.96)';
 
     setTimeout(() => {
-      simImg.src = imgList[currentFrameIdx];
+      simImg.src = mode.image;
       if (faceLabel) faceLabel.textContent = mode.label;
       simScreen.style.borderColor = mode.border;
       simScreen.style.boxShadow = `0 0 30px ${mode.glow}, inset 0 0 20px rgba(0,0,0,0.8)`;
-
-      if (simCounter) {
-        if (imgList.length > 1) {
-          simCounter.innerHTML = `<span>Expressão ${currentFrameIdx + 1} de ${imgList.length}</span> &bull; <small style="opacity:0.8;">Toque para alternar</small>`;
-        } else {
-          simCounter.innerHTML = '';
-        }
-      }
 
       simImg.style.opacity = '1';
       simImg.style.transform = 'scale(1)';
@@ -266,28 +284,10 @@ function initFaceSimulator() {
     }
   }
 
-  function startAutoCycle() {
-    if (cycleTimer) clearInterval(cycleTimer);
-    const mode = modes[currentMode];
-    if (mode && mode.images.length > 1) {
-      cycleTimer = setInterval(() => {
-        currentFrameIdx = (currentFrameIdx + 1) % mode.images.length;
-        updateDisplay(false);
-      }, 2500);
-    }
-  }
-
-  // Permite clicar na tela para avançar imediatamente para a próxima expressão
+  // Clicar na tela para tocar o som de feedback
   simScreen.style.cursor = 'pointer';
   simScreen.addEventListener('click', () => {
-    const mode = modes[currentMode];
-    if (mode && mode.images.length > 1) {
-      currentFrameIdx = (currentFrameIdx + 1) % mode.images.length;
-      updateDisplay(true);
-      startAutoCycle();
-    } else {
-      playModeFeedback(currentMode);
-    }
+    updateDisplay(true);
   });
 
   simButtons.forEach(btn => {
@@ -297,24 +297,13 @@ function initFaceSimulator() {
       btn.classList.add('active');
 
       const modeKey = btn.getAttribute('data-mode');
-      if (modeKey === currentMode) {
-        const mode = modes[currentMode];
-        if (mode && mode.images.length > 1) {
-          currentFrameIdx = (currentFrameIdx + 1) % mode.images.length;
-        }
-      } else {
-        currentMode = modeKey;
-        currentFrameIdx = 0;
-      }
-
+      currentMode = modeKey;
       updateDisplay(true);
-      startAutoCycle();
     });
   });
 
   // Carregamento inicial
   updateDisplay(false);
-  startAutoCycle();
 }
 
 // 2. FAQ Accordion Toggle
@@ -1208,15 +1197,98 @@ function initButtonAudioFeedback() {
 // --------------------------------------------------------------------------
 let fefoPetGroup = null;
 let earLeds = [];
-let faceCanvas = null;
-let faceTexture = null;
+let screenMesh = null;
 let currentExpression = 'happy';
+const expressionTextures = {};
+
+const expressionImageMap = {
+  happy: 'images/expressoes/fefo_exp_alegre_1.png',
+  calm: 'images/expressoes/fefo_exp_calmo_1.png',
+  smart: 'images/expressoes/fefo_exp_esperto.png',
+  sad: 'images/expressoes/fefo_exp_triste.png',
+  eating: 'images/expressoes/fefo_exp_comendo.png',
+  music: 'images/expressoes/fefo_exp_jukebox.png',
+  panic: 'images/expressoes/fefo_exp_panico.png'
+};
+
+function playModeAudioFeedback(modeKey) {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    const now = ctx.currentTime;
+    gain.gain.setValueAtTime(0.001, now);
+    gain.gain.linearRampToValueAtTime(0.06, now + 0.05);
+
+    if (modeKey === 'happy') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(523.25, now);
+      osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.15);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+      osc.start(now);
+      osc.stop(now + 0.35);
+    } else if (modeKey === 'calm') {
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(220, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+      osc.start(now);
+      osc.stop(now + 0.5);
+    } else if (modeKey === 'smart') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(587.33, now);
+      osc.frequency.setValueAtTime(783.99, now + 0.08);
+      osc.frequency.setValueAtTime(987.77, now + 0.16);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+      osc.start(now);
+      osc.stop(now + 0.38);
+    } else if (modeKey === 'sad') {
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(349.23, now);
+      osc.frequency.exponentialRampToValueAtTime(261.63, now + 0.35);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+      osc.start(now);
+      osc.stop(now + 0.55);
+    } else if (modeKey === 'eating') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(523.25, now);
+      osc.frequency.setValueAtTime(659.25, now + 0.08);
+      osc.frequency.setValueAtTime(587.33, now + 0.16);
+      osc.frequency.setValueAtTime(783.99, now + 0.24);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+      osc.start(now);
+      osc.stop(now + 0.4);
+    } else if (modeKey === 'music') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(440, now);
+      osc.frequency.setValueAtTime(554.37, now + 0.1);
+      osc.frequency.setValueAtTime(659.25, now + 0.2);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+      osc.start(now);
+      osc.stop(now + 0.45);
+    } else if (modeKey === 'panic') {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(329.63, now);
+      osc.frequency.linearRampToValueAtTime(440, now + 0.15);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+      osc.start(now);
+      osc.stop(now + 0.3);
+    }
+  } catch (e) {}
+}
 
 function initFefo3DViewer() {
   const container = document.getElementById('fefo-3d-viewport-wrapper');
   const canvas = document.getElementById('fefo-3d-canvas');
+  const loadingOverlay = document.getElementById('fefo-3d-loading');
+  const loadingText = document.getElementById('fefo-3d-loading-text');
+
   if (!container || !canvas || typeof THREE === 'undefined') {
-    // Se Three.js não estiver carregado (ex: sem internet), inicializa fallback canvas 2D
+    if (loadingOverlay) loadingOverlay.classList.add('hidden');
     initFallback3DCanvas(canvas);
     return;
   }
@@ -1227,7 +1299,7 @@ function initFefo3DViewer() {
   // Cena, Câmera e Renderizador Three.js
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-  camera.position.set(0, 0.5, 4.2);
+  camera.position.set(0, 0.1, 3.4);
 
   let renderer;
   try {
@@ -1236,109 +1308,237 @@ function initFefo3DViewer() {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   } catch (err) {
     console.warn('WebGL não suportado ou desativado. Ativando fallback 2D:', err);
+    if (loadingOverlay) loadingOverlay.classList.add('hidden');
     initFallback3DCanvas(canvas);
     return;
   }
 
-  // Iluminação
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
+  // Iluminação Harmoniosa do Pet FEFO
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
   scene.add(ambientLight);
 
-  const dirLight = new THREE.DirectionalLight(0xfff5ea, 1.2);
-  dirLight.position.set(3, 5, 4);
-  scene.add(dirLight);
+  const dirLight1 = new THREE.DirectionalLight(0xffffff, 1.35);
+  dirLight1.position.set(3, 5, 4);
+  scene.add(dirLight1);
 
-  const rimLight = new THREE.PointLight(0x8b5cf6, 2.5, 10);
-  rimLight.position.set(-3, 2, -2);
+  const dirLight2 = new THREE.DirectionalLight(0xa78bfa, 0.85);
+  dirLight2.position.set(-3, -2, -3);
+  scene.add(dirLight2);
+
+  const rimLight = new THREE.PointLight(0xec4899, 2.0, 10);
+  rimLight.position.set(-2.5, 2, -2);
   scene.add(rimLight);
 
-  // Criar Modelo 3D Procedural Estilizado do FEFO
   fefoPetGroup = new THREE.Group();
-
-  // 1. Corpo Aveludado Principal (Cabeça/Corpo)
-  const bodyGeo = new THREE.SphereGeometry(1.1, 32, 32);
-  bodyGeo.scale(1, 0.92, 0.95);
-  const bodyMat = new THREE.MeshStandardMaterial({
-    color: 0x8b5cf6,
-    roughness: 0.5,
-    metalness: 0.15
-  });
-  const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
-  fefoPetGroup.add(bodyMesh);
-
-  // 2. Orelhas de Gatinho com LED
-  const earGeo = new THREE.ConeGeometry(0.35, 0.65, 16);
-  const earMat = new THREE.MeshStandardMaterial({ color: 0x7c3aed, roughness: 0.4 });
-  const ledMat = new THREE.MeshStandardMaterial({
-    color: 0xec4899,
-    emissive: 0xec4899,
-    emissiveIntensity: 1.8,
-    roughness: 0.2
-  });
-
-  // Orelha Esquerda
-  const earLeft = new THREE.Mesh(earGeo, earMat);
-  earLeft.position.set(-0.65, 0.95, 0.1);
-  earLeft.rotation.z = 0.35;
-  earLeft.rotation.x = -0.1;
-  fefoPetGroup.add(earLeft);
-
-  const earLeftLed = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.45, 16), ledMat);
-  earLeftLed.position.set(-0.62, 0.92, 0.16);
-  earLeftLed.rotation.z = 0.35;
-  earLeftLed.rotation.x = -0.1;
-  fefoPetGroup.add(earLeftLed);
-  earLeds.push(earLeftLed);
-
-  // Orelha Direita
-  const earRight = new THREE.Mesh(earGeo, earMat);
-  earRight.position.set(0.65, 0.95, 0.1);
-  earRight.rotation.z = -0.35;
-  earRight.rotation.x = -0.1;
-  fefoPetGroup.add(earRight);
-
-  const earRightLed = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.45, 16), ledMat);
-  earRightLed.position.set(0.62, 0.92, 0.16);
-  earRightLed.rotation.z = -0.35;
-  earRightLed.rotation.x = -0.1;
-  fefoPetGroup.add(earRightLed);
-  earLeds.push(earRightLed);
-
-  // 3. Moldura da Tela Digital Frontal
-  const screenFrameGeo = new THREE.BoxGeometry(1.15, 0.85, 0.1);
-  const screenFrameMat = new THREE.MeshStandardMaterial({ color: 0x1f143d, roughness: 0.3 });
-  const screenFrame = new THREE.Mesh(screenFrameGeo, screenFrameMat);
-  screenFrame.position.set(0, 0.05, 0.96);
-  fefoPetGroup.add(screenFrame);
-
-  // 4. Tela com Textura Dinâmica (Expressões)
-  faceCanvas = document.createElement('canvas');
-  faceCanvas.width = 512;
-  faceCanvas.height = 384;
-  updateFaceCanvasTexture('happy');
-
-  faceTexture = new THREE.CanvasTexture(faceCanvas);
-  const screenGeo = new THREE.PlaneGeometry(1.05, 0.75);
-  const screenMat = new THREE.MeshBasicMaterial({ map: faceTexture });
-  const screenMesh = new THREE.Mesh(screenGeo, screenMat);
-  screenMesh.position.set(0, 0.05, 1.02);
-  fefoPetGroup.add(screenMesh);
-
-  // 5. Patinhas Frontais Fofas
-  const pawGeo = new THREE.SphereGeometry(0.24, 16, 16);
-  const pawMat = new THREE.MeshStandardMaterial({ color: 0x6d28d9, roughness: 0.5 });
-
-  const pawL = new THREE.Mesh(pawGeo, pawMat);
-  pawL.position.set(-0.45, -0.85, 0.75);
-  pawL.scale.set(1, 0.7, 1.3);
-  fefoPetGroup.add(pawL);
-
-  const pawR = new THREE.Mesh(pawGeo, pawMat);
-  pawR.position.set(0.45, -0.85, 0.75);
-  pawR.scale.set(1, 0.7, 1.3);
-  fefoPetGroup.add(pawR);
-
   scene.add(fefoPetGroup);
+
+  // Pré-carregar todas as 6 texturas faciais
+  const texLoader = new THREE.TextureLoader();
+  Object.keys(expressionImageMap).forEach(key => {
+    texLoader.load(expressionImageMap[key], (tex) => {
+      expressionTextures[key] = tex;
+      if (key === currentExpression && screenMesh) {
+        screenMesh.material.map = tex;
+        screenMesh.material.needsUpdate = true;
+      }
+    });
+  });
+
+  function setModelExpression(expKey) {
+    currentExpression = expKey;
+    if (screenMesh) {
+      if (expressionTextures[expKey]) {
+        screenMesh.material.map = expressionTextures[expKey];
+        screenMesh.material.needsUpdate = true;
+      } else {
+        texLoader.load(expressionImageMap[expKey] || expressionImageMap.happy, (tex) => {
+          expressionTextures[expKey] = tex;
+          screenMesh.material.map = tex;
+          screenMesh.material.needsUpdate = true;
+        });
+      }
+    }
+  }
+
+  // Carregar Modelo Oficial do FEFO (models/fefo_pet.glb) com timeout de resiliência
+  if (typeof THREE.GLTFLoader !== 'undefined') {
+    const gltfLoader = new THREE.GLTFLoader();
+    const modelUrl = 'models/fefo_pet.glb';
+    let loaded = false;
+
+    // Timeout de segurança: se o download de 46MB demorar mais de 8s, usa o modelo procedural rápido
+    const loadTimeout = setTimeout(() => {
+      if (!loaded && fefoPetGroup && fefoPetGroup.children.length === 0) {
+        console.warn('O download do modelo GLB 3D excedeu o tempo limite. Ativando modelo estilizado procedural...');
+        buildProceduralModel();
+        if (loadingOverlay) loadingOverlay.classList.add('hidden');
+      }
+    }, 8000);
+
+    gltfLoader.load(
+      modelUrl,
+      (gltf) => {
+        if (loaded) return;
+        loaded = true;
+        clearTimeout(loadTimeout);
+
+        gltf.scene.traverse((child) => {
+          if (child.isMesh) {
+            if (child.geometry) {
+              child.geometry.computeVertexNormals();
+              child.geometry.center();
+
+              const box = new THREE.Box3().setFromBufferAttribute(child.geometry.attributes.position);
+              const size = box.getSize(new THREE.Vector3());
+              const maxDim = Math.max(size.x, size.y, size.z);
+              const s = 2.2 / maxDim;
+              child.geometry.scale(s, s, s);
+            }
+
+            child.material = new THREE.MeshStandardMaterial({
+              color: 0x8b5cf6,
+              roughness: 0.38,
+              metalness: 0.12
+            });
+          }
+        });
+
+        fefoPetGroup.add(gltf.scene);
+
+        // Tela Digital frontal ajustada ao recorte do chassi 3D oficial
+        const initialTex = expressionTextures[currentExpression] || null;
+        const screenGeo = new THREE.PlaneGeometry(0.72, 0.48);
+        const screenMat = new THREE.MeshBasicMaterial({
+          map: initialTex,
+          toneMapped: false
+        });
+        screenMesh = new THREE.Mesh(screenGeo, screenMat);
+        screenMesh.position.set(0, 0.165, 0.545);
+        fefoPetGroup.add(screenMesh);
+
+        // Fundo escuro atrás da tela
+        const backGeo = new THREE.PlaneGeometry(0.74, 0.50);
+        const backMat = new THREE.MeshBasicMaterial({ color: 0x070412 });
+        const backMesh = new THREE.Mesh(backGeo, backMat);
+        backMesh.position.set(0, 0.165, 0.54);
+        fefoPetGroup.add(backMesh);
+
+        // LEDs das Orelhinhas que reagem à Cromoterapia
+        const ledGeo = new THREE.SphereGeometry(0.08, 16, 16);
+        const ledMatL = new THREE.MeshStandardMaterial({
+          color: 0xec4899,
+          emissive: 0xec4899,
+          emissiveIntensity: 2.2,
+          roughness: 0.2
+        });
+        const ledMatR = ledMatL.clone();
+
+        const earL = new THREE.Mesh(ledGeo, ledMatL);
+        earL.position.set(-0.42, 0.92, 0.08);
+        fefoPetGroup.add(earL);
+        earLeds.push(earL);
+
+        const earR = new THREE.Mesh(ledGeo, ledMatR);
+        earR.position.set(0.42, 0.92, 0.08);
+        fefoPetGroup.add(earR);
+        earLeds.push(earR);
+
+        if (!initialTex) {
+          setModelExpression(currentExpression);
+        }
+
+        if (loadingOverlay) {
+          loadingOverlay.classList.add('hidden');
+        }
+      },
+      (xhr) => {
+        if (xhr.total && loadingText) {
+          const pct = Math.min(100, Math.round((xhr.loaded / xhr.total) * 100));
+          loadingText.textContent = `🐾 Carregando FEFO 3D Oficial... ${pct}%`;
+        }
+      },
+      (err) => {
+        if (loaded) return;
+        loaded = true;
+        clearTimeout(loadTimeout);
+        console.warn('Carregamento do GLB indisponível, ativando modelo estilizado:', err);
+        buildProceduralModel();
+        if (loadingOverlay) loadingOverlay.classList.add('hidden');
+      }
+    );
+  } else {
+    buildProceduralModel();
+    if (loadingOverlay) loadingOverlay.classList.add('hidden');
+  }
+
+  function buildProceduralModel() {
+    const bodyGeo = new THREE.SphereGeometry(1.1, 32, 32);
+    bodyGeo.scale(1, 0.92, 0.95);
+    const bodyMat = new THREE.MeshStandardMaterial({ color: 0x8b5cf6, roughness: 0.5, metalness: 0.15 });
+    const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+    fefoPetGroup.add(bodyMesh);
+
+    const earGeo = new THREE.ConeGeometry(0.35, 0.65, 16);
+    const earMat = new THREE.MeshStandardMaterial({ color: 0x7c3aed, roughness: 0.4 });
+    const ledMat = new THREE.MeshStandardMaterial({
+      color: 0xec4899,
+      emissive: 0xec4899,
+      emissiveIntensity: 1.8,
+      roughness: 0.2
+    });
+
+    const earLeft = new THREE.Mesh(earGeo, earMat);
+    earLeft.position.set(-0.65, 0.95, 0.1);
+    earLeft.rotation.z = 0.35;
+    earLeft.rotation.x = -0.1;
+    fefoPetGroup.add(earLeft);
+
+    const earLeftLed = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.45, 16), ledMat);
+    earLeftLed.position.set(-0.62, 0.92, 0.16);
+    earLeftLed.rotation.z = 0.35;
+    earLeftLed.rotation.x = -0.1;
+    fefoPetGroup.add(earLeftLed);
+    earLeds.push(earLeftLed);
+
+    const earRight = new THREE.Mesh(earGeo, earMat);
+    earRight.position.set(0.65, 0.95, 0.1);
+    earRight.rotation.z = -0.35;
+    earRight.rotation.x = -0.1;
+    fefoPetGroup.add(earRight);
+
+    const earRightLed = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.45, 16), ledMat.clone());
+    earRightLed.position.set(0.62, 0.92, 0.16);
+    earRightLed.rotation.z = -0.35;
+    earRightLed.rotation.x = -0.1;
+    fefoPetGroup.add(earRightLed);
+    earLeds.push(earRightLed);
+
+    const screenFrameGeo = new THREE.BoxGeometry(1.15, 0.85, 0.1);
+    const screenFrameMat = new THREE.MeshStandardMaterial({ color: 0x1f143d, roughness: 0.3 });
+    const screenFrame = new THREE.Mesh(screenFrameGeo, screenFrameMat);
+    screenFrame.position.set(0, 0.05, 0.96);
+    fefoPetGroup.add(screenFrame);
+
+    const screenGeo = new THREE.PlaneGeometry(1.05, 0.75);
+    const screenMat = new THREE.MeshBasicMaterial({ map: expressionTextures[currentExpression] || null, toneMapped: false });
+    screenMesh = new THREE.Mesh(screenGeo, screenMat);
+    screenMesh.position.set(0, 0.05, 1.02);
+    fefoPetGroup.add(screenMesh);
+
+    const pawGeo = new THREE.SphereGeometry(0.24, 16, 16);
+    const pawMat = new THREE.MeshStandardMaterial({ color: 0x6d28d9, roughness: 0.5 });
+    const pawL = new THREE.Mesh(pawGeo, pawMat);
+    pawL.position.set(-0.45, -0.85, 0.75);
+    pawL.scale.set(1, 0.7, 1.3);
+    fefoPetGroup.add(pawL);
+
+    const pawR = new THREE.Mesh(pawGeo, pawMat);
+    pawR.position.set(0.45, -0.85, 0.75);
+    pawR.scale.set(1, 0.7, 1.3);
+    fefoPetGroup.add(pawR);
+
+    setModelExpression(currentExpression);
+  }
 
   // Controles de Arrastar com Mouse / Toque 360°
   let isDragging = false;
@@ -1362,7 +1562,7 @@ function initFefo3DViewer() {
 
   window.addEventListener('pointerup', () => { isDragging = false; });
 
-  // Animação Contínua (Loop)
+  // Loop de Animação Contínua
   let clock = new THREE.Clock();
   let bounceAnim = { active: false, time: 0 };
 
@@ -1372,17 +1572,14 @@ function initFefo3DViewer() {
     const elapsedTime = clock.getElapsedTime();
 
     if (!document.documentElement.classList.contains('reduced-sensory')) {
-      // Flutuação suave de respiração (pausada no modo calmo)
-      fefoPetGroup.position.y = Math.sin(elapsedTime * 1.5) * 0.05;
+      fefoPetGroup.position.y = Math.sin(elapsedTime * 1.5) * 0.04;
     } else {
       fefoPetGroup.position.y = 0;
     }
-    
-    // Rotação suave em direção ao arrasto manual do usuário
+
     fefoPetGroup.rotation.y += (targetRotation.y - fefoPetGroup.rotation.y) * 0.15;
     fefoPetGroup.rotation.x += (targetRotation.x - fefoPetGroup.rotation.x) * 0.15;
 
-    // Animação de Carinho / Pulo
     if (bounceAnim.active) {
       bounceAnim.time += delta * 6;
       const s = 1 + Math.sin(bounceAnim.time) * 0.2;
@@ -1397,7 +1594,6 @@ function initFefo3DViewer() {
   }
   animate();
 
-  // Redimensionamento
   window.addEventListener('resize', () => {
     if (!container) return;
     const w = container.clientWidth;
@@ -1413,11 +1609,12 @@ function initFefo3DViewer() {
     petBtn.addEventListener('click', () => {
       bounceAnim = { active: true, time: 0 };
       playPurrSound();
-      updateFaceCanvasTexture('love');
+      const prev = currentExpression;
+      setModelExpression('smart');
       createFloatingHearts(container);
       setTimeout(() => {
-        updateFaceCanvasTexture(currentExpression);
-      }, 1500);
+        setModelExpression(prev);
+      }, 1600);
     });
   }
 
@@ -1428,118 +1625,26 @@ function initFefo3DViewer() {
       btn.classList.add('active');
       const hexColor = parseInt(btn.getAttribute('data-hex').replace('#', '0x'));
       earLeds.forEach(led => {
-        led.material.color.setHex(hexColor);
-        led.material.emissive.setHex(hexColor);
+        if (led.material) {
+          led.material.color.setHex(hexColor);
+          if (led.material.emissive) led.material.emissive.setHex(hexColor);
+        }
       });
+      if (rimLight) rimLight.color.setHex(hexColor);
       playUiPop(720);
     });
   });
 
-  // Seletor de Expressões
+  // Seletor de Expressões da Tela 3D
   document.querySelectorAll('.exp-pill').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.exp-pill').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       const exp = btn.getAttribute('data-exp');
-      currentExpression = exp;
-      updateFaceCanvasTexture(exp);
-      playUiPop(600);
+      setModelExpression(exp);
+      playModeAudioFeedback(exp);
     });
   });
-}
-
-function updateFaceCanvasTexture(expression) {
-  if (!faceCanvas) return;
-  const ctx = faceCanvas.getContext('2d');
-  const w = faceCanvas.width;
-  const h = faceCanvas.height;
-
-  // Fundo tela escura
-  ctx.fillStyle = '#0a0518';
-  ctx.fillRect(0, 0, w, h);
-
-  // Desenho dos olhos e boquinha em ciano/neon
-  ctx.strokeStyle = '#00f2fe';
-  ctx.fillStyle = '#00f2fe';
-  ctx.lineWidth = 14;
-  ctx.lineCap = 'round';
-
-  const leftEyeX = w * 0.32;
-  const rightEyeX = w * 0.68;
-  const eyeY = h * 0.42;
-
-  if (expression === 'happy') {
-    // Olhos em arco sorridente ^ ^
-    ctx.beginPath();
-    ctx.arc(leftEyeX, eyeY + 10, 45, Math.PI, 0, false);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.arc(rightEyeX, eyeY + 10, 45, Math.PI, 0, false);
-    ctx.stroke();
-
-    // Boquinha de gato :3
-    ctx.beginPath();
-    ctx.arc(w * 0.46, h * 0.68, 22, 0, Math.PI, false);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(w * 0.54, h * 0.68, 22, 0, Math.PI, false);
-    ctx.stroke();
-  } else if (expression === 'sleepy') {
-    // Olhinhos fechados dormindo - -
-    ctx.beginPath();
-    ctx.moveTo(leftEyeX - 40, eyeY);
-    ctx.lineTo(leftEyeX + 40, eyeY);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(rightEyeX - 40, eyeY);
-    ctx.lineTo(rightEyeX + 40, eyeY);
-    ctx.stroke();
-
-    // Boquinha suave
-    ctx.beginPath();
-    ctx.arc(w * 0.5, h * 0.68, 15, 0, Math.PI, false);
-    ctx.stroke();
-  } else if (expression === 'curious') {
-    // Olhinhos arregalados O O
-    ctx.beginPath();
-    ctx.arc(leftEyeX, eyeY, 35, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.arc(rightEyeX, eyeY, 35, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Boquinha o
-    ctx.beginPath();
-    ctx.arc(w * 0.5, h * 0.72, 18, 0, Math.PI * 2);
-    ctx.stroke();
-  } else if (expression === 'love') {
-    // Olhos de Coração em Rosa ♥ ♥
-    ctx.fillStyle = '#ec4899';
-    drawHeart(ctx, leftEyeX, eyeY - 20, 45);
-    drawHeart(ctx, rightEyeX, eyeY - 20, 45);
-
-    // Boquinha aberta alegre
-    ctx.fillStyle = '#ec4899';
-    ctx.beginPath();
-    ctx.arc(w * 0.5, h * 0.68, 26, 0, Math.PI, false);
-    ctx.fill();
-  }
-
-  if (faceTexture) faceTexture.needsUpdate = true;
-}
-
-function drawHeart(ctx, x, y, size) {
-  ctx.save();
-  ctx.beginPath();
-  ctx.translate(x, y);
-  ctx.moveTo(0, 0);
-  ctx.bezierCurveTo(-size / 2, -size / 2, -size, size / 3, 0, size);
-  ctx.bezierCurveTo(size, size / 3, size / 2, -size / 2, 0, 0);
-  ctx.fill();
-  ctx.restore();
 }
 
 function createFloatingHearts(container) {

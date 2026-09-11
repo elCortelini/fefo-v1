@@ -21,9 +21,12 @@
   --pink-accent: #ec4899;
   --pink-glow: rgba(236, 72, 153, 0.4);
 
+  --cyan-wave: #00c4e8;
+  --cyan-glow: rgba(0, 196, 232, 0.45);
+  --blue-accent: #0284c7;
   --emerald-accent: #10b981;
-  --blue-accent: #3b82f6;
   --amber-accent: #f59e0b;
+  --yellow-fefo: #facc15;
 
   --text-main: #e2e8f0;
   --text-muted: #94a3b8;
@@ -522,6 +525,20 @@ section {
   margin-bottom: 1.5rem;
 }
 
+.hero-title .gradient-text {
+  background: linear-gradient(135deg, #ec4899, #8b5cf6, #00f2fe, #fbbf24, #ec4899);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: textShine 7s ease infinite;
+}
+
+@keyframes textShine {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 .hero-subtitle {
   font-size: 1.2rem;
   color: var(--text-muted);
@@ -560,12 +577,44 @@ section {
   gap: 1rem;
 }
 
-.hero-img-wrapper {
+.hero-stage-wrapper {
   position: relative;
   border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(139, 92, 246, 0.4);
-  border: 2px solid rgba(139, 92, 246, 0.5);
+  box-shadow: 0 20px 60px rgba(0, 196, 232, 0.35), 0 0 35px rgba(139, 92, 246, 0.3);
+  border: 2px solid rgba(0, 242, 254, 0.5);
+  background: #0f172a;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hero-stage-wrapper:hover {
+  transform: translateY(-6px) scale(1.015);
+  box-shadow: 0 25px 75px rgba(0, 196, 232, 0.5), 0 0 50px rgba(236, 72, 153, 0.4);
+}
+
+.hero-stage-bg {
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-stage-img {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+  animation: fefoBreathing 5s ease-in-out infinite alternate;
+  transform-origin: 35% 60%;
+}
+
+@keyframes fefoBreathing {
+  0% {
+    transform: scale(1) translateY(0);
+  }
+  50% {
+    transform: scale(1.025) translateY(-6px);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+  }
 }
 
 .hero-img-badge {
@@ -573,19 +622,102 @@ section {
   top: 1rem;
   left: 1rem;
   background: rgba(13, 8, 28, 0.9);
-  color: #f43f5e;
-  border: 1px solid rgba(244, 63, 94, 0.4);
+  color: #00f2fe;
+  border: 1px solid rgba(0, 242, 254, 0.4);
   font-size: 0.8rem;
   font-weight: 700;
   padding: 0.3rem 0.8rem;
   border-radius: var(--radius-full);
-  z-index: 2;
+  z-index: 4;
+  box-shadow: 0 0 12px rgba(0, 242, 254, 0.3);
 }
 
-.hero-img {
+/* Ondinhas Azuis Animadas sobre o rodapé da foto */
+.hero-stage-waves {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 95px;
+  pointer-events: none;
+  z-index: 3;
+  overflow: hidden;
+}
+
+.stage-wave-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.wave-layer-1 {
+  fill: rgba(0, 196, 232, 0.65);
+  animation: waveMotion1 4s ease-in-out infinite alternate;
+}
+
+.wave-layer-2 {
+  fill: rgba(2, 132, 199, 0.8);
+  animation: waveMotion2 5.5s ease-in-out infinite alternate;
+}
+
+.wave-layer-3 {
+  fill: rgba(14, 116, 144, 0.95);
+  animation: waveMotion3 3.5s ease-in-out infinite alternate;
+}
+
+@keyframes waveMotion1 {
+  0% { transform: translateX(-15px) scaleY(0.9); }
+  100% { transform: translateX(15px) scaleY(1.1); }
+}
+
+@keyframes waveMotion2 {
+  0% { transform: translateX(20px) scaleY(1.15); }
+  100% { transform: translateX(-20px) scaleY(0.85); }
+}
+
+@keyframes waveMotion3 {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-8px); }
+}
+
+/* Logo do FEFO dando pequenos pulos na tela */
+.hero-jumping-logo-box {
+  position: absolute;
+  bottom: 1.2rem;
+  right: 1.2rem;
+  z-index: 5;
+  width: 175px;
+  max-width: 38%;
+  pointer-events: none;
+}
+
+.hero-jumping-logo {
   width: 100%;
   display: block;
-  object-fit: cover;
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.65));
+  animation: logoHop 2.4s cubic-bezier(0.28, 0.84, 0.42, 1) infinite;
+  transform-origin: center bottom;
+}
+
+@keyframes logoHop {
+  0%, 100% {
+    transform: translateY(0) scale(1, 1);
+  }
+  20% {
+    transform: translateY(-16px) scale(1.06, 0.96) rotate(-2.5deg);
+  }
+  35% {
+    transform: translateY(0) scale(0.94, 1.06);
+  }
+  45% {
+    transform: translateY(-7px) scale(1.02, 0.98) rotate(1.5deg);
+  }
+  55% {
+    transform: translateY(0) scale(0.98, 1.02);
+  }
+  65% {
+    transform: translateY(0) scale(1, 1);
+  }
 }
 
 .hero-img-caption {
@@ -594,10 +726,56 @@ section {
   left: 0;
   right: 0;
   background: linear-gradient(0deg, rgba(13, 8, 28, 0.95) 0%, rgba(13, 8, 28, 0.6) 70%, transparent 100%);
-  padding: 1.2rem;
-  font-size: 0.88rem;
+  padding: 0.8rem 1.2rem;
+  font-size: 0.82rem;
   color: #e2e8f0;
-  z-index: 2;
+  z-index: 4;
+}
+
+/* Ondinhas Fluidas Animadas no Cabeçalho */
+.hero-waves-container {
+  width: 100%;
+  overflow: hidden;
+  line-height: 0;
+  margin-top: 3.5rem;
+  position: relative;
+}
+
+.hero-waves {
+  width: 100%;
+  height: 65px;
+  min-height: 50px;
+  max-height: 100px;
+  display: block;
+}
+
+.parallax-waves > use {
+  animation: move-forever 25s cubic-bezier(.55,.5,.45,.5) infinite;
+}
+.parallax-waves > use:nth-child(1) {
+  animation-delay: -2s;
+  animation-duration: 7s;
+}
+.parallax-waves > use:nth-child(2) {
+  animation-delay: -3s;
+  animation-duration: 10s;
+}
+.parallax-waves > use:nth-child(3) {
+  animation-delay: -4s;
+  animation-duration: 13s;
+}
+.parallax-waves > use:nth-child(4) {
+  animation-delay: -5s;
+  animation-duration: 20s;
+}
+
+@keyframes move-forever {
+  0% {
+    transform: translate3d(-90px, 0, 0);
+  }
+  100% {
+    transform: translate3d(85px, 0, 0);
+  }
 }
 
 .hero-img-caption strong {
@@ -2064,6 +2242,48 @@ html.reduced-sensory .gradient-text {
   color: #c4b5fd;
   pointer-events: none;
   backdrop-filter: blur(8px);
+  z-index: 5;
+}
+
+.fefo-3d-loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(13, 8, 28, 0.92);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  z-index: 20;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+  backdrop-filter: blur(8px);
+}
+
+.fefo-3d-loading-overlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.fefo-3d-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(139, 92, 246, 0.25);
+  border-top-color: #ec4899;
+  border-right-color: #8b5cf6;
+  border-radius: 50%;
+  animation: fefo3dSpin 0.9s linear infinite;
+}
+
+@keyframes fefo3dSpin {
+  to { transform: rotate(360deg); }
+}
+
+#fefo-3d-loading-text {
+  font-size: 0.92rem;
+  color: #c4b5fd;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .fefo-3d-heart-fx {
