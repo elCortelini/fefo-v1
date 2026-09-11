@@ -2,6 +2,11 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
+  <script>
+    if (location.protocol === 'http:' && !['localhost', '127.0.0.1'].includes(location.hostname)) {
+      location.replace(`https://${location.host}${location.pathname}${location.search}${location.hash}`);
+    }
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Administrador do catálogo · Fefo</title>
     <link rel="stylesheet" href="catalog-admin/admin.css">

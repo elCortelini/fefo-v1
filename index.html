@@ -2,6 +2,11 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
+  <script>
+    if (location.protocol === 'http:' && !['localhost', '127.0.0.1'].includes(location.hostname)) {
+      location.replace(`https://${location.host}${location.pathname}${location.search}${location.hash}`);
+    }
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FEFO Pet — Portfólio Oficial & Tecnologia Assistiva para Crianças Autistas</title>
   <meta name="description" content="FEFO é um pet eletrônico assistivo de apoio emocional e educacional para crianças autistas (TEA). Desenvolvido por psicopedagogos e engenheiros de TI para unir tecnologia, afeto e inclusão.">
