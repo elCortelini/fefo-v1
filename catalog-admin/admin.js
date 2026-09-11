@@ -16,7 +16,11 @@ function bindRows(){
     const x=state.published.find(y=>y.id===el.closest('.published-item').dataset.id);
     if(!x)return;
     const key=el.dataset.pk;
-    x[key]=el.type==='checkbox'?(el.checked?'Sim':'Não'):el.value;
+    const value=el.type==='checkbox'?(el.checked?'Sim':'Não'):el.value;
+    if(key==='arquivo'){
+      const currentFolder=(x.arquivo||'').match(/^\/[^/]+\/[^/]+\//)?.[0]||'/usr/a/';
+      x.arquivo=`${currentFolder}${String(value).split('/').pop()}`;
+    }else x[key]=value;
     if(key==='pasta'){
       const file=(x.arquivo||'').split('/').pop();
       const folder=el.value;

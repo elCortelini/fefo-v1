@@ -1,5 +1,5 @@
 from __future__ import annotations
-import csv, io, json, os, subprocess, sys, webbrowser
+import csv, io, json, os, shutil, subprocess, sys, webbrowser
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
@@ -16,18 +16,32 @@ def write_csv(items):
             if x.get('tipo')=='system_audio': x={**x,'tipo':'audio','disponibilidade':'sistema'}
             w.writerow({k:x.get(k,'') for k in fields})
 
+def _move_if_present(source: Path, target: Path):
+    if source == target or not source.exists():
+        return
+    target.parent.mkdir(parents=True, exist_ok=True)
+    if target.exists():
+        target.unlink()
+    shutil.move(str(source), str(target))
+
 def apply_edits(draft):
     if not CATALOG.exists(): return
     catalog=json.loads(CATALOG.read_text(encoding='utf-8'))
     for section in ('audio','faces','videos'):
-        by_id={str(x.get('id')):x for x in catalog.get(section,[])}
+        repo_folder={'audio':'audio','faces':'faces','videos':'video'}[section]
         kept=[]
         for item in catalog.get(section,[]):
             edit=next((x for x in draft if str(x.get('id'))==str(item.get('id'))),None)
             if edit:
                 if edit.get('publicar')=='Não': continue
+                old_file=item.get('arquivo','')
                 for old,new in [('titulo','titulo'),('menu','menu'),('submenu','submenu'),('arquivo','arquivo'),('evento','evento')]:
                     if new in edit and edit[new] is not None: item[old]=edit[new]
+                new_file=item.get('arquivo','')
+                old_name=Path(old_file).name
+                new_name=Path(new_file).name
+                _move_if_present(ROOT/'repository'/repo_folder/old_name, ROOT/'repository'/repo_folder/new_name)
+                _move_if_present(ROOT/'fefo_firmware'/'sdcard'/old_file.lstrip('/'), ROOT/'fefo_firmware'/'sdcard'/new_file.lstrip('/'))
             kept.append(item)
         catalog[section]=kept
     catalog['catalogVersion']=int(catalog.get('catalogVersion',1))+1
