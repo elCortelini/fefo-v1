@@ -20,6 +20,7 @@
     })();
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 </head>
 <body>
   <!-- 5. Barra de Progresso de Leitura Estilizada -->
@@ -143,14 +144,47 @@
       </div>
 
       <div class="hero-media">
-        <div class="hero-img-wrapper" id="hero-img-trigger" title="Clique para ampliar a foto real do protótipo físico">
-          <span class="hero-img-badge">🔴 Protótipo Físico V1</span>
-          <img src="images/portfolio/page_03_img_03.png" alt="FEFO Pet Eletrônico Físico" class="hero-img" id="hero-img-element">
+        <div class="hero-stage-wrapper" id="hero-img-trigger" title="Clique para ampliar a foto oficial do FEFO Pet">
+          <span class="hero-img-badge">✨ Protótipo Oficial FEFO</span>
+          
+          <div class="hero-stage-bg">
+            <img src="images/fefo_hero_oficial.jpg" alt="FEFO Pet Eletrônico de Apoio Emocional" class="hero-stage-img" id="hero-img-element">
+          </div>
+
+          <!-- Ondinhas Azuis Animadas e Fluidas -->
+          <div class="hero-stage-waves" aria-hidden="true">
+            <svg class="stage-wave-svg" viewBox="0 0 500 120" preserveAspectRatio="none">
+              <path class="wave-layer wave-layer-1" d="M0,40 C150,90 350,10 500,50 L500,120 L0,120 Z"></path>
+              <path class="wave-layer wave-layer-2" d="M0,60 C120,20 320,100 500,40 L500,120 L0,120 Z"></path>
+              <path class="wave-layer wave-layer-3" d="M0,80 C180,50 300,110 500,70 L500,120 L0,120 Z"></path>
+            </svg>
+          </div>
+
+          <!-- Logo do FEFO dando pequenos pulos na tela -->
+          <div class="hero-jumping-logo-box" aria-label="Logo FEFO Animado">
+            <img src="images/fefo_logo_colorido_oficial.png" alt="Logo FEFO Oficial" class="hero-jumping-logo">
+          </div>
+
           <div class="hero-img-caption">
-            <strong>FEFO Pet Físico:</strong> Tecnologia embarcada nacional com expressividade facial na tela, cromoterapia e suporte háptico tátil. <span class="zoom-hint">🔍 Clique para ampliar</span>
+            <strong>FEFO Pet Oficial:</strong> Tecnologia assistiva com expressividade na tela, cromoterapia e apoio sensorial para autismo. <span class="zoom-hint">🔍 Clique para ampliar</span>
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- Ondinhas Fluidas Animadas na Base do Cabeçalho -->
+    <div class="hero-waves-container" aria-hidden="true">
+      <svg class="hero-waves" xmlns="http://www.w3.org/2000/svg" viewBox="0 24 150 28" preserveAspectRatio="none">
+        <defs>
+          <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+        </defs>
+        <g class="parallax-waves">
+          <use href="#gentle-wave" x="48" y="0" fill="rgba(0, 242, 254, 0.2)" />
+          <use href="#gentle-wave" x="48" y="3" fill="rgba(139, 92, 246, 0.25)" />
+          <use href="#gentle-wave" x="48" y="5" fill="rgba(56, 189, 248, 0.35)" />
+          <use href="#gentle-wave" x="48" y="7" fill="rgba(15, 10, 34, 0.95)" />
+        </g>
+      </svg>
     </div>
   </section>
 
@@ -175,6 +209,10 @@
       <div class="fefo-3d-container">
         <div class="fefo-3d-viewport-wrapper" id="fefo-3d-viewport-wrapper">
           <div class="fefo-3d-overlay-hint">🔄 Arraste com o mouse ou dedo para girar 360°</div>
+          <div class="fefo-3d-loading-overlay" id="fefo-3d-loading">
+            <div class="fefo-3d-spinner"></div>
+            <span id="fefo-3d-loading-text">🐾 Carregando FEFO 3D Oficial...</span>
+          </div>
           <canvas id="fefo-3d-canvas"></canvas>
         </div>
 
@@ -195,12 +233,15 @@
           </div>
 
           <div class="control-group-box">
-            <h4>🐱 Expressões Emocionais da Tela Frontal</h4>
+            <h4>🐱 Expressões Emocionais da Tela Digital</h4>
             <div class="expression-pills">
-              <button class="exp-pill active" data-exp="happy">😊 Alegre / Brincalhão</button>
-              <button class="exp-pill" data-exp="sleepy">😌 Calmo / Soninho</button>
-              <button class="exp-pill" data-exp="curious">👀 Curioso / Atento</button>
-              <button class="exp-pill" data-exp="love">😻 Carinho / Afeto</button>
+              <button class="exp-pill active" data-exp="happy">😊 Alegre</button>
+              <button class="exp-pill" data-exp="calm">😌 Calmo</button>
+              <button class="exp-pill" data-exp="smart">🧐 Esperto</button>
+              <button class="exp-pill" data-exp="sad">😢 Triste</button>
+              <button class="exp-pill" data-exp="eating">😋 Comendo</button>
+              <button class="exp-pill" data-exp="music">🎵 Jukebox</button>
+              <button class="exp-pill" data-exp="panic">🚨 Pânico</button>
             </div>
           </div>
         </div>
@@ -399,14 +440,16 @@
             <img id="sim-face-img" class="demo-face-img" src="images/expressoes/fefo_exp_alegre_1.png" alt="Expressão do FEFO Pet">
           </div>
           <div class="demo-face-label" id="sim-label">Alegre / Interativo</div>
-          <div class="demo-face-counter" id="sim-counter"></div>
         </div>
 
         <div class="demo-controls">
           <button class="demo-btn active" data-mode="happy">🐱 Alegre</button>
           <button class="demo-btn" data-mode="calm">😌 Calmo</button>
+          <button class="demo-btn" data-mode="smart">🧐 Esperto</button>
+          <button class="demo-btn" data-mode="sad">😢 Triste</button>
+          <button class="demo-btn" data-mode="eating">😋 Comendo</button>
           <button class="demo-btn" data-mode="music">🎵 Jukebox</button>
-          <button class="demo-btn" data-mode="panic">🚨 Modo Pânico (Sensor Ruído)</button>
+          <button class="demo-btn" data-mode="panic">🚨 Modo Pânico</button>
         </div>
       </div>
     </div>
