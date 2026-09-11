@@ -8,7 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initFaceSimulator();
   initFaqAccordion();
   initSmoothScroll();
-  initFefoVideoStudio();
   initRealPhotoGallery();
   initReadingProgressBar();
   initSensoryAndAudioControls();
@@ -137,45 +136,57 @@ function initThemeSystem() {
   });
 }
 
-// 1. FEFO Interactive Screen & Mode Simulator
+// 1. FEFO Interactive Screen & Mode Simulator (Imagens Reais do Robô)
 function initFaceSimulator() {
-  const faceEmoji = document.getElementById('sim-emoji');
+  const simImg = document.getElementById('sim-face-img');
   const faceLabel = document.getElementById('sim-label');
   const simScreen = document.getElementById('sim-screen');
+  const simCounter = document.getElementById('sim-counter');
   const simButtons = document.querySelectorAll('.demo-btn');
 
-  if (!faceEmoji) return;
+  if (!simImg || !simScreen) return;
 
   const modes = {
     happy: {
-      emoji: '🐱✨',
       label: 'Alegre / Interativo',
-      bg: '#0f0a1c',
+      images: [
+        'images/expressoes/fefo_exp_alegre_1.png',
+        'images/expressoes/fefo_exp_alegre_2.png',
+        'images/expressoes/fefo_exp_alegre_3.png'
+      ],
       border: '#8b5cf6',
-      glow: 'rgba(139, 92, 246, 0.4)'
+      glow: 'rgba(139, 92, 246, 0.45)'
     },
     calm: {
-      emoji: '😌💤',
       label: 'Calmo / Relaxante',
-      bg: '#06201a',
+      images: [
+        'images/expressoes/fefo_exp_calmo_1.png',
+        'images/expressoes/fefo_exp_calmo_2.png'
+      ],
       border: '#10b981',
-      glow: 'rgba(16, 185, 129, 0.4)'
+      glow: 'rgba(16, 185, 129, 0.45)'
     },
     music: {
-      emoji: '🎵🎶',
-      label: 'Jukebox do FEFO',
-      bg: '#271026',
+      label: 'Jukebox do FEFO (Cantando)',
+      images: [
+        'images/expressoes/fefo_exp_jukebox.png'
+      ],
       border: '#ec4899',
-      glow: 'rgba(236, 72, 153, 0.4)'
+      glow: 'rgba(236, 72, 153, 0.45)'
     },
     panic: {
-      emoji: '🚨🔊',
-      label: 'Modo Pânico (Sensor Ruído)',
-      bg: '#2b0909',
+      label: 'Modo Pânico (Sensor Ruído / Sobrecarga)',
+      images: [
+        'images/expressoes/fefo_exp_panico.png'
+      ],
       border: '#ef4444',
       glow: 'rgba(239, 68, 68, 0.6)'
     }
   };
+
+  let currentMode = 'happy';
+  let currentFrameIdx = 0;
+  let cycleTimer = null;
 
   // Web Audio synthesizer feedback for simulator modes
   function playModeFeedback(modeKey) {
@@ -221,31 +232,89 @@ function initFaceSimulator() {
         osc.start(now);
         osc.stop(now + 0.3);
       }
-    } catch (e) {
-      // Audio might require user gesture or be disabled
+    } catch (e) {}
+  }
+
+  function updateDisplay(withSound = false) {
+    const mode = modes[currentMode] || modes.happy;
+    const imgList = mode.images;
+    if (currentFrameIdx >= imgList.length) currentFrameIdx = 0;
+
+    simImg.style.opacity = '0.35';
+    simImg.style.transform = 'scale(0.96)';
+
+    setTimeout(() => {
+      simImg.src = imgList[currentFrameIdx];
+      if (faceLabel) faceLabel.textContent = mode.label;
+      simScreen.style.borderColor = mode.border;
+      simScreen.style.boxShadow = `0 0 30px ${mode.glow}, inset 0 0 20px rgba(0,0,0,0.8)`;
+
+      if (simCounter) {
+        if (imgList.length > 1) {
+          simCounter.innerHTML = `<span>Expressão ${currentFrameIdx + 1} de ${imgList.length}</span> &bull; <small style="opacity:0.8;">Toque para alternar</small>`;
+        } else {
+          simCounter.innerHTML = '';
+        }
+      }
+
+      simImg.style.opacity = '1';
+      simImg.style.transform = 'scale(1)';
+    }, 110);
+
+    if (withSound) {
+      playModeFeedback(currentMode);
     }
   }
 
+  function startAutoCycle() {
+    if (cycleTimer) clearInterval(cycleTimer);
+    const mode = modes[currentMode];
+    if (mode && mode.images.length > 1) {
+      cycleTimer = setInterval(() => {
+        currentFrameIdx = (currentFrameIdx + 1) % mode.images.length;
+        updateDisplay(false);
+      }, 2500);
+    }
+  }
+
+  // Permite clicar na tela para avançar imediatamente para a próxima expressão
+  simScreen.style.cursor = 'pointer';
+  simScreen.addEventListener('click', () => {
+    const mode = modes[currentMode];
+    if (mode && mode.images.length > 1) {
+      currentFrameIdx = (currentFrameIdx + 1) % mode.images.length;
+      updateDisplay(true);
+      startAutoCycle();
+    } else {
+      playModeFeedback(currentMode);
+    }
+  });
+
   simButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
       simButtons.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
 
       const modeKey = btn.getAttribute('data-mode');
-      const mode = modes[modeKey] || modes.happy;
+      if (modeKey === currentMode) {
+        const mode = modes[currentMode];
+        if (mode && mode.images.length > 1) {
+          currentFrameIdx = (currentFrameIdx + 1) % mode.images.length;
+        }
+      } else {
+        currentMode = modeKey;
+        currentFrameIdx = 0;
+      }
 
-      playModeFeedback(modeKey);
-
-      faceEmoji.style.transform = 'scale(0.8)';
-      setTimeout(() => {
-        faceEmoji.textContent = mode.emoji;
-        faceLabel.textContent = mode.label;
-        simScreen.style.borderColor = mode.border;
-        simScreen.style.boxShadow = `0 0 30px ${mode.glow}, inset 0 0 20px rgba(0,0,0,0.8)`;
-        faceEmoji.style.transform = 'scale(1)';
-      }, 150);
+      updateDisplay(true);
+      startAutoCycle();
     });
   });
+
+  // Carregamento inicial
+  updateDisplay(false);
+  startAutoCycle();
 }
 
 // 2. FAQ Accordion Toggle
