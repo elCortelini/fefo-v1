@@ -751,10 +751,29 @@ section {
   background: #0d081c;
   border: 3px solid var(--purple-main);
   border-radius: var(--radius-md);
-  padding: 3rem 2rem;
+  padding: 2.2rem 1.5rem;
   margin-bottom: 2rem;
   transition: all 0.3s ease;
   box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.8);
+}
+
+.demo-face-img-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.demo-face-img {
+  max-width: 320px;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 2;
+  object-fit: contain;
+  border-radius: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+  transition: transform 0.22s ease, opacity 0.18s ease;
 }
 
 .demo-face-emoji {
@@ -768,6 +787,13 @@ section {
   font-size: 1.3rem;
   font-weight: 700;
   color: var(--text-bright);
+}
+
+.demo-face-counter {
+  font-size: 0.82rem;
+  color: #c4b5fd;
+  margin-top: 0.4rem;
+  min-height: 1.2rem;
 }
 
 .demo-controls {
@@ -910,6 +936,12 @@ section {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
   gap: 2rem;
+}
+
+.team-grid.single-member {
+  max-width: 680px;
+  margin: 0 auto;
+  grid-template-columns: 1fr;
 }
 
 .team-card {
