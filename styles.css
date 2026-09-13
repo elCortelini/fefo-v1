@@ -3410,3 +3410,31 @@ html.reduced-sensory .gradient-text {
   }
 }
 
+/* ==========================================================================
+   Otimizações Globais de Alta Performance & GPU Acceleration
+   ========================================================================== */
+.hero-mascot-main-img,
+.hero-logo-main-img,
+.parallax-wave-layer,
+.hero-clean-view,
+.fefo-3d-container,
+.coloring-studio-card,
+.video-studio-wrapper,
+.glass-card {
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Isola o cálculo de layout e renderização apenas para seções visíveis na tela */
+.activities-section,
+.fefo-3d-section,
+.video-studio-section,
+.faq-section,
+.testimonials-section,
+.waitlist-section {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 800px;
+}
+
+

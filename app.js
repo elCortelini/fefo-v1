@@ -760,11 +760,23 @@ function initFefoVideoStudio() {
       ctx.fillText(line, boxX + 140, lineY);
     }
 
-    animationFrameId = requestAnimationFrame(render);
+    if (isPlaying && isVideoVisible) {
+      animationFrameId = requestAnimationFrame(render);
+    }
   }
 
-  // Start Animation Engine
-  animationFrameId = requestAnimationFrame(render);
+  let isVideoVisible = true;
+  const videoStudioCard = document.querySelector('.video-studio-wrapper');
+  if ('IntersectionObserver' in window && videoStudioCard) {
+    const videoObs = new IntersectionObserver((entries) => {
+      isVideoVisible = entries[0].isIntersecting;
+      if (isVideoVisible && isPlaying) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = requestAnimationFrame(render);
+      }
+    }, { threshold: 0.05 });
+    videoObs.observe(videoStudioCard);
+  }
 
   // Update Subtitle UI
   function updateSubtitles(dialogue) {
@@ -787,7 +799,11 @@ function initFefoVideoStudio() {
 
   // Start Playback
   function playStory() {
-    isPlaying = true;
+    if (!isPlaying) {
+      isPlaying = true;
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = requestAnimationFrame(render);
+    }
     overlay.classList.add('hidden');
     btnPlayPause.textContent = '⏸ Pausar';
     statusText.textContent = `Reproduzindo ${storyData.scenes[currentSceneIdx].title}`;
@@ -801,6 +817,7 @@ function initFefoVideoStudio() {
   // Pause Playback
   function pauseStory() {
     isPlaying = false;
+    cancelAnimationFrame(animationFrameId);
     btnPlayPause.textContent = '▶ Reproduzir';
     statusText.textContent = 'Pausado';
     if ('speechSynthesis' in window) {
@@ -1610,12 +1627,22 @@ function initFefo3DViewer() {
 
   window.addEventListener('pointerup', () => { isDragging = false; });
 
-  // Loop de Animação Contínua
+  // Loop de Animação Contínua Otimizado com IntersectionObserver
   let clock = new THREE.Clock();
   let bounceAnim = { active: false, time: 0 };
+  let is3DVisible = true;
+
+  if ('IntersectionObserver' in window && container) {
+    const observer3D = new IntersectionObserver((entries) => {
+      is3DVisible = entries[0].isIntersecting;
+    }, { threshold: 0.02 });
+    observer3D.observe(container);
+  }
 
   function animate() {
     requestAnimationFrame(animate);
+    if (!is3DVisible) return;
+
     const delta = clock.getDelta();
     const elapsedTime = clock.getElapsedTime();
 
