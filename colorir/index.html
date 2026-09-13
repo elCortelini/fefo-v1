@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="galaxy">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FEFO - Estúdio Bobbie Goods & Acervo de Atividades Infantil</title>
+  <meta name="description" content="Estúdio interativo para colorir desenhos do Bobbie Goods FEFO online e baixar materiais didáticos pedagógicos para crianças autistas.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark-1: #090e1a;
+      --bg-dark-2: #101a2f;
+      --bg-card: rgba(22, 33, 62, 0.85);
+      --card-border: rgba(139, 92, 246, 0.35);
+      --purple-main: #8b5cf6;
+      --purple-light: #c084fc;
+      --pink-accent: #ec4899;
+      --accent-soft: #c084fc;
+      --text-main: #e2eafc;
+      --text-muted: #9bb0d3;
+      --radius-lg: 24px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+    }
+
+    /* Temas Sensoriais */
+    html[data-theme="galaxy"] {
+      --bg-dark-1: #090e1a;
+      --bg-dark-2: #101a2f;
+      --bg-card: rgba(22, 33, 62, 0.85);
+      --card-border: rgba(139, 92, 246, 0.35);
+      --accent-soft: #c084fc;
+    }
+    html[data-theme="calm"] {
+      --bg-dark-1: #081c15;
+      --bg-dark-2: #1b4332;
+      --bg-card: rgba(27, 67, 50, 0.85);
+      --card-border: rgba(52, 211, 153, 0.35);
+      --accent-soft: #34d399;
+    }
+    html[data-theme="sunset"] {
+      --bg-dark-1: #2d112c;
+      --bg-dark-2: #531238;
+      --bg-card: rgba(83, 18, 56, 0.85);
+      --card-border: rgba(251, 146, 60, 0.35);
+      --accent-soft: #fb923c;
+    }
+    html[data-theme="ocean"] {
+      --bg-dark-1: #03045e;
+      --bg-dark-2: #0077b6;
+      --bg-card: rgba(0, 119, 182, 0.75);
+      --card-border: rgba(56, 189, 248, 0.4);
+      --accent-soft: #38bdf8;
+    }
+    html[data-theme="snow"] {
+      --bg-dark-1: #0f172a;
+      --bg-dark-2: #1e293b;
+      --bg-card: rgba(30, 41, 59, 0.85);
+      --card-border: rgba(226, 232, 240, 0.35);
+      --accent-soft: #38bdf8;
+    }
+    html[data-theme="mint"] {
+      --bg-dark-1: #064e3b;
+      --bg-dark-2: #047857;
+      --bg-card: rgba(4, 120, 87, 0.8);
+      --card-border: rgba(110, 231, 183, 0.35);
+      --accent-soft: #6ee7b7;
+    }
+    html[data-theme="lavender"] {
+      --bg-dark-1: #2e1065;
+      --bg-dark-2: #4c1d95;
+      --bg-card: rgba(76, 29, 149, 0.8);
+      --card-border: rgba(192, 132, 252, 0.35);
+      --accent-soft: #c084fc;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: radial-gradient(circle at 50% 20%, var(--bg-dark-2) 0%, var(--bg-dark-1) 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px;
+      transition: background 0.5s ease;
+    }
+
+    /* Container Principal */
+    .app-container {
+      max-width: 980px;
+      width: 100%;
+      background: var(--bg-card);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      animation: fadeIn 0.8s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Top Bar & Navigation */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .btn-back-home {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: var(--text-main);
+      padding: 8px 18px;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.25s ease;
+    }
+
+    .btn-back-home:hover {
+      background: var(--purple-main);
+      color: #ffffff;
+      transform: translateX(-3px);
+    }
+
+    .theme-selector-pills {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .theme-pill {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: var(--text-main);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .theme-pill:hover, .theme-pill.active {
+      background: var(--accent-soft);
+      color: #000000;
+      border-color: #ffffff;
+      box-shadow: 0 0 10px var(--accent-soft);
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(236, 72, 153, 0.15);
+      border: 1px solid rgba(236, 72, 153, 0.3);
+      padding: 6px 16px;
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--pink-accent);
+      letter-spacing: 0.5px;
+    }
+
+    h1 {
+      font-family: 'Comfortaa', cursive;
+      font-size: 2rem;
+      font-weight: 700;
+      color: #ffffff;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .subtitle {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      max-width: 620px;
+      line-height: 1.5;
+    }
+
+    /* Abas do Acervo */
+    .activity-tabs-wrapper {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .activity-tab-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: var(--text-muted);
+      padding: 0.8rem 1.6rem;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .activity-tab-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      transform: translateY(-2px);
+    }
+
+    .activity-tab-btn.active {
+      background: linear-gradient(135deg, var(--purple-main), var(--pink-accent));
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.4);
+      box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+    }
+
+    /* Coloring Studio Workspace */
+    .coloring-studio-card {
+      padding: 1.5rem;
+      border-radius: 24px;
+      background: rgba(18, 13, 33, 0.85);
+      border: 1px solid var(--card-border);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    .coloring-studio-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .coloring-studio-header h3 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 0.3rem;
+    }
+
+    .coloring-studio-header p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .coloring-workspace {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      align-items: center;
+    }
+
+    .coloring-canvas-container {
+      width: 100%;
+      max-width: 900px;
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 12px;
+      box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.15), 0 12px 35px rgba(0, 0, 0, 0.6);
+      border: 4px solid rgba(139, 92, 246, 0.4);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    #coloringCanvas {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 10px;
+      cursor: crosshair;
+      touch-action: none;
+      background-color: #ffffff;
+    }
+
+    /* Painel de Ferramentas Mecânicas */
+    .coloring-tools-bar {
+      width: 100%;
+      max-width: 900px;
+      background: linear-gradient(135deg, rgba(28, 22, 53, 0.95), rgba(16, 12, 33, 0.95));
+      border: 2px solid rgba(139, 92, 246, 0.35);
+      border-radius: 20px;
+      padding: 1.2rem;
+      display: flex;
+      gap: 1.5rem;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .tool-actions-column {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .mechanical-tool-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: linear-gradient(145deg, #281f4a, #181233);
+      border: 2px solid rgba(139, 92, 246, 0.4);
+      color: #ffffff;
+      padding: 0.65rem 1.1rem;
+      border-radius: 14px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+    }
+
+    .mechanical-tool-btn:hover {
+      transform: translateY(-2px);
+      border-color: var(--purple-light);
+      box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+    }
+
+    .mechanical-tool-btn.active {
+      background: linear-gradient(145deg, var(--purple-main), #6d28d9);
+      border-color: #ffffff;
+      box-shadow: 0 0 18px rgba(139, 92, 246, 0.7);
+    }
+
+    .mechanical-tool-btn.action-reset:hover {
+      border-color: #ef4444;
+      box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+    }
+
+    .mechanical-tool-btn.action-download {
+      background: linear-gradient(145deg, #059669, #047857);
+      border-color: #34d399;
+    }
+
+    .mechanical-tool-btn.action-download:hover {
+      border-color: #ffffff;
+      box-shadow: 0 0 20px rgba(52, 211, 153, 0.5);
+    }
+
+    .coloring-palette-box {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .palette-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .palette-swatches-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 0.5rem;
+    }
+
+    .color-swatch {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .color-swatch:hover {
+      transform: scale(1.15);
+      border-color: #ffffff;
+    }
+
+    .color-swatch.active {
+      transform: scale(1.25);
+      border: 3px solid #ffffff;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+    }
+
+    /* Galeria de Desenhos */
+    .activity-gallery-selector {
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .activity-gallery-selector h4 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 1rem;
+    }
+
+    .activity-cards-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+
+    .activity-card-item {
+      background: rgba(255, 255, 255, 0.04);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .activity-card-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: var(--purple-light);
+      transform: translateY(-2px);
+    }
+
+    .activity-card-item.active {
+      background: rgba(139, 92, 246, 0.2);
+      border-color: var(--purple-main);
+      box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
+    }
+
+    .activity-card-item span {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .activity-thumb {
+      width: 50px;
+      height: 50px;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #ffffff;
+      flex-shrink: 0;
+    }
+
+    .activity-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .card-future-add {
+      border-style: dashed;
+      opacity: 0.7;
+    }
+
+    .future-add-box {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      color: var(--text-muted);
+    }
+
+    /* Downloads Grid */
+    .downloads-materials-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .download-card {
+      background: rgba(18, 13, 33, 0.85);
+      border: 1px solid var(--card-border);
+      padding: 1.5rem;
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .download-icon {
+      font-size: 2.5rem;
+    }
+
+    .download-body h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 0.5rem;
+    }
+
+    .download-body p {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin-bottom: 1.2rem;
+      line-height: 1.5;
+    }
+
+    .btn-download-pdf {
+      background: linear-gradient(135deg, var(--purple-main), var(--pink-accent));
+      color: #ffffff;
+      padding: 0.6rem 1.2rem;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.85rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-download-pdf:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
+    }
+
+    @media (max-width: 768px) {
+      .coloring-tools-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .palette-swatches-grid {
+        grid-template-columns: repeat(7, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <main class="app-container">
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <a href="../index.html" class="btn-back-home">⬅️ Voltar ao Site FEFO</a>
+
+      <!-- Pílulas de Temas -->
+      <div class="theme-selector-pills">
+        <button class="theme-pill active" data-theme="galaxy">🌌 Galáxia</button>
+        <button class="theme-pill" data-theme="calm">🌿 Calmo</button>
+        <button class="theme-pill" data-theme="sunset">🌅 Pôr do Sol</button>
+        <button class="theme-pill" data-theme="ocean">🌊 Oceano</button>
+        <button class="theme-pill" data-theme="snow">❄️ Neve</button>
+        <button class="theme-pill" data-theme="mint">🍃 Menta</button>
+        <button class="theme-pill" data-theme="lavender">🪻 Lavanda</button>
+      </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+      <div class="badge">🎨 Inclusão & Aprendizado Lúdico</div>
+      <h1>Estúdio Bobbie Goods FEFO & Acervo Infantil</h1>
+      <p class="subtitle">
+        Espaço exclusivo para colorir desenhos do Bobbie Goods FEFO online com ferramentas mecânicas acolhedoras e área para baixar materiais didáticos pedagógicos.
+      </p>
+    </header>
+
+    <!-- Abas do Acervo -->
+    <div class="activity-tabs-wrapper">
+      <button class="activity-tab-btn active" id="tabBtnColorir" data-tab="colorir">
+        🎨 Colorir Online ("Bobbie Goods FEFO")
+      </button>
+      <button class="activity-tab-btn" id="tabBtnDownloads" data-tab="downloads">
+        📄 Materiais Didáticos em PDF (Download)
+      </button>
+    </div>
+
+    <!-- Conteúdo da Aba 1: Estúdio de Colorir Online -->
+    <div class="activity-tab-content active" id="tabContentColorir">
+      <div class="coloring-studio-card">
+        <div class="coloring-studio-header">
+          <div>
+            <h3 id="currentDrawingTitle">🎨 Desenho 1: FEFO e a Criança lendo no Quarto Acolhedor</h3>
+            <p>Escolha a cor, selecione a ferramenta e clique para pintar as regiões do desenho!</p>
+          </div>
+        </div>
+
+        <div class="coloring-workspace">
+          <!-- Canvas Interativo -->
+          <div class="coloring-canvas-container">
+            <canvas id="coloringCanvas" width="900" height="630"></canvas>
+          </div>
+
+          <!-- Painel de Ferramentas Mecânicas -->
+          <div class="coloring-tools-bar">
+            <!-- Botões de Ação Mecânicos -->
+            <div class="tool-actions-column">
+              <button class="mechanical-tool-btn active" id="toolBucket" title="Balde de Tintas (Preencher área)">
+                <span class="tool-icon">🪣</span>
+                <span class="tool-name">Balde</span>
+              </button>
+              <button class="mechanical-tool-btn" id="toolBrush" title="Pincel Livre">
+                <span class="tool-icon">🖌️</span>
+                <span class="tool-name">Pincel</span>
+              </button>
+              <button class="mechanical-tool-btn" id="toolEraser" title="Borracha (Apagar cor)">
+                <span class="tool-icon">🧹</span>
+                <span class="tool-name">Apagar</span>
+              </button>
+              <button class="mechanical-tool-btn action-reset" id="toolReset" title="Limpar todas as cores (Reiniciar)">
+                <span class="tool-icon">🔄</span>
+                <span class="tool-name">Limpar</span>
+              </button>
+              <button class="mechanical-tool-btn action-download" id="toolDownload" title="Baixar / Imprimir Desenho">
+                <span class="tool-icon">💾</span>
+                <span class="tool-name">Baixar</span>
+              </button>
+            </div>
+
+            <!-- Paleta Limpa de Cores Curadas -->
+            <div class="coloring-palette-box">
+              <span class="palette-label">Selecione a Cor:</span>
+              <div class="palette-swatches-grid">
+                <button class="color-swatch active" data-color="#8b5cf6" style="background-color: #8b5cf6;" title="Roxo FEFO"></button>
+                <button class="color-swatch" data-color="#ec4899" style="background-color: #ec4899;" title="Rosa Choque"></button>
+                <button class="color-swatch" data-color="#f472b6" style="background-color: #f472b6;" title="Rosa Pastel"></button>
+                <button class="color-swatch" data-color="#38bdf8" style="background-color: #38bdf8;" title="Azul Céu"></button>
+                <button class="color-swatch" data-color="#0284c7" style="background-color: #0284c7;" title="Azul Profundo"></button>
+                <button class="color-swatch" data-color="#34d399" style="background-color: #34d399;" title="Verde Menta"></button>
+                <button class="color-swatch" data-color="#10b981" style="background-color: #10b981;" title="Verde Esmeralda"></button>
+                <button class="color-swatch" data-color="#facc15" style="background-color: #facc15;" title="Amarelo FEFO"></button>
+                <button class="color-swatch" data-color="#fb923c" style="background-color: #fb923c;" title="Laranja Solar"></button>
+                <button class="color-swatch" data-color="#c084fc" style="background-color: #c084fc;" title="Lavanda Soft"></button>
+                <button class="color-swatch" data-color="#8b4513" style="background-color: #8b4513;" title="Marrom Madeira"></button>
+                <button class="color-swatch" data-color="#64748b" style="background-color: #64748b;" title="Cinza Grafite"></button>
+                <button class="color-swatch" data-color="#000000" style="background-color: #000000;" title="Preto Nanquim"></button>
+                <button class="color-swatch" data-color="#ffffff" style="background-color: #ffffff; border: 1px solid #ccc;" title="Branco Papel"></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Galeria de Desenhos do Acervo -->
+        <div class="activity-gallery-selector">
+          <h4>📁 Outros Desenhos do Acervo para Colorir:</h4>
+          <div class="activity-cards-list">
+            <div class="activity-card-item active" data-src="../images/colorir_fefo_quarto.jpg" data-title="FEFO e a Criança no Quarto Acolhedor">
+              <div class="activity-thumb">
+                <img src="../images/colorir_fefo_quarto.jpg" alt="Desenho FEFO Quarto">
+              </div>
+              <span>Desenho 1: FEFO no Quarto</span>
+            </div>
+            <div class="activity-card-item" data-src="../images/fefo_mascote_alta_resolucao.png" data-title="Mascote FEFO Eletrônico">
+              <div class="activity-thumb">
+                <img src="../images/fefo_mascote_alta_resolucao.png" alt="Mascote FEFO">
+              </div>
+              <span>Desenho 2: Mascote FEFO</span>
+            </div>
+            <div class="activity-card-item card-future-add">
+              <div class="future-add-box">
+                <span class="add-icon">➕</span>
+                <span>Adicionar Novo Acervo (Em breve)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Conteúdo da Aba 2: Materiais Didáticos em PDF (Download) -->
+    <div class="activity-tab-content" id="tabContentDownloads" style="display: none;">
+      <div class="downloads-materials-grid">
+        <div class="download-card">
+          <div class="download-icon">🎴</div>
+          <div class="download-body">
+            <h3>Kit de Cards Numerais FEFO (1 a 5)</h3>
+            <p>Cards ilustrados em alta resolução para pareamento de números, quantidades e comunicação alternativa com autistas.</p>
+            <a href="../images/fefo_cards_numerais_15.png" download="FEFO_Kit_Cards_Numerais.png" class="btn-download-pdf">
+              <span>📥 Baixar Kit Imprimível</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="download-card">
+          <div class="download-icon">📚</div>
+          <div class="download-body">
+            <h3>Livrinho Pedagógico de Rotina e Emoções</h3>
+            <p>Material em PDF ilustrado com historinhas do FEFO para mediação da rotina diária e expressão das emoções.</p>
+            <a href="../images/fefo_livrinho_pedagogico1.jpg" download="FEFO_Livrinho_Pedagogico.jpg" class="btn-download-pdf">
+              <span>📥 Baixar Livrinho PDF</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="download-card">
+          <div class="download-icon">🗺️</div>
+          <div class="download-body">
+            <h3>Mapa Mental & Guia do Projeto FEFO</h3>
+            <p>Infográfico completo contendo a estrutura dos módulos pedagógicos, hardware assistivo e rotinas de apoio.</p>
+            <a href="../images/fefo_mapa_mental_projeto.jpg" download="FEFO_Mapa_Mental_Projeto.jpg" class="btn-download-pdf">
+              <span>📥 Baixar Infográfico</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // 1. SISTEMA DE TEMAS SENSORIAIS
+    const themePills = document.querySelectorAll('.theme-pill');
+    themePills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        themePills.forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        const theme = pill.getAttribute('data-theme');
+        document.documentElement.setAttribute('data-theme', theme);
+      });
+    });
+
+    // 2. ESTÚDIO DE COLORIR CANVAS ENGINE (BFS FLOOD FILL & FREEHAND)
+    const canvas = document.getElementById('coloringCanvas');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+    // Abas do Acervo
+    const tabBtns = document.querySelectorAll('.activity-tab-btn');
+    const tabContentColorir = document.getElementById('tabContentColorir');
+    const tabContentDownloads = document.getElementById('tabContentDownloads');
+
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const targetTab = btn.getAttribute('data-tab');
+        if (targetTab === 'colorir') {
+          if (tabContentColorir) tabContentColorir.style.display = 'block';
+          if (tabContentDownloads) tabContentDownloads.style.display = 'none';
+        } else {
+          if (tabContentColorir) tabContentColorir.style.display = 'none';
+          if (tabContentDownloads) tabContentDownloads.style.display = 'grid';
+        }
+      });
+    });
+
+    // Estado do Estúdio
+    let currentTool = 'bucket'; // 'bucket', 'brush', 'eraser'
+    let currentColor = '#8b5cf6';
+    let isDrawing = false;
+    let activeImageSrc = '../images/colorir_fefo_quarto.jpg';
+    let loadedImg = new Image();
+    let originalImgData = null;
+
+    function loadArtwork(src) {
+      activeImageSrc = src;
+      loadedImg = new Image();
+      loadedImg.crossOrigin = 'Anonymous';
+      loadedImg.onload = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const scale = Math.min(canvas.width / loadedImg.width, canvas.height / loadedImg.height);
+        const x = (canvas.width / 2) - (loadedImg.width / 2) * scale;
+        const y = (canvas.height / 2) - (loadedImg.height / 2) * scale;
+        const w = loadedImg.width * scale;
+        const h = loadedImg.height * scale;
+
+        ctx.drawImage(loadedImg, x, y, w, h);
+        originalImgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      };
+      loadedImg.src = src;
+    }
+
+    loadArtwork(activeImageSrc);
+
+    // Cards da Galeria
+    const galleryCards = document.querySelectorAll('.activity-card-item:not(.card-future-add)');
+    const titleElem = document.getElementById('currentDrawingTitle');
+
+    galleryCards.forEach(card => {
+      card.addEventListener('click', () => {
+        galleryCards.forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        const src = card.getAttribute('data-src');
+        const title = card.getAttribute('data-title');
+        if (titleElem && title) {
+          titleElem.textContent = `🎨 ${title}`;
+        }
+        if (src) loadArtwork(src);
+      });
+    });
+
+    // Ferramentas Mecânicas
+    const toolBtns = {
+      bucket: document.getElementById('toolBucket'),
+      brush: document.getElementById('toolBrush'),
+      eraser: document.getElementById('toolEraser')
+    };
+
+    function setTool(toolName) {
+      currentTool = toolName;
+      Object.keys(toolBtns).forEach(t => {
+        if (toolBtns[t]) {
+          if (t === toolName) toolBtns[t].classList.add('active');
+          else toolBtns[t].classList.remove('active');
+        }
+      });
+      if (toolName === 'bucket') {
+        canvas.style.cursor = 'crosshair';
+      } else if (toolName === 'brush') {
+        canvas.style.cursor = 'crosshair';
+      } else if (toolName === 'eraser') {
+        canvas.style.cursor = 'cell';
+      }
+    }
+
+    if (toolBtns.bucket) toolBtns.bucket.addEventListener('click', () => setTool('bucket'));
+    if (toolBtns.brush) toolBtns.brush.addEventListener('click', () => setTool('brush'));
+    if (toolBtns.eraser) toolBtns.eraser.addEventListener('click', () => setTool('eraser'));
+
+    // Paleta de Cores
+    const swatches = document.querySelectorAll('.color-swatch');
+    swatches.forEach(swatch => {
+      swatch.addEventListener('click', () => {
+        swatches.forEach(s => s.classList.remove('active'));
+        swatch.classList.add('active');
+        currentColor = swatch.getAttribute('data-color') || '#8b5cf6';
+      });
+    });
+
+    // Reset / Limpar
+    const resetBtn = document.getElementById('toolReset');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        if (originalImgData) {
+          ctx.putImageData(originalImgData, 0, 0);
+        } else {
+          loadArtwork(activeImageSrc);
+        }
+      });
+    }
+
+    // Baixar Imagem
+    const downloadBtn = document.getElementById('toolDownload');
+    if (downloadBtn) {
+      downloadBtn.addEventListener('click', () => {
+        const link = document.createElement('a');
+        link.download = 'fefo_desenho_colorido.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      });
+    }
+
+    // Flood Fill (BFS)
+    function hexToRgba(hex) {
+      let c = hex.replace('#', '');
+      if (c.length === 3) c = c.split('').map(x => x + x).join('');
+      const num = parseInt(c, 16);
+      return [(num >> 16) & 255, (num >> 8) & 255, num & 255, 255];
+    }
+
+    function floodFill(startX, startY, hexColor) {
+      const width = canvas.width;
+      const height = canvas.height;
+      const imgData = ctx.getImageData(0, 0, width, height);
+      const data = imgData.data;
+
+      const fillColor = hexToRgba(hexColor);
+      const startPos = (startY * width + startX) * 4;
+
+      const startR = data[startPos];
+      const startG = data[startPos + 1];
+      const startB = data[startPos + 2];
+
+      const startLum = (startR * 0.299 + startG * 0.587 + startB * 0.114);
+      if (startLum < 75) return;
+
+      if (Math.abs(startR - fillColor[0]) < 10 &&
+          Math.abs(startG - fillColor[1]) < 10 &&
+          Math.abs(startB - fillColor[2]) < 10) return;
+
+      function colorMatch(pos) {
+        const r = data[pos];
+        const g = data[pos + 1];
+        const b = data[pos + 2];
+        const lum = (r * 0.299 + g * 0.587 + b * 0.114);
+        if (lum < 75) return false;
+
+        const dist = Math.abs(r - startR) + Math.abs(g - startG) + Math.abs(b - startB);
+        return dist < 85;
+      }
+
+      const queue = [[startX, startY]];
+      const visited = new Uint8Array(width * height);
+      visited[startY * width + startX] = 1;
+
+      while (queue.length > 0) {
+        const [x, y] = queue.pop();
+        const pos = (y * width + x) * 4;
+
+        data[pos] = fillColor[0];
+        data[pos + 1] = fillColor[1];
+        data[pos + 2] = fillColor[2];
+        data[pos + 3] = 255;
+
+        const neighbors = [
+          [x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]
+        ];
+
+        for (let i = 0; i < neighbors.length; i++) {
+          const [nx, ny] = neighbors[i];
+          if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+            const nIndex = ny * width + nx;
+            if (!visited[nIndex]) {
+              visited[nIndex] = 1;
+              const nPos = (ny * width + nx) * 4;
+              if (colorMatch(nPos)) {
+                queue.push([nx, ny]);
+              }
+            }
+          }
+        }
+      }
+
+      ctx.putImageData(imgData, 0, 0);
+    }
+
+    // Interação
+    function getCanvasCoords(e) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return {
+        x: Math.floor((clientX - rect.left) * scaleX),
+        y: Math.floor((clientY - rect.top) * scaleY)
+      };
+    }
+
+    function handleStart(e) {
+      const { x, y } = getCanvasCoords(e);
+      if (x < 0 || x >= canvas.width || y < 0 || y >= canvas.height) return;
+
+      if (currentTool === 'bucket') {
+        floodFill(x, y, currentColor);
+      } else {
+        isDrawing = true;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        if (currentTool === 'brush') {
+          ctx.strokeStyle = currentColor;
+          ctx.lineWidth = 12;
+        } else if (currentTool === 'eraser') {
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 24;
+        }
+      }
+    }
+
+    function handleMove(e) {
+      if (!isDrawing || currentTool === 'bucket') return;
+      const { x, y } = getCanvasCoords(e);
+      ctx.lineTo(x, y);
+      ctx.stroke();
+    }
+
+    function handleEnd() {
+      isDrawing = false;
+    }
+
+    canvas.addEventListener('mousedown', handleStart);
+    canvas.addEventListener('mousemove', handleMove);
+    canvas.addEventListener('mouseup', handleEnd);
+    canvas.addEventListener('mouseleave', handleEnd);
+
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handleStart(e); });
+    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); handleMove(e); });
+    canvas.addEventListener('touchend', (e) => { e.preventDefault(); handleEnd(); });
+  </script>
+</body>
+</html>

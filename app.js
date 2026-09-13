@@ -1859,7 +1859,7 @@ function initBackToTopButton() {
 }
 
 // --------------------------------------------------------------------------
-// 17. Acervo de Atividades Infantil & Estúdio de Colorir ("Bobbie Goodies FEFO")
+// 17. Acervo de Atividades Infantil & Estúdio de Colorir ("Bobbie Goods FEFO")
 // --------------------------------------------------------------------------
 function initColoringStudio() {
   const canvas = document.getElementById('coloringCanvas');

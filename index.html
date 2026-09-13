@@ -143,6 +143,7 @@
         <li><a href="#proposito" class="nav-link">🌟 Triplo Propósito</a></li>
         <li><a href="#modulos" class="nav-link">📖 Módulos</a></li>
         <li><a href="#fefo-3d" class="nav-link" style="color: #ec4899; font-weight: 700;">🐾 FEFO 3D</a></li>
+        <li><a href="colorir/index.html" class="nav-link" style="color: #c084fc; font-weight: 700;">🎨 Bobbie Goods FEFO</a></li>
         <li><a href="#depoimentos" class="nav-link" style="color: #38bdf8;">💬 Depoimentos</a></li>
         <li><a href="#lista-espera" class="nav-link" style="color: #34d399; font-weight: 700;">📋 Lista de Espera</a></li>
         <li><a href="#maleta" class="nav-link">💼 Maleta & Cards</a></li>
@@ -153,6 +154,7 @@
         <li><a href="#faq-validacao" class="nav-link">❓ FAQ & Validação</a></li>
       </ul>
       <div class="nav-buttons">
+        <a href="colorir/index.html" class="btn btn-secondary btn-sm" style="border-color: #c084fc; color: #ffffff; background: rgba(192, 132, 252, 0.2);">🎨 Bobbie Goods FEFO</a>
         <a href="ninar/index.html" class="btn btn-secondary btn-sm" target="_blank" rel="noopener">🌙 Criador de Ninar</a>
         <a href="catalog-admin.html" class="btn btn-primary btn-sm">Administrar catálogo</a>
         <a href="https://github.com/elCortelini/fefo-v1/tree/main/releases" target="_blank" class="btn btn-primary btn-sm">Baixar App</a>
@@ -479,182 +481,7 @@
           <h3>📚 Livros & Livrinhos Ilustrados</h3>
           <p>Histórias impressas do FEFO que ensinam empatia, diversidade e ajudam no letramento socioemocional.</p>
         </div>
-
-        <div class="glass-card material-card">
-          <div class="material-img-box">
-            <img src="images/portfolio/page_09_img_09.png" alt="Portal FEFO" class="material-img">
-          </div>
-        <div class="glass-card material-card">
-          <div class="material-img-box">
-            <img src="images/portfolio/page_09_img_09.png" alt="Portal FEFO" class="material-img">
-          </div>
-          <h3>🌐 Portal FEFO Educational</h3>
-          <p>Plataforma com conteúdos adaptados, atualizações periódicas e canal de apoio para professores e responsáveis.</p>
-        </div>
       </div>
-    </div>
-  </section>
-
-  <!-- ==========================================================================
-       Seção Especial: Acervo de Atividades Infantil & Bobbie Goodies FEFO
-       ========================================================================== -->
-  <section id="acervo-atividades" class="activities-section">
-    <div class="container">
-      <div class="text-center" style="margin-bottom: 2.5rem;">
-        <div class="section-tag">
-          <span>🎨 Inclusão & Aprendizado Lúdico</span>
-        </div>
-        <h2 class="section-title">
-          Acervo de Atividades & <span class="gradient-text">Bobbie Goodies FEFO</span>
-        </h2>
-        <p class="section-subtitle">
-          Um espaço interativo com acervo para colorir online e área para baixar materiais didáticos pedagógicos para crianças.
-        </p>
-      </div>
-
-      <!-- Abas de Navegação do Acervo (Extensível para novos materiais) -->
-      <div class="activity-tabs-wrapper">
-        <button class="activity-tab-btn active" id="tabBtnColorir" data-tab="colorir">
-          🎨 Colorir Online ("Bobbie Goodies FEFO")
-        </button>
-        <button class="activity-tab-btn" id="tabBtnDownloads" data-tab="downloads">
-          📄 Materiais Didáticos em PDF (Download)
-        </button>
-      </div>
-
-      <!-- Conteúdo da Aba 1: Estúdio de Colorir Online -->
-      <div class="activity-tab-content active" id="tabContentColorir">
-        <div class="coloring-studio-card glass-card">
-          <div class="coloring-studio-header">
-            <div>
-              <h3 id="currentDrawingTitle">🎨 Desenho 1: FEFO e a Criança lendo no Quarto Acolhedor</h3>
-              <p>Escolha a cor, selecione a ferramenta e clique para pintar as regiões do desenho!</p>
-            </div>
-            <div class="coloring-header-actions">
-              <span class="activity-badge">Atividade Interativa</span>
-            </div>
-          </div>
-
-          <div class="coloring-workspace">
-            <!-- Canvas Interativo -->
-            <div class="coloring-canvas-container">
-              <canvas id="coloringCanvas" width="900" height="630"></canvas>
-            </div>
-
-            <!-- Painel de Ferramentas Inspirado na Imagem 1 (Apagar, Pincel, Preencher, Paleta) -->
-            <div class="coloring-tools-bar">
-              <!-- Botões de Ação Mecânicos (Estilo Imagem 1) -->
-              <div class="tool-actions-column">
-                <button class="mechanical-tool-btn active" id="toolBucket" title="Balde de Tintas (Preencher área)">
-                  <span class="tool-icon">🪣</span>
-                  <span class="tool-name">Balde</span>
-                </button>
-                <button class="mechanical-tool-btn" id="toolBrush" title="Pincel Livre">
-                  <span class="tool-icon">🖌️</span>
-                  <span class="tool-name">Pincel</span>
-                </button>
-                <button class="mechanical-tool-btn" id="toolEraser" title="Borracha (Apagar cor)">
-                  <span class="tool-icon">🧹</span>
-                  <span class="tool-name">Apagar</span>
-                </button>
-                <button class="mechanical-tool-btn action-reset" id="toolReset" title="Limpar todas as cores (Reiniciar)">
-                  <span class="tool-icon">🔄</span>
-                  <span class="tool-name">Limpar</span>
-                </button>
-                <button class="mechanical-tool-btn action-download" id="toolDownload" title="Baixar / Imprimir Desenho">
-                  <span class="tool-icon">💾</span>
-                  <span class="tool-name">Baixar</span>
-                </button>
-              </div>
-
-              <!-- Paleta Limpa de Cores Curadas do FEFO (Inspirado na Imagem 1) -->
-              <div class="coloring-palette-box">
-                <span class="palette-label">Selecione a Cor:</span>
-                <div class="palette-swatches-grid">
-                  <button class="color-swatch active" data-color="#8b5cf6" style="background-color: #8b5cf6;" title="Roxo FEFO"></button>
-                  <button class="color-swatch" data-color="#ec4899" style="background-color: #ec4899;" title="Rosa Choque"></button>
-                  <button class="color-swatch" data-color="#f472b6" style="background-color: #f472b6;" title="Rosa Pastel"></button>
-                  <button class="color-swatch" data-color="#38bdf8" style="background-color: #38bdf8;" title="Azul Céu"></button>
-                  <button class="color-swatch" data-color="#0284c7" style="background-color: #0284c7;" title="Azul Profundo"></button>
-                  <button class="color-swatch" data-color="#34d399" style="background-color: #34d399;" title="Verde Menta"></button>
-                  <button class="color-swatch" data-color="#10b981" style="background-color: #10b981;" title="Verde Esmeralda"></button>
-                  <button class="color-swatch" data-color="#facc15" style="background-color: #facc15;" title="Amarelo FEFO"></button>
-                  <button class="color-swatch" data-color="#fb923c" style="background-color: #fb923c;" title="Laranja Solar"></button>
-                  <button class="color-swatch" data-color="#c084fc" style="background-color: #c084fc;" title="Lavanda Soft"></button>
-                  <button class="color-swatch" data-color="#8b4513" style="background-color: #8b4513;" title="Marrom Madeira"></button>
-                  <button class="color-swatch" data-color="#64748b" style="background-color: #64748b;" title="Cinza Grafite"></button>
-                  <button class="color-swatch" data-color="#000000" style="background-color: #000000;" title="Preto Nanquim"></button>
-                  <button class="color-swatch" data-color="#ffffff" style="background-color: #ffffff; border: 1px solid #ccc;" title="Branco Papel"></button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Galeria de Desenhos do Acervo (Extensível para novos arquivos) -->
-          <div class="activity-gallery-selector">
-            <h4>📁 Outros Desenhos do Acervo para Colorir:</h4>
-            <div class="activity-cards-list">
-              <div class="activity-card-item active" data-src="images/colorir_fefo_quarto.jpg" data-title="FEFO e a Criança no Quarto Acolhedor">
-                <div class="activity-thumb">
-                  <img src="images/colorir_fefo_quarto.jpg" alt="Desenho FEFO Quarto">
-                </div>
-                <span>Desenho 1: FEFO no Quarto</span>
-              </div>
-              <div class="activity-card-item" data-src="images/fefo_mascote_alta_resolucao.png" data-title="Mascote FEFO Eletrônico">
-                <div class="activity-thumb">
-                  <img src="images/fefo_mascote_alta_resolucao.png" alt="Mascote FEFO">
-                </div>
-                <span>Desenho 2: Mascote FEFO</span>
-              </div>
-              <div class="activity-card-item card-future-add">
-                <div class="future-add-box">
-                  <span class="add-icon">➕</span>
-                  <span>Adicionar Novo Acervo (Em breve)</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Conteúdo da Aba 2: Materiais Didáticos em PDF (Download) -->
-      <div class="activity-tab-content" id="tabContentDownloads" style="display: none;">
-        <div class="downloads-materials-grid">
-          <div class="glass-card download-card">
-            <div class="download-icon">🎴</div>
-            <div class="download-body">
-              <h3>Kit de Cards Numerais FEFO (1 a 5)</h3>
-              <p>Cards ilustrados em alta resolução para pareamento de números, quantidades e comunicação alternativa com autistas.</p>
-              <a href="images/fefo_cards_numerais_15.png" download="FEFO_Kit_Cards_Numerais.png" class="btn btn-primary btn-sm">
-                <span>📥 Baixar Kit Imprimível</span>
-              </a>
-            </div>
-          </div>
-
-          <div class="glass-card download-card">
-            <div class="download-icon">📚</div>
-            <div class="download-body">
-              <h3>Livrinho Pedagógico de Rotina e Emoções</h3>
-              <p>Material em PDF ilustrado com historinhas do FEFO para mediação da rotina diária e expressão das emoções.</p>
-              <a href="images/fefo_livrinho_pedagogico1.jpg" download="FEFO_Livrinho_Pedagogico.jpg" class="btn btn-primary btn-sm">
-                <span>📥 Baixar Livrinho PDF</span>
-              </a>
-            </div>
-          </div>
-
-          <div class="glass-card download-card">
-            <div class="download-icon">🗺️</div>
-            <div class="download-body">
-              <h3>Mapa Mental & Guia do Projeto FEFO</h3>
-              <p>Infográfico completo contendo a estrutura dos módulos pedagógicos, hardware assistivo e rotinas de apoio.</p>
-              <a href="images/fefo_mapa_mental_projeto.jpg" download="FEFO_Mapa_Mental_Projeto.jpg" class="btn btn-secondary btn-sm">
-                <span>📥 Baixar Infográfico</span>
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-
     </div>
   </section>
 
