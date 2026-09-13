@@ -1,0 +1,46 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 260' width='160' height='260'>
+  <defs>
+    <filter id='shadow' x='-20%' y='-20%' width='140%' height='140%'>
+      <feDropShadow dx='0' dy='8' stdDeviation='6' flood-color='#000000' flood-opacity='0.4'/>
+    </filter>
+    <linearGradient id='puzzle1' x1='0%' y1='0%' x2='100%' y2='100%'>
+      <stop offset='0%' stop-color='#0066cc'/>
+      <stop offset='100%' stop-color='#0044aa'/>
+    </linearGradient>
+    <linearGradient id='puzzle2' x1='0%' y1='0%' x2='100%' y2='100%'>
+      <stop offset='0%' stop-color='#ffcc00'/>
+      <stop offset='100%' stop-color='#ff9900'/>
+    </linearGradient>
+    <linearGradient id='puzzle3' x1='0%' y1='0%' x2='100%' y2='100%'>
+      <stop offset='0%' stop-color='#ff3333'/>
+      <stop offset='100%' stop-color='#cc0000'/>
+    </linearGradient>
+    <linearGradient id='puzzle4' x1='0%' y1='0%' x2='100%' y2='100%'>
+      <stop offset='0%' stop-color='#00cc66'/>
+      <stop offset='100%' stop-color='#009944'/>
+    </linearGradient>
+  </defs>
+
+  <g filter='url(#shadow)'>
+    <!-- Left Loop Loop -->
+    <path d='M80 30 C40 30 20 60 20 100 C20 150 50 180 80 220 C70 180 50 140 50 100 C50 70 65 50 80 50 Z' fill='url(#puzzle1)' />
+    <!-- Right Loop -->
+    <path d='M80 30 C120 30 140 60 140 100 C140 150 110 180 80 220 C90 180 110 140 110 100 C110 70 95 50 80 50 Z' fill='url(#puzzle3)' />
+    <!-- Top Arch crossover -->
+    <path d='M55 70 C70 40 90 40 105 70 C95 85 65 85 55 70 Z' fill='url(#puzzle2)' />
+    
+    <!-- Left Leg -->
+    <path d='M45 150 L15 240 L40 240 L65 175 Z' fill='url(#puzzle4)' />
+    <!-- Right Leg -->
+    <path d='M115 150 L145 240 L120 240 L95 175 Z' fill='url(#puzzle2)' />
+    
+    <!-- Decorative Autism Puzzle Pieces Overlay -->
+    <circle cx='80' cy='50' r='6' fill='#ffffff' opacity='0.9'/>
+    <path d='M80 44 L83 50 L80 56 L77 50 Z' fill='#ff3333'/>
+    
+    <circle cx='35' cy='100' r='5' fill='#ffcc00' opacity='0.95'/>
+    <circle cx='125' cy='100' r='5' fill='#0066cc' opacity='0.95'/>
+    <circle cx='32' cy='200' r='5' fill='#00cc66' opacity='0.95'/>
+    <circle cx='128' cy='200' r='5' fill='#ff3333' opacity='0.95'/>
+  </g>
+</svg>

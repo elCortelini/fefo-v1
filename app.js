@@ -5,6 +5,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   initThemeSystem();
   initMobileMenu();
+  initStickyNavbarPosition();
   initFaceSimulator();
   initFaqAccordion();
   initSmoothScroll();
@@ -15,7 +16,30 @@ document.addEventListener('DOMContentLoaded', () => {
   initButtonAudioFeedback();
   initTestimonialsAudio();
   initWaitlistForm();
+  initBackToTopButton();
+  initColoringStudio();
 });
+
+// Dynamic Navbar Position (Bottom on Hero page, docks to Top when scrolled past)
+function initStickyNavbarPosition() {
+  const navbar = document.querySelector('.navbar');
+  const heroSection = document.getElementById('pet-fefo');
+  if (!navbar || !heroSection) return;
+
+  function updateNavbarPosition() {
+    const heroHeight = heroSection.offsetHeight;
+    const threshold = heroSection.offsetTop + heroHeight - navbar.offsetHeight - 60;
+    if (window.scrollY > threshold) {
+      navbar.classList.add('navbar-docked-top');
+    } else {
+      navbar.classList.remove('navbar-docked-top');
+    }
+  }
+
+  window.addEventListener('scroll', updateNavbarPosition, { passive: true });
+  window.addEventListener('resize', updateNavbarPosition, { passive: true });
+  updateNavbarPosition();
+}
 
 // 0. Mobile Hamburger Menu Toggle
 function initMobileMenu() {
@@ -66,6 +90,13 @@ function initThemeSystem() {
   const themes = {
     galaxy: { name: 'Galáxia', icon: '🌌' },
     calm: { name: 'Calmo (TEA)', icon: '🌿' },
+    sunset: { name: 'Pôr do Sol', icon: '🌅' },
+    ocean: { name: 'Oceano', icon: '🌊' },
+    snow: { name: 'Neve Serena', icon: '❄️' },
+    lavender: { name: 'Lavanda', icon: '🪻' },
+    mint: { name: 'Menta', icon: '🍃' },
+    forest: { name: 'Floresta', icon: '🌲' },
+    classic: { name: 'Clássico', icon: '🦊' },
     light: { name: 'Solar', icon: '☀️' },
     contrast: { name: 'Contraste', icon: '⚡' }
   };
@@ -91,10 +122,11 @@ function initThemeSystem() {
     });
   }
 
-  // Load saved theme or HTML attribute or fallback
+  // Load saved theme, URL param, or HTML attribute or fallback
   let savedTheme = 'galaxy';
   try {
-    savedTheme = localStorage.getItem('fefo-theme') || document.documentElement.getAttribute('data-theme') || 'galaxy';
+    const urlParams = new URLSearchParams(window.location.search);
+    savedTheme = urlParams.get('theme') || localStorage.getItem('fefo-theme') || document.documentElement.getAttribute('data-theme') || 'galaxy';
   } catch (e) {
     savedTheme = document.documentElement.getAttribute('data-theme') || 'galaxy';
   }
@@ -154,7 +186,7 @@ function initFaceSimulator() {
     },
     calm: {
       label: 'Calmo / Relaxante',
-      image: 'images/expressoes/fefo_exp_calmo_1.png',
+      image: 'images/expressoes/fefo_exp_calmo_oficial.png',
       border: '#10b981',
       glow: 'rgba(16, 185, 129, 0.45)'
     },
@@ -1203,7 +1235,7 @@ const expressionTextures = {};
 
 const expressionImageMap = {
   happy: 'images/expressoes/fefo_exp_alegre_1.png',
-  calm: 'images/expressoes/fefo_exp_calmo_1.png',
+  calm: 'images/expressoes/fefo_exp_calmo_oficial.png',
   smart: 'images/expressoes/fefo_exp_esperto.png',
   sad: 'images/expressoes/fefo_exp_triste.png',
   eating: 'images/expressoes/fefo_exp_comendo.png',
@@ -1332,10 +1364,19 @@ function initFefo3DViewer() {
   fefoPetGroup = new THREE.Group();
   scene.add(fefoPetGroup);
 
-  // Pré-carregar todas as 6 texturas faciais
+  // Pré-carregar todas as texturas faciais e centralizá-las
   const texLoader = new THREE.TextureLoader();
+  function configureTexture(tex) {
+    if (!tex) return;
+    tex.center.set(0.5, 0.5);
+    tex.wrapS = THREE.ClampToEdgeWrapping;
+    tex.wrapT = THREE.ClampToEdgeWrapping;
+    tex.needsUpdate = true;
+  }
+
   Object.keys(expressionImageMap).forEach(key => {
     texLoader.load(expressionImageMap[key], (tex) => {
+      configureTexture(tex);
       expressionTextures[key] = tex;
       if (key === currentExpression && screenMesh) {
         screenMesh.material.map = tex;
@@ -1348,10 +1389,12 @@ function initFefo3DViewer() {
     currentExpression = expKey;
     if (screenMesh) {
       if (expressionTextures[expKey]) {
+        configureTexture(expressionTextures[expKey]);
         screenMesh.material.map = expressionTextures[expKey];
         screenMesh.material.needsUpdate = true;
       } else {
         texLoader.load(expressionImageMap[expKey] || expressionImageMap.happy, (tex) => {
+          configureTexture(tex);
           expressionTextures[expKey] = tex;
           screenMesh.material.map = tex;
           screenMesh.material.needsUpdate = true;
@@ -1382,19 +1425,20 @@ function initFefo3DViewer() {
         loaded = true;
         clearTimeout(loadTimeout);
 
+        const box = new THREE.Box3().setFromObject(gltf.scene);
+        const center = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3());
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const s = 2.1 / maxDim;
+
+        gltf.scene.scale.set(s, s, s);
+        gltf.scene.position.set(-center.x * s, -center.y * s + 0.05, -center.z * s);
+
         gltf.scene.traverse((child) => {
           if (child.isMesh) {
             if (child.geometry) {
               child.geometry.computeVertexNormals();
-              child.geometry.center();
-
-              const box = new THREE.Box3().setFromBufferAttribute(child.geometry.attributes.position);
-              const size = box.getSize(new THREE.Vector3());
-              const maxDim = Math.max(size.x, size.y, size.z);
-              const s = 2.2 / maxDim;
-              child.geometry.scale(s, s, s);
             }
-
             child.material = new THREE.MeshStandardMaterial({
               color: 0x8b5cf6,
               roughness: 0.38,
@@ -1405,22 +1449,26 @@ function initFefo3DViewer() {
 
         fefoPetGroup.add(gltf.scene);
 
-        // Tela Digital frontal ajustada ao recorte do chassi 3D oficial
+        // Tela Digital frontal redimensionada proporcionalmente e alinhada à borda direita para eliminar o vão lateral
         const initialTex = expressionTextures[currentExpression] || null;
-        const screenGeo = new THREE.PlaneGeometry(0.72, 0.48);
+        if (initialTex) configureTexture(initialTex);
+        const screenGeo = new THREE.PlaneGeometry(0.96, 0.64);
         const screenMat = new THREE.MeshBasicMaterial({
           map: initialTex,
-          toneMapped: false
+          toneMapped: false,
+          side: THREE.FrontSide
         });
         screenMesh = new THREE.Mesh(screenGeo, screenMat);
-        screenMesh.position.set(0, 0.165, 0.545);
+        screenMesh.position.set(0.035, 0.18, 0.65);
+        screenMesh.rotation.x = -0.04;
         fefoPetGroup.add(screenMesh);
 
-        // Fundo escuro atrás da tela
-        const backGeo = new THREE.PlaneGeometry(0.74, 0.50);
+        // Fundo escuro alinhado com a tela
+        const backGeo = new THREE.PlaneGeometry(0.98, 0.66);
         const backMat = new THREE.MeshBasicMaterial({ color: 0x070412 });
         const backMesh = new THREE.Mesh(backGeo, backMat);
-        backMesh.position.set(0, 0.165, 0.54);
+        backMesh.position.set(0.035, 0.18, 0.645);
+        backMesh.rotation.x = -0.04;
         fefoPetGroup.add(backMesh);
 
         // LEDs das Orelhinhas que reagem à Cromoterapia
@@ -1513,13 +1561,13 @@ function initFefo3DViewer() {
     fefoPetGroup.add(earRightLed);
     earLeds.push(earRightLed);
 
-    const screenFrameGeo = new THREE.BoxGeometry(1.15, 0.85, 0.1);
+    const screenFrameGeo = new THREE.BoxGeometry(1.16, 0.80, 0.1);
     const screenFrameMat = new THREE.MeshStandardMaterial({ color: 0x1f143d, roughness: 0.3 });
     const screenFrame = new THREE.Mesh(screenFrameGeo, screenFrameMat);
     screenFrame.position.set(0, 0.05, 0.96);
     fefoPetGroup.add(screenFrame);
 
-    const screenGeo = new THREE.PlaneGeometry(1.05, 0.75);
+    const screenGeo = new THREE.PlaneGeometry(1.05, 0.70);
     const screenMat = new THREE.MeshBasicMaterial({ map: expressionTextures[currentExpression] || null, toneMapped: false });
     screenMesh = new THREE.Mesh(screenGeo, screenMat);
     screenMesh.position.set(0, 0.05, 1.02);
@@ -1759,3 +1807,300 @@ function initWaitlistForm() {
     if (e.target === modal) modal.classList.remove('open');
   });
 }
+
+// --------------------------------------------------------------------------
+// 16. Botão de Voltar ao Topo da Página
+// --------------------------------------------------------------------------
+function initBackToTopButton() {
+  const btn = document.getElementById('back-to-top');
+  if (!btn) return;
+
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 350) {
+      btn.classList.add('visible');
+    } else {
+      btn.classList.remove('visible');
+    }
+  });
+
+  btn.addEventListener('click', () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  });
+}
+
+// --------------------------------------------------------------------------
+// 17. Acervo de Atividades Infantil & Estúdio de Colorir ("Bobbie Goodies FEFO")
+// --------------------------------------------------------------------------
+function initColoringStudio() {
+  const canvas = document.getElementById('coloringCanvas');
+  if (!canvas) return;
+
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  
+  // Abas do Acervo
+  const tabBtns = document.querySelectorAll('.activity-tab-btn');
+  const tabContentColorir = document.getElementById('tabContentColorir');
+  const tabContentDownloads = document.getElementById('tabContentDownloads');
+
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const targetTab = btn.getAttribute('data-tab');
+      if (targetTab === 'colorir') {
+        if (tabContentColorir) tabContentColorir.style.display = 'block';
+        if (tabContentDownloads) tabContentDownloads.style.display = 'none';
+      } else {
+        if (tabContentColorir) tabContentColorir.style.display = 'none';
+        if (tabContentDownloads) tabContentDownloads.style.display = 'grid';
+      }
+    });
+  });
+
+  // Estado do Estúdio
+  let currentTool = 'bucket'; // 'bucket', 'brush', 'eraser'
+  let currentColor = '#8b5cf6';
+  let isDrawing = false;
+  let activeImageSrc = 'images/colorir_fefo_quarto.jpg';
+  let loadedImg = new Image();
+  let originalImgData = null;
+
+  // Carregar Imagem no Canvas
+  function loadArtwork(src) {
+    activeImageSrc = src;
+    loadedImg = new Image();
+    loadedImg.crossOrigin = 'Anonymous';
+    loadedImg.onload = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Calcular proporção para centralizar no canvas 900x630
+      const scale = Math.min(canvas.width / loadedImg.width, canvas.height / loadedImg.height);
+      const x = (canvas.width / 2) - (loadedImg.width / 2) * scale;
+      const y = (canvas.height / 2) - (loadedImg.height / 2) * scale;
+      const w = loadedImg.width * scale;
+      const h = loadedImg.height * scale;
+
+      ctx.drawImage(loadedImg, x, y, w, h);
+      originalImgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    };
+    loadedImg.src = src;
+  }
+
+  // Inicializar primeira arte
+  loadArtwork(activeImageSrc);
+
+  // Troca de Arte pelas Cards da Galeria
+  const galleryCards = document.querySelectorAll('.activity-card-item:not(.card-future-add)');
+  const titleElem = document.getElementById('currentDrawingTitle');
+
+  galleryCards.forEach(card => {
+    card.addEventListener('click', () => {
+      galleryCards.forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      const src = card.getAttribute('data-src');
+      const title = card.getAttribute('data-title');
+      if (titleElem && title) {
+        titleElem.textContent = `🎨 ${title}`;
+      }
+      if (src) loadArtwork(src);
+    });
+  });
+
+  // Seleção de Ferramentas Mecânicas
+  const toolBtns = {
+    bucket: document.getElementById('toolBucket'),
+    brush: document.getElementById('toolBrush'),
+    eraser: document.getElementById('toolEraser')
+  };
+
+  function setTool(toolName) {
+    currentTool = toolName;
+    Object.keys(toolBtns).forEach(t => {
+      if (toolBtns[t]) {
+        if (t === toolName) toolBtns[t].classList.add('active');
+        else toolBtns[t].classList.remove('active');
+      }
+    });
+    if (toolName === 'bucket') {
+      canvas.style.cursor = 'crosshair';
+    } else if (toolName === 'brush') {
+      canvas.style.cursor = 'crosshair';
+    } else if (toolName === 'eraser') {
+      canvas.style.cursor = 'cell';
+    }
+  }
+
+  if (toolBtns.bucket) toolBtns.bucket.addEventListener('click', () => setTool('bucket'));
+  if (toolBtns.brush) toolBtns.brush.addEventListener('click', () => setTool('brush'));
+  if (toolBtns.eraser) toolBtns.eraser.addEventListener('click', () => setTool('eraser'));
+
+  // Seleção de Cores na Paleta
+  const swatches = document.querySelectorAll('.color-swatch');
+  swatches.forEach(swatch => {
+    swatch.addEventListener('click', () => {
+      swatches.forEach(s => s.classList.remove('active'));
+      swatch.classList.add('active');
+      currentColor = swatch.getAttribute('data-color') || '#8b5cf6';
+    });
+  });
+
+  // Reset / Limpar
+  const resetBtn = document.getElementById('toolReset');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      if (originalImgData) {
+        ctx.putImageData(originalImgData, 0, 0);
+      } else {
+        loadArtwork(activeImageSrc);
+      }
+    });
+  }
+
+  // Baixar Imagem Pintada
+  const downloadBtn = document.getElementById('toolDownload');
+  if (downloadBtn) {
+    downloadBtn.addEventListener('click', () => {
+      const link = document.createElement('a');
+      link.download = 'fefo_desenho_colorido.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+  }
+
+  // Algoritmo de Preenchimento (Flood Fill / Balde de Tintas)
+  function hexToRgba(hex) {
+    let c = hex.replace('#', '');
+    if (c.length === 3) c = c.split('').map(x => x + x).join('');
+    const num = parseInt(c, 16);
+    return [(num >> 16) & 255, (num >> 8) & 255, num & 255, 255];
+  }
+
+  function floodFill(startX, startY, hexColor) {
+    const width = canvas.width;
+    const height = canvas.height;
+    const imgData = ctx.getImageData(0, 0, width, height);
+    const data = imgData.data;
+
+    const fillColor = hexToRgba(hexColor);
+    const startPos = (startY * width + startX) * 4;
+
+    const startR = data[startPos];
+    const startG = data[startPos + 1];
+    const startB = data[startPos + 2];
+
+    // Não preencher se for linha de contorno preta/escura
+    const startLum = (startR * 0.299 + startG * 0.587 + startB * 0.114);
+    if (startLum < 75) return;
+
+    // Não preencher se já for a mesma cor
+    if (Math.abs(startR - fillColor[0]) < 10 &&
+        Math.abs(startG - fillColor[1]) < 10 &&
+        Math.abs(startB - fillColor[2]) < 10) return;
+
+    function colorMatch(pos) {
+      const r = data[pos];
+      const g = data[pos + 1];
+      const b = data[pos + 2];
+      const lum = (r * 0.299 + g * 0.587 + b * 0.114);
+      if (lum < 75) return false;
+
+      const dist = Math.abs(r - startR) + Math.abs(g - startG) + Math.abs(b - startB);
+      return dist < 85;
+    }
+
+    const queue = [[startX, startY]];
+    const visited = new Uint8Array(width * height);
+    visited[startY * width + startX] = 1;
+
+    while (queue.length > 0) {
+      const [x, y] = queue.pop();
+      const pos = (y * width + x) * 4;
+
+      data[pos] = fillColor[0];
+      data[pos + 1] = fillColor[1];
+      data[pos + 2] = fillColor[2];
+      data[pos + 3] = 255;
+
+      const neighbors = [
+        [x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]
+      ];
+
+      for (let i = 0; i < neighbors.length; i++) {
+        const [nx, ny] = neighbors[i];
+        if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+          const nIndex = ny * width + nx;
+          if (!visited[nIndex]) {
+            visited[nIndex] = 1;
+            const nPos = (ny * width + nx) * 4;
+            if (colorMatch(nPos)) {
+              queue.push([nx, ny]);
+            }
+          }
+        }
+      }
+    }
+
+    ctx.putImageData(imgData, 0, 0);
+  }
+
+  // Interação de Clique & Desenho Livre no Canvas
+  function getCanvasCoords(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return {
+      x: Math.floor((clientX - rect.left) * scaleX),
+      y: Math.floor((clientY - rect.top) * scaleY)
+    };
+  }
+
+  function handleStart(e) {
+    const { x, y } = getCanvasCoords(e);
+    if (x < 0 || x >= canvas.width || y < 0 || y >= canvas.height) return;
+
+    if (currentTool === 'bucket') {
+      floodFill(x, y, currentColor);
+    } else {
+      isDrawing = true;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      if (currentTool === 'brush') {
+        ctx.strokeStyle = currentColor;
+        ctx.lineWidth = 12;
+      } else if (currentTool === 'eraser') {
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 24;
+      }
+    }
+  }
+
+  function handleMove(e) {
+    if (!isDrawing || currentTool === 'bucket') return;
+    const { x, y } = getCanvasCoords(e);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+  }
+
+  function handleEnd() {
+    isDrawing = false;
+  }
+
+  canvas.addEventListener('mousedown', handleStart);
+  canvas.addEventListener('mousemove', handleMove);
+  canvas.addEventListener('mouseup', handleEnd);
+  canvas.addEventListener('mouseleave', handleEnd);
+
+  canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handleStart(e); });
+  canvas.addEventListener('touchmove', (e) => { e.preventDefault(); handleMove(e); });
+  canvas.addEventListener('touchend', (e) => { e.preventDefault(); handleEnd(); });
+}
+

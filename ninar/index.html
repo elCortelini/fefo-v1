@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="galaxy">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FEFO - Música Relaxante com Som de Chuva (5 Minutos)</title>
-  <meta name="description" content="Música instrumental relaxante e som de chuva para crianças autistas de 5 anos. Criado com carinho para o projeto FEFO.">
+  <title>FEFO - Canções de Ninar & Sons Sensoriais Relaxantes</title>
+  <meta name="description" content="Música instrumental relaxante, temas sensoriais e gerador de sons de ninar para crianças autistas. Criado com carinho para o projeto FEFO.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -12,8 +12,8 @@
     :root {
       --bg-dark-1: #090e1a;
       --bg-dark-2: #101a2f;
-      --bg-card: rgba(22, 33, 62, 0.75);
-      --card-border: rgba(90, 140, 210, 0.25);
+      --bg-card: rgba(22, 33, 62, 0.85);
+      --card-border: rgba(90, 140, 210, 0.3);
       --accent-soft: #64dfdf;
       --accent-warm: #ffd166;
       --accent-lilac: #b388ff;
@@ -26,6 +26,78 @@
       --radius-sm: 10px;
     }
 
+    /* Temas Sensoriais */
+    html[data-theme="galaxy"] {
+      --bg-dark-1: #090e1a;
+      --bg-dark-2: #101a2f;
+      --bg-card: rgba(22, 33, 62, 0.85);
+      --card-border: rgba(139, 92, 246, 0.35);
+      --accent-soft: #c084fc;
+      --accent-warm: #f472b6;
+      --accent-lilac: #8b5cf6;
+      --slider-fill: #a855f7;
+    }
+    html[data-theme="calm"] {
+      --bg-dark-1: #081c15;
+      --bg-dark-2: #1b4332;
+      --bg-card: rgba(27, 67, 50, 0.85);
+      --card-border: rgba(52, 211, 153, 0.35);
+      --accent-soft: #34d399;
+      --accent-warm: #fbbf24;
+      --accent-lilac: #6ee7b7;
+      --slider-fill: #10b981;
+    }
+    html[data-theme="sunset"] {
+      --bg-dark-1: #2d112c;
+      --bg-dark-2: #531238;
+      --bg-card: rgba(83, 18, 56, 0.85);
+      --card-border: rgba(251, 146, 60, 0.35);
+      --accent-soft: #fb923c;
+      --accent-warm: #facc15;
+      --accent-lilac: #f472b6;
+      --slider-fill: #f97316;
+    }
+    html[data-theme="ocean"] {
+      --bg-dark-1: #03045e;
+      --bg-dark-2: #0077b6;
+      --bg-card: rgba(0, 119, 182, 0.75);
+      --card-border: rgba(56, 189, 248, 0.4);
+      --accent-soft: #38bdf8;
+      --accent-warm: #7dd3fc;
+      --accent-lilac: #93c5fd;
+      --slider-fill: #0284c7;
+    }
+    html[data-theme="snow"] {
+      --bg-dark-1: #0f172a;
+      --bg-dark-2: #1e293b;
+      --bg-card: rgba(30, 41, 59, 0.85);
+      --card-border: rgba(226, 232, 240, 0.35);
+      --accent-soft: #e2e8f0;
+      --accent-warm: #cbd5e1;
+      --accent-lilac: #94a3b8;
+      --slider-fill: #38bdf8;
+    }
+    html[data-theme="mint"] {
+      --bg-dark-1: #064e3b;
+      --bg-dark-2: #047857;
+      --bg-card: rgba(4, 120, 87, 0.8);
+      --card-border: rgba(110, 231, 183, 0.35);
+      --accent-soft: #6ee7b7;
+      --accent-warm: #a7f3d0;
+      --accent-lilac: #34d399;
+      --slider-fill: #10b981;
+    }
+    html[data-theme="lavender"] {
+      --bg-dark-1: #2e1065;
+      --bg-dark-2: #4c1d95;
+      --bg-card: rgba(76, 29, 149, 0.8);
+      --card-border: rgba(192, 132, 252, 0.35);
+      --accent-soft: #ddd6fe;
+      --accent-warm: #f472b6;
+      --accent-lilac: #c084fc;
+      --slider-fill: #8b5cf6;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -36,7 +108,7 @@
 
     body {
       font-family: 'Nunito', sans-serif;
-      background: radial-gradient(circle at 50% 20%, #152544 0%, #080d19 100%);
+      background: radial-gradient(circle at 50% 20%, var(--bg-dark-2) 0%, var(--bg-dark-1) 100%);
       color: var(--text-main);
       min-height: 100vh;
       display: flex;
@@ -46,6 +118,7 @@
       overflow-x: hidden;
       position: relative;
       padding: 20px;
+      transition: background 0.5s ease;
     }
 
     /* Canvas de Chuva e Partículas */
@@ -64,7 +137,7 @@
     .app-container {
       position: relative;
       z-index: 2;
-      max-width: 760px;
+      max-width: 800px;
       width: 100%;
       background: var(--bg-card);
       backdrop-filter: blur(18px);
@@ -72,11 +145,12 @@
       border: 1px solid var(--card-border);
       border-radius: var(--radius-lg);
       padding: 32px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45), 0 0 40px rgba(72, 202, 228, 0.08);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45), 0 0 40px rgba(100, 223, 223, 0.1);
       display: flex;
       flex-direction: column;
-      gap: 24px;
-      animation: fadeIn 1s ease-out;
+      gap: 22px;
+      animation: fadeIn 0.8s ease-out;
+      transition: all 0.5s ease;
     }
 
     @keyframes fadeIn {
@@ -84,21 +158,21 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Header */
-    .header {
-      text-align: center;
+    /* Top Bar & Theme Selector */
+    .top-bar {
       display: flex;
-      flex-direction: column;
+      justify-content: space-between;
       align-items: center;
-      gap: 8px;
+      flex-wrap: wrap;
+      gap: 12px;
     }
 
     .badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: rgba(100, 223, 223, 0.12);
-      border: 1px solid rgba(100, 223, 223, 0.3);
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--card-border);
       padding: 6px 14px;
       border-radius: 50px;
       font-size: 0.85rem;
@@ -121,73 +195,155 @@
       50% { transform: scale(1.4); opacity: 1; }
     }
 
+    .theme-selector-pills {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .theme-pill {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: var(--text-main);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .theme-pill:hover, .theme-pill.active {
+      background: var(--accent-soft);
+      color: #000000;
+      border-color: #ffffff;
+      box-shadow: 0 0 10px var(--accent-soft);
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
     h1 {
       font-family: 'Comfortaa', cursive;
-      font-size: 1.9rem;
+      font-size: 1.8rem;
       font-weight: 700;
       color: #ffffff;
       text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     }
 
     .subtitle {
-      font-size: 0.95rem;
+      font-size: 0.92rem;
       color: var(--text-muted);
-      max-width: 520px;
+      max-width: 560px;
       line-height: 1.4;
     }
 
-    /* Destaque Visual Fefo & Guia de Respiração */
+    /* Tipos de Canção de Ninar Tabs */
+    .track-tabs-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .track-tabs-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--accent-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .track-tabs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 8px;
+    }
+
+    .track-tab-btn {
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 10px;
+      border-radius: 12px;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.25s ease;
+    }
+
+    .track-tab-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      transform: translateY(-2px);
+    }
+
+    .track-tab-btn.active {
+      background: linear-gradient(135deg, var(--accent-soft), var(--accent-lilac));
+      color: #000000;
+      border-color: #ffffff;
+      box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
+    }
+
+    /* Visual Center FEFO */
     .visual-center {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 16px 0;
+      padding: 12px 0;
       position: relative;
     }
 
     .character-frame {
       position: relative;
-      width: 170px;
-      height: 170px;
+      width: 160px;
+      height: 160px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(72, 202, 228, 0.2) 0%, rgba(16, 26, 47, 0.8) 70%);
-      border: 2px solid rgba(100, 223, 223, 0.35);
+      background: radial-gradient(circle, rgba(100, 223, 223, 0.25) 0%, rgba(16, 26, 47, 0.8) 70%);
+      border: 3px solid var(--accent-soft);
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 0 35px rgba(72, 202, 228, 0.25);
+      box-shadow: 0 0 35px var(--accent-soft);
       transition: transform 4s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .character-frame.breathing-in {
       transform: scale(1.15);
-      box-shadow: 0 0 50px rgba(100, 223, 223, 0.45);
-      border-color: var(--accent-soft);
+      box-shadow: 0 0 50px var(--accent-soft);
     }
 
     .character-frame.breathing-hold {
       transform: scale(1.15);
-      box-shadow: 0 0 55px rgba(255, 209, 102, 0.45);
+      box-shadow: 0 0 55px var(--accent-warm);
       border-color: var(--accent-warm);
     }
 
     .character-frame.breathing-out {
       transform: scale(1.0);
-      box-shadow: 0 0 25px rgba(72, 202, 228, 0.2);
-      border-color: rgba(100, 223, 223, 0.3);
+      box-shadow: 0 0 25px var(--accent-soft);
     }
 
     .character-img {
-      width: 135px;
-      height: 135px;
+      width: 130px;
+      height: 130px;
       object-fit: cover;
       border-radius: 50%;
       pointer-events: none;
     }
 
     .breathing-instruction {
-      margin-top: 14px;
+      margin-top: 12px;
       font-family: 'Comfortaa', cursive;
       font-size: 1.05rem;
       font-weight: 600;
@@ -200,10 +356,10 @@
 
     /* Player Central Controls */
     .player-section {
-      background: rgba(13, 22, 42, 0.7);
+      background: rgba(0, 0, 0, 0.3);
       border-radius: var(--radius-md);
       padding: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       display: flex;
       flex-direction: column;
       gap: 16px;
@@ -223,6 +379,15 @@
       color: var(--text-muted);
     }
 
+    .timer-badge {
+      background: rgba(255, 209, 102, 0.2);
+      border: 1px solid var(--accent-warm);
+      color: var(--accent-warm);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.78rem;
+    }
+
     .progress-track {
       width: 100%;
       height: 8px;
@@ -236,7 +401,7 @@
     .progress-fill {
       height: 100%;
       width: 0%;
-      background: linear-gradient(90deg, #48cae4, #64dfdf);
+      background: linear-gradient(90deg, var(--accent-soft), var(--slider-fill));
       border-radius: 10px;
       transition: width 0.15s linear;
     }
@@ -261,75 +426,46 @@
     }
 
     .btn-secondary {
-      width: 44px;
-      height: 44px;
+      width: 46px;
+      height: 46px;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
     }
 
     .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.18);
       transform: scale(1.05);
     }
 
     .btn-play-main {
-      width: 68px;
-      height: 68px;
+      width: 70px;
+      height: 70px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #48cae4, #0077b6);
+      background: linear-gradient(135deg, var(--accent-soft), var(--slider-fill));
       color: #ffffff;
-      box-shadow: 0 8px 25px rgba(72, 202, 228, 0.4);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
     }
 
     .btn-play-main:hover {
       transform: scale(1.08);
-      box-shadow: 0 10px 30px rgba(72, 202, 228, 0.6);
+      box-shadow: 0 10px 30px var(--accent-soft);
     }
 
     .btn-play-main:active {
       transform: scale(0.96);
     }
 
-    /* Modo de Reprodução Tabs */
-    .mode-tabs {
-      display: flex;
-      background: rgba(11, 19, 43, 0.8);
-      padding: 4px;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      gap: 4px;
-    }
-
-    .mode-tab {
-      flex: 1;
-      padding: 8px 12px;
-      border: none;
-      background: transparent;
-      color: var(--text-muted);
-      font-weight: 700;
-      font-size: 0.85rem;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.25s;
-    }
-
-    .mode-tab.active {
-      background: rgba(72, 202, 228, 0.2);
-      color: #ffffff;
-      border: 1px solid rgba(72, 202, 228, 0.4);
-    }
-
-    /* Mixagem de Sons Sensoriais */
+    /* Mixagem de Sons Sensoriais (Modificadores Reais) */
     .mixers-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
       gap: 14px;
     }
 
     .mixer-card {
-      background: rgba(16, 26, 48, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: var(--radius-sm);
       padding: 12px 14px;
       display: flex;
@@ -370,39 +506,13 @@
       height: 16px;
       border-radius: 50%;
       background: var(--accent-soft);
-      box-shadow: 0 0 8px rgba(100, 223, 223, 0.7);
+      box-shadow: 0 0 8px var(--accent-soft);
       cursor: pointer;
       transition: transform 0.15s ease;
     }
 
     input[type="range"]::-webkit-slider-thumb:hover {
       transform: scale(1.2);
-    }
-
-    /* Benefícios e Acessibilidade Sensorial */
-    .sensory-features {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      text-align: center;
-    }
-
-    .feature-chip {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 12px;
-      padding: 10px 8px;
-      font-size: 0.78rem;
-      color: var(--text-muted);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .feature-chip strong {
-      color: var(--text-main);
-      font-weight: 700;
     }
 
     /* Footer & Ações */
@@ -412,8 +522,8 @@
       align-items: center;
       flex-wrap: wrap;
       gap: 12px;
-      padding-top: 8px;
-      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     .btn-action {
@@ -433,20 +543,20 @@
     }
 
     .btn-action:hover {
-      background: rgba(72, 202, 228, 0.2);
-      border-color: var(--accent-soft);
-      color: #ffffff;
+      background: var(--accent-soft);
+      color: #000000;
+      border-color: #ffffff;
     }
 
     .btn-download {
-      background: linear-gradient(135deg, rgba(72, 202, 228, 0.25), rgba(0, 119, 182, 0.35));
+      background: linear-gradient(135deg, var(--accent-soft), var(--slider-fill));
       border: 1px solid var(--accent-soft);
       color: #ffffff;
     }
 
     .btn-download:hover {
-      background: linear-gradient(135deg, #48cae4, #0077b6);
-      box-shadow: 0 4px 15px rgba(72, 202, 228, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
     }
 
     @media (max-width: 600px) {
@@ -455,9 +565,6 @@
       }
       h1 {
         font-size: 1.5rem;
-      }
-      .sensory-features {
-        grid-template-columns: 1fr;
       }
       .footer-actions {
         flex-direction: column;
@@ -471,19 +578,61 @@
 </head>
 <body>
 
-  <!-- Canvas de Chuva Suave de Fundo -->
+  <!-- Canvas de Chuva / Estrelas no Fundo -->
   <canvas id="rainCanvas"></canvas>
 
   <main class="app-container">
-    <!-- Header -->
-    <header class="header">
+    <!-- Top Bar com Troca de Temas -->
+    <div class="top-bar">
       <div class="badge">
         <span class="badge-icon"></span>
-        FEFO • Especial para Autismo (5 Anos)
+        FEFO • Ninar & Relaxamento TEA
       </div>
-      <h1>Sons da Noite & Chuva Calma</h1>
-      <p class="subtitle">Música instrumental aveludada a 54 BPM, sem agudos estridentes, com ruído rosa de chuva reconfortante e relaxamento sensorial.</p>
+
+      <!-- Pílulas de Temas -->
+      <div class="theme-selector-pills">
+        <button class="theme-pill active" data-theme="galaxy">🌌 Galáxia</button>
+        <button class="theme-pill" data-theme="calm">🌿 Calmo</button>
+        <button class="theme-pill" data-theme="sunset">🌅 Pôr do Sol</button>
+        <button class="theme-pill" data-theme="ocean">🌊 Oceano</button>
+        <button class="theme-pill" data-theme="snow">❄️ Neve</button>
+        <button class="theme-pill" data-theme="mint">🍃 Menta</button>
+        <button class="theme-pill" data-theme="lavender">🪻 Lavanda</button>
+      </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+      <h1 id="activeTrackTitle">Sons da Noite & Chuva Calma</h1>
+      <p class="subtitle" id="activeTrackSubtitle">Música instrumental aveludada a 54 BPM, sem agudos estridentes, com ruído rosa de chuva reconfortante.</p>
     </header>
+
+    <!-- Seleção dos Tipos de Canção de Ninar -->
+    <div class="track-tabs-container">
+      <span class="track-tabs-label">🎵 Escolha o Tipo de Canção / Som:</span>
+      <div class="track-tabs-grid">
+        <button class="track-tab-btn active" data-track="rain">
+          <span>🌧️ Chuva Calma</span>
+          <small>Orquestra & Chuva</small>
+        </button>
+        <button class="track-tab-btn" data-track="musicbox">
+          <span>🎹 Caixa de Música</span>
+          <small>Melodia Pentatônica</small>
+        </button>
+        <button class="track-tab-btn" data-track="ocean">
+          <span>🌊 Ondas do Oceano</span>
+          <small>Ruído Marinho Suave</small>
+        </button>
+        <button class="track-tab-btn" data-track="forest">
+          <span>🌲 Vento na Floresta</span>
+          <small>Brisa & Sinos</small>
+        </button>
+        <button class="track-tab-btn" data-track="heartbeat">
+          <span>💓 Batimentos</span>
+          <small>Pulso Materno 54BPM</small>
+        </button>
+      </div>
+    </div>
 
     <!-- Visual Central: FEFO & Círculo de Respiração Guiada -->
     <div class="visual-center">
@@ -493,11 +642,12 @@
       <div class="breathing-instruction" id="breathingText">Inspire suavemente... ☁️</div>
     </div>
 
-    <!-- Controle Principal -->
+    <!-- Player Central Controls -->
     <section class="player-section">
       <div class="progress-bar-container">
         <div class="time-display">
           <span id="currentTime">0:00</span>
+          <span class="timer-badge" id="timerBadge" style="display: none;">⏱️ 5m restantes</span>
           <span id="totalTime">5:00</span>
         </div>
         <div class="progress-track" id="progressTrack">
@@ -512,16 +662,16 @@
         <button class="btn-control btn-play-main" id="btnPlay" title="Tocar / Pausar">
           <svg id="playIcon" width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
         </button>
-        <button class="btn-control btn-secondary" id="btnTimer" title="Temporizador de Sono">
+        <button class="btn-control btn-secondary" id="btnTimer" title="Temporizador de Sono (5m, 10m, 15m, 30m)">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
         </button>
       </div>
 
-      <!-- Mixers de Volume Específicos -->
+      <!-- Mixers de Volume Funcionais com Web Audio API -->
       <div class="mixers-grid">
         <div class="mixer-card">
           <div class="mixer-header">
-            <span>🌧️ Som da Chuva</span>
+            <span>🌧️ Som de Chuva / Fundo</span>
             <span id="rainVal">75%</span>
           </div>
           <input type="range" id="rainSlider" min="0" max="100" value="75">
@@ -529,7 +679,7 @@
 
         <div class="mixer-card">
           <div class="mixer-header">
-            <span>🎹 Melodia Suave</span>
+            <span>🎹 Melodia / Ninar</span>
             <span id="melodyVal">80%</span>
           </div>
           <input type="range" id="melodySlider" min="0" max="100" value="80">
@@ -537,7 +687,7 @@
 
         <div class="mixer-card">
           <div class="mixer-header">
-            <span>✨ Sinos de Vento</span>
+            <span>✨ Sinos & Eco</span>
             <span id="chimeVal">60%</span>
           </div>
           <input type="range" id="chimeSlider" min="0" max="100" value="60">
@@ -553,30 +703,11 @@
       </div>
     </section>
 
-    <!-- Características Terapêuticas / Sensoriais -->
-    <section class="sensory-features">
-      <div class="feature-chip">
-        <span>🌙</span>
-        <strong>54 BPM Lento</strong>
-        <span>Iguala aos batimentos em repouso</span>
-      </div>
-      <div class="feature-chip">
-        <span>🛡️</span>
-        <strong>Sem Agudos Ríspidos</strong>
-        <span>Filtro suave abaixo de 2 kHz</span>
-      </div>
-      <div class="feature-chip">
-        <span>🎵</span>
-        <strong>Escala Pentatônica</strong>
-        <span>Harmonia 100% segura e previsível</span>
-      </div>
-    </section>
-
-    <!-- Rodapé com Botões de Ação e Download -->
+    <!-- Rodapé com Botões de Ação -->
     <footer class="footer-actions">
       <a href="fefo-chuva-relaxante-5min.wav" download="fefo-chuva-relaxante-5min.wav" class="btn-action btn-download">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
-        Baixar Áudio (.WAV 5 Min)
+        Baixar Faixa Completa (.WAV)
       </a>
 
       <button class="btn-action" id="btnSensoryDim">
@@ -586,17 +717,29 @@
     </footer>
   </main>
 
-  <!-- Elemento de Áudio Nativo para a Faixa WAV de 5 Minutos -->
   <audio id="mainAudio" src="fefo-chuva-relaxante-5min.wav" preload="metadata"></audio>
 
   <script>
     // ==========================================
-    // 1. ANIMAÇÃO DE CHUVA NO CANVAS
+    // 1. SISTEMA DE TEMAS SENSORIAIS
+    // ==========================================
+    const themePills = document.querySelectorAll('.theme-pill');
+    themePills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        themePills.forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        const theme = pill.getAttribute('data-theme');
+        document.documentElement.setAttribute('data-theme', theme);
+      });
+    });
+
+    // ==========================================
+    // 2. CANVAS DE ANIMAÇÃO DE CHUVA/ESTRELAS
     // ==========================================
     const canvas = document.getElementById('rainCanvas');
     const ctx = canvas.getContext('2d');
     let drops = [];
-    const NUM_DROPS = 75;
+    const NUM_DROPS = 80;
 
     function resizeCanvas() {
       canvas.width = window.innerWidth;
@@ -617,7 +760,9 @@
 
     function drawRain() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.strokeStyle = '#64dfdf';
+      const style = getComputedStyle(document.documentElement);
+      const accent = style.getPropertyValue('--accent-soft').trim() || '#64dfdf';
+      ctx.strokeStyle = accent;
       ctx.lineWidth = 1.2;
 
       for (let i = 0; i < drops.length; i++) {
@@ -641,32 +786,42 @@
     drawRain();
 
     // ==========================================
-    // 2. CICLO DE RESPIRAÇÃO GUIADA (4-4-4s)
+    // 3. RESPIRAÇÃO GUIADA (4-4-4s)
     // ==========================================
     const frame = document.getElementById('characterFrame');
     const breathText = document.getElementById('breathingText');
-    let breathPhase = 0; // 0 = Inhale (4s), 1 = Hold (4s), 2 = Exhale (4s)
+    let breathPhase = 0;
 
     const breathPhases = [
-      { text: "Inspire suavemente... ☁️", class: "breathing-in", color: "#64dfdf" },
-      { text: "Segure o ar com calma... 🌟", class: "breathing-hold", color: "#ffd166" },
-      { text: "Solte o ar bem devagar... 🌙", class: "breathing-out", color: "#9bb0d3" }
+      { text: "Inspire suavemente... ☁️", class: "breathing-in" },
+      { text: "Segure o ar com calma... 🌟", class: "breathing-hold" },
+      { text: "Solte o ar bem devagar... 🌙", class: "breathing-out" }
     ];
 
     function runBreathingLoop() {
       const p = breathPhases[breathPhase];
       frame.className = "character-frame " + p.class;
       breathText.textContent = p.text;
-      breathText.style.color = p.color;
-
       breathPhase = (breathPhase + 1) % breathPhases.length;
       setTimeout(runBreathingLoop, 4000);
     }
     runBreathingLoop();
 
     // ==========================================
-    // 3. CONTROLE DO PLAYER DE ÁUDIO
+    // 4. SINTETIZADOR WEB AUDIO API & MIXERS REAIS
     // ==========================================
+    let audioCtx = null;
+    let masterGain = null;
+    let rainGain = null;
+    let melodyGain = null;
+    let chimeGain = null;
+
+    let noiseNode = null;
+    let melodyInterval = null;
+    let heartbeatInterval = null;
+    let isPlaying = false;
+    let activeTrack = 'rain'; // 'rain', 'musicbox', 'ocean', 'forest', 'heartbeat'
+
     const audio = document.getElementById('mainAudio');
     const btnPlay = document.getElementById('btnPlay');
     const playIcon = document.getElementById('playIcon');
@@ -675,40 +830,228 @@
     const progressFill = document.getElementById('progressFill');
     const currentTimeEl = document.getElementById('currentTime');
     const totalTimeEl = document.getElementById('totalTime');
-    const masterSlider = document.getElementById('masterSlider');
-    const masterVal = document.getElementById('masterVal');
 
-    function formatTime(seconds) {
-      const m = Math.floor(seconds / 60);
-      const s = Math.floor(seconds % 60);
-      return `${m}:${s < 10 ? '0' : ''}${s}`;
+    function initWebAudio() {
+      if (audioCtx) return;
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AudioContext();
+
+      masterGain = audioCtx.createGain();
+      rainGain = audioCtx.createGain();
+      melodyGain = audioCtx.createGain();
+      chimeGain = audioCtx.createGain();
+
+      masterGain.gain.value = parseFloat(document.getElementById('masterSlider').value) / 100;
+      rainGain.gain.value = parseFloat(document.getElementById('rainSlider').value) / 100;
+      melodyGain.gain.value = parseFloat(document.getElementById('melodySlider').value) / 100;
+      chimeGain.gain.value = parseFloat(document.getElementById('chimeSlider').value) / 100;
+
+      rainGain.connect(masterGain);
+      melodyGain.connect(masterGain);
+      chimeGain.connect(masterGain);
+      masterGain.connect(audioCtx.destination);
+
+      // Gerador de Ruído Rosa/Chuva
+      const bufferSize = 2 * audioCtx.sampleRate;
+      const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        b0 = 0.99886 * b0 + white * 0.0555179;
+        b1 = 0.99332 * b1 + white * 0.0750759;
+        b2 = 0.96900 * b2 + white * 0.1538520;
+        b3 = 0.86650 * b3 + white * 0.3104856;
+        b4 = 0.55000 * b4 + white * 0.5329522;
+        b5 = -0.7616 * b5 - white * 0.0168980;
+        output[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+        output[i] *= 0.11;
+        b6 = white * 0.115926;
+      }
+
+      noiseNode = audioCtx.createBufferSource();
+      noiseNode.buffer = noiseBuffer;
+      noiseNode.loop = true;
+
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 800;
+
+      noiseNode.connect(filter);
+      filter.connect(rainGain);
+      noiseNode.start();
     }
 
-    let isPlaying = false;
+    // Tocar nota da melodia da caixa de música (Escala Pentatônica C Major)
+    const pentatonic = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33];
+    function playMusicBoxNote() {
+      if (!audioCtx || !isPlaying) return;
+      const osc = audioCtx.createOscillator();
+      const noteGain = audioCtx.createGain();
 
+      const freq = pentatonic[Math.floor(Math.random() * pentatonic.length)];
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+      noteGain.gain.setValueAtTime(0, audioCtx.currentTime);
+      noteGain.gain.linearRampToValueAtTime(0.25, audioCtx.currentTime + 0.04);
+      noteGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 2.5);
+
+      osc.connect(noteGain);
+      noteGain.connect(melodyGain);
+
+      osc.start();
+      osc.stop(audioCtx.currentTime + 2.6);
+
+      // Sinos aleatórios
+      if (Math.random() < 0.3) {
+        playChimeNote();
+      }
+    }
+
+    function playChimeNote() {
+      if (!audioCtx || !isPlaying) return;
+      const osc = audioCtx.createOscillator();
+      const noteGain = audioCtx.createGain();
+      const chimeFreqs = [659.25, 783.99, 880.00, 1046.50];
+      const freq = chimeFreqs[Math.floor(Math.random() * chimeFreqs.length)];
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+      noteGain.gain.setValueAtTime(0, audioCtx.currentTime);
+      noteGain.gain.linearRampToValueAtTime(0.15, audioCtx.currentTime + 0.05);
+      noteGain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 4.0);
+
+      osc.connect(noteGain);
+      noteGain.connect(chimeGain);
+
+      osc.start();
+      osc.stop(audioCtx.currentTime + 4.1);
+    }
+
+    function playHeartbeatPulse() {
+      if (!audioCtx || !isPlaying) return;
+      const osc = audioCtx.createOscillator();
+      const noteGain = audioCtx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(60, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(35, audioCtx.currentTime + 0.15);
+
+      noteGain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+      noteGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+
+      osc.connect(noteGain);
+      noteGain.connect(melodyGain);
+
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.26);
+    }
+
+    function startSynthEngine(track) {
+      clearInterval(melodyInterval);
+      clearInterval(heartbeatInterval);
+
+      if (track === 'musicbox') {
+        melodyInterval = setInterval(playMusicBoxNote, 1200);
+      } else if (track === 'heartbeat') {
+        heartbeatInterval = setInterval(playHeartbeatPulse, 1100);
+      } else if (track === 'forest') {
+        melodyInterval = setInterval(playChimeNote, 2200);
+      }
+    }
+
+    function stopSynthEngine() {
+      clearInterval(melodyInterval);
+      clearInterval(heartbeatInterval);
+    }
+
+    // Troca de Tipos de Canção
+    const trackBtns = document.querySelectorAll('.track-tab-btn');
+    const trackTitles = {
+      rain: { title: "Sons da Noite & Chuva Calma", sub: "Música instrumental aveludada a 54 BPM, sem agudos estridentes, com ruído rosa de chuva reconfortante." },
+      musicbox: { title: "Caixa de Música Sensorial", sub: "Notas reluzentes em escala pentatônica harmônica para desacelerar os batimentos e relaxar o cérebro." },
+      ocean: { title: "Ondas do Oceano Profundo", sub: "Ruído ritmado de maré com frequências graves acolhedoras que mimetizam o ambiente uterino." },
+      forest: { title: "Vento da Floresta & Sinos", sub: "Brisa suave passando entre folhas com toques esporádicos de sinos de cristal relaxantes." },
+      heartbeat: { title: "Batimentos Cardíacos Maternizados", sub: "Pulso calmo a 54 BPM que remete à sensação primal de segurança e proteção no colo." }
+    };
+
+    trackBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        trackBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeTrack = btn.getAttribute('data-track');
+        const info = trackTitles[activeTrack];
+        if (info) {
+          document.getElementById('activeTrackTitle').textContent = info.title;
+          document.getElementById('activeTrackSubtitle').textContent = info.sub;
+        }
+        if (isPlaying) {
+          startSynthEngine(activeTrack);
+        }
+      });
+    });
+
+    // Play / Pause Logic
     btnPlay.addEventListener('click', () => {
+      initWebAudio();
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
       if (!isPlaying) {
-        audio.play().then(() => {
-          isPlaying = true;
-          playIcon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
-        }).catch(e => {
-          console.log("Audio play allowed on user interaction");
-        });
+        isPlaying = true;
+        playIcon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+        audio.play().catch(() => {});
+        startSynthEngine(activeTrack);
       } else {
-        audio.pause();
         isPlaying = false;
         playIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+        audio.pause();
+        stopSynthEngine();
       }
     });
 
     btnRestart.addEventListener('click', () => {
       audio.currentTime = 0;
       if (!isPlaying) {
-        audio.play();
-        isPlaying = true;
-        playIcon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+        btnPlay.click();
       }
     });
+
+    // Sliders & Modificadores Conectados com Web Audio API Gain
+    document.getElementById('masterSlider').addEventListener('input', (e) => {
+      const v = parseFloat(e.target.value);
+      document.getElementById('masterVal').textContent = v + '%';
+      audio.volume = v / 100;
+      if (masterGain) masterGain.gain.value = v / 100;
+    });
+
+    document.getElementById('rainSlider').addEventListener('input', (e) => {
+      const v = parseFloat(e.target.value);
+      document.getElementById('rainVal').textContent = v + '%';
+      if (rainGain) rainGain.gain.value = v / 100;
+    });
+
+    document.getElementById('melodySlider').addEventListener('input', (e) => {
+      const v = parseFloat(e.target.value);
+      document.getElementById('melodyVal').textContent = v + '%';
+      if (melodyGain) melodyGain.gain.value = v / 100;
+    });
+
+    document.getElementById('chimeSlider').addEventListener('input', (e) => {
+      const v = parseFloat(e.target.value);
+      document.getElementById('chimeVal').textContent = v + '%';
+      if (chimeGain) chimeGain.gain.value = v / 100;
+    });
+
+    // Barra de Progresso
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return `${m}:${s < 10 ? '0' : ''}${s}`;
+    }
 
     audio.addEventListener('timeupdate', () => {
       if (audio.duration) {
@@ -727,34 +1070,41 @@
       }
     });
 
-    audio.addEventListener('ended', () => {
-      isPlaying = false;
-      playIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
-      progressFill.style.width = '0%';
-      currentTimeEl.textContent = '0:00';
-    });
+    // Temporizador de Sono Real (5m, 10m, 15m, 30m)
+    let timerMinutes = 0;
+    let timerInterval = null;
+    const timerBadge = document.getElementById('timerBadge');
 
-    // Volume Master
-    masterSlider.addEventListener('input', (e) => {
-      const val = e.target.value;
-      masterVal.textContent = val + '%';
-      audio.volume = val / 100;
-    });
-    audio.volume = 0.85;
-    audio.addEventListener('error', () => {
-      console.error('Não foi possível carregar o áudio relaxante.', audio.error);
-      document.getElementById('breathingText').textContent = 'Áudio indisponível. Tente recarregar a página.';
-    });
+    document.getElementById('btnTimer').addEventListener('click', () => {
+      const options = [0, 5, 10, 15, 30];
+      const nextIdx = (options.indexOf(timerMinutes) + 1) % options.length;
+      timerMinutes = options[nextIdx];
 
-    // Sliders visuais informativos
-    document.getElementById('rainSlider').addEventListener('input', (e) => {
-      document.getElementById('rainVal').textContent = e.target.value + '%';
-    });
-    document.getElementById('melodySlider').addEventListener('input', (e) => {
-      document.getElementById('melodyVal').textContent = e.target.value + '%';
-    });
-    document.getElementById('chimeSlider').addEventListener('input', (e) => {
-      document.getElementById('chimeVal').textContent = e.target.value + '%';
+      if (timerInterval) clearInterval(timerInterval);
+
+      if (timerMinutes > 0) {
+        timerBadge.style.display = 'inline-block';
+        let remainingSec = timerMinutes * 60;
+        timerBadge.textContent = `⏱️ ${timerMinutes}m de sono`;
+
+        timerInterval = setInterval(() => {
+          remainingSec--;
+          const m = Math.floor(remainingSec / 60);
+          const s = remainingSec % 60;
+          timerBadge.textContent = `⏱️ ${m}:${s < 10 ? '0' : ''}${s} para desligar`;
+
+          if (remainingSec <= 0) {
+            clearInterval(timerInterval);
+            timerBadge.style.display = 'none';
+            timerMinutes = 0;
+            if (isPlaying) {
+              btnPlay.click();
+            }
+          }
+        }, 1000);
+      } else {
+        timerBadge.style.display = 'none';
+      }
     });
 
     // Modo Quarto Escuro
@@ -762,15 +1112,6 @@
     document.getElementById('btnSensoryDim').addEventListener('click', () => {
       isDimmed = !isDimmed;
       document.body.style.filter = isDimmed ? 'brightness(0.55) contrast(0.95)' : 'none';
-    });
-
-    // Temporizador
-    let timerMinutes = 5;
-    document.getElementById('btnTimer').addEventListener('click', () => {
-      const options = [5, 10, 15, 30];
-      const nextIdx = (options.indexOf(timerMinutes) + 1) % options.length;
-      timerMinutes = options[nextIdx];
-      alert(`Temporizador ajustado para ${timerMinutes} minutos de sono.`);
     });
   </script>
 </body>
