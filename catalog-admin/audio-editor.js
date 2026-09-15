@@ -1,4 +1,5 @@
 (() => {
+  window.setEditorBusy = busy => { document.querySelectorAll('.upload-type input[data-kind]').forEach(input => { input.disabled = busy; input.closest('.upload-type')?.classList.toggle('is-locked', busy); }); const mainInput = document.querySelector('#files'); if (mainInput) mainInput.disabled = busy; const drop = document.querySelector('#drop'); if (drop) drop.style.pointerEvents = busy ? 'none' : ''; };
   let fileInput = document.querySelector('#audio-editor-file');
   if (!fileInput) {
     const host = document.querySelector('.import-card');
@@ -9,6 +10,13 @@
     meta.className = 'editor-metadata';
     meta.innerHTML = '<strong>Informações para o catálogo</strong><label>Título<input id="audio-editor-title" placeholder="Nome exibido no catálogo"></label><label>Menu<input id="audio-editor-menu" placeholder="Ex.: Jukebox do Fefo"></label><label>Submenu<input id="audio-editor-submenu" placeholder="Opcional"></label><label>Pasta<select id="audio-editor-folder"><option value="/usr/a/">/usr/a/ Áudios</option><option value="/usr/f/">/usr/f/ Rostinhos</option><option value="/usr/v/">/usr/v/ Vídeos</option></select></label><label class="editor-meta-check"><input id="audio-editor-publish" type="checkbox" checked> Ativo no catálogo</label>';
     document.querySelector('.audio-editor .editor-file-row').insertAdjacentElement('afterend', meta);
+    const removeButton = document.createElement('button');
+    removeButton.id = 'audio-editor-delete';
+    removeButton.className = 'editor-delete';
+    removeButton.type = 'button';
+    removeButton.title = 'Excluir o arquivo atual e voltar à escolha de conteúdo';
+    removeButton.textContent = 'Excluir arquivo';
+    document.querySelector('.audio-editor .editor-bottom').append(removeButton);
     document.querySelector('.audio-editor-card').hidden = true;
   }
   const canvas = document.querySelector('#audio-editor-waveform'), audio = document.querySelector('#audio-editor-preview');
@@ -18,7 +26,7 @@
   const startOut = document.querySelector('#audio-editor-start-value'), endOut = document.querySelector('#audio-editor-end-value'), zoomOut = document.querySelector('#audio-editor-zoom-value');
   const fadeIn = document.querySelector('#audio-editor-fade-in'), fadeOut = document.querySelector('#audio-editor-fade-out'), fadeToggle = document.querySelector('#audio-editor-fade-toggle');
   const fadeInOut = document.querySelector('#audio-editor-fade-in-value'), fadeOutOut = document.querySelector('#audio-editor-fade-out-value');
-  const save = document.querySelector('#audio-editor-save'), play = document.querySelector('#audio-editor-play'), reset = document.querySelector('#audio-editor-reset'), status = document.querySelector('#audio-editor-status'), fileName = document.querySelector('#audio-editor-file-name');
+  const save = document.querySelector('#audio-editor-save'), play = document.querySelector('#audio-editor-play'), reset = document.querySelector('#audio-editor-reset'), remove = document.querySelector('#audio-editor-delete'), status = document.querySelector('#audio-editor-status'), fileName = document.querySelector('#audio-editor-file-name');
   let sourceFile = null, buffer = null, dragging = null, animationFrame = 0, fadeEnabled = false;
   const fmt = value => `${Number(value).toFixed(2)}s`;
   const setStatus = (message, kind = '') => { status.textContent = message; status.className = `editor-status ${kind}`; };
@@ -53,6 +61,8 @@
   [fadeIn, fadeOut].forEach(input => input.addEventListener('input', sync));
   fadeToggle.addEventListener('click', () => { fadeEnabled = !fadeEnabled; fadeToggle.classList.toggle('active', fadeEnabled); if (!fadeEnabled) { fadeIn.value = 0; fadeOut.value = 0; } sync(); });
   reset.addEventListener('click', () => { if (!buffer) return; start.value = 0; end.value = buffer.duration; zoom.value = 1; fadeIn.value = fadeOut.value = 0; audio.pause(); audio.currentTime = 0; sync(); setStatus(`Seleção redefinida: áudio completo (${fmt(buffer.duration)}).`); });
+  const clearEditor = () => { audio.pause(); if (audio.src) URL.revokeObjectURL(audio.src); fileInput.value = ''; sourceFile = null; buffer = null; dragging = null; audio.removeAttribute('src'); audio.load(); audio.hidden = true; play.disabled = save.disabled = true; start.disabled = end.disabled = zoom.disabled = startNumber.disabled = endNumber.disabled = true; fileName.textContent = 'Nenhum arquivo selecionado'; title.value = menu.value = submenu.value = ''; publish.checked = true; document.querySelector('.audio-editor-card').hidden = true; window.setEditorBusy(false); setStatus('Escolha um tipo de conteúdo para começar.'); };
+  remove.addEventListener('click', () => { if (confirm('Excluir o arquivo selecionado do editor?')) clearEditor(); });
   fileInput.addEventListener('change', async () => { sourceFile = fileInput.files[0]; if (!sourceFile) return; try { buffer = await new AudioContext().decodeAudioData(await sourceFile.arrayBuffer()); start.max = end.max = buffer.duration; start.value = 0; end.value = buffer.duration; zoom.disabled = start.disabled = end.disabled = false; startNumber.disabled = endNumber.disabled = false; play.disabled = false; fadeIn.max = fadeOut.max = Math.min(10, buffer.duration / 2); audio.src = URL.createObjectURL(sourceFile); fileName.textContent = sourceFile.name; audio.hidden = false; save.disabled = false; sync(); setStatus('Arraste as barras azuis para definir o trecho.'); } catch { setStatus('Não foi possível ler este áudio.', 'error'); } });
   save.addEventListener('click', () => { if (!buffer || !sourceFile) return; const rate = buffer.sampleRate, from = Math.floor(Number(start.value) * rate), to = Math.floor(Number(end.value) * rate), result = new Float32Array(to - from), original = buffer.getChannelData(0), inSamples = fadeEnabled ? Math.floor(Number(fadeIn.value) * rate) : 0, outSamples = fadeEnabled ? Math.floor(Number(fadeOut.value) * rate) : 0; for (let i = 0; i < result.length; i++) { let gain = 1; if (inSamples && i < inSamples) gain *= i / inSamples; if (outSamples && i >= result.length - outSamples) gain *= (result.length - i) / outSamples; result[i] = original[from + i] * gain; } const base = sourceFile.name.replace(/\.[^.]+$/, '') || 'audio-editado', edited = new File([encodeWav(result, rate)], `${base}-editado.wav`, {type:'audio/wav'}); edited.catalogMeta = {titulo: title.value.trim() || base, menu_principal: menu.value.trim() || 'Jukebox do Fefo', submenu: submenu.value.trim(), arquivo: `${folder.value}${base}-editado.wav`, publicar: publish.checked ? 'Sim' : 'Não', disponibilidade: 'usuario'}; const target = document.querySelector('#files'), transfer = new DataTransfer(); transfer.items.add(edited); target.files = transfer.files; target.dispatchEvent(new Event('change', {bubbles:true})); setStatus(`✓ ${edited.name} salvo com as informações do catálogo.`, 'ok'); fileInput.value = ''; sourceFile = null; buffer = null; audio.pause(); audio.hidden = true; save.disabled = play.disabled = true; });
   document.querySelector('.editor-close')?.remove();
@@ -61,6 +71,7 @@
     const card = document.querySelector('.audio-editor-card');
     if (!card) return;
     card.hidden = false;
+    window.setEditorBusy(true);
     folder.value = '/usr/a/';
     publish.checked = kind !== 'system_audio';
     setStatus(kind === 'system_audio' ? 'Escolha um áudio para o som do sistema.' : 'Escolha um áudio para o catálogo.');
