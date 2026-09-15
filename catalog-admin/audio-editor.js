@@ -9,6 +9,7 @@
     meta.className = 'editor-metadata';
     meta.innerHTML = '<strong>Informações para o catálogo</strong><label>Título<input id="audio-editor-title" placeholder="Nome exibido no catálogo"></label><label>Menu<input id="audio-editor-menu" placeholder="Ex.: Jukebox do Fefo"></label><label>Submenu<input id="audio-editor-submenu" placeholder="Opcional"></label><label>Pasta<select id="audio-editor-folder"><option value="/usr/a/">/usr/a/ Áudios</option><option value="/usr/f/">/usr/f/ Rostinhos</option><option value="/usr/v/">/usr/v/ Vídeos</option></select></label><label class="editor-meta-check"><input id="audio-editor-publish" type="checkbox" checked> Ativo no catálogo</label>';
     document.querySelector('.audio-editor .editor-file-row').insertAdjacentElement('afterend', meta);
+    document.querySelector('.audio-editor-card').hidden = true;
   }
   const canvas = document.querySelector('#audio-editor-waveform'), audio = document.querySelector('#audio-editor-preview');
   const start = document.querySelector('#audio-editor-start'), end = document.querySelector('#audio-editor-end'), zoom = document.querySelector('#audio-editor-zoom');
@@ -55,4 +56,15 @@
   fileInput.addEventListener('change', async () => { sourceFile = fileInput.files[0]; if (!sourceFile) return; try { buffer = await new AudioContext().decodeAudioData(await sourceFile.arrayBuffer()); start.max = end.max = buffer.duration; start.value = 0; end.value = buffer.duration; zoom.disabled = start.disabled = end.disabled = false; startNumber.disabled = endNumber.disabled = false; play.disabled = false; fadeIn.max = fadeOut.max = Math.min(10, buffer.duration / 2); audio.src = URL.createObjectURL(sourceFile); fileName.textContent = sourceFile.name; audio.hidden = false; save.disabled = false; sync(); setStatus('Arraste as barras azuis para definir o trecho.'); } catch { setStatus('Não foi possível ler este áudio.', 'error'); } });
   save.addEventListener('click', () => { if (!buffer || !sourceFile) return; const rate = buffer.sampleRate, from = Math.floor(Number(start.value) * rate), to = Math.floor(Number(end.value) * rate), result = new Float32Array(to - from), original = buffer.getChannelData(0), inSamples = fadeEnabled ? Math.floor(Number(fadeIn.value) * rate) : 0, outSamples = fadeEnabled ? Math.floor(Number(fadeOut.value) * rate) : 0; for (let i = 0; i < result.length; i++) { let gain = 1; if (inSamples && i < inSamples) gain *= i / inSamples; if (outSamples && i >= result.length - outSamples) gain *= (result.length - i) / outSamples; result[i] = original[from + i] * gain; } const base = sourceFile.name.replace(/\.[^.]+$/, '') || 'audio-editado', edited = new File([encodeWav(result, rate)], `${base}-editado.wav`, {type:'audio/wav'}); edited.catalogMeta = {titulo: title.value.trim() || base, menu_principal: menu.value.trim() || 'Jukebox do Fefo', submenu: submenu.value.trim(), arquivo: `${folder.value}${base}-editado.wav`, publicar: publish.checked ? 'Sim' : 'Não', disponibilidade: 'usuario'}; const target = document.querySelector('#files'), transfer = new DataTransfer(); transfer.items.add(edited); target.files = transfer.files; target.dispatchEvent(new Event('change', {bubbles:true})); setStatus(`✓ ${edited.name} salvo com as informações do catálogo.`, 'ok'); fileInput.value = ''; sourceFile = null; buffer = null; audio.pause(); audio.hidden = true; save.disabled = play.disabled = true; });
   document.querySelector('.editor-close')?.remove();
+  window.openContentEditor = (kind, files) => {
+    if (kind === 'face' && window.openImageEditor) return window.openImageEditor(files);
+    const card = document.querySelector('.audio-editor-card');
+    if (!card) return;
+    card.hidden = false;
+    folder.value = '/usr/a/';
+    publish.checked = kind !== 'system_audio';
+    setStatus(kind === 'system_audio' ? 'Escolha um áudio para o som do sistema.' : 'Escolha um áudio para o catálogo.');
+    const file = files?.[0];
+    if (file) { const transfer = new DataTransfer(); transfer.items.add(file); fileInput.files = transfer.files; fileInput.dispatchEvent(new Event('change', {bubbles:true})); }
+  };
 })();
