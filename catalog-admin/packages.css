@@ -1,0 +1,545 @@
+/* packages.css - Visual unificado, sem abas e com expansão inline */
+
+/* Grid de Pacotes */
+.packages-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.package-card {
+  background: #fff;
+  border: 2px solid var(--line);
+  border-radius: 20px;
+  padding: 18px;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+  cursor: pointer;
+}
+
+.package-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--purple);
+  box-shadow: 0 8px 24px rgba(118, 87, 197, 0.12);
+}
+
+.package-card.is-active {
+  border-color: var(--purple);
+  box-shadow: 0 0 0 3px rgba(118, 87, 197, 0.25);
+  background: #fbf9ff;
+}
+
+.package-card.is-published {
+  border-color: #a3e0c7;
+  background: linear-gradient(180deg, #f7fdfa, #fff);
+}
+
+.package-card.is-published.is-active {
+  border-color: #27ae60;
+  box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.25);
+  background: #f4fbf7;
+}
+
+.package-card.is-draft {
+  border-color: #ffe08a;
+  background: linear-gradient(180deg, #fffdf2, #fff);
+}
+
+.pkg-badge {
+  align-self: flex-start;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.pkg-badge.draft {
+  background: #fff3c4;
+  color: #8c6800;
+}
+
+.pkg-badge.published {
+  background: #d4f7e7;
+  color: #127547;
+}
+
+.package-card h3 {
+  margin: 0 0 6px;
+  font-size: 19px;
+  font-weight: 900;
+  color: var(--ink);
+}
+
+.package-card p {
+  margin: 0 0 14px;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.4;
+  flex: 1;
+}
+
+.pkg-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.pkg-tag {
+  background: var(--soft);
+  color: var(--purple);
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+/* Barra de Progresso */
+.progress-box {
+  margin-bottom: 14px;
+}
+
+.progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 800;
+  margin-bottom: 5px;
+  color: var(--ink);
+}
+
+.progress-track {
+  height: 9px;
+  background: #e9e5f5;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f5a623, #ff7e47);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.progress-fill.completed {
+  background: linear-gradient(90deg, #2ecc71, #27ae60);
+}
+
+.package-card .btn-manage {
+  width: 100%;
+  padding: 10px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--purple);
+  color: #fff;
+  font: inherit;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.package-card.is-published .btn-manage {
+  background: #27ae60;
+}
+
+.package-card .btn-manage:hover {
+  filter: brightness(1.1);
+}
+
+/* ======================================================== */
+/* PAINEL DE EXPANSÃO INLINE (ACCORDION ABAIXO DO CARD)     */
+/* ======================================================== */
+.inline-expanded-panel {
+  margin-top: 20px;
+  border: 2px solid var(--purple);
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 16px 40px rgba(118, 87, 197, 0.12);
+  overflow: hidden;
+  animation: slideDown 0.25s ease-out;
+}
+
+.inline-expanded-panel.production-style {
+  border-color: #27ae60;
+  box-shadow: 0 16px 40px rgba(46, 204, 113, 0.15);
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.inline-panel-header {
+  padding: 18px 24px;
+  background: #faf8ff;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.inline-expanded-panel.production-style .inline-panel-header {
+  background: #f4fbf7;
+}
+
+.inline-panel-header h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-collapse {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-collapse:hover {
+  background: var(--line);
+  color: var(--ink);
+}
+
+.inline-panel-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.inline-panel-footer {
+  padding: 18px 24px;
+  background: #faf8ff;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* Dropzone interna */
+.pkg-dropzone {
+  border: 2px dashed #b9aee6;
+  border-radius: 16px;
+  padding: 22px;
+  text-align: center;
+  background: #fdfcff;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pkg-dropzone:hover {
+  border-color: var(--purple);
+  background: #f6f3ff;
+}
+
+.pkg-dropzone strong {
+  display: block;
+  font-size: 16px;
+  color: var(--purple);
+  margin-bottom: 4px;
+}
+
+.pkg-dropzone span {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* Linha de Faixa de Áudio */
+.pkg-item-row {
+  display: grid;
+  grid-template-columns: 32px 1fr 200px auto auto;
+  align-items: center;
+  gap: 10px;
+  background: #fcfbff;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 10px 14px;
+  transition: background 0.15s;
+}
+
+.pkg-item-row:hover {
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.pkg-item-number {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--purple);
+  text-align: center;
+}
+
+.pkg-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pkg-item-title-input {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 7px 10px;
+  font: inherit;
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--ink);
+  width: 100%;
+}
+
+.pkg-item-title-input:focus {
+  border-color: var(--purple);
+  outline: none;
+}
+
+.pkg-item-orig {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.pkg-item-player audio {
+  height: 32px;
+  width: 100%;
+}
+
+/* Botão de Corte (Ferramenta de corte de onda) */
+.btn-trim-audio {
+  background: #eef7ff;
+  color: #1a73e8;
+  border: 1px solid #c8e1fd;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.btn-trim-audio:hover {
+  background: #1a73e8;
+  color: #fff;
+}
+
+.pkg-item-delete {
+  background: none;
+  border: 0;
+  color: #c93b48;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+}
+
+.pkg-item-delete:hover {
+  background: #ffebee;
+}
+
+/* Botão de Publicação Dourado / Foguete */
+.btn-publish-pkg {
+  background: linear-gradient(135deg, #27ae60, #2ecc71);
+  color: #fff;
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 22px;
+  font: inherit;
+  font-weight: 900;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(46, 204, 113, 0.35);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.btn-publish-pkg:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(46, 204, 113, 0.45);
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* ======================================================== */
+/* MODAL DO AUDIO TRIMMER (WAVEFORM VISUAL)                 */
+/* ======================================================== */
+.audio-trimmer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(5px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.audio-trimmer-container {
+  background: #0f274a;
+  color: #fff;
+  border-radius: 24px;
+  width: min(850px, 100%);
+  padding: 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border: 1px solid #1e3a63;
+}
+
+.trimmer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.trimmer-badge {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: #2ecc71;
+}
+
+.trimmer-canvas-box {
+  background: #071731;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #1d3f70;
+}
+
+#trimmer-waveform {
+  width: 100%;
+  height: 160px;
+  display: block;
+  cursor: ew-resize;
+}
+
+.trimmer-controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  background: #14325a;
+  padding: 12px 16px;
+  border-radius: 14px;
+}
+
+.trimmer-controls-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #a4c2e6;
+}
+
+.trimmer-controls-grid input[type="range"] {
+  accent-color: #2ecc71;
+  cursor: pointer;
+}
+
+.trimmer-bottom-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.editor-play {
+  background: #1e4579;
+  color: #fff;
+  border: 0;
+  border-radius: 12px;
+  padding: 10px 18px;
+  font: inherit;
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.editor-play:hover {
+  background: #25589c;
+}
+
+.editor-reset {
+  background: none;
+  border: 0;
+  color: #a4c2e6;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.editor-reset:hover {
+  color: #fff;
+}
+
+.editor-save {
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 22px;
+  font: inherit;
+  font-weight: 900;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.editor-close {
+  background: #1e3a63;
+  color: #fff;
+  border: 0;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  font-size: 16px;
+  display: grid;
+  place-items: center;
+}
+
+.editor-close:hover {
+  background: #e74c3c;
+}
+
+@media (max-width: 768px) {
+  .pkg-item-row {
+    grid-template-columns: 1fr;
+  }
+  .form-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}

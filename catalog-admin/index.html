@@ -8,64 +8,234 @@
     }
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Administrador do catálogo · Fefo</title>
-    <link rel="stylesheet" href="admin.css">
-    <link rel="stylesheet" href="uploads.css">
-    <link rel="stylesheet" href="audio-editor.css?v=content-editor-2">
-    <link rel="stylesheet" href="image-editor.css?v=content-editor-2">
+  <title>Administrador do Catálogo · FEFO Pet</title>
+  <link rel="stylesheet" href="admin.css">
+  <link rel="stylesheet" href="packages.css">
+  <link rel="stylesheet" href="cards-packs.css">
+  <link rel="stylesheet" href="audio-editor.css?v=unified-5">
+  <link rel="stylesheet" href="image-editor.css?v=unified-5">
 </head>
 <body>
   <main class="shell">
     <header class="hero">
       <a class="back" href="../index.html">← Site do Fefo</a>
-      <p class="eyebrow">FEFO PET · ORGANIZAÇÃO</p>
-      <h1>Administrador do catálogo</h1>
-      <div class="head-tools"><p class="catalog-badge" id="catalog-version">Catálogo carregando…</p><label>Tema <select id="theme"><option value="lavanda">Lavanda clara</option><option value="menta">Menta clara</option></select></label></div>
+      <p class="eyebrow">FEFO PET · SISTEMA DE CONTEÚDOS & MENUS</p>
+      <h1>Administrador do Catálogo</h1>
+      <div class="head-tools">
+        <p class="catalog-badge" id="catalog-version">Catálogo carregando…</p>
+        <label>Tema 
+          <select id="theme">
+            <option value="lavanda">Lavanda clara</option>
+            <option value="menta">Menta clara</option>
+          </select>
+        </label>
+      </div>
     </header>
 
-    <section class="steps" aria-label="Fluxo de trabalho">
-      <div><b>1</b><span>Adicionar arquivos</span></div>
-      <div><b>2</b><span>Revisar informações</span></div>
-      <div><b>3</b><span>Salvar e publicar</span></div>
+    <!-- 4 Abas Principais no Topo -->
+    <nav class="main-top-tabs" aria-label="Abas principais do catálogo">
+      <button class="main-tab-pill active" data-tab="tab-audios" type="button">
+        🎵 Áudios & Menus
+      </button>
+      <button class="main-tab-pill" data-tab="tab-cards" type="button">
+        🃏 Pacotes de Cards
+      </button>
+      <button class="main-tab-pill" data-tab="tab-faces" type="button">
+        😊 Rostinhos (Faces)
+      </button>
+      <button class="main-tab-pill" data-tab="tab-system" type="button">
+        ⚙️ Sons do Sistema
+      </button>
+    </nav>
+
+    <!-- Status Global de Notificações -->
+    <div id="status" class="status" role="status" style="margin-bottom: 16px;">Pronto para começar.</div>
+
+    <!-- ======================================================= -->
+    <!-- ABA 1: ÁUDIOS & MENUS (HISTÓRIAS, MÚSICAS, JUKEBOX)     -->
+    <!-- ======================================================= -->
+    <section id="tab-audios" class="main-tab-content active">
+      <div class="card" style="padding: 28px;">
+        <div class="packages-toolbar" style="margin-bottom: 24px;">
+          <div>
+            <p class="eyebrow">ESTRUTURA DE MENUS</p>
+            <h2 style="margin: 0 0 6px; font-size: 26px;">Menus de Áudio</h2>
+            <div style="font-size: 13px; color: var(--muted); line-height: 1.4;">
+              Cada pacote representa um <strong>MENU no app e no pet CYD</strong>. Clique em qualquer pacote abaixo para expandir, ouvir, cortar e editar suas faixas.
+            </div>
+          </div>
+          <div class="pkg-actions">
+            <button class="btn primary" id="btn-new-package" type="button" style="font-size: 14px; padding: 12px 22px;">
+              ＋ Criar Novo Pacote / Menu
+            </button>
+          </div>
+        </div>
+
+        <!-- Rascunhos de Menus -->
+        <div style="margin-bottom: 40px;">
+          <div class="card-title" style="margin-bottom: 8px;">
+            <div>
+              <p class="eyebrow">EM CONSTRUÇÃO</p>
+              <h3 style="margin: 0; font-size: 21px;">🟡 Pacotes em Rascunho</h3>
+            </div>
+          </div>
+          <p class="hint" style="margin: 0 0 14px;">Cadastre as faixas aos poucos conforme forem gravadas. Ao clicar no card, os áudios expandem logo abaixo.</p>
+          <div id="draft-packages-grid" class="packages-grid">
+            <div class="empty">Carregando pacotes em rascunho…</div>
+          </div>
+          <div id="draft-inline-drawer" style="display: none;"></div>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid var(--line); margin: 36px 0;">
+
+        <!-- Menus Oficiais (Produção) -->
+        <div>
+          <div class="card-title" style="margin-bottom: 8px;">
+            <div>
+              <p class="eyebrow">PRODUÇÃO</p>
+              <h3 style="margin: 0; font-size: 21px;">🟢 Menus Oficiais no Catálogo</h3>
+            </div>
+          </div>
+          <p class="hint" style="margin: 0 0 14px;">Menus disponíveis para download e execução nos pets. Clique em <strong>“✏️ EDITAR MENU”</strong> para editar títulos, cortar trechos ou adicionar novas faixas.</p>
+          <div id="published-menus-grid" class="packages-grid">
+            <div class="empty">Carregando menus oficiais…</div>
+          </div>
+          <div id="production-inline-drawer" style="display: none;"></div>
+        </div>
+      </div>
     </section>
 
-    <section class="card import-card">
-      <div class="card-title"><div><p class="eyebrow">ENTRADA</p><h2>Novos conteúdos</h2></div><span id="count" class="pill">0 itens</span></div>
-      <label class="drop" id="drop">
-        <input id="files" type="file" multiple accept=".wav,.mp3,.flac,.ogg,.m4a,.png,.jpg,.jpeg,.bmp,.raw,.bin,.mp4,.mkv,.avi,.mov,.webm">
-        <strong>Arraste arquivos aqui</strong><span>ou toque para escolher vários de uma vez</span>
-      </label>
-      <p class="hint">O nome é usado como ponto de partida. Exemplo: <code>Conhecendo os animais - Gato - Você sabia.wav</code>.</p>
-        <div class="upload-grid"><label class="upload-type audio-upload"><input type="file" multiple data-kind="audio" accept=".wav,.mp3,.flac,.ogg,.m4a"><b>＋ Áudios</b><span>Editar e cortar áudio</span></label><label class="upload-type face-upload"><input type="file" multiple data-kind="face" accept=".png,.jpg,.jpeg,.bmp,.raw,.bin"><b>＋ Rostinhos</b><span>Editar imagem e cadastrar face</span></label><label class="upload-type video-upload is-coming"><input type="file" multiple data-kind="video" accept=".mp4,.mkv,.avi,.mov,.webm" disabled><b>＋ Vídeos</b><span>EM BREVE</span></label><label class="upload-type system-upload"><input type="file" multiple data-kind="system_audio" accept=".wav,.mp3,.flac,.ogg,.m4a"><b>＋ Sons do sistema</b><span>Editar áudio interno</span></label></div>
-    </section>
-    <section class="card launcher-card"><p class="eyebrow">GERENCIADOR LOCAL</p><h2>Processar e publicar</h2><p>Para converter arquivos e publicar com segurança, use o gerenciador local no computador.</p><a class="btn primary" href="../Executar_Administrador_Catalogo.cmd" download>Baixar atalho do gerenciador</a><p class="hint">Depois de baixar, abra o arquivo e use os botões Processar catálogo e Publicar catálogo.</p></section>
+    <!-- ======================================================= -->
+    <!-- ABA 2: PACOTES DE CARDS (MINIATURAS c0001.jpg + ÁUDIOS) -->
+    <!-- ======================================================= -->
+    <section id="tab-cards" class="main-tab-content">
+      <div class="card" style="padding: 28px;">
+        <div class="packages-toolbar" style="margin-bottom: 24px;">
+          <div>
+            <p class="eyebrow">VISUALIZAÇÃO EXCLUSIVA NO APP FEFO</p>
+            <h2 style="margin: 0 0 6px; font-size: 26px;">Pacotes de Cards do Fefo</h2>
+            <div style="font-size: 13px; color: var(--muted); line-height: 1.4;">
+              Cards interativos e terapêuticos (c0001.jpg + áudio vinculado). <strong>Formatados exclusivamente para visualização no App móvel</strong> (o card não é exibido no display do pet).
+            </div>
+          </div>
+          <div class="pkg-actions">
+            <button class="btn primary" id="btn-new-card-pack" type="button" style="font-size: 14px; padding: 12px 22px;">
+              ＋ Criar Novo Pacote de Cards
+            </button>
+          </div>
+        </div>
 
-    <section class="card">
-      <div class="card-title"><div><p class="eyebrow">REVISÃO</p><h2>Informações do catálogo</h2></div><button class="text-btn" id="clear" type="button">Limpar novos</button></div>
-      <div id="empty" class="empty">Nenhum arquivo novo. O catálogo publicado continua preservado.</div>
-      <div id="list" class="items"></div>
+        <!-- Rascunhos de Pacotes de Cards -->
+        <div style="margin-bottom: 40px;">
+          <div class="card-title" style="margin-bottom: 8px;">
+            <div>
+              <p class="eyebrow">EM CONSTRUÇÃO</p>
+              <h3 style="margin: 0; font-size: 21px;">🟡 Pacotes de Cards em Rascunho</h3>
+            </div>
+          </div>
+          <p class="hint" style="margin: 0 0 14px;">Monte os cards do pacote. Clique em qualquer card abaixo para abrir e cadastrar miniaturas e áudios vinculados.</p>
+          <div id="draft-card-packs-grid" class="packages-grid">
+            <div class="empty">Carregando pacotes de cards em rascunho…</div>
+          </div>
+          <div id="card-pack-inline-drawer" style="display: none;"></div>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid var(--line); margin: 36px 0;">
+
+        <!-- Pacotes de Cards Oficiais -->
+        <div>
+          <div class="card-title" style="margin-bottom: 8px;">
+            <div>
+              <p class="eyebrow">PRODUÇÃO</p>
+              <h3 style="margin: 0; font-size: 21px;">🟢 Pacotes de Cards Oficiais</h3>
+            </div>
+          </div>
+          <div id="published-card-packs-grid" class="packages-grid">
+            <div class="empty">Carregando pacotes oficiais de cards…</div>
+          </div>
+        </div>
+      </div>
     </section>
 
-    <section class="card">
-      <div class="card-title"><div><p class="eyebrow">CATÁLOGO PUBLICADO</p><h2>Itens atuais</h2></div><span id="published-count" class="pill">Carregando…</span></div>
-      <div class="toolbar"><input id="search" type="search" placeholder="Buscar áudio"><select id="filter"><option value="all">Todos os menus</option></select><select id="menu-filter"><option value="all">Todos os menus</option></select><select id="submenu-filter"><option value="all">Todos os submenus</option></select></div>
-      <p class="hint">Edite os campos diretamente. A ordem abaixo é a ordem de apresentação no app.</p>
-      <div id="published" class="items"><div class="empty">Carregando catálogo atual…</div></div>
-    </section>
-    <section class="card media-section"><div class="card-title"><div><p class="eyebrow">CATÁLOGO PUBLICADO</p><h2>Rostinhos do Fefo</h2></div><span id="faces-count" class="pill">0 itens</span></div><div id="faces-list" class="items"><div class="empty">Carregando rostinhos…</div></div></section>
-    <section class="card media-section"><div class="card-title"><div><p class="eyebrow">CATÁLOGO PUBLICADO</p><h2>Vídeos</h2></div><span id="videos-count" class="pill">0 itens</span></div><div id="videos-list" class="items"><div class="empty">Carregando vídeos…</div></div></section>
-    <section class="card system-card"><div class="card-title"><div><p class="eyebrow">ÁREA INTERNA</p><h2>Sons do sistema</h2></div><span id="system-count" class="pill">0 itens</span></div><p class="hint">Arquivos desta área não aparecem para download do usuário.</p><div id="system-list" class="items"><div class="empty">Nenhum som interno cadastrado.</div></div></section>
+    <!-- ======================================================= -->
+    <!-- ABA 3: ROSTINHOS / FACES (DISPLAY CYD ESP32)           -->
+    <!-- ======================================================= -->
+    <section id="tab-faces" class="main-tab-content">
+      <div class="card" style="padding: 28px;">
+        <div class="packages-toolbar" style="margin-bottom: 24px;">
+          <div>
+            <p class="eyebrow">DISPLAY CYD ESP32 (480x320 RGB565)</p>
+            <h2 style="margin: 0 0 6px; font-size: 26px;">Rostinhos do Fefo</h2>
+            <div style="font-size: 13px; color: var(--muted); line-height: 1.4;">
+              Expressões faciais exclusivas para a tela do Fefo Pet. Convertidas automaticamente para <strong>480x320 16-bit RGB565 RAW (307.200 bytes)</strong>.
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap;">
+              <span style="font-size: 12px; font-weight: 800; color: var(--purple);">📁 Pasta de Destino no SD:</span>
+              <input id="faces-folder-path" type="text" value="/usr/f/" style="font-family: monospace; font-size: 13px; width: 120px; padding: 4px 8px; border-radius: 8px; border: 1px solid var(--line);">
+              <span class="pill" style="font-size: 11px;">O título editado aqui é o nome que aparece no App Fefo</span>
+            </div>
+          </div>
+          <div class="pkg-actions">
+            <label class="btn primary" style="font-size: 14px; padding: 12px 22px; cursor: pointer;">
+              ＋ Adicionar Novo Rostinho
+              <input id="face-file-upload" type="file" accept="image/*" style="display: none;">
+            </label>
+          </div>
+        </div>
 
-    <section class="card publish-card">
-      <p class="eyebrow">SAÍDA</p><h2>Preparar publicação</h2>
-      <p>Salvar em cada arquivo guarda o rascunho neste navegador. Para alterar o catálogo online do app, use <strong>Processar catálogo</strong> e depois <strong>Publicar catálogo</strong>.</p>
-      <div class="actions"><button class="btn primary" id="process" type="button">Processar catálogo</button><button class="btn primary" id="publish" type="button">Publicar catálogo</button><button class="btn secondary" id="save-folder" type="button">Salvar arquivos no projeto</button><button class="btn secondary" id="export" type="button">Baixar revisão</button></div>
-      <div id="status" class="status" role="status">Pronto para começar.</div>
-      <details><summary>Como publicar depois de revisar</summary><p>Coloque os arquivos na pasta <code>FEFO_novos_conteudos/audio</code>, <code>faces</code> ou <code>video</code>. Deixe a planilha ao lado deste painel e execute o atualizador de conteúdo do projeto. Ele mantém IDs, converte os formatos e atualiza o catálogo oficial.</p></details>
+        <div class="card-title" style="margin-bottom: 14px;">
+          <h3 style="margin: 0; font-size: 19px;">Expressões Cadastradas no Catálogo</h3>
+          <span id="faces-tab-count" class="pill">0 rostinhos</span>
+        </div>
+
+        <div id="faces-list-grid" class="packages-grid">
+          <div class="empty">Carregando rostinhos…</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================= -->
+    <!-- ABA 4: SONS DO SISTEMA (/sys/a/)                        -->
+    <!-- ======================================================= -->
+    <section id="tab-system" class="main-tab-content">
+      <div class="card" style="padding: 28px;">
+        <div class="packages-toolbar" style="margin-bottom: 24px;">
+          <div>
+            <p class="eyebrow">FIRMWARE INTERNO (/sys/a/)</p>
+            <h2 style="margin: 0 0 6px; font-size: 26px;">Sons do Sistema</h2>
+            <div style="font-size: 13px; color: var(--muted); line-height: 1.4;">
+              Sons operacionais do pet (alarmes, avisos sensoriais, cliques, bateria fraca). Não são exibidos como faixas musicais para o usuário.
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap;">
+              <span style="font-size: 12px; font-weight: 800; color: var(--purple);">📁 Pasta de Destino no SD:</span>
+              <input id="system-folder-path" type="text" value="/sys/a/" style="font-family: monospace; font-size: 13px; width: 120px; padding: 4px 8px; border-radius: 8px; border: 1px solid var(--line);">
+              <span class="pill" style="font-size: 11px;">Padrão: 22.050 Hz · 16-bit Mono WAV · Corte e Edição disponíveis</span>
+            </div>
+          </div>
+          <div class="pkg-actions">
+            <label class="btn primary" style="font-size: 14px; padding: 12px 22px; cursor: pointer;">
+              ＋ Adicionar Som de Sistema
+              <input id="system-file-upload" type="file" accept=".wav,.mp3,.ogg,.flac" style="display: none;">
+            </label>
+          </div>
+        </div>
+
+        <div class="card-title" style="margin-bottom: 14px;">
+          <h3 style="margin: 0; font-size: 19px;">Sons Internos Ativos</h3>
+          <span id="system-tab-count" class="pill">0 sons</span>
+        </div>
+
+        <div id="system-sounds-grid" class="items" style="margin-top: 14px;">
+          <div class="empty">Carregando sons do sistema…</div>
+        </div>
+      </div>
     </section>
   </main>
-  <script src="admin.js?v=filters-2"></script>
-  <script src="audio-editor.js?v=content-editor-2"></script>
-  <script src="image-editor.js?v=content-editor-2"></script>
+
+  <script src="admin.js?v=unified-5"></script>
+  <script src="audio-editor.js?v=unified-5"></script>
+  <script src="image-editor.js?v=unified-5"></script>
+  <script src="packages.js?v=unified-5"></script>
+  <script src="cards-packs.js?v=unified-5"></script>
 </body>
 </html>

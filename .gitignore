@@ -33,3 +33,6 @@ FEFO_novos_conteudos/faces/*
 # Uploads temporários locais
 Expressões FEFO v2*.png
 WhatsApp Image*
+
+__pycache__/
+*.pyc

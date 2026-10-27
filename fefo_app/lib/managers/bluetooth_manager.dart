@@ -347,6 +347,7 @@ class BluetoothManager extends ChangeNotifier {
   String? _protocolVersion;
   String? _lastUpdateResult;
   bool? _panicEnabled;
+  int _panicLevel = 80;
   bool _recebendoCatalogo = false;
   final List<String> _catalogoJsonLines = [];
   final List<ScanResult> _devicesList = [];
@@ -425,6 +426,7 @@ class BluetoothManager extends ChangeNotifier {
   String? get protocolVersion => _protocolVersion;
   String? get lastUpdateResult => _lastUpdateResult;
   bool? get panicEnabled => _panicEnabled;
+  int get panicLevel => _panicLevel;
   bool get recebendoCatalogo => _recebendoCatalogo;
   List<String> get mensagensRecebidas => List.unmodifiable(_mensagensRecebidas);
   List<FefoAudioItem> get audioItems => List.unmodifiable(_audioItems);
@@ -825,6 +827,11 @@ class BluetoothManager extends ChangeNotifier {
       final panic = _extrairCampo(texto, 'PANIC_EN');
       if (panic != null) {
         _panicEnabled = panic.toUpperCase() == 'ON';
+      }
+      final lvlStr = _extrairCampo(texto, 'PANIC_LEVEL') ?? _extrairCampo(texto, 'LEVEL');
+      if (lvlStr != null) {
+        final parsed = int.tryParse(lvlStr);
+        if (parsed != null) _panicLevel = parsed;
       }
       notifyListeners();
       return;
@@ -2035,11 +2042,49 @@ class BluetoothManager extends ChangeNotifier {
     }
   }
 
-  Future<void> setVolume(int volume) async {
-    _audioVolume = volume.clamp(0, 100);
+  Timer? _volumeThrottleTimer;
+  int? _pendingVolume;
+  int _lastSentVolume = -1;
+  DateTime _lastVolumeSentTime = DateTime.fromMillisecondsSinceEpoch(0);
+
+  void setVolumeThrottled(int volume) {
+    final clamped = volume.clamp(0, 100);
+    _audioVolume = clamped;
+    _pendingVolume = clamped;
     notifyListeners();
-    await _enviarComandoNormalizado('VOL ${volume.clamp(0, 100)}');
+
+    final now = DateTime.now();
+    if (now.difference(_lastVolumeSentTime).inMilliseconds >= 75) {
+      _enviarVolumePendente();
+    } else {
+      _volumeThrottleTimer?.cancel();
+      _volumeThrottleTimer = Timer(const Duration(milliseconds: 75), _enviarVolumePendente);
+    }
   }
+
+  void _enviarVolumePendente() {
+    _volumeThrottleTimer?.cancel();
+    if (_pendingVolume == null) return;
+    final val = _pendingVolume!;
+    _pendingVolume = null;
+    if (val == _lastSentVolume) return;
+    _lastSentVolume = val;
+    _lastVolumeSentTime = DateTime.now();
+    _enviarComandoNormalizado('VOL ');
+  }
+
+  Future<void> setVolumeFinal(int volume) async {
+    _volumeThrottleTimer?.cancel();
+    _pendingVolume = null;
+    final clamped = volume.clamp(0, 100);
+    _audioVolume = clamped;
+    _lastSentVolume = clamped;
+    _lastVolumeSentTime = DateTime.now();
+    notifyListeners();
+    await _enviarComandoNormalizado('VOL ');
+  }
+
+  Future<void> setVolume(int volume) async => setVolumeFinal(volume);
 
   Future<void> enviarComandoDeVolume(int volume) async => setVolume(volume);
 
@@ -2139,6 +2184,13 @@ class BluetoothManager extends ChangeNotifier {
     await _enviarComandoNormalizado(enabled ? 'PANIC ON' : 'PANIC OFF');
     _panicEnabled = enabled;
     notifyListeners();
+  }
+
+  Future<void> setPanicLevel(int percent) async {
+    final clamped = percent.clamp(10, 100);
+    _panicLevel = clamped;
+    notifyListeners();
+    await _enviarComandoNormalizado('PANIC SET LEVEL ');
   }
 
   Future<void> refreshPanicStatus() async {

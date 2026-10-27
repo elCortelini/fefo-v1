@@ -2,37 +2,11 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
-  <script>
-    if (location.protocol === 'http:' && !['localhost', '127.0.0.1'].includes(location.hostname)) {
-      location.replace(`https://${location.host}${location.pathname}${location.search}${location.hash}`);
-    }
-  </script>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Administrador do catálogo · Fefo</title>
-    <link rel="stylesheet" href="catalog-admin/admin.css">
-    <link rel="stylesheet" href="catalog-admin/uploads.css">
-    <link rel="stylesheet" href="catalog-admin/audio-editor.css?v=content-editor-2">
-    <link rel="stylesheet" href="catalog-admin/image-editor.css?v=content-editor-2">
+  <meta http-equiv="refresh" content="0; url=catalog-admin/index.html">
+  <title>Redirecionando para o Administrador do Catálogo...</title>
+  <script>location.replace('catalog-admin/index.html' + location.search + location.hash);</script>
 </head>
 <body>
-  <main class="shell">
-    <header class="hero">
-      <a class="back" href="index.html">← Site do Fefo</a>
-      <p class="eyebrow">FEFO PET · ORGANIZAÇÃO</p>
-      <h1>Administrador do catálogo</h1>
-      <div class="head-tools"><p class="catalog-badge" id="catalog-version">Catálogo carregando…</p><label>Tema <select id="theme"><option value="lavanda">Lavanda clara</option><option value="menta">Menta clara</option></select></label></div>
-    </header>
-    <section class="steps"><div><b>1</b><span>Adicionar arquivos</span></div><div><b>2</b><span>Revisar informações</span></div><div><b>3</b><span>Salvar e publicar</span></div></section>
-    <section class="card import-card"><div class="card-title"><div><p class="eyebrow">ENTRADA</p><h2>Novos conteúdos</h2></div><span id="count" class="pill">0 itens</span></div><label class="drop" id="drop"><input id="files" type="file" multiple accept=".wav,.mp3,.flac,.ogg,.m4a,.png,.jpg,.jpeg,.bmp,.raw,.bin,.mp4,.mkv,.avi,.mov,.webm"><strong>Arraste arquivos aqui</strong><span>ou toque para escolher vários de uma vez</span></label><p class="hint">O nome é usado como ponto de partida.</p><div class="upload-grid"><label class="upload-type audio-upload"><input type="file" multiple data-kind="audio" accept=".wav,.mp3,.flac,.ogg,.m4a"><b>＋ Áudios</b><span>Editar e cortar áudio</span></label><label class="upload-type face-upload"><input type="file" multiple data-kind="face" accept=".png,.jpg,.jpeg,.bmp,.raw,.bin"><b>＋ Rostinhos</b><span>Editar imagem e cadastrar face</span></label><label class="upload-type video-upload is-coming"><input type="file" multiple data-kind="video" accept=".mp4,.mkv,.avi,.mov,.webm" disabled><b>＋ Vídeos</b><span>EM BREVE</span></label><label class="upload-type system-upload"><input type="file" multiple data-kind="system_audio" accept=".wav,.mp3,.flac,.ogg,.m4a"><b>＋ Sons do sistema</b><span>Editar áudio interno</span></label></div></section>
-    <section class="card launcher-card"><p class="eyebrow">GERENCIADOR LOCAL</p><h2>Processar e publicar</h2><p>Para converter arquivos e publicar com segurança, use o gerenciador local no computador.</p><a class="btn primary" href="Executar_Administrador_Catalogo.cmd" download>Baixar atalho do gerenciador</a><p class="hint">Depois de baixar, abra o arquivo e use os botões Processar catálogo e Publicar catálogo.</p></section>
-    <section class="card"><div class="card-title"><div><p class="eyebrow">REVISÃO</p><h2>Informações do catálogo</h2></div><button class="text-btn" id="clear" type="button">Limpar novos</button></div><div id="empty" class="empty">Nenhum arquivo novo. O catálogo publicado continua preservado.</div><div id="list" class="items"></div></section>
-    <section class="card"><div class="card-title"><div><p class="eyebrow">CATÁLOGO PUBLICADO</p><h2>Áudios</h2></div><span id="published-count" class="pill">Carregando…</span></div><div class="toolbar"><input id="search" type="search" placeholder="Buscar áudio"><select id="filter"><option value="all">Todos os menus</option></select><select id="menu-filter"><option value="all">Todos os menus</option></select><select id="submenu-filter"><option value="all">Todos os submenus</option></select></div><p class="hint">Edite os campos diretamente. A ordem abaixo é a ordem de apresentação no app.</p><div id="published" class="items"><div class="empty">Carregando catálogo atual…</div></div></section>
-    <section class="card media-section"><div class="card-title"><div><p class="eyebrow">CATÁLOGO PUBLICADO</p><h2>Rostinhos do Fefo</h2></div><span id="faces-count" class="pill">0 itens</span></div><div id="faces-list" class="items"><div class="empty">Carregando rostinhos…</div></div></section><section class="card media-section"><div class="card-title"><div><p class="eyebrow">CATÁLOGO PUBLICADO</p><h2>Vídeos</h2></div><span id="videos-count" class="pill">0 itens</span></div><div id="videos-list" class="items"><div class="empty">Carregando vídeos…</div></div></section>
-    <section class="card system-card"><div class="card-title"><div><p class="eyebrow">ÁREA INTERNA</p><h2>Sons do sistema</h2></div><span id="system-count" class="pill">0 itens</span></div><p class="hint">Arquivos desta área não aparecem para download do usuário.</p><div id="system-list" class="items"><div class="empty">Nenhum som interno cadastrado.</div></div></section>
-    <section class="card publish-card"><p class="eyebrow">SAÍDA</p><h2>Processar e publicar</h2><p>Salvar em cada arquivo guarda o rascunho neste navegador. Para alterar o catálogo online do app, use <strong>Processar catálogo</strong> e depois <strong>Publicar catálogo</strong>.</p><div class="actions"><button class="btn primary" id="process" type="button">Processar catálogo</button><button class="btn primary" id="publish" type="button">Publicar catálogo</button><button class="btn secondary" id="save-folder" type="button">Salvar arquivos no projeto</button><button class="btn secondary" id="export" type="button">Baixar revisão</button></div><div id="status" class="status" role="status">Pronto para começar.</div></section>
-  </main>
-  <script src="catalog-admin/admin.js?v=filters-2"></script>
-  <script src="catalog-admin/audio-editor.js?v=content-editor-2"></script>
-  <script src="catalog-admin/image-editor.js?v=content-editor-2"></script>
+  <p>Redirecionando para o novo <a href="catalog-admin/index.html">Administrador do Catálogo</a>...</p>
 </body>
 </html>

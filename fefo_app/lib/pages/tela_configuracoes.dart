@@ -169,6 +169,99 @@ class _TelaConfiguracoesState extends State<TelaConfiguracoes> {
             const SizedBox(height: 15),
 
             Card(
+              color: appTheme.surface,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.mic_outlined, color: appTheme.accent, size: 26),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Alerta Sensorial & Microfone',
+                            style: TextStyle(
+                              fontFamily: 'KGPen',
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                              color: appTheme.text,
+                            ),
+                          ),
+                        ),
+                        Switch(
+                          value: manager.panicEnabled ?? true,
+                          activeColor: appTheme.accent,
+                          onChanged: manager.isConnected
+                              ? (val) async {
+                                  await manager.setPanicEnabled(val);
+                                }
+                              : null,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Detecta sobrecarga sonora ou choro prolongado para ativar vibração calmante.',
+                      style: TextStyle(color: appTheme.mutedText, fontSize: 13),
+                    ),
+                    if (manager.panicEnabled ?? true) ...[
+                      const Divider(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Sensibilidade do Microfone',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              color: appTheme.text,
+                              fontSize: 14,
+                            ),
+                          ),
+                          Text(
+                            manager.panicLevel >= 85
+                                ? 'Baixa (Escolas/Ruído)'
+                                : (manager.panicLevel <= 65
+                                    ? 'Alta (Quarto/Silêncio)'
+                                    : 'Média (Padrão)'),
+                            style: TextStyle(
+                              color: appTheme.accent,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Slider(
+                        value: (100 - manager.panicLevel).clamp(10, 40).toDouble(),
+                        min: 10,
+                        max: 40,
+                        divisions: 2,
+                        activeColor: appTheme.accent,
+                        onChanged: manager.isConnected
+                            ? (val) async {
+                                final threshold = (100 - val.round()).toInt();
+                                await manager.setPanicLevel(threshold);
+                              }
+                            : null,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Baixa (Escola)', style: TextStyle(color: appTheme.mutedText, fontSize: 11)),
+                          Text('Média (Padrão)', style: TextStyle(color: appTheme.mutedText, fontSize: 11)),
+                          Text('Alta (Quarto)', style: TextStyle(color: appTheme.mutedText, fontSize: 11)),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 15),
+
+            Card(
                 child: ListTile(
               leading: Icon(Icons.info_outline_rounded, color: corLaranja),
               title: const Text('Versões instaladas',

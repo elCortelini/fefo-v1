@@ -1,0 +1,185 @@
+/* cards-packs.css - Estilos dedicados para Pacotes de Cards Interativos & Rostinhos */
+
+.cards-interactive-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.card-item-box {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s;
+  position: relative;
+}
+
+.card-item-box:hover {
+  border-color: var(--purple);
+  box-shadow: 0 6px 18px rgba(118, 87, 197, 0.1);
+}
+
+.card-item-visuals {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  background: #fbf9ff;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+}
+
+.visual-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+}
+
+.visual-slot label {
+  font-size: 11px;
+  font-weight: 900;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.visual-preview {
+  width: 90px;
+  height: 90px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 2px dashed #bbaee6;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: var(--muted);
+  overflow: hidden;
+}
+
+.visual-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.btn-upload-slot {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--soft);
+  color: var(--purple);
+  border: 0;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-upload-slot:hover {
+  background: #dfd2ff;
+}
+
+.card-item-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card-item-meta input {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 7px 10px;
+  font: inherit;
+  font-size: 13px;
+  width: 100%;
+}
+
+.card-item-audio-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #faf8ff;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+}
+
+.card-item-audio-row audio {
+  height: 30px;
+  flex: 1;
+}
+
+.card-delete-corner {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #fff;
+  border: 1px solid #ffd0d4;
+  color: #c93b48;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.card-delete-corner:hover {
+  background: #ffebee;
+}
+
+/* Duas Abas Principais no Topo */
+.main-top-tabs {
+  display: flex;
+  gap: 12px;
+  margin: 18px 0 24px;
+}
+
+.main-tab-pill {
+  flex: 1;
+  padding: 14px 22px;
+  border: 2px solid var(--line);
+  border-radius: 18px;
+  background: #fff;
+  color: var(--muted);
+  font: inherit;
+  font-weight: 900;
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+}
+
+.main-tab-pill:hover {
+  border-color: var(--purple);
+  color: var(--purple);
+}
+
+.main-tab-pill.active {
+  background: var(--purple);
+  border-color: var(--purple);
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(118, 87, 197, 0.25);
+}
+
+.main-tab-content {
+  display: none;
+}
+
+.main-tab-content.active {
+  display: block;
+}

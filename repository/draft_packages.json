@@ -1,0 +1,71 @@
+{
+  "schema": 1,
+  "description": "FEFO Content Draft Packages - Rascunho interno de pacotes de conteúdo e menus. Não é exposto diretamente aos clientes.",
+  "updated_at": "2026-10-27T14:00:00Z",
+  "packages": [
+    {
+      "id": "pkg_contos_ninar_demo",
+      "titulo": "Contos de Ninar",
+      "descricao": "Histórias relaxantes e cantigas para a hora de dormir",
+      "target_count": 10,
+      "categoria": "Contos",
+      "licencas": [
+        "home",
+        "clinical",
+        "escola"
+      ],
+      "is_premium": false,
+      "status": "draft",
+      "items": [
+        {
+          "id": "demo_1",
+          "titulo": "O Carneirinho das Estrelas",
+          "arquivo_origem": "carneirinho.wav",
+          "tamanho": 1500000,
+          "status": "ready"
+        },
+        {
+          "id": "demo_2",
+          "titulo": "Bons Sonhos Pequeno Fefo",
+          "arquivo_origem": "bons_sonhos.wav",
+          "tamanho": 2100000,
+          "status": "ready"
+        },
+        {
+          "id": "item_0_3",
+          "titulo": "Maria quiteria   olha esa mosa guerreira",
+          "submenu": "",
+          "arquivo_origem": "Maria Quiteria - Olha esa mosa guerreira.mp3",
+          "arquivo_draft": "repository/drafts/audio/pkg_contos_ninar_demo/Maria_Quiteria_-_Olha_esa_mosa_guerreira.mp3",
+          "web_url": "/repository/drafts/audio/pkg_contos_ninar_demo/Maria_Quiteria_-_Olha_esa_mosa_guerreira.mp3",
+          "tamanho": 4336883,
+          "status": "ready"
+        }
+      ]
+    },
+    {
+      "id": "pkg_446669",
+      "titulo": "Teste de pacote",
+      "descricao": "Teste de criaçã ode pacote",
+      "target_count": 7,
+      "categoria": "Contos",
+      "licencas": [
+        "home"
+      ],
+      "is_premium": false,
+      "status": "draft",
+      "items": [
+        {
+          "id": "item_0_1",
+          "titulo": "Curawaka   te nande",
+          "submenu": "",
+          "arquivo_origem": "Curawaka - Te Nande.mp3",
+          "arquivo_draft": "repository/drafts/audio/pkg_446669/Curawaka_-_Te_Nande.mp3",
+          "web_url": "/repository/drafts/audio/pkg_446669/Curawaka_-_Te_Nande.mp3",
+          "tamanho": 4576364,
+          "status": "ready"
+        }
+      ]
+    }
+  ]
+}

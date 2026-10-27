@@ -1,6 +1,6 @@
 {
     "schema":  1,
-    "catalogVersion":  74,
+    "catalogVersion":  80,
     "repository":  "FEFO Google Drive",
     "firmware":  {
                      "version":  "1.102",
@@ -372,7 +372,7 @@
                       "tamanho":  307200,
                       "checksum":  "9f72256fd03d34243aa1212822ca7687e9180e8cf9b4a3000f932d75cebdb01b",
                       "tipo":  "face",
-                      "titulo":  "Face 1",
+                      "titulo":  "Sorrindo",
                       "url":  "https://drive.google.com/uc?export=download\u0026id=15OBWND9XWpPrnLlN59ksyk3tIzWvxAL_"
                   },
                   {
@@ -381,7 +381,7 @@
                       "tamanho":  307200,
                       "checksum":  "997f4e5669a66bde2a809ba3cb0ab378df881aa8b0446573aa71c6c9e6b79c98",
                       "tipo":  "face",
-                      "titulo":  "Face 2",
+                      "titulo":  "Feliz",
                       "url":  "https://drive.google.com/uc?export=download\u0026id=19-mHEwMsxT9yyVQXmTFIYEPbRi-qmug0"
                   },
                   {
@@ -390,7 +390,7 @@
                       "tamanho":  307200,
                       "checksum":  "43149c28e4b52669e30ed87dd460a3e0a9273a83c4e682652171f5eada166597",
                       "tipo":  "face",
-                      "titulo":  "Face 3",
+                      "titulo":  "Piscando",
                       "url":  "https://drive.google.com/uc?export=download\u0026id=1SMzfNlFk8yZht6NpfhErpvV6H31mNnss"
                   },
                   {
@@ -399,7 +399,7 @@
                       "tamanho":  307200,
                       "checksum":  "b3a19d89b8bb6dc803cfdeeabc5292d20b71721cfa1d816ed08cf7ff218f5173",
                       "tipo":  "face",
-                      "titulo":  "Face 4",
+                      "titulo":  "Faceiro",
                       "url":  "https://drive.google.com/uc?export=download\u0026id=16Plf_pD4iKzsgUb1VxtHLIfkh6RRKr0O"
                   },
                   {
@@ -408,7 +408,7 @@
                       "tamanho":  307200,
                       "checksum":  "02b68d22f79ee8ef8f764e604fb5bb4c277c26f177191a8d8ab1a8963b2e1165",
                       "tipo":  "face",
-                      "titulo":  "Face 5",
+                      "titulo":  "Chorando",
                       "url":  "https://drive.google.com/uc?export=download\u0026id=1XjZ8Osu-BCIcwRvBibtBoGxITZW2niq2"
                   },
                   {
@@ -417,11 +417,11 @@
                       "tamanho":  307200,
                       "checksum":  "892b2aef23541b782b1cf9fafba9d3dec6291504ad7b3b92d678728b5a0cb602",
                       "tipo":  "face",
-                      "titulo":  "Face 6",
+                      "titulo":  "Fofinho",
                       "url":  "https://drive.google.com/uc?export=download\u0026id=17a-gvsWBDEomrp6iqGFBlu4rrg6ov1C2"
                   }
               ],
     "catalogRevision":  "official-73",
-    "assinaturaCatalogoCanonica":  "IIbbIWST23m3ZuLrWHHys7af4eucodslIoFRMmubePCCrvNNcDRtfN69qq2Bljcbc1+BAgcowsYw8mJtQ8icA4Kjrpv0KY8z8Fq/+XCGeUxZ2XRkH6GS+fb159Mofog3p2alWMCuKgH74PZqjQgvX3OQmy1wSJ5S3A6o4hWSDIn3d8zjqPu3X4r4WWumQYUUEJSuaY+H0HTiNRRRY07bwlrRptgbxTCOJRtlrn4s76RSz+/S8sGc0VpyKjTaoYYGCymdT+UE+x4tnBdcstSaB2pnUhIvwoBHA3vcsoQBehsXbTNg108WCQi7WU30T3sRDKhPZBUZ7DOuTfAEfIbSPA==",
-    "assinaturaCatalogo":  "IIbbIWST23m3ZuLrWHHys7af4eucodslIoFRMmubePCCrvNNcDRtfN69qq2Bljcbc1+BAgcowsYw8mJtQ8icA4Kjrpv0KY8z8Fq/+XCGeUxZ2XRkH6GS+fb159Mofog3p2alWMCuKgH74PZqjQgvX3OQmy1wSJ5S3A6o4hWSDIn3d8zjqPu3X4r4WWumQYUUEJSuaY+H0HTiNRRRY07bwlrRptgbxTCOJRtlrn4s76RSz+/S8sGc0VpyKjTaoYYGCymdT+UE+x4tnBdcstSaB2pnUhIvwoBHA3vcsoQBehsXbTNg108WCQi7WU30T3sRDKhPZBUZ7DOuTfAEfIbSPA=="
+    "assinaturaCatalogoCanonica":  "biSBjpbcCCwT8e3ssN637jU/0S93j0D2+qCnR/Mk7bGgzXEQFbVxzhNcsJ99g21aqENwLhNkdBdhmI1MlXmJX9kjLZwp2dBfQot4CqhsKyZxMEnOlaJ3dhZLgJ/PlSedd/r5jLlqCoMc9uq39+hqsBGvL9eBJnKDW7Hb2DJreL6yVfsf3jtI2Lqnofg0mJ1MkjDzaqsGDBKU/2SJO0h2VT+gNHXbPnejAbWxQVR6odhFpCp9ESzG+O7uD/8s1nwIqwGXTYlaFraOeaiyLWf0pXJrmMfM13VbJ1KsXshRguSRjFIQeNJGb2Jcrvu4cmztOKnBUZlruWsCfYE8sXerPg==",
+    "assinaturaCatalogo":  "biSBjpbcCCwT8e3ssN637jU/0S93j0D2+qCnR/Mk7bGgzXEQFbVxzhNcsJ99g21aqENwLhNkdBdhmI1MlXmJX9kjLZwp2dBfQot4CqhsKyZxMEnOlaJ3dhZLgJ/PlSedd/r5jLlqCoMc9uq39+hqsBGvL9eBJnKDW7Hb2DJreL6yVfsf3jtI2Lqnofg0mJ1MkjDzaqsGDBKU/2SJO0h2VT+gNHXbPnejAbWxQVR6odhFpCp9ESzG+O7uD/8s1nwIqwGXTYlaFraOeaiyLWf0pXJrmMfM13VbJ1KsXshRguSRjFIQeNJGb2Jcrvu4cmztOKnBUZlruWsCfYE8sXerPg=="
 }

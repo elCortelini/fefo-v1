@@ -358,6 +358,10 @@ void AppController::update() {
   if (wifiPushScheduled_ && static_cast<int32_t>(millis() - wifiPushAtMs_) >= 0) {
     wifiPushScheduled_ = false;
     audio_.stopPlayback();
+    vibration_.stop();
+    leds_.clear();
+    const uint8_t previousBrightness = display_.brightness();
+    display_.setBrightness(25);  // Atenua tela para reduzir consumo e evitar brownout
     // BLE + Wi-Fi excedem a RAM interna desta CYD (sem PSRAM). A desalocacao do
     // BLE pode levar mais que os 8 s do watchdog, portanto removemos o loop do
     // WDT antes da transicao e reiniciamos ao final da operacao.
@@ -378,6 +382,7 @@ void AppController::update() {
     } else {
       // Uma falha de descoberta, cancelamento ou timeout não deve derrubar o
       // PET. O BLE foi desligado apenas para liberar RAM durante o Wi-Fi.
+      display_.setBrightness(previousBrightness);
       ble_.begin();
       beginWatchdog();
       transitionTo(SystemState::kReady);

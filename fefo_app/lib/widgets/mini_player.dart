@@ -15,6 +15,7 @@ class MiniPlayer extends StatefulWidget {
 
 class _MiniPlayerState extends State<MiniPlayer> {
   double? _draggedProgress;
+  double? _draggedVolume;
   bool _mostrandoVolume = false;
 
   @override
@@ -140,11 +141,16 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                   thumbColor: corTexto,
                                 ),
                                 child: Slider(
-                                  value: manager.audioVolume.toDouble(),
+                                  value: (_draggedVolume ?? manager.audioVolume.toDouble()).clamp(0.0, 100.0),
                                   min: 0,
                                   max: 100,
                                   onChanged: (val) {
-                                    manager.setVolume(val.round());
+                                    setState(() => _draggedVolume = val);
+                                    manager.setVolumeThrottled(val.round());
+                                  },
+                                  onChangeEnd: (val) {
+                                    setState(() => _draggedVolume = null);
+                                    manager.setVolumeFinal(val.round());
                                   },
                                 ),
                               ),

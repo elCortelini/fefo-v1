@@ -1,0 +1,231 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" width="100%" height="100%" style="background:#0f172a; font-family:'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <linearGradient id="gradHeader" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#818cf8"/>
+    </linearGradient>
+    <linearGradient id="cardPed" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#38bdf8" />
+    </marker>
+    <marker id="arrowOrange" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#f59e0b" />
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#10b981" />
+    </marker>
+  </defs>
+
+  <!-- TÍTULO -->
+  <text x="800" y="50" text-anchor="middle" font-size="28" font-weight="bold" fill="url(#gradHeader)">LUMORA • ESTEIRA GERAL DE OPERAÇÕES &amp; PROCESSOS — FEFO</text>
+  <text x="800" y="80" text-anchor="middle" font-size="15" fill="#94a3b8">Fluxo contínuo de valor: Da concepção pedagógica ao cliente final</text>
+
+  <!-- FAIXA 1: CONTEÚDO & PEDAGÓGICO -->
+  <g transform="translate(60, 110)">
+    <rect width="1480" height="150" rx="16" fill="#1e293b" stroke="#ef4444" stroke-width="2" opacity="0.95" filter="url(#shadow)"/>
+    <rect width="180" height="32" rx="8" fill="#ef4444" x="20" y="-16"/>
+    <text x="110" y="6" text-anchor="middle" font-size="13" font-weight="bold" fill="#ffffff">1. P&amp;D PEDAGÓGICO</text>
+
+    <!-- Passos -->
+    <g transform="translate(30, 35)">
+      <rect width="210" height="85" rx="10" fill="#334155" stroke="#f87171" stroke-width="1.5"/>
+      <text x="105" y="32" text-anchor="middle" font-size="13" font-weight="bold" fill="#f87171">Pesquisa &amp; Método</text>
+      <text x="105" y="52" text-anchor="middle" font-size="11" fill="#cbd5e1">Demandas do TEA</text>
+      <text x="105" y="68" text-anchor="middle" font-size="11" fill="#cbd5e1">Adaptação Clínica / Home</text>
+    </g>
+
+    <line x1="240" y1="77" x2="280" y2="77" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <g transform="translate(280, 35)">
+      <rect width="210" height="85" rx="10" fill="#334155" stroke="#f87171" stroke-width="1.5"/>
+      <text x="105" y="32" text-anchor="middle" font-size="13" font-weight="bold" fill="#f87171">Roteirização</text>
+      <text x="105" y="52" text-anchor="middle" font-size="11" fill="#cbd5e1">Histórias, Músicas, Aulas</text>
+      <text x="105" y="68" text-anchor="middle" font-size="11" fill="#cbd5e1">Cards RFID &amp; Manuais</text>
+    </g>
+
+    <line x1="490" y1="77" x2="530" y2="77" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <!-- Gateway de validação -->
+    <g transform="translate(530, 35)">
+      <polygon points="100,5 190,42 100,80 10,42" fill="#450a0a" stroke="#ef4444" stroke-width="2"/>
+      <text x="100" y="40" text-anchor="middle" font-size="11" font-weight="bold" fill="#fca5a5">Validação</text>
+      <text x="100" y="54" text-anchor="middle" font-size="10" fill="#fca5a5">Clínica?</text>
+    </g>
+
+    <line x1="720" y1="77" x2="760" y2="77" stroke="#10b981" stroke-width="2" marker-end="url(#arrowGreen)"/>
+
+    <g transform="translate(760, 35)">
+      <rect width="220" height="85" rx="10" fill="#334155" stroke="#f87171" stroke-width="1.5"/>
+      <text x="110" y="32" text-anchor="middle" font-size="13" font-weight="bold" fill="#f87171">Gravação de Mídias</text>
+      <text x="110" y="52" text-anchor="middle" font-size="11" fill="#cbd5e1">Locução &amp; Trilha Sonora</text>
+      <text x="110" y="68" text-anchor="middle" font-size="11" fill="#cbd5e1">Design de Faces &amp; Vídeos</text>
+    </g>
+
+    <line x1="980" y1="77" x2="1020" y2="77" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <g transform="translate(1020, 35)">
+      <rect width="220" height="85" rx="10" fill="#334155" stroke="#f87171" stroke-width="1.5"/>
+      <text x="110" y="32" text-anchor="middle" font-size="13" font-weight="bold" fill="#f87171">Conversão Técnica</text>
+      <text x="110" y="52" text-anchor="middle" font-size="11" fill="#cbd5e1">Áudios WAV 16-bit PCM</text>
+      <text x="110" y="68" text-anchor="middle" font-size="11" fill="#cbd5e1">Faces RAW RGB565</text>
+    </g>
+
+    <line x1="1240" y1="77" x2="1280" y2="77" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <g transform="translate(1280, 35)">
+      <rect width="170" height="85" rx="10" fill="#1e1b4b" stroke="#818cf8" stroke-width="1.5"/>
+      <text x="85" y="32" text-anchor="middle" font-size="12" font-weight="bold" fill="#a5b4fc">Catálogo Online</text>
+      <text x="85" y="52" text-anchor="middle" font-size="11" fill="#cbd5e1">catalog.json assinado</text>
+      <text x="85" y="68" text-anchor="middle" font-size="11" fill="#cbd5e1">Disponível OTA</text>
+    </g>
+  </g>
+
+  <!-- FAIXA 2: ENGENHARIA & PRODUÇÃO FÍSICA -->
+  <g transform="translate(60, 290)">
+    <rect width="1480" height="150" rx="16" fill="#1e293b" stroke="#0284c7" stroke-width="2" opacity="0.95" filter="url(#shadow)"/>
+    <rect width="210" height="32" rx="8" fill="#0284c7" x="20" y="-16"/>
+    <text x="125" y="6" text-anchor="middle" font-size="13" font-weight="bold" fill="#ffffff">2. PRODUÇÃO &amp; HARDWARE</text>
+
+    <g transform="translate(30, 35)">
+      <rect width="210" height="85" rx="10" fill="#334155" stroke="#38bdf8" stroke-width="1.5"/>
+      <text x="105" y="32" text-anchor="middle" font-size="13" font-weight="bold" fill="#38bdf8">Suprimentos &amp; Peças</text>
+      <text x="105" y="52" text-anchor="middle" font-size="11" fill="#cbd5e1">Placas CYD ESP32 / RFID</text>
+      <text x="105" y="68" text-anchor="middle" font-size="11" fill="#cbd5e1">Baterias, Telas, Filamento 3D</text>
+    </g>
+
+    <line x1="240" y1="77" x2="280" y2="77" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <g transform="translate(280, 35)">
+      <rect width="210" height="85" rx="10" fill="#334155" stroke="#38bdf8" stroke-width="1.5"/>
+      <text x="105" y="32" text-anchor="middle" font-size="13" font-weight="bold" fill="#38bdf8">Fabricação dos Cases</text>
+      <text x="105" y="52" text-anchor="middle" font-size="11" fill="#cbd5e1">Impressão 3D &amp; Acabamento</text>
+      <text x="105" y="68" text-anchor="middle" font-size="11" fill="#cbd5e1">Gravação microSD inicial</text>
+    </g>
+
+    <line x1="490" y1="77" x2="530" y2="77" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <g transform="translate(530, 35)">
+      <rect width="200" height="85" rx="10" fill="#334155" stroke="#38bdf8" stroke-width="1.5"/>
+      <text x="100" y="32" text-anchor="middle" font-size="13" font-weight="bold" fill="#38bdf8">Montagem Elétrica</text>
+      <text x="100" y="52" text-anchor="middle" font-size="11" fill="#cbd5e1">Solda, Bateria &amp; Falante</text>
+      <text x="100" y="68" text-anchor="middle" font-size="11" fill="#cbd5e1">Flashing do Firmware CYD</text>
+    </g>
+
+    <line x1="730" y1="77" x2="770" y2="77" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <g transform="translate(770, 35)">
+      <polygon points="100,5 190,42 100,80 10,42" fill="#0c4a6e" stroke="#38bdf8" stroke-width="2"/>
+      <text x="100" y="38" text-anchor="middle" font-size="11" font-weight="bold" fill="#7dd3fc">QA Industrial</text>
+      <text x="100" y="52" text-anchor="middle" font-size="10" fill="#7dd3fc">Toque/Som/BLE?</text>
+    </g>
+
+    <line x1="960" y1="77" x2="1000" y2="77" stroke="#10b981" stroke-width="2" marker-end="url(#arrowGreen)"/>
+
+    <g transform="translate(1000, 35)">
+      <rect width="220" height="85" rx="10" fill="#334155" stroke="#38bdf8" stroke-width="1.5"/>
+      <text x="110" y="32" text-anchor="middle" font-size="13" font-weight="bold" fill="#38bdf8">Montagem do Kit</text>
+      <text x="110" y="52" text-anchor="middle" font-size="11" fill="#cbd5e1">Pet + Cards RFID + Manual</text>
+      <text x="110" y="68" text-anchor="middle" font-size="11" fill="#cbd5e1">Embalagem Personalizada</text>
+    </g>
+
+    <line x1="1220" y1="77" x2="1260" y2="77" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <g transform="translate(1260, 35)">
+      <rect width="190" height="85" rx="10" fill="#064e3b" stroke="#34d399" stroke-width="1.5"/>
+      <text x="95" y="32" text-anchor="middle" font-size="13" font-weight="bold" fill="#6ee7b7">Estoque Final</text>
+      <text x="95" y="52" text-anchor="middle" font-size="11" fill="#cbd5e1">Produtos Testados</text>
+      <text x="95" y="68" text-anchor="middle" font-size="11" fill="#cbd5e1">Prontos p/ Expedição</text>
+    </g>
+  </g>
+
+  <!-- FAIXA 3: MARKETING, ATRAÇÃO & COMUNICAÇÃO -->
+  <g transform="translate(60, 470)">
+    <rect width="1480" height="135" rx="16" fill="#1e293b" stroke="#ec4899" stroke-width="2" opacity="0.95" filter="url(#shadow)"/>
+    <rect width="200" height="32" rx="8" fill="#ec4899" x="20" y="-16"/>
+    <text x="120" y="6" text-anchor="middle" font-size="13" font-weight="bold" fill="#ffffff">3. MARKETING &amp; MÍDIAS</text>
+
+    <g transform="translate(50, 25)">
+      <rect width="280" height="80" rx="10" fill="#334155" stroke="#f472b6" stroke-width="1.5"/>
+      <text x="140" y="30" text-anchor="middle" font-size="13" font-weight="bold" fill="#f472b6">Branding &amp; Redes Sociais</text>
+      <text x="140" y="50" text-anchor="middle" font-size="11" fill="#cbd5e1">Instagram, YouTube, Demonstrações</text>
+      <text x="140" y="66" text-anchor="middle" font-size="11" fill="#cbd5e1">Posicionamento: "Alexa da Inclusão"</text>
+    </g>
+
+    <line x1="330" y1="65" x2="410" y2="65" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <g transform="translate(410, 25)">
+      <rect width="280" height="80" rx="10" fill="#334155" stroke="#f472b6" stroke-width="1.5"/>
+      <text x="140" y="30" text-anchor="middle" font-size="13" font-weight="bold" fill="#f472b6">Conteúdo Educativo TEA</text>
+      <text x="140" y="50" text-anchor="middle" font-size="11" fill="#cbd5e1">Dicas para pais e professores</text>
+      <text x="140" y="66" text-anchor="middle" font-size="11" fill="#cbd5e1">Depoimentos reais e validações</text>
+    </g>
+
+    <line x1="690" y1="65" x2="770" y2="65" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <g transform="translate(770, 25)">
+      <rect width="290" height="80" rx="10" fill="#334155" stroke="#f472b6" stroke-width="1.5"/>
+      <text x="145" y="30" text-anchor="middle" font-size="13" font-weight="bold" fill="#f472b6">Captação &amp; Parcerias</text>
+      <text x="145" y="50" text-anchor="middle" font-size="11" fill="#cbd5e1">Clínicas de Terapia Ocupacional</text>
+      <text x="145" y="66" text-anchor="middle" font-size="11" fill="#cbd5e1">Prefeituras, Vereadores &amp; Editais</text>
+    </g>
+
+    <line x1="1060" y1="65" x2="1140" y2="65" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <g transform="translate(1140, 25)">
+      <rect width="290" height="80" rx="10" fill="#831843" stroke="#f472b6" stroke-width="1.5"/>
+      <text x="145" y="30" text-anchor="middle" font-size="13" font-weight="bold" fill="#fbcfe8">Geração de Leads Qualificados</text>
+      <text x="145" y="50" text-anchor="middle" font-size="11" fill="#cbd5e1">Interessados diretos (Famílias B2C)</text>
+      <text x="145" y="66" text-anchor="middle" font-size="11" fill="#cbd5e1">Oportunidades em Lote (B2B / B2G)</text>
+    </g>
+  </g>
+
+  <!-- FAIXA 4: VENDAS, JURÍDICO & EXPEDIÇÃO -->
+  <g transform="translate(60, 630)">
+    <rect width="1480" height="150" rx="16" fill="#1e293b" stroke="#eab308" stroke-width="2" opacity="0.95" filter="url(#shadow)"/>
+    <rect width="210" height="32" rx="8" fill="#eab308" x="20" y="-16"/>
+    <text x="125" y="6" text-anchor="middle" font-size="13" font-weight="bold" fill="#000000">4. VENDAS &amp; JURÍDICO</text>
+
+    <g transform="translate(40, 35)">
+      <rect width="260" height="85" rx="10" fill="#334155" stroke="#facc15" stroke-width="1.5"/>
+      <text x="130" y="32" text-anchor="middle" font-size="13" font-weight="bold" fill="#facc15">Atendimento Comercial</text>
+      <text x="130" y="52" text-anchor="middle" font-size="11" fill="#cbd5e1">Apresentação / Demonstração</text>
+      <text x="130" y="68" text-anchor="middle" font-size="11" fill="#cbd5e1">Negociação B2C, B2B ou B2G</text>
+    </g>
+
+    <line x1="300" y1="77" x2="350" y2="77" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <g transform="translate(350, 35)">
+      <rect width="260" height="85" rx="10" fill="#334155" stroke="#facc15" stroke-width="1.5"/>
+      <text x="130" y="32" text-anchor="middle" font-size="13" font-weight="bold" fill="#facc15">Formalização &amp; Contratos</text>
+      <text x="130" y="52" text-anchor="middle" font-size="11" fill="#cbd5e1">Contratos (5 tipos de cessão)</text>
+      <text x="130" y="68" text-anchor="middle" font-size="11" fill="#cbd5e1">Emissão NF-e (Contabilidade)</text>
+    </g>
+
+    <line x1="610" y1="77" x2="660" y2="77" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <g transform="translate(660, 35)">
+      <rect width="260" height="85" rx="10" fill="#334155" stroke="#facc15" stroke-width="1.5"/>
+      <text x="130" y="32" text-anchor="middle" font-size="13" font-weight="bold" fill="#facc15">Separação &amp; Despacho</text>
+      <text x="130" y="52" text-anchor="middle" font-size="11" fill="#cbd5e1">Baixa no Estoque Físico</text>
+      <text x="130" y="68" text-anchor="middle" font-size="11" fill="#cbd5e1">Correios / Transportadora</text>
+    </g>
+
+    <line x1="920" y1="77" x2="970" y2="77" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <g transform="translate(970, 35)">
+      <rect width="470" height="85" rx="10" fill="#713f12" stroke="#fde047" stroke-width="1.5"/>
+      <text x="235" y="32" text-anchor="middle" font-size="13" font-weight="bold" fill="#fef08a">Pós-Venda, Suporte Didático &amp; Garantia (RMA)</text>
+      <text x="235" y="52" text-anchor="middle" font-size="11" fill="#cbd5e1">Onboarding com a família • Dúvidas pedagógicas (Tailise)</text>
+      <text x="235" y="68" text-anchor="middle" font-size="11" fill="#cbd5e1">Assistência técnica em caso de avaria ou recalibração (Elevi)</text>
+    </g>
+  </g>
+
+  <!-- RODAPÉ -->
+  <text x="800" y="815" text-anchor="middle" font-size="12" fill="#64748b">Lumora Tecnologia Assistiva © 2026 • Esteira de Processos Integrada</text>
+</svg>
