@@ -10,29 +10,30 @@
       location.replace(`https://${location.host}${location.pathname}${location.search}${location.hash}`);
     }
   </script>
+  <script>
+    (function() {
+      try {
+        var t = localStorage.getItem('fefo-theme') || 'galaxy';
+        if (t === 'lavanda') t = 'lavender';
+        if (t === 'menta') t = 'mint';
+        document.documentElement.setAttribute('data-theme', t);
+        document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    })();
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Administrador do Catálogo · FEFO Pet</title>
-  <link rel="stylesheet" href="admin.css?v=unified-6">
-  <link rel="stylesheet" href="packages.css?v=unified-6">
-  <link rel="stylesheet" href="cards-packs.css?v=unified-6">
-  <link rel="stylesheet" href="audio-editor.css?v=unified-6">
-  <link rel="stylesheet" href="image-editor.css?v=unified-6">
+  <link rel="stylesheet" href="admin.css?v=unified-7">
+  <link rel="stylesheet" href="packages.css?v=unified-7">
+  <link rel="stylesheet" href="cards-packs.css?v=unified-7">
+  <link rel="stylesheet" href="audio-editor.css?v=unified-7">
+  <link rel="stylesheet" href="image-editor.css?v=unified-7">
 </head>
 <body>
   <main class="shell">
-    <header class="hero">
+    <header class="hero" style="padding-bottom: 16px;">
       <a class="back" href="../index.html">← Site do Fefo</a>
-      <p class="eyebrow">FEFO PET · SISTEMA DE CONTEÚDOS & MENUS</p>
-      <h1>Administrador do Catálogo</h1>
-      <div class="head-tools">
-        <p class="catalog-badge" id="catalog-version">Catálogo carregando…</p>
-        <label>Tema 
-          <select id="theme">
-            <option value="lavanda">Lavanda clara</option>
-            <option value="menta">Menta clara</option>
-          </select>
-        </label>
-      </div>
+      <h1 style="margin-top: 14px;">Administrador do Catálogo</h1>
     </header>
 
     <!-- 4 Abas Principais no Topo -->
@@ -235,10 +236,10 @@
     </section>
   </main>
 
-  <script src="admin.js?v=unified-6"></script>
-  <script src="audio-editor.js?v=unified-6"></script>
-  <script src="image-editor.js?v=unified-6"></script>
-  <script src="packages.js?v=unified-6"></script>
-  <script src="cards-packs.js?v=unified-6"></script>
+  <script src="admin.js?v=unified-7"></script>
+  <script src="audio-editor.js?v=unified-7"></script>
+  <script src="image-editor.js?v=unified-7"></script>
+  <script src="packages.js?v=unified-7"></script>
+  <script src="cards-packs.js?v=unified-7"></script>
 </body>
 </html>
