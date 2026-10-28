@@ -290,7 +290,22 @@ class Handler(SimpleHTTPRequestHandler):
                 drafts_data = load_json_file(DRAFT_PACKAGES_FILE, {"packages": []})
                 drafts_data['packages'] = [p for p in drafts_data.get('packages', []) if p.get('id') != pkg_id]
                 save_json_file(DRAFT_PACKAGES_FILE, drafts_data)
+                if pkg_id:
+                    pkg_dir = DRAFTS_AUDIO_DIR / pkg_id
+                    if pkg_dir.exists():
+                        shutil.rmtree(pkg_dir, ignore_errors=True)
                 result = {'ok': True, 'message': 'Pacote removido com sucesso.'}
+
+            elif self.path == '/api/packages/delete_item':
+                payload = json.loads(body.decode('utf-8'))
+                pkg_id = payload.get('package_id')
+                item_id = payload.get('item_id')
+                drafts_data = load_json_file(DRAFT_PACKAGES_FILE, {"packages": []})
+                pkg = next((p for p in drafts_data.get('packages', []) if p.get('id') == pkg_id), None)
+                if pkg and 'items' in pkg:
+                    pkg['items'] = [it for it in pkg['items'] if it.get('id') != item_id]
+                    save_json_file(DRAFT_PACKAGES_FILE, drafts_data)
+                result = {'ok': True, 'message': 'Faixa removida com sucesso.'}
 
             elif self.path == '/api/packages/upload_audio':
                 msg = BytesParser(policy=default).parsebytes(b'Content-Type: ' + content_type.encode() + b'\r\n\r\n' + body)

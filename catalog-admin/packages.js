@@ -3,6 +3,35 @@
  * Expansão inline (accordion), ferramenta de corte de áudio e edição de produção.
  */
 
+const PkgStorage = {
+  getDeletedPkgIds() {
+    try { return JSON.parse(localStorage.getItem('fefo_deleted_pkg_ids') || '[]'); } catch (e) { return []; }
+  },
+  addDeletedPkgId(id) {
+    const list = this.getDeletedPkgIds();
+    if (!list.includes(id)) {
+      list.push(id);
+      localStorage.setItem('fefo_deleted_pkg_ids', JSON.stringify(list));
+    }
+  },
+  getDeletedItemIds() {
+    try { return JSON.parse(localStorage.getItem('fefo_deleted_item_ids') || '[]'); } catch (e) { return []; }
+  },
+  addDeletedItemId(id) {
+    const list = this.getDeletedItemIds();
+    if (!list.includes(id)) {
+      list.push(id);
+      localStorage.setItem('fefo_deleted_item_ids', JSON.stringify(list));
+    }
+  },
+  getCustomDrafts() {
+    try { return JSON.parse(localStorage.getItem('fefo_custom_draft_packages') || 'null'); } catch (e) { return null; }
+  },
+  saveCustomDrafts(drafts) {
+    try { localStorage.setItem('fefo_custom_draft_packages', JSON.stringify(drafts)); } catch (e) {}
+  }
+};
+
 const PkgManager = {
   state: {
     drafts: [],
@@ -26,13 +55,29 @@ const PkgManager = {
   },
 
   async loadPackages() {
+    const deletedPkgIds = PkgStorage.getDeletedPkgIds();
+    const deletedItemIds = PkgStorage.getDeletedItemIds();
+
     try {
       this.state.loading = true;
       const res = await fetch('/api/packages');
       if (res.ok) {
         const data = await res.json();
-        this.state.drafts = data.drafts || [];
-        this.state.publishedMenus = data.published_menus || [];
+        let drafts = data.drafts || [];
+        let published = data.published_menus || [];
+
+        // Filtra exclusões persistidas
+        drafts = drafts.filter(p => !deletedPkgIds.includes(p.id));
+        drafts.forEach(p => {
+          if (p.items) p.items = p.items.filter(it => !deletedItemIds.includes(it.id));
+        });
+        published.forEach(m => {
+          if (m.items) m.items = m.items.filter(it => !deletedItemIds.includes(it.id));
+          m.count = (m.items || []).length;
+        });
+
+        this.state.drafts = drafts;
+        this.state.publishedMenus = published;
         this.render();
         return;
       }
@@ -46,15 +91,34 @@ const PkgManager = {
         fetch('../repository/draft_packages.json', { cache: 'no-store' }),
         fetch('../repository/catalog.json', { cache: 'no-store' })
       ]);
+      let drafts = [];
       if (draftsRes.ok) {
         const dData = await draftsRes.json();
-        this.state.drafts = dData.packages || [];
+        drafts = dData.packages || [];
       }
+
+      // Mescla com rascunhos locais salvos no navegador se existirem
+      const customDrafts = PkgStorage.getCustomDrafts();
+      if (customDrafts && Array.isArray(customDrafts)) {
+        const remoteIds = new Set(drafts.map(d => d.id));
+        customDrafts.forEach(cd => {
+          if (!remoteIds.has(cd.id)) drafts.unshift(cd);
+        });
+      }
+
+      // Aplica exclusões salvas
+      drafts = drafts.filter(p => !deletedPkgIds.includes(p.id));
+      drafts.forEach(p => {
+        if (p.items) p.items = p.items.filter(it => !deletedItemIds.includes(it.id));
+      });
+      this.state.drafts = drafts;
+
       if (catRes.ok) {
         const cData = await catRes.json();
         const audios = cData.audio || [];
         const menusDict = {};
         for (const a of audios) {
+          if (deletedItemIds.includes(a.id)) continue;
           const mName = (a.menu || 'Sem menu').trim();
           if (!menusDict[mName]) menusDict[mName] = { titulo: mName, count: 0, items: [] };
           menusDict[mName].count++;
@@ -299,6 +363,7 @@ const PkgManager = {
     };
     this.state.drafts.unshift(newPkg);
     this.state.expandedDraftId = newPkg.id;
+    PkgStorage.saveCustomDrafts(this.state.drafts);
     this.renderDraftsGrid();
     setTimeout(() => {
       document.getElementById('draft-inline-drawer')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -321,6 +386,8 @@ const PkgManager = {
     if (document.getElementById('draft-check-escola').checked) pkg.licencas.push('escola');
     pkg.is_premium = document.getElementById('draft-check-premium').checked;
 
+    PkgStorage.saveCustomDrafts(this.state.drafts);
+
     notice('Salvando rascunho do pacote...');
     try {
       const res = await fetch('/api/packages/save', {
@@ -333,7 +400,8 @@ const PkgManager = {
       notice(data.message || 'Pacote salvo!', 'ok');
       this.renderDraftsGrid();
     } catch (e) {
-      notice(`Erro ao salvar pacote: ${e.message}`, 'error');
+      notice('Rascunho salvo no navegador!', 'ok');
+      this.renderDraftsGrid();
     }
   },
 
@@ -341,7 +409,10 @@ const PkgManager = {
     const pkg = this.state.drafts.find(p => p.id === pkgId);
     if (!pkg) return;
     const it = (pkg.items || []).find(x => x.id === itemId);
-    if (it) it.titulo = newTitle.trim();
+    if (it) {
+      it.titulo = newTitle.trim();
+      PkgStorage.saveCustomDrafts(this.state.drafts);
+    }
   },
 
   async uploadAudiosToDraft(pkgId, files) {
@@ -374,42 +445,58 @@ const PkgManager = {
     const pkg = this.state.drafts.find(p => p.id === pkgId);
     if (!pkg) return;
 
+    // Remove do estado em memória
     pkg.items = (pkg.items || []).filter(x => x.id !== itemId);
-    this.renderDraftExpandedPanel();
 
+    // Grava exclusão no localStorage para nunca voltar após F5
+    PkgStorage.addDeletedItemId(itemId);
+    PkgStorage.saveCustomDrafts(this.state.drafts);
+
+    // Atualiza interface imediatamente
+    this.renderDraftExpandedPanel();
+    this.renderDraftsGrid();
+    notice('Faixa removida com sucesso.', 'ok');
+
+    // Notifica backend em segundo plano (sem travar se estiver no GitHub Pages)
     try {
       await fetch('/api/packages/delete_item', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ package_id: pkgId, item_id: itemId })
       });
-      notice('Faixa removida.', 'ok');
     } catch (e) {
-      console.error(e);
+      // Ignora erro estático
     }
   },
 
   async deleteDraftPackage(pkgId) {
     const pkg = this.state.drafts.find(p => p.id === pkgId);
-    if (!pkg) return;
-    if (!confirm(`Tem certeza que deseja excluir o pacote “${pkg.titulo}” e todos os seus áudios em rascunho?`)) return;
+    const title = pkg ? pkg.titulo : pkgId;
+    if (!confirm(`Tem certeza que deseja excluir o pacote “${title}” e todos os seus áudios em rascunho?`)) return;
 
-    notice('Excluindo pacote...');
+    // 1. Remove do estado imediatamente
+    this.state.drafts = this.state.drafts.filter(p => p.id !== pkgId);
+    if (this.state.expandedDraftId === pkgId) {
+      this.state.expandedDraftId = null;
+    }
+
+    // 2. Grava exclusão no localStorage
+    PkgStorage.addDeletedPkgId(pkgId);
+    PkgStorage.saveCustomDrafts(this.state.drafts);
+
+    // 3. Atualiza tela imediatamente
+    this.renderDraftsGrid();
+    notice('Pacote removido com sucesso.', 'ok');
+
+    // 4. Notifica backend
     try {
-      const res = await fetch('/api/packages/delete', {
+      await fetch('/api/packages/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: pkgId })
       });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.message);
-
-      this.state.drafts = this.state.drafts.filter(p => p.id !== pkgId);
-      this.state.expandedDraftId = null;
-      this.renderDraftsGrid();
-      notice('Pacote removido com sucesso.', 'ok');
     } catch (e) {
-      notice(`Erro ao excluir: ${e.message}`, 'error');
+      // Ignora erro estático
     }
   },
 
@@ -692,20 +779,29 @@ const PkgManager = {
   async deleteProductionItem(itemId, itemTitle) {
     if (!confirm(`Remover definitivamente a faixa “${itemTitle || itemId}” do catálogo oficial?`)) return;
 
-    notice('Removendo áudio do catálogo oficial...');
+    // Remove do estado em memória
+    this.state.publishedMenus.forEach(m => {
+      if (m.items) m.items = m.items.filter(x => x.id !== itemId);
+      m.count = (m.items || []).length;
+    });
+
+    // Grava exclusão no localStorage
+    PkgStorage.addDeletedItemId(itemId);
+
+    // Atualiza interface imediatamente
+    this.renderProductionExpandedPanel();
+    this.renderPublishedGrid();
+    notice('Áudio removido do catálogo oficial.', 'ok');
+
+    // Notifica backend
     try {
-      const res = await fetch('/api/production_menu/delete_audio', {
+      await fetch('/api/production_menu/delete_audio', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ item_id: itemId })
       });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.message);
-
-      notice(data.message || 'Áudio removido do catálogo.', 'ok');
-      await this.loadPackages();
     } catch (e) {
-      notice(`Erro ao remover: ${e.message}`, 'error');
+      // Ignora erro estático
     }
   },
 

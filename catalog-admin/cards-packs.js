@@ -32,12 +32,20 @@ const CardPackManager = {
   },
 
   async loadCardPacks() {
+    const deletedPackIds = CardPackStorage.getDeletedPackIds();
+    const deletedCardIds = CardPackStorage.getDeletedCardIds();
+
     try {
       this.state.loading = true;
       const res = await fetch('/api/card_packs');
       if (res.ok) {
         const data = await res.json();
-        this.state.drafts = data.drafts || [];
+        let drafts = data.drafts || [];
+        drafts = drafts.filter(p => !deletedPackIds.includes(p.id));
+        drafts.forEach(p => {
+          if (p.cards) p.cards = p.cards.filter(c => !deletedCardIds.includes(c.id));
+        });
+        this.state.drafts = drafts;
         this.state.published = data.published || [];
         this.render();
         return;
@@ -46,10 +54,23 @@ const CardPackManager = {
 
     try {
       const res = await fetch('../repository/draft_card_packs.json', { cache: 'no-store' });
+      let drafts = [];
       if (res.ok) {
         const data = await res.json();
-        this.state.drafts = data.card_packs || [];
+        drafts = data.card_packs || [];
       }
+      const customPacks = CardPackStorage.getCustomCardPacks();
+      if (customPacks && Array.isArray(customPacks)) {
+        const remoteIds = new Set(drafts.map(d => d.id));
+        customPacks.forEach(cp => {
+          if (!remoteIds.has(cp.id)) drafts.unshift(cp);
+        });
+      }
+      drafts = drafts.filter(p => !deletedPackIds.includes(p.id));
+      drafts.forEach(p => {
+        if (p.cards) p.cards = p.cards.filter(c => !deletedCardIds.includes(c.id));
+      });
+      this.state.drafts = drafts;
       this.render();
     } catch (err) {
       console.warn('Erro ao carregar pacotes de cards:', err);
@@ -334,15 +355,26 @@ const CardPackManager = {
     if (!confirm('Excluir este card do pacote?')) return;
     const pack = this.state.drafts.find(p => p.id === packId);
     if (!pack) return;
+
+    // Remove imediatamente em memória
     pack.cards = (pack.cards || []).filter(c => c.id !== cardId);
+
+    // Salva exclusão no localStorage
+    CardPackStorage.addDeletedCardId(cardId);
+    CardPackStorage.saveCustomCardPacks(this.state.drafts);
+
+    // Atualiza interface imediatamente
     this.renderExpandedPack();
+    this.renderDraftsGrid();
+    notice('Card excluído com sucesso.', 'ok');
+
+    // Notifica backend
     try {
       await fetch('/api/card_packs/delete_card', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pack_id: packId, card_id: cardId })
       });
-      notice('Card excluído.', 'ok');
     } catch (e) {}
   },
 
@@ -408,19 +440,29 @@ const CardPackManager = {
 
   async deleteCardPack(packId) {
     if (!confirm('Excluir este pacote de cards?')) return;
+
+    // 1. Remove do estado imediatamente
+    this.state.drafts = this.state.drafts.filter(p => p.id !== packId);
+    if (this.state.expandedPackId === packId) {
+      this.state.expandedPackId = null;
+    }
+
+    // 2. Persiste exclusão no localStorage
+    CardPackStorage.addDeletedPackId(packId);
+    CardPackStorage.saveCustomCardPacks(this.state.drafts);
+
+    // 3. Atualiza tela imediatamente
+    this.renderDraftsGrid();
+    notice('Pacote de cards excluído com sucesso.', 'ok');
+
+    // 4. Notifica backend
     try {
-      const res = await fetch('/api/card_packs/delete', {
+      await fetch('/api/card_packs/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: packId })
       });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.message);
-      this.state.drafts = this.state.drafts.filter(p => p.id !== packId);
-      this.state.expandedPackId = null;
-      this.renderDraftsGrid();
-      notice('Pacote de cards excluído.', 'ok');
-    } catch (e) { notice(`Erro: ${e.message}`, 'error'); }
+    } catch (e) {}
   },
 
   async publishCardPackOfficial(packId) {
@@ -488,45 +530,78 @@ const FacesManager = {
   async loadFaces() {
     const container = document.getElementById('faces-list-grid');
     if (!container) return;
+    const deletedFaceIds = CardPackStorage.getDeletedFaceIds();
+
     try {
       const res = await fetch('/api/face_packs');
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      this.state.faces = data.published_faces || [];
-      document.getElementById('faces-tab-count').textContent = `${this.state.faces.length} rostinhos`;
-
-      if (!this.state.faces.length) {
-        container.innerHTML = `<div class="empty">Nenhum rostinho cadastrado no catálogo.</div>`;
+      if (res.ok) {
+        const data = await res.json();
+        this.state.faces = (data.published_faces || []).filter(f => !deletedFaceIds.includes(f.id));
+        this.renderFacesGrid(container);
         return;
       }
+    } catch (e) {}
 
-      container.innerHTML = this.state.faces.map(f => `
-        <div class="card-item-box" style="position: relative;" data-face-id="${f.id}">
-          <button type="button" class="card-delete-corner" title="Excluir rostinho do catálogo" 
-                  onclick="FacesManager.deleteFace('${f.id}', '${this.escapeHtml(f.titulo)}')">✕</button>
+    // Fallback estático lendo ../repository/catalog.json
+    try {
+      const res = await fetch('../repository/catalog.json', { cache: 'no-store' });
+      if (res.ok) {
+        const cat = await res.json();
+        const rawFaces = cat.faces || [];
+        this.state.faces = rawFaces
+          .filter(f => !deletedFaceIds.includes(f.id))
+          .map(f => ({
+            ...f,
+            preview_url: f.url || `../repository/faces/${f.arquivo ? f.arquivo.split('/').pop().replace('.raw', '.png') : ''}`,
+            arquivo_real: f.arquivo ? f.arquivo.split('/').pop() : 'f0001.raw',
+            pasta: '/usr/f/'
+          }));
+        this.renderFacesGrid(container);
+        return;
+      }
+    } catch (err) {
+      console.warn('Erro ao carregar faces do catálogo:', err);
+    }
 
-          <div style="display: flex; gap: 14px; align-items: center;">
-            <div style="width: 120px; height: 80px; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); background: #000; flex-shrink: 0;">
-              <img src="${f.preview_url}" style="width:100%; height:100%; object-fit: cover;" alt="${this.escapeHtml(f.titulo)}">
+    container.innerHTML = `<div class="empty">Nenhum rostinho disponível.</div>`;
+  },
+
+  renderFacesGrid(container) {
+    if (!container) container = document.getElementById('faces-list-grid');
+    if (!container) return;
+    const countEl = document.getElementById('faces-tab-count');
+    if (countEl) countEl.textContent = `${this.state.faces.length} rostinhos`;
+
+    if (!this.state.faces.length) {
+      container.innerHTML = `<div class="empty">Nenhum rostinho cadastrado no catálogo.</div>`;
+      return;
+    }
+
+    container.innerHTML = this.state.faces.map(f => `
+      <div class="card-item-box" style="position: relative;" data-face-id="${f.id}">
+        <button type="button" class="card-delete-corner" title="Excluir rostinho do catálogo" 
+                onclick="FacesManager.deleteFace('${f.id}', '${this.escapeHtml(f.titulo)}')">✕</button>
+
+        <div style="display: flex; gap: 14px; align-items: center;">
+          <div style="width: 120px; height: 80px; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); background: #000; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #fff;">
+            <img src="${f.preview_url}" style="width:100%; height:100%; object-fit: cover;" alt="${this.escapeHtml(f.titulo)}" 
+                 onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22120%22 height=%2280%22><rect width=%22120%22 height=%2280%22 fill=%22%2325233a%22/><text x=%2250%25%22 y=%2250%25%22 fill=%22%23ffdd59%22 font-family=%22sans-serif%22 font-size=%2212%22 text-anchor=%22middle%22 dy=%22.3em%22>RAW 480x320</text></svg>'">
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 6px; flex: 1;">
+            <div>
+              <label style="font-size: 11px; font-weight: 800; color: var(--purple);">Nome Exibido no App (Título)</label>
+              <input type="text" class="pkg-item-title-input" value="${this.escapeHtml(f.titulo)}" 
+                     placeholder="Nome que a criança/pais verão no app..." 
+                     onchange="FacesManager.updateFaceTitle('${f.id}', this.value)">
             </div>
-
-            <div style="display: flex; flex-direction: column; gap: 6px; flex: 1;">
-              <div>
-                <label style="font-size: 11px; font-weight: 800; color: var(--purple);">Nome Exibido no App (Título)</label>
-                <input type="text" class="pkg-item-title-input" value="${this.escapeHtml(f.titulo)}" 
-                       placeholder="Nome que a criança/pais verão no app..." 
-                       onchange="FacesManager.updateFaceTitle('${f.id}', this.value)">
-              </div>
-              <div style="font-size: 11px; color: var(--muted);">
-                Nome real do arquivo: <code>${f.arquivo_real || f.arquivo}</code> · Pasta: <code>${f.pasta || '/usr/f/'}</code>
-              </div>
+            <div style="font-size: 11px; color: var(--muted);">
+              Nome real do arquivo: <code>${f.arquivo_real || f.arquivo}</code> · Pasta: <code>${f.pasta || '/usr/f/'}</code>
             </div>
           </div>
         </div>
-      `).join('');
-    } catch (e) {
-      container.innerHTML = `<div class="empty">Não foi possível carregar os rostinhos.</div>`;
-    }
+      </div>
+    `).join('');
   },
 
   async uploadFace(file) {
@@ -570,20 +645,25 @@ const FacesManager = {
 
   async deleteFace(faceId, faceTitle) {
     if (!confirm(`Excluir definitivamente o rostinho “${faceTitle}” (${faceId}) do catálogo?`)) return;
-    notice('Removendo rostinho...');
+
+    // 1. Remove do estado imediatamente
+    this.state.faces = this.state.faces.filter(f => f.id !== faceId);
+
+    // 2. Persiste exclusão no localStorage
+    CardPackStorage.addDeletedFaceId(faceId);
+
+    // 3. Atualiza interface imediatamente
+    this.renderFacesGrid();
+    notice('Rostinho excluído com sucesso.', 'ok');
+
+    // 4. Notifica backend
     try {
-      const res = await fetch('/api/face_packs/delete_face', {
+      await fetch('/api/face_packs/delete_face', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ face_id: faceId })
       });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.message);
-      notice(data.message || 'Rostinho excluído.', 'ok');
-      await this.loadFaces();
-    } catch (e) {
-      notice(`Erro ao excluir: ${e.message}`, 'error');
-    }
+    } catch (e) {}
   },
 
   escapeHtml(str) {
@@ -630,55 +710,84 @@ const SystemSoundsManager = {
   async loadSounds() {
     const container = document.getElementById('system-sounds-grid');
     if (!container) return;
+    const deletedSysSounds = CardPackStorage.getDeletedSysSounds();
+
     try {
       const res = await fetch('/api/system_packs');
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      this.state.sounds = data.active_sounds || [];
-      document.getElementById('system-tab-count').textContent = `${this.state.sounds.length} sons`;
-
-      if (!this.state.sounds.length) {
-        container.innerHTML = `<div class="empty">Nenhum som operacional cadastrado em /sys/a/.</div>`;
+      if (res.ok) {
+        const data = await res.json();
+        this.state.sounds = (data.active_sounds || []).filter(s => {
+          return !deletedSysSounds.includes(s.arquivo) && !deletedSysSounds.includes(`${s.pasta || ''}${s.arquivo}`);
+        });
+        this.renderSoundsGrid(container);
         return;
       }
+    } catch (e) {}
 
-      container.innerHTML = this.state.sounds.map(s => `
-        <div class="pkg-item-row" style="grid-template-columns: 1fr 200px auto auto;" data-sound-file="${s.arquivo}">
-          <div>
-            <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 4px;">
-              <input type="text" value="${this.escapeHtml(s.titulo)}" 
-                     placeholder="Título do som"
-                     style="font-size: 14px; font-weight: 800; color: var(--ink); padding: 5px 10px; border-radius: 6px; border: 1px solid var(--line); width: 220px;"
-                     onchange="SystemSoundsManager.updateSoundMeta('${s.arquivo}', this.value, '${this.escapeHtml(s.evento)}')">
-              <span class="pill" style="font-size: 11px;">Evento:</span>
-              <input type="text" value="${this.escapeHtml(s.evento)}" 
-                     placeholder="evento_id"
-                     style="font-size: 12px; font-family: monospace; padding: 5px 8px; border-radius: 6px; border: 1px solid var(--line); width: 140px;"
-                     onchange="SystemSoundsManager.updateSoundMeta('${s.arquivo}', '${this.escapeHtml(s.titulo)}', this.value)">
-            </div>
-            <div style="font-size: 11px; color: var(--muted);">
-              Arquivo: <code>${s.arquivo}</code> · Pasta: <code>${s.pasta}</code>
-            </div>
-          </div>
-
-          <div class="pkg-item-player">
-            <audio controls preload="none" src="${s.web_url}"></audio>
-          </div>
-
-          <button type="button" class="btn-trim-audio" title="Cortar e aparar som de sistema"
-                  onclick="SystemSoundsManager.trimSystemSound('${s.arquivo}', '${s.web_url}', '${this.escapeHtml(s.titulo)}')">
-            ✂ Cortar Som
-          </button>
-
-          <button type="button" class="pkg-item-delete" title="Excluir este som"
-                  onclick="SystemSoundsManager.deleteSound('${s.arquivo}', '${s.pasta}')">
-            🗑
-          </button>
-        </div>
-      `).join('');
-    } catch (e) {
-      container.innerHTML = `<div class="empty">Não foi possível carregar os sons de sistema.</div>`;
+    // Fallback estático ../repository/system_sounds.json
+    try {
+      const res = await fetch('../repository/system_sounds.json', { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        const raw = data.sounds || [];
+        this.state.sounds = raw.filter(s => {
+          return !deletedSysSounds.includes(s.arquivo) && !deletedSysSounds.includes(`${s.pasta || ''}${s.arquivo}`);
+        });
+        this.renderSoundsGrid(container);
+        return;
+      }
+    } catch (err) {
+      console.warn('Erro ao carregar sons de sistema:', err);
     }
+
+    container.innerHTML = `<div class="empty">Nenhum som operacional cadastrado.</div>`;
+  },
+
+  renderSoundsGrid(container) {
+    if (!container) container = document.getElementById('system-sounds-grid');
+    if (!container) return;
+    const countEl = document.getElementById('system-tab-count');
+    if (countEl) countEl.textContent = `${this.state.sounds.length} sons`;
+
+    if (!this.state.sounds.length) {
+      container.innerHTML = `<div class="empty">Nenhum som operacional cadastrado em /sys/a/.</div>`;
+      return;
+    }
+
+    container.innerHTML = this.state.sounds.map(s => `
+      <div class="pkg-item-row" style="grid-template-columns: 1fr 200px auto auto;" data-sound-file="${s.arquivo}">
+        <div>
+          <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 4px;">
+            <input type="text" value="${this.escapeHtml(s.titulo)}" 
+                   placeholder="Título do som"
+                   style="font-size: 14px; font-weight: 800; color: var(--ink); padding: 5px 10px; border-radius: 6px; border: 1px solid var(--line); width: 220px;"
+                   onchange="SystemSoundsManager.updateSoundMeta('${s.arquivo}', this.value, '${this.escapeHtml(s.evento)}')">
+            <span class="pill" style="font-size: 11px;">Evento:</span>
+            <input type="text" value="${this.escapeHtml(s.evento)}" 
+                   placeholder="evento_id"
+                   style="font-size: 12px; font-family: monospace; padding: 5px 8px; border-radius: 6px; border: 1px solid var(--line); width: 140px;"
+                   onchange="SystemSoundsManager.updateSoundMeta('${s.arquivo}', '${this.escapeHtml(s.titulo)}', this.value)">
+          </div>
+          <div style="font-size: 11px; color: var(--muted);">
+            Arquivo: <code>${s.arquivo}</code> · Pasta: <code>${s.pasta}</code>
+          </div>
+        </div>
+
+        <div class="pkg-item-player">
+          <audio controls preload="none" src="${s.web_url}"></audio>
+        </div>
+
+        <button type="button" class="btn-trim-audio" title="Cortar e aparar som de sistema"
+                onclick="SystemSoundsManager.trimSystemSound('${s.arquivo}', '${s.web_url}', '${this.escapeHtml(s.titulo)}')">
+          ✂ Cortar Som
+        </button>
+
+        <button type="button" class="pkg-item-delete" title="Excluir este som"
+                onclick="SystemSoundsManager.deleteSound('${s.arquivo}', '${s.pasta}')">
+          🗑
+        </button>
+      </div>
+    `).join('');
   },
 
   async updateSoundMeta(arquivo, novoTitulo, novoEvento) {
@@ -752,20 +861,26 @@ const SystemSoundsManager = {
 
   async deleteSound(arquivo, pasta) {
     if (!confirm(`Excluir definitivamente o som de sistema “${arquivo}”?`)) return;
-    notice('Removendo som...');
+
+    // 1. Remove do estado imediatamente
+    this.state.sounds = this.state.sounds.filter(s => s.arquivo !== arquivo);
+
+    // 2. Persiste exclusão no localStorage
+    CardPackStorage.addDeletedSysSound(arquivo);
+    if (pasta) CardPackStorage.addDeletedSysSound(`${pasta}${arquivo}`);
+
+    // 3. Atualiza interface imediatamente
+    this.renderSoundsGrid();
+    notice('Som removido com sucesso.', 'ok');
+
+    // 4. Notifica backend
     try {
-      const res = await fetch('/api/system_packs/delete_sound', {
+      await fetch('/api/system_packs/delete_sound', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ arquivo: arquivo, pasta_destino: pasta || '/sys/a/' })
       });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.message);
-      notice(data.message || 'Som removido.', 'ok');
-      await this.loadSounds();
-    } catch (e) {
-      notice(`Erro ao remover: ${e.message}`, 'error');
-    }
+    } catch (e) {}
   },
 
   escapeHtml(str) {

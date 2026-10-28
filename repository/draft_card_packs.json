@@ -1,12 +1,12 @@
 {
   "schema": 1,
-  "description": "FEFO Interactive Card Packs - Rascunho interno de pacotes de cards interativos, mini cards, rostinhos e ações.",
-  "updated_at": "2026-10-27T15:00:00Z",
+  "description": "FEFO Interactive Card Packs - Rascunho interno de pacotes de cards interativos, mini cards e ações.",
+  "updated_at": "2026-10-28T10:00:00Z",
   "card_packs": [
     {
       "id": "pack_cards_emocoes",
-      "titulo": "Cards das Emoções & Rostinhos",
-      "descricao": "Conjunto interativo de cards com expressões faciais e sons de acolhimento para regulação emocional.",
+      "titulo": "Cards das Emoções",
+      "descricao": "Conjunto interativo de mini cards com sons vinculados para regulação emocional.",
       "target_count": 6,
       "categoria": "Emoções",
       "licencas": [
@@ -20,19 +20,17 @@
         {
           "id": "card_emo_01",
           "titulo": "Card Alegria & Sorriso",
-          "codigo_acao": "EXPRESSAO_FELIZ",
+          "codigo_acao": "c0001",
           "mini_card_img": "/repository/cards/card_emo_01.jpg",
-          "rostinho_img": "/repository/faces/preview_f0001.png",
           "audio_url": "/repository/audio/a0002.wav",
           "arquivo_audio": "a0002.wav",
           "tamanho_audio": 5666928
         },
         {
           "id": "card_emo_02",
-          "titulo": "Card Calma & Respira����o",
-          "codigo_acao": "EXPRESSAO_RESPIRAR",
+          "titulo": "Card Calma & Respiração",
+          "codigo_acao": "c0002",
           "mini_card_img": "/repository/cards/card_emo_02.jpg",
-          "rostinho_img": "/repository/faces/preview_f0002.png",
           "audio_url": "/repository/audio/a0010.wav",
           "arquivo_audio": "a0010.wav",
           "tamanho_audio": 3961178

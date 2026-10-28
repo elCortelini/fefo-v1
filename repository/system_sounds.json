@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "description": "FEFO System Operational Sounds",
+  "updated_at": "2026-10-28T10:00:00Z",
+  "sounds": [
+    {
+      "arquivo": "alerta_bateria.wav",
+      "evento": "bateria_fraca",
+      "titulo": "Alerta de Bateria Fraca",
+      "pasta": "/sys/a/",
+      "web_url": "/fefo_firmware/sdcard/sys/a/alerta_bateria.wav"
+    },
+    {
+      "arquivo": "beep_clique.wav",
+      "evento": "clique_botao",
+      "titulo": "Clique de Botão / Confirmação",
+      "pasta": "/sys/a/",
+      "web_url": "/fefo_firmware/sdcard/sys/a/beep_clique.wav"
+    },
+    {
+      "arquivo": "panico_emergencia.wav",
+      "evento": "panico_sos",
+      "titulo": "Sinal de Emergência",
+      "pasta": "/sys/a/",
+      "web_url": "/fefo_firmware/sdcard/sys/a/panico_emergencia.wav"
+    }
+  ]
+}
