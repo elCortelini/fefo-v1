@@ -271,15 +271,231 @@
 
 /* Linha de Faixa de Áudio */
 .pkg-item-row {
-  display: grid;
-  grid-template-columns: 32px 1fr 200px auto auto;
-  align-items: center;
-  gap: 10px;
-  background: #fcfbff;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #fdfcff;
   border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 10px 14px;
-  transition: background 0.15s;
+  border-radius: 16px;
+  padding: 16px 20px;
+  transition: all 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.pkg-item-row:hover {
+  background: #fff;
+  border-color: #d1c4f8;
+  box-shadow: 0 4px 16px rgba(110, 68, 255, 0.06);
+}
+
+.pkg-item-header-line {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.pkg-item-badge-index {
+  font-size: 12px;
+  font-weight: 900;
+  background: #ede8ff;
+  color: var(--purple);
+  padding: 6px 12px;
+  border-radius: 10px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  margin-top: 18px;
+}
+
+.pkg-item-inputs-group {
+  display: flex;
+  flex: 1;
+  gap: 14px;
+  align-items: flex-start;
+  min-width: 300px;
+  flex-wrap: wrap;
+}
+
+.pkg-input-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 2;
+  min-width: 200px;
+}
+
+.pkg-input-field.fefo-file {
+  flex: 1.2;
+  min-width: 180px;
+}
+
+.pkg-field-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.pkg-item-title-input {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+  background: #fff;
+  width: 100%;
+  box-sizing: border-box;
+}
+.pkg-item-title-input:focus {
+  border-color: var(--purple);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(110, 68, 255, 0.12);
+}
+
+.fefo-file-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.pkg-item-fefo-input {
+  border: 1px solid #c9bcf0;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font: inherit;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #4a27a8;
+  background: #fbf9ff;
+  width: 100%;
+  box-sizing: border-box;
+}
+.pkg-item-fefo-input:focus {
+  border-color: #5c27cc;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(92, 39, 204, 0.15);
+}
+
+.btn-suggest-name {
+  border: 1px solid #d2c5f8;
+  background: #f5f0ff;
+  color: #5c27cc;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+.btn-suggest-name:hover {
+  background: #ebdfff;
+  border-color: #baa4f2;
+}
+
+.header-status-and-delete {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+/* CONTROLES DE ÁUDIO: PLAY, PAUSE, STOP E PROGRESSO */
+.custom-audio-controller {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f8f6fd;
+  border: 1px solid #e7e0fa;
+  border-radius: 12px;
+  padding: 8px 14px;
+  flex: 1;
+  min-width: 280px;
+  box-sizing: border-box;
+}
+
+.audio-ctrl-buttons {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.btn-audio-ctrl {
+  border: 0;
+  border-radius: 8px;
+  padding: 7px 11px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+}
+
+.btn-audio-ctrl.btn-play {
+  background: #2ecc71;
+  color: #fff;
+}
+.btn-audio-ctrl.btn-play:hover {
+  background: #27ae60;
+}
+.btn-audio-ctrl.btn-play.active {
+  background: #1e824c;
+  box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.35);
+}
+
+.btn-audio-ctrl.btn-pause {
+  background: #f39c12;
+  color: #fff;
+}
+.btn-audio-ctrl.btn-pause:hover {
+  background: #d68910;
+}
+.btn-audio-ctrl.btn-pause.active {
+  background: #b9770e;
+  box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.35);
+}
+
+.btn-audio-ctrl.btn-stop {
+  background: #e74c3c;
+  color: #fff;
+}
+.btn-audio-ctrl.btn-stop:hover {
+  background: #c0392b;
+}
+
+.audio-time-slider-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.time-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  min-width: 32px;
+  font-variant-numeric: tabular-nums;
+  font-family: monospace;
+}
+
+.audio-seek-slider {
+  flex: 1;
+  accent-color: var(--purple);
+  cursor: pointer;
+  height: 6px;
 }
 
 .pkg-item-row:hover {
@@ -542,4 +758,188 @@
   .form-grid-2 {
     grid-template-columns: 1fr;
   }
+}
+
+
+/* === NOVO: MATRIZ PEDAGÓGICA, KPI BANNER E ROTEIROS DO FEFO === */
+.pkg-kpi-banner {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+  margin-bottom: 22px;
+}
+.pkg-kpi-card {
+  background: #fdfcff;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.pkg-kpi-card.highlight {
+  background: linear-gradient(135deg, #f7f3ff, #efe9fc);
+  border-color: #d8c8f8;
+}
+.pkg-kpi-num {
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--purple);
+  line-height: 1;
+}
+.pkg-kpi-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.pkg-filter-bar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  background: #f8f7fd;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-bottom: 18px;
+}
+.pkg-filter-input {
+  flex: 2;
+  min-width: 200px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  font: inherit;
+  font-size: 13px;
+}
+.pkg-filter-select {
+  flex: 1;
+  min-width: 160px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  font: inherit;
+  font-size: 13px;
+  background: #fff;
+}
+
+.item-script-callout {
+  background: #f4f2ff;
+  border-left: 3px solid var(--purple);
+  border-radius: 6px;
+  padding: 7px 12px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: #2b2b3a;
+  margin: 8px 0;
+}
+.item-script-label {
+  font-weight: 800;
+  color: var(--purple);
+  margin-bottom: 2px;
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.item-script-content {
+  font-style: italic;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.status-pill.status-ready {
+  background: #e6f9f0;
+  color: #0b8a4f;
+  border: 1px solid #b7eed4;
+}
+.status-pill.status-trim {
+  background: #fff8e6;
+  color: #996500;
+  border: 1px solid #ffe199;
+}
+.status-pill.status-pending {
+  background: #fde8e8;
+  color: #c5221f;
+  border: 1px solid #f8b4b4;
+}
+
+.pkg-item-header-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pkg-item-badge-code {
+  font-size: 11px;
+  font-weight: 900;
+  background: #ebe6fa;
+  color: var(--purple);
+  padding: 3px 7px;
+  border-radius: 6px;
+  letter-spacing: 0.02em;
+}
+.pkg-item-actions-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--line);
+}
+.btn-trim-audio.highlight-trim {
+  background: linear-gradient(135deg, #f39c12, #e67e22) !important;
+  color: #fff !important;
+  font-weight: 800;
+  box-shadow: 0 2px 6px rgba(230, 126, 34, 0.3);
+}
+.hint-missing-audio {
+  font-size: 12px;
+  color: #c5221f;
+  font-style: italic;
+}
+
+.trimmer-script-box {
+  background: #14325a;
+  border: 1px solid #1f4a80;
+  border-radius: 14px;
+  padding: 12px 16px;
+  margin-bottom: 4px;
+}
+.trimmer-script-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.trimmer-script-badge {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: #ffd166;
+}
+.trimmer-script-code {
+  font-size: 11px;
+  font-weight: 800;
+  background: #0b1f3a;
+  padding: 2px 8px;
+  border-radius: 6px;
+  color: #a4c2e6;
+}
+.trimmer-script-text {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: #f0f6fc;
+  font-style: italic;
 }

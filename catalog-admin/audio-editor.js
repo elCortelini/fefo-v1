@@ -40,6 +40,14 @@
             <button id="trimmer-close" type="button" class="editor-close" title="Fechar">✕</button>
           </div>
 
+          <div id="trimmer-script-container" class="trimmer-script-box" style="display:none;">
+            <div class="trimmer-script-header">
+              <span class="trimmer-script-badge">📜 ROTEIRO / FALA DO FEFO</span>
+              <span id="trimmer-script-code" class="trimmer-script-code"></span>
+            </div>
+            <p id="trimmer-script-text" class="trimmer-script-text"></p>
+          </div>
+
           <div class="trimmer-canvas-box">
             <canvas id="trimmer-waveform"></canvas>
             <audio id="trimmer-audio" hidden></audio>
@@ -202,7 +210,24 @@
           result[i] = original[from + i] * gain;
         }
 
-        const blob = encodeWav(result, rate);
+        const targetRate = 22050;
+        let finalData = result;
+        if (rate !== targetRate) {
+          const newLen = Math.max(1, Math.round(len * targetRate / rate));
+          const resampled = new Float32Array(newLen);
+          const ratio = (len - 1) / Math.max(1, newLen - 1);
+          for (let i = 0; i < newLen; i++) {
+            const pos = i * ratio;
+            const idx = Math.floor(pos);
+            const frac = pos - idx;
+            const s0 = result[idx] || 0;
+            const s1 = result[idx + 1] !== undefined ? result[idx + 1] : s0;
+            resampled[i] = s0 + frac * (s1 - s0);
+          }
+          finalData = resampled;
+        }
+
+        const blob = encodeWav(finalData, targetRate);
         onSaveCallback(blob, {
           duration: Number(end.value) - Number(start.value),
           start: Number(start.value),
@@ -360,15 +385,32 @@
    * @param {Object} options
    * @param {string} options.url URL do arquivo de áudio
    * @param {string} options.title Título amigável
+   * @param {string} [options.description] Roteiro / fala falada
+   * @param {string} [options.itemCode] Código da planilha (ex: de1)
    * @param {Function} options.onSave Callback chamado com (blob, info)
    */
-  async function openAudioTrimmer({ url, title, onSave }) {
+  async function openAudioTrimmer({ url, title, description, itemCode, onSave }) {
     createTrimmerDOM();
     currentFileUrl = url;
     currentTitle = title || 'Áudio';
     onSaveCallback = onSave;
 
     document.getElementById('trimmer-audio-title').textContent = `Cortar: ${currentTitle}`;
+    
+    // Configura exibição do roteiro / texto de fala
+    const scriptBox = document.getElementById('trimmer-script-container');
+    const scriptText = document.getElementById('trimmer-script-text');
+    const scriptCode = document.getElementById('trimmer-script-code');
+    if (description && description.trim()) {
+      scriptBox.style.display = 'block';
+      scriptText.textContent = `"${description.trim()}"`;
+      scriptCode.textContent = itemCode ? `[Código: ${itemCode}]` : '';
+    } else {
+      scriptBox.style.display = 'none';
+      scriptText.textContent = '';
+      scriptCode.textContent = '';
+    }
+
     modal.style.display = 'flex';
     saveBtn.disabled = true;
     setStatus('Carregando e decodificando áudio na memória...', '');

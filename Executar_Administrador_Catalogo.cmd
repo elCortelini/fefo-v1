@@ -28,5 +28,6 @@ echo.
 echo Pressione Ctrl+C nesta janela para parar o servidor.
 echo.
 
+start "" "http://127.0.0.1:8765/catalog-admin/index.html"
 %PY% tools\catalog_manager.py
 pause
