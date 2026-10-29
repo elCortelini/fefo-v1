@@ -1,8 +1,8 @@
 /**
  * packages.js - Gerenciador Unificado de Pacotes & Menus do FEFO Pet
- * Suporta persistência total online (GitHub Pages) e offline/local,
- * troca de áudios em qualquer faixa, edição de texto/roteiro do FEFO,
- * filtro por licença (Escola, Home, Clínica) e despublicação de menus.
+ * Visual idêntico e consistente para Rascunhos e Produção (com diferenciação por cores),
+ * controles lado a lado, edição de roteiro falado do FEFO, seleção/troca de áudios em qualquer faixa,
+ * persistência total (IndexedDB + localStorage) e suporte a despublicação.
  */
 
 // ==========================================================
@@ -107,7 +107,6 @@ const PkgStorage = {
   },
   saveAllDrafts(drafts) {
     try {
-      // Clona serializável (sem blob URLs voláteis para não quebrar)
       const serializable = (drafts || []).map(p => ({
         ...p,
         items: (p.items || []).map(it => {
@@ -122,6 +121,14 @@ const PkgStorage = {
     } catch (e) {
       console.warn('Erro ao salvar no localStorage:', e);
     }
+  },
+  getAllProductionMenus() {
+    try { return JSON.parse(localStorage.getItem('fefo_saved_prod_menus') || 'null'); } catch (e) { return null; }
+  },
+  saveAllProductionMenus(menus) {
+    try {
+      localStorage.setItem('fefo_saved_prod_menus', JSON.stringify(menus));
+    } catch (e) {}
   }
 };
 
@@ -146,9 +153,9 @@ const PkgManager = {
   resolveUrl(url) {
     if (!url) return '';
     if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('blob:') || url.startsWith('data:')) return url;
-    if (url.startsWith('/repository/')) return '../' + url.slice(1);
-    if (url.startsWith('/')) return '..' + url;
-    return url;
+    if (url.startsWith('../')) return url;
+    const clean = url.replace(/^[/\\]+/, '');
+    return '../' + clean;
   },
 
   async init() {
@@ -157,19 +164,9 @@ const PkgManager = {
   },
 
   bindEvents() {
-    // Botão "+ Criar Novo Pacote / Menu"
-    const btnNew = document.getElementById('btn-new-package');
-    if (btnNew) {
-      btnNew.addEventListener('click', () => this.createNewDraftPackage());
-    }
+    document.getElementById('btn-new-package')?.addEventListener('click', () => this.createNewDraftPackage());
+    document.getElementById('btn-export-drafts')?.addEventListener('click', () => this.exportDraftsJson());
 
-    // Botão "💾 Baixar Backup JSON"
-    const btnExport = document.getElementById('btn-export-drafts');
-    if (btnExport) {
-      btnExport.addEventListener('click', () => this.exportDraftsJson());
-    }
-
-    // Filtro de Busca
     const searchInput = document.getElementById('pkg-filter-search');
     if (searchInput) {
       searchInput.addEventListener('input', (e) => {
@@ -178,7 +175,6 @@ const PkgManager = {
       });
     }
 
-    // Filtro de Licença (Home, Clínica, Escola)
     const licSelect = document.getElementById('pkg-filter-license');
     if (licSelect) {
       licSelect.addEventListener('change', (e) => {
@@ -187,7 +183,6 @@ const PkgManager = {
       });
     }
 
-    // Filtro de Categoria
     const catSelect = document.getElementById('pkg-filter-category');
     if (catSelect) {
       catSelect.addEventListener('change', (e) => {
@@ -196,7 +191,6 @@ const PkgManager = {
       });
     }
 
-    // Filtro de Status
     const statusSelect = document.getElementById('pkg-filter-status');
     if (statusSelect) {
       statusSelect.addEventListener('change', (e) => {
@@ -229,7 +223,7 @@ const PkgManager = {
       // Normal no GitHub Pages estático
     }
 
-    // 2. Fallback estático (GitHub Pages ou servidor sem rota)
+    // 2. Fallback estático (GitHub Pages ou servidor offline)
     if (!isApiOnline) {
       try {
         const [draftsRes, catRes] = await Promise.all([
@@ -246,21 +240,47 @@ const PkgManager = {
           const cData = await catRes.json();
           const audios = cData.audio || [];
           const menusDict = {};
+
           for (const a of audios) {
             if (deletedItemIds.includes(a.id)) continue;
             const mName = (a.menu || 'Sem menu').trim();
             if (unpubMenus.includes(mName)) continue; // Menu despublicado
-            if (!menusDict[mName]) menusDict[mName] = { titulo: mName, count: 0, items: [] };
-            menusDict[mName].count++;
+
+            if (!menusDict[mName]) {
+              menusDict[mName] = {
+                id: `pub_${mName.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`,
+                titulo: mName,
+                descricao: `Menu oficial ativo no catálogo com áudios configurados para o Pet CYD e App.`,
+                target_count: 8,
+                categoria: 'Menus do Sistema',
+                licencas: ['home', 'clinical', 'escola'],
+                is_premium: false,
+                status: 'published',
+                count: 0,
+                items: []
+              };
+            }
+
+            const fileName = (a.arquivo || '').split('/').pop();
             menusDict[mName].items.push({
-              ...a,
-              web_url: `../repository/audio/${a.arquivo.split('/').pop()}`
+              id: a.id,
+              codigo_item: a.id,
+              titulo: a.titulo || fileName,
+              descricao: a.descricao || '',
+              arquivo: a.arquivo,
+              arquivo_fefo: fileName,
+              arquivo_origem: fileName,
+              web_url: `../repository/audio/${fileName}`,
+              tamanho: a.tamanho || 0,
+              status: 'ready'
             });
+            menusDict[mName].count = menusDict[mName].items.length;
+            menusDict[mName].target_count = Math.max(menusDict[mName].items.length, menusDict[mName].target_count);
           }
           published = Object.values(menusDict);
         }
       } catch (err) {
-        console.warn('Erro ao carregar arquivos do catálogo:', err);
+        console.warn('Erro ao carregar arquivos do repositório:', err);
       }
     }
 
@@ -270,7 +290,6 @@ const PkgManager = {
       const merged = [];
       const processedIds = new Set();
 
-      // Primeiro aplica os pacotes com edições do usuário
       savedDrafts.forEach(sd => {
         if (!deletedPkgIds.includes(sd.id)) {
           merged.push(sd);
@@ -278,7 +297,6 @@ const PkgManager = {
         }
       });
 
-      // Inclui pacotes do repositório que ainda não foram tocados
       drafts.forEach(rd => {
         if (!processedIds.has(rd.id) && !deletedPkgIds.includes(rd.id)) {
           merged.push(rd);
@@ -289,7 +307,14 @@ const PkgManager = {
       drafts = merged;
     }
 
-    // 4. Aplica filtros de exclusão persistidos
+    // Mescla produção com localStorage se existir
+    const savedProd = PkgStorage.getAllProductionMenus();
+    if (savedProd && Array.isArray(savedProd) && savedProd.length > 0) {
+      const prodMap = new Map(savedProd.map(m => [m.titulo, m]));
+      published = published.map(p => prodMap.get(p.titulo) || p);
+    }
+
+    // 4. Aplica filtros de exclusão
     drafts = drafts.filter(p => !deletedPkgIds.includes(p.id));
     drafts.forEach(p => {
       if (p.items) p.items = p.items.filter(it => !deletedItemIds.includes(it.id));
@@ -301,9 +326,21 @@ const PkgManager = {
       m.count = (m.items || []).length;
     });
 
-    // 5. Restaura blobs de áudio salvos no IndexedDB para as faixas
+    // 5. Restaura blobs de áudio do IndexedDB
     for (const p of drafts) {
       for (const it of (p.items || [])) {
+        try {
+          const customBlob = await AudioBlobDB.getAudio(it.id);
+          if (customBlob) {
+            it.web_url = URL.createObjectURL(customBlob);
+            it.has_custom_audio = true;
+          }
+        } catch (e) {}
+      }
+    }
+
+    for (const m of published) {
+      for (const it of (m.items || [])) {
         try {
           const customBlob = await AudioBlobDB.getAudio(it.id);
           if (customBlob) {
@@ -350,7 +387,6 @@ const PkgManager = {
     const elPub = document.getElementById('kpi-total-published');
     if (elPub) elPub.textContent = totalPub;
 
-    // Popula categorias no select se vazio
     const catSelect = document.getElementById('pkg-filter-category');
     if (catSelect && catSelect.options.length <= 1) {
       const sortedCats = Array.from(cats).sort();
@@ -378,7 +414,6 @@ const PkgManager = {
 
     let filteredDrafts = this.state.drafts || [];
 
-    // Filtro por busca
     if (this.state.filterSearch) {
       const q = this.state.filterSearch;
       filteredDrafts = filteredDrafts.filter(p => {
@@ -395,7 +430,6 @@ const PkgManager = {
       });
     }
 
-    // Filtro por licença (Escola, Home, Clínica)
     if (this.state.filterLicense && this.state.filterLicense !== 'all') {
       filteredDrafts = filteredDrafts.filter(p => {
         const lics = p.licencas || ['home'];
@@ -403,12 +437,10 @@ const PkgManager = {
       });
     }
 
-    // Filtro por categoria
     if (this.state.filterCategory && this.state.filterCategory !== 'all') {
       filteredDrafts = filteredDrafts.filter(p => p.categoria === this.state.filterCategory);
     }
 
-    // Filtro por status
     if (this.state.filterStatus && this.state.filterStatus !== 'all') {
       filteredDrafts = filteredDrafts.filter(p => {
         const items = p.items || [];
@@ -519,35 +551,52 @@ const PkgManager = {
         </div>
 
         <div class="inline-panel-body">
-          <!-- Metadados do Pacote -->
-          <div class="form-grid" style="margin-bottom: 20px;">
-            <div class="field" style="grid-column: 1 / -1;">
+          <!-- FORMULÁRIO DE METADADOS ALINHADO (LADO A LADO) -->
+          <div class="pkg-meta-form">
+            <div class="pkg-field-box">
               <label>Nome do Menu / Pacote</label>
-              <input id="draft-input-title" type="text" value="${this.escapeHtml(pkg.titulo)}" 
+              <input type="text" id="draft-input-title" value="${this.escapeHtml(pkg.titulo)}" 
+                     placeholder="Nome do pacote..."
                      oninput="PkgManager.updateDraftPackageProperty('${pkg.id}', 'titulo', this.value)">
             </div>
-            <div class="field" style="grid-column: 1 / -1;">
-              <label>Descrição Pedagógica do Menu</label>
-              <textarea id="draft-input-desc" rows="2" 
-                        oninput="PkgManager.updateDraftPackageProperty('${pkg.id}', 'descricao', this.value)">${this.escapeHtml(pkg.descricao || '')}</textarea>
-            </div>
-            <div class="field">
+
+            <div class="pkg-field-box">
               <label>Meta de Faixas (Target Count)</label>
-              <input id="draft-input-target" type="number" min="1" max="100" value="${pkg.target_count || 10}"
+              <input type="number" min="1" max="100" id="draft-input-target" value="${pkg.target_count || (items.length > 0 ? items.length : 10)}"
                      oninput="PkgManager.updateDraftPackageProperty('${pkg.id}', 'target_count', parseInt(this.value, 10) || 10)">
             </div>
-            <div class="field">
-              <label>Licenças Disponíveis</label>
-              <div class="checkbox-row" style="margin-top: 6px;">
-                <label><input type="checkbox" id="draft-check-home" ${hasHome ? 'checked' : ''} onchange="PkgManager.updateDraftPackageLicenses('${pkg.id}')"> Home (Família)</label>
-                <label><input type="checkbox" id="draft-check-clinical" ${hasClinical ? 'checked' : ''} onchange="PkgManager.updateDraftPackageLicenses('${pkg.id}')"> Clínica</label>
-                <label><input type="checkbox" id="draft-check-escola" ${hasEscola ? 'checked' : ''} onchange="PkgManager.updateDraftPackageLicenses('${pkg.id}')"> Escola</label>
-                <label><input type="checkbox" id="draft-check-premium" ${pkg.is_premium ? 'checked' : ''} onchange="PkgManager.updateDraftPackageProperty('${pkg.id}', 'is_premium', this.checked)"> Premium ⭐</label>
+
+            <div class="pkg-field-box field-full">
+              <label>Descrição Pedagógica do Menu</label>
+              <textarea id="draft-input-desc" rows="2" 
+                        placeholder="Breve descrição dos objetivos pedagógicos deste menu..."
+                        oninput="PkgManager.updateDraftPackageProperty('${pkg.id}', 'descricao', this.value)">${this.escapeHtml(pkg.descricao || '')}</textarea>
+            </div>
+
+            <div class="pkg-licenses-container">
+              <span class="pkg-licenses-label">Licenças Disponíveis & Visibilidade:</span>
+              <div class="pkg-licenses-row">
+                <label class="pkg-license-pill">
+                  <input type="checkbox" id="draft-check-home" ${hasHome ? 'checked' : ''} onchange="PkgManager.updateDraftPackageLicenses('${pkg.id}')">
+                  <span>🏡 Home (Família)</span>
+                </label>
+                <label class="pkg-license-pill">
+                  <input type="checkbox" id="draft-check-clinical" ${hasClinical ? 'checked' : ''} onchange="PkgManager.updateDraftPackageLicenses('${pkg.id}')">
+                  <span>🩺 Clínica</span>
+                </label>
+                <label class="pkg-license-pill">
+                  <input type="checkbox" id="draft-check-escola" ${hasEscola ? 'checked' : ''} onchange="PkgManager.updateDraftPackageLicenses('${pkg.id}')">
+                  <span>🏫 Escola</span>
+                </label>
+                <label class="pkg-license-pill premium">
+                  <input type="checkbox" id="draft-check-premium" ${pkg.is_premium ? 'checked' : ''} onchange="PkgManager.updateDraftPackageProperty('${pkg.id}', 'is_premium', this.checked)">
+                  <span>⭐ Pacote Premium</span>
+                </label>
               </div>
             </div>
           </div>
 
-          <!-- Dropzone para adicionar arquivos ao pacote -->
+          <!-- Dropzone -->
           <label class="pkg-dropzone" id="draft-dropzone">
             <input id="draft-file-upload" type="file" multiple accept=".wav,.mp3,.flac,.ogg,.m4a,.aac" style="display:none;" 
                    onchange="PkgManager.uploadAudiosToDraft('${pkg.id}', this.files)">
@@ -674,7 +723,7 @@ const PkgManager = {
 
                           <button type="button" class="btn-replace-audio" 
                                   title="Substituir por outro arquivo de áudio do seu computador"
-                                  onclick="PkgManager.promptChooseAudio('${pkg.id}', '${it.id}')">
+                                  onclick="PkgManager.promptChooseAudio('${pkg.id}', '${it.id}', false)">
                             📁 Trocar Áudio
                           </button>
                         </div>
@@ -683,7 +732,7 @@ const PkgManager = {
                           <span class="hint-missing-audio">Aguardando gravação do áudio</span>
                           <button type="button" class="btn-replace-audio btn-add-audio" 
                                   title="Carregar um arquivo de áudio para esta faixa"
-                                  onclick="PkgManager.promptChooseAudio('${pkg.id}', '${it.id}')">
+                                  onclick="PkgManager.promptChooseAudio('${pkg.id}', '${it.id}', false)">
                             ➕ Escolher Áudio
                           </button>
                         </div>
@@ -709,7 +758,6 @@ const PkgManager = {
       </div>
     `;
 
-    // Dropzone drag & drop
     const dropzone = document.getElementById('draft-dropzone');
     if (dropzone) {
       dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.style.background = '#f2efff'; });
@@ -723,12 +771,338 @@ const PkgManager = {
       });
     }
 
-    // Inicializa listeners dos players de áudio
     items.forEach(it => this.setupAudioListeners(it.id));
   },
 
   // ==========================================================
-  // EDIÇÃO DE METADADOS E PERSISTÊNCIA EM TEMPO REAL
+  // SEÇÃO 2: MENUS EM PRODUÇÃO (MESMO LAYOUT, COR VERDE/ESMERALDA)
+  // ==========================================================
+  renderPublishedGrid() {
+    const grid = document.getElementById('published-menus-grid');
+    if (!grid) return;
+
+    if (!this.state.publishedMenus.length) {
+      grid.innerHTML = `<div class="empty">Nenhum menu oficial identificado no catálogo.</div>`;
+      this.renderProductionExpandedPanel();
+      return;
+    }
+
+    grid.innerHTML = this.state.publishedMenus.map(pkg => {
+      const isExpanded = this.state.expandedProductionTitle === pkg.titulo;
+      const itemsCount = (pkg.items || []).length;
+      const targetCount = pkg.target_count || (itemsCount > 0 ? itemsCount : 8);
+      const pct = Math.min(100, Math.round((itemsCount / targetCount) * 100));
+      const isCompleted = itemsCount >= targetCount && targetCount > 0;
+
+      const licLabels = (pkg.licencas || ['home', 'clinical', 'escola']).map(l => {
+        const map = { home: '🏡 Home', clinical: '🩺 Clínica', escola: '🏫 Escola' };
+        return map[l] || l;
+      }).join(' · ');
+
+      return `
+        <article class="package-card is-published ${isExpanded ? 'is-active' : ''}"
+                 onclick="PkgManager.toggleProductionMenu('${this.escapeHtml(pkg.titulo)}')">
+          <span class="pkg-badge published">🟢 Menu Oficial Ativo</span>
+          <h3>${this.escapeHtml(pkg.titulo)}</h3>
+          <p>${this.escapeHtml(pkg.descricao || 'Menu oficial do catálogo disponível na nuvem para os pets e apps conectados.')}</p>
+
+          <div class="pkg-tags">
+            <span class="pkg-tag" style="background:#e8f8f0; color:#127547;">${this.escapeHtml(pkg.categoria || 'Menus do Sistema')}</span>
+            <span class="pkg-tag" style="background:#e8f8f0; color:#127547;">${licLabels}</span>
+            ${pkg.is_premium ? '<span class="pkg-tag premium">⭐ Premium</span>' : ''}
+          </div>
+
+          <div class="pkg-progress">
+            <div class="pkg-progress-bar" style="background:#d1f2e1;">
+              <div class="pkg-progress-fill ${isCompleted ? 'is-complete' : ''}" style="width: ${pct}%; background: #27ae60;"></div>
+            </div>
+            <div class="pkg-progress-label">
+              <span><strong>${itemsCount}</strong> de ${targetCount} faixas oficiais</span>
+              <span><strong>${pct}%</strong></span>
+            </div>
+          </div>
+
+          <div class="published-card-actions" style="display: flex; gap: 8px; margin-top: auto;">
+            <button class="btn-manage" type="button" style="flex: 1;">
+              ${isExpanded ? '▲ Fechar Edição' : '▼ Gerenciar & Cortar Áudios'}
+            </button>
+            <button class="btn-unpublish" type="button" 
+                    title="Despublicar este menu do catálogo oficial e voltar para rascunho para poder alterar"
+                    onclick="event.stopPropagation(); PkgManager.unpublishMenu('${this.escapeHtml(pkg.titulo)}')">
+              ↩️ Despublicar
+            </button>
+          </div>
+        </article>
+      `;
+    }).join('');
+
+    this.renderProductionExpandedPanel();
+  },
+
+  toggleProductionMenu(menuTitle) {
+    if (this.state.expandedProductionTitle === menuTitle) {
+      this.state.expandedProductionTitle = null;
+    } else {
+      this.state.expandedProductionTitle = menuTitle;
+    }
+    this.renderPublishedGrid();
+    if (this.state.expandedProductionTitle) {
+      setTimeout(() => {
+        document.getElementById('production-inline-drawer')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 50);
+    }
+  },
+
+  renderProductionExpandedPanel() {
+    const drawer = document.getElementById('production-inline-drawer');
+    if (!drawer) return;
+
+    if (!this.state.expandedProductionTitle) {
+      drawer.innerHTML = '';
+      drawer.style.display = 'none';
+      return;
+    }
+
+    const pkg = this.state.publishedMenus.find(m => m.titulo === this.state.expandedProductionTitle);
+    if (!pkg) {
+      drawer.style.display = 'none';
+      return;
+    }
+
+    drawer.style.display = 'block';
+    const items = pkg.items || [];
+    const hasHome = (pkg.licencas || ['home', 'clinical', 'escola']).includes('home');
+    const hasClinical = (pkg.licencas || ['home', 'clinical', 'escola']).includes('clinical');
+    const hasEscola = (pkg.licencas || ['home', 'clinical', 'escola']).includes('escola');
+
+    drawer.innerHTML = `
+      <div class="inline-expanded-panel production-style">
+        <div class="inline-panel-header">
+          <h3>🟢 Editando Menu Oficial: <em>${this.escapeHtml(pkg.titulo)}</em></h3>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn-unpublish" type="button" onclick="PkgManager.unpublishMenu('${this.escapeHtml(pkg.titulo)}')">
+              ↩️ Despublicar este Menu (Voltar p/ Rascunho)
+            </button>
+            <button class="btn-collapse" type="button" onclick="PkgManager.toggleProductionMenu('${this.escapeHtml(pkg.titulo)}')">▲ Fechar</button>
+          </div>
+        </div>
+
+        <div class="inline-panel-body">
+          <!-- FORMULÁRIO DE METADADOS ALINHADO (LADO A LADO) -->
+          <div class="pkg-meta-form production-meta">
+            <div class="pkg-field-box">
+              <label>Nome do Menu Oficial</label>
+              <input type="text" id="prod-input-title" value="${this.escapeHtml(pkg.titulo)}" 
+                     placeholder="Nome exibido no catálogo..."
+                     oninput="PkgManager.updateProductionPackageProperty('${this.escapeHtml(pkg.titulo)}', 'titulo', this.value)">
+            </div>
+
+            <div class="pkg-field-box">
+              <label>Meta de Faixas (Target Count)</label>
+              <input type="number" min="1" max="100" id="prod-input-target" value="${pkg.target_count || (items.length > 0 ? items.length : 8)}"
+                     oninput="PkgManager.updateProductionPackageProperty('${this.escapeHtml(pkg.titulo)}', 'target_count', parseInt(this.value, 10) || 8)">
+            </div>
+
+            <div class="pkg-field-box field-full">
+              <label>Descrição do Menu no Catálogo Oficial</label>
+              <textarea id="prod-input-desc" rows="2" 
+                        placeholder="Descrição oficial..."
+                        oninput="PkgManager.updateProductionPackageProperty('${this.escapeHtml(pkg.titulo)}', 'descricao', this.value)">${this.escapeHtml(pkg.descricao || '')}</textarea>
+            </div>
+
+            <div class="pkg-licenses-container">
+              <span class="pkg-licenses-label">Licenças Disponíveis:</span>
+              <div class="pkg-licenses-row">
+                <label class="pkg-license-pill">
+                  <input type="checkbox" id="prod-check-home" ${hasHome ? 'checked' : ''} onchange="PkgManager.updateProductionPackageLicenses('${this.escapeHtml(pkg.titulo)}')">
+                  <span>🏡 Home (Família)</span>
+                </label>
+                <label class="pkg-license-pill">
+                  <input type="checkbox" id="prod-check-clinical" ${hasClinical ? 'checked' : ''} onchange="PkgManager.updateProductionPackageLicenses('${this.escapeHtml(pkg.titulo)}')">
+                  <span>🩺 Clínica</span>
+                </label>
+                <label class="pkg-license-pill">
+                  <input type="checkbox" id="prod-check-escola" ${hasEscola ? 'checked' : ''} onchange="PkgManager.updateProductionPackageLicenses('${this.escapeHtml(pkg.titulo)}')">
+                  <span>🏫 Escola</span>
+                </label>
+                <label class="pkg-license-pill premium">
+                  <input type="checkbox" id="prod-check-premium" ${pkg.is_premium ? 'checked' : ''} onchange="PkgManager.updateProductionPackageProperty('${this.escapeHtml(pkg.titulo)}', 'is_premium', this.checked)">
+                  <span>⭐ Pacote Premium</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dropzone -->
+          <label class="pkg-dropzone" id="prod-dropzone">
+            <input id="prod-file-upload" type="file" multiple accept=".wav,.mp3,.flac,.ogg,.m4a" style="display:none;" 
+                   onchange="PkgManager.uploadAudiosToProduction('${this.escapeHtml(pkg.titulo)}', this.files)">
+            <strong style="color: #27ae60;">＋ Adicionar Novos Áudios a este Menu Oficial</strong>
+            <span>Arraste os arquivos aqui para converter e incluir diretamente neste menu em produção</span>
+          </label>
+
+          <!-- Lista de Faixas -->
+          <div style="margin-top: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h4 style="margin: 0; font-size: 16px; color: var(--ink);">Faixas Oficiais Ativas (${items.length})</h4>
+              <button class="btn secondary" type="button" style="font-size: 12px; padding: 6px 12px; background: #e8f8f0; color: #127547;" 
+                      onclick="PkgManager.addNewEmptyProductionItem('${this.escapeHtml(pkg.titulo)}')">
+                ＋ Adicionar Nova Faixa Oficial
+              </button>
+            </div>
+
+            <div class="pkg-items-list">
+              ${items.length === 0 ? `
+                <div style="text-align:center; padding: 20px; color: var(--muted); font-size: 13px; background: #faf9ff; border-radius: 12px;">
+                  Nenhum áudio encontrado neste menu oficial.
+                </div>
+              ` : items.map((it, idx) => {
+                const audioUrl = this.resolveUrl(it.web_url || (it.arquivo ? `../repository/audio/${it.arquivo.split('/').pop()}` : ''));
+                const hasAudio = !!audioUrl;
+                const safeDesc = JSON.stringify(it.descricao || '').replace(/'/g, "&#39;");
+                const fefoFileName = (it.arquivo || '').split('/').pop() || it.arquivo_fefo || '';
+
+                return `
+                  <div class="pkg-item-row" data-item-id="${it.id}">
+                    <div class="pkg-item-header-line">
+                      <span class="pkg-item-badge-index" style="background:#e8f8f0; color:#127547;">Faixa ${idx + 1}</span>
+
+                      <div class="pkg-item-inputs-group">
+                        <div class="pkg-input-field">
+                          <label class="pkg-field-label">🏷️ Nome no App / Menu</label>
+                          <input type="text" class="pkg-item-title-input prod-item-title" 
+                                 data-item-id="${it.id}" value="${this.escapeHtml(it.titulo || '')}" 
+                                 placeholder="Título da faixa..."
+                                 oninput="PkgManager.updateProductionItemTitle('${this.escapeHtml(pkg.titulo)}', '${it.id}', this.value)">
+                        </div>
+
+                        <div class="pkg-input-field fefo-file">
+                          <label class="pkg-field-label">🤖 Arquivo no Pet FEFO</label>
+                          <div class="fefo-file-box">
+                            <input type="text" class="pkg-item-fefo-input" value="${this.escapeHtml(fefoFileName)}" 
+                                   placeholder="a0001.wav"
+                                   oninput="PkgManager.updateProductionItemFefoFile('${this.escapeHtml(pkg.titulo)}', '${it.id}', this.value)">
+                            <button type="button" class="btn-suggest-name" title="Sugerir próximo arquivo aXXXX.wav livre"
+                                    onclick="PkgManager.suggestNextFefoNameForProduction('${this.escapeHtml(pkg.titulo)}', '${it.id}')">
+                              ⚡ Sugerir
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="header-status-and-delete">
+                        <span class="status-pill status-ready">🟢 Ativo no Catálogo</span>
+                        <button type="button" class="pkg-item-delete" title="Excluir do catálogo oficial"
+                                onclick="PkgManager.deleteProductionItem('${it.id}', '${this.escapeHtml(it.titulo)}')">
+                          🗑
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- TEXTO / ROTEIRO FALADO PELO FEFO (EDITÁVEL) -->
+                    <div class="pkg-item-script-box" style="background: #f7fdfa; border-color: #b7eed4;">
+                      <div class="pkg-item-script-label" style="color: #127547;">
+                        <span>📜 Texto do Áudio (Roteiro falado pelo FEFO):</span>
+                        <span class="save-status-badge" id="script-saved-prod-${it.id}">✓ Salvo</span>
+                      </div>
+                      <textarea class="pkg-item-script-textarea" 
+                                placeholder="Digite ou edite o roteiro falado pelo FEFO para este áudio..."
+                                oninput="PkgManager.updateProductionItemScript('${this.escapeHtml(pkg.titulo)}', '${it.id}', this.value)">${this.escapeHtml(it.descricao || '')}</textarea>
+                    </div>
+
+                    <div class="pkg-item-actions-line">
+                      <span class="pkg-item-orig">
+                        📁 Arquivo: <strong>${this.escapeHtml(fefoFileName)}</strong>
+                        ${it.tamanho ? `(${this.formatBytes(it.tamanho)})` : ''}
+                      </span>
+
+                      ${hasAudio ? `
+                        <div class="custom-audio-controller">
+                          <audio id="audio-player-${it.id}" src="${this.escapeHtml(audioUrl)}" preload="none"></audio>
+                          <div class="audio-ctrl-buttons">
+                            <button type="button" class="btn-audio-ctrl btn-play" id="btn-play-${it.id}" 
+                                    onclick="PkgManager.playTrack('${it.id}')" title="Tocar áudio">
+                              ▶ Play
+                            </button>
+                            <button type="button" class="btn-audio-ctrl btn-pause" id="btn-pause-${it.id}" 
+                                    onclick="PkgManager.pauseTrack('${it.id}')" title="Pausar áudio">
+                              ⏸ Pause
+                            </button>
+                            <button type="button" class="btn-audio-ctrl btn-stop" id="btn-stop-${it.id}" 
+                                    onclick="PkgManager.stopTrack('${it.id}')" title="Parar e voltar ao início">
+                              ⏹ Stop
+                            </button>
+                          </div>
+                          <div class="audio-time-slider-box">
+                            <span id="time-current-${it.id}" class="time-label">0:00</span>
+                            <input type="range" id="seek-${it.id}" class="audio-seek-slider" min="0" max="100" value="0"
+                                   oninput="PkgManager.seekTrack('${it.id}', this.value)">
+                            <span id="time-total-${it.id}" class="time-label">0:00</span>
+                          </div>
+                        </div>
+
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                          <button type="button" class="btn-trim-audio" 
+                                  title="Abrir ferramenta de corte e fade"
+                                  onclick='PkgManager.trimProductionItem("${it.id}", "${this.escapeHtml(audioUrl)}", "${this.escapeHtml(it.titulo)}")'>
+                            ✂ Cortar Áudio
+                          </button>
+
+                          <button type="button" class="btn-replace-audio" 
+                                  title="Substituir arquivo de áudio"
+                                  onclick="PkgManager.promptChooseAudio('${this.escapeHtml(pkg.titulo)}', '${it.id}', true)">
+                            📁 Trocar Áudio
+                          </button>
+                        </div>
+                      ` : `
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                          <span class="hint-missing-audio">Aguardando áudio</span>
+                          <button type="button" class="btn-replace-audio btn-add-audio" 
+                                  title="Carregar um arquivo de áudio para esta faixa"
+                                  onclick="PkgManager.promptChooseAudio('${this.escapeHtml(pkg.titulo)}', '${it.id}', true)">
+                            ➕ Escolher Áudio
+                          </button>
+                        </div>
+                      `}
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        </div>
+
+        <div class="inline-panel-footer">
+          <button class="btn-unpublish" type="button" onclick="PkgManager.unpublishMenu('${this.escapeHtml(pkg.titulo)}')">
+            ↩️ Despublicar Menu (Deixar Off e Mover p/ Rascunho)
+          </button>
+
+          <button class="btn primary" style="background:#27ae60;" type="button" 
+                  onclick="PkgManager.saveProductionMenu('${this.escapeHtml(pkg.titulo)}')">
+            💾 Salvar Alterações deste Menu Oficial
+          </button>
+        </div>
+      </div>
+    `;
+
+    const dropzone = document.getElementById('prod-dropzone');
+    if (dropzone) {
+      dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.style.background = '#eaf8f1'; });
+      dropzone.addEventListener('dragleave', () => { dropzone.style.background = ''; });
+      dropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropzone.style.background = '';
+        if (e.dataTransfer.files.length) {
+          this.uploadAudiosToProduction(pkg.titulo, e.dataTransfer.files);
+        }
+      });
+    }
+
+    items.forEach(it => this.setupAudioListeners(it.id));
+  },
+
+  // ==========================================================
+  // ATUALIZAÇÃO DE PROPRIEDADES E SALVAMENTO DE RASCUNHO
   // ==========================================================
   updateDraftPackageProperty(pkgId, prop, value) {
     const pkg = (this.state.drafts || []).find(p => p.id === pkgId);
@@ -786,6 +1160,63 @@ const PkgManager = {
     this.scheduleBackendMetadataSave(pkgId, itemId, { descricao: newDesc });
   },
 
+  // ==========================================================
+  // ATUALIZAÇÃO DE PROPRIEDADES DE PRODUÇÃO
+  // ==========================================================
+  updateProductionPackageProperty(menuTitle, prop, value) {
+    const pkg = (this.state.publishedMenus || []).find(p => p.titulo === menuTitle);
+    if (!pkg) return;
+    pkg[prop] = value;
+    PkgStorage.saveAllProductionMenus(this.state.publishedMenus);
+  },
+
+  updateProductionPackageLicenses(menuTitle) {
+    const pkg = (this.state.publishedMenus || []).find(p => p.titulo === menuTitle);
+    if (!pkg) return;
+    pkg.licencas = [];
+    if (document.getElementById('prod-check-home')?.checked) pkg.licencas.push('home');
+    if (document.getElementById('prod-check-clinical')?.checked) pkg.licencas.push('clinical');
+    if (document.getElementById('prod-check-escola')?.checked) pkg.licencas.push('escola');
+    PkgStorage.saveAllProductionMenus(this.state.publishedMenus);
+  },
+
+  updateProductionItemTitle(menuTitle, itemId, newTitle) {
+    const pkg = (this.state.publishedMenus || []).find(p => p.titulo === menuTitle);
+    if (!pkg) return;
+    const it = (pkg.items || []).find(x => x.id === itemId);
+    if (!it) return;
+    it.titulo = newTitle.trim();
+    PkgStorage.saveAllProductionMenus(this.state.publishedMenus);
+  },
+
+  updateProductionItemFefoFile(menuTitle, itemId, newName) {
+    let clean = (newName || '').trim().toLowerCase();
+    if (clean && !clean.endsWith('.wav')) clean += '.wav';
+    const pkg = (this.state.publishedMenus || []).find(p => p.titulo === menuTitle);
+    if (!pkg) return;
+    const it = (pkg.items || []).find(x => x.id === itemId);
+    if (!it) return;
+    it.arquivo = `/usr/a/${clean}`;
+    it.arquivo_fefo = clean;
+    PkgStorage.saveAllProductionMenus(this.state.publishedMenus);
+  },
+
+  updateProductionItemScript(menuTitle, itemId, newDesc) {
+    const pkg = (this.state.publishedMenus || []).find(p => p.titulo === menuTitle);
+    if (!pkg) return;
+    const it = (pkg.items || []).find(x => x.id === itemId);
+    if (!it) return;
+    it.descricao = newDesc;
+    PkgStorage.saveAllProductionMenus(this.state.publishedMenus);
+
+    const badge = document.getElementById(`script-saved-prod-${itemId}`);
+    if (badge) {
+      badge.classList.add('visible');
+      clearTimeout(this.debounceTimers[`badge_prod_${itemId}`]);
+      this.debounceTimers[`badge_prod_${itemId}`] = setTimeout(() => badge.classList.remove('visible'), 2000);
+    }
+  },
+
   scheduleBackendMetadataSave(pkgId, itemId, data) {
     clearTimeout(this.debounceTimers[`meta_${itemId}`]);
     this.debounceTimers[`meta_${itemId}`] = setTimeout(async () => {
@@ -795,9 +1226,7 @@ const PkgManager = {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ package_id: pkgId, item_id: itemId, ...data })
         });
-      } catch (e) {
-        // Normal no GitHub Pages estático (dados já salvos no localStorage)
-      }
+      } catch (e) {}
     }, 600);
   },
 
@@ -819,6 +1248,31 @@ const PkgManager = {
     PkgStorage.saveAllDrafts(this.state.drafts);
     this.renderDraftExpandedPanel();
     notice('Nova faixa adicionada!', 'ok');
+  },
+
+  addNewEmptyProductionItem(menuTitle) {
+    const pkg = (this.state.publishedMenus || []).find(p => p.titulo === menuTitle);
+    if (!pkg) return;
+    const nextFefo = this.getNextAvailableFefoName();
+    const nextNum = (pkg.items || []).length + 1;
+    const newItem = {
+      id: `au${String(nextNum).padStart(3, '0')}_${Date.now() % 1000}`,
+      codigo_item: `au_${nextNum}`,
+      titulo: `Nova Faixa Oficial ${nextNum}`,
+      descricao: '',
+      arquivo: `/usr/a/${nextFefo}`,
+      arquivo_fefo: nextFefo,
+      arquivo_origem: '',
+      web_url: '',
+      status: 'pending_audio'
+    };
+    pkg.items = pkg.items || [];
+    pkg.items.push(newItem);
+    pkg.count = pkg.items.length;
+    PkgStorage.saveAllProductionMenus(this.state.publishedMenus);
+    this.renderProductionExpandedPanel();
+    this.renderPublishedGrid();
+    notice('Nova faixa oficial adicionada!', 'ok');
   },
 
   createNewDraftPackage() {
@@ -877,7 +1331,7 @@ const PkgManager = {
   // ==========================================================
   // ESCOLHER / TROCAR ÁUDIO DE UMA FAIXA INDIVIDUAL
   // ==========================================================
-  promptChooseAudio(pkgId, itemId) {
+  promptChooseAudio(containerId, itemId, isProduction = false) {
     let fileInput = document.getElementById('global-audio-replace-input');
     if (!fileInput) {
       fileInput = document.createElement('input');
@@ -891,58 +1345,65 @@ const PkgManager = {
     fileInput.onchange = (e) => {
       const file = e.target.files && e.target.files[0];
       if (file) {
-        this.handleAudioFileSelected(pkgId, itemId, file);
+        this.handleAudioFileSelected(containerId, itemId, file, isProduction);
       }
       fileInput.value = '';
     };
     fileInput.click();
   },
 
-  async handleAudioFileSelected(pkgId, itemId, file) {
-    const pkg = (this.state.drafts || []).find(p => p.id === pkgId);
-    if (!pkg) return;
-    const it = (pkg.items || []).find(x => x.id === itemId);
-    if (!it) return;
-
+  async handleAudioFileSelected(containerId, itemId, file, isProduction = false) {
     notice(`Carregando áudio "${file.name}"...`);
 
-    // 1. Armazena no IndexedDB local para nunca perder após reload
+    // 1. Armazena no IndexedDB local
     await AudioBlobDB.setAudio(itemId, file);
 
-    // 2. Cria URL imediata para preview e corte
     const blobUrl = URL.createObjectURL(file);
-    it.web_url = blobUrl;
-    it.arquivo_origem = file.name;
-    it.tamanho = file.size;
-    it.status = 'needs_trim';
 
-    // 3. Persiste no localStorage
-    PkgStorage.saveAllDrafts(this.state.drafts);
-
-    // 4. Se backend local estiver online, envia arquivo para a pasta do servidor
-    try {
-      const form = new FormData();
-      form.append('package_id', pkgId);
-      form.append('item_id', itemId);
-      form.append('file', file, file.name);
-
-      const res = await fetch('/api/packages/upload_single_item_audio', {
-        method: 'POST',
-        body: form
-      });
-      const data = await res.json();
-      if (data.ok && data.item) {
-        it.arquivo_draft = data.item.arquivo_draft;
-        notice(`✓ Áudio "${file.name}" salvo no servidor!`, 'ok');
-      } else {
-        notice(`✓ Áudio "${file.name}" salvo no navegador!`, 'ok');
+    if (isProduction) {
+      const menu = (this.state.publishedMenus || []).find(m => m.titulo === containerId);
+      const it = menu ? (menu.items || []).find(x => x.id === itemId) : null;
+      if (it) {
+        it.web_url = blobUrl;
+        it.arquivo_origem = file.name;
+        it.tamanho = file.size;
+        it.status = 'ready';
       }
-    } catch (e) {
-      notice(`✓ Áudio "${file.name}" salvo localmente!`, 'ok');
-    }
+      PkgStorage.saveAllProductionMenus(this.state.publishedMenus);
+      this.renderProductionExpandedPanel();
+      notice(`✓ Áudio "${file.name}" carregado na faixa oficial!`, 'ok');
+    } else {
+      const pkg = (this.state.drafts || []).find(p => p.id === containerId);
+      const it = pkg ? (pkg.items || []).find(x => x.id === itemId) : null;
+      if (it) {
+        it.web_url = blobUrl;
+        it.arquivo_origem = file.name;
+        it.tamanho = file.size;
+        it.status = 'needs_trim';
+      }
+      PkgStorage.saveAllDrafts(this.state.drafts);
 
-    this.renderDraftExpandedPanel();
-    this.renderDraftsGrid();
+      try {
+        const form = new FormData();
+        form.append('package_id', containerId);
+        form.append('item_id', itemId);
+        form.append('file', file, file.name);
+
+        const res = await fetch('/api/packages/upload_single_item_audio', { method: 'POST', body: form });
+        const data = await res.json();
+        if (data.ok && data.item) {
+          it.arquivo_draft = data.item.arquivo_draft;
+          notice(`✓ Áudio "${file.name}" salvo no servidor!`, 'ok');
+        } else {
+          notice(`✓ Áudio "${file.name}" salvo localmente!`, 'ok');
+        }
+      } catch (e) {
+        notice(`✓ Áudio "${file.name}" salvo localmente!`, 'ok');
+      }
+
+      this.renderDraftExpandedPanel();
+      this.renderDraftsGrid();
+    }
   },
 
   async uploadAudiosToDraft(pkgId, files) {
@@ -977,7 +1438,6 @@ const PkgManager = {
     this.renderDraftExpandedPanel();
     this.renderDraftsGrid();
 
-    // Envia ao backend se online
     try {
       const form = new FormData();
       form.append('package_id', pkgId);
@@ -1053,11 +1513,8 @@ const PkgManager = {
       itemCode: itemCode,
       onSave: async (blob, info) => {
         notice('Salvando áudio cortado na faixa...');
-
-        // 1. Salva o corte no IndexedDB do navegador
         await AudioBlobDB.setAudio(itemId, blob);
 
-        // 2. Atualiza estado em memória
         if (it) {
           it.web_url = URL.createObjectURL(blob);
           it.status = 'ready';
@@ -1067,7 +1524,6 @@ const PkgManager = {
         this.renderDraftExpandedPanel();
         this.renderDraftsGrid();
 
-        // 3. Envia para o backend se disponível
         try {
           const form = new FormData();
           form.append('tipo', 'draft');
@@ -1075,16 +1531,10 @@ const PkgManager = {
           form.append('item_id', itemId);
           form.append('file', blob, `${itemCode || 'cut'}.wav`);
 
-          const res = await fetch('/api/packages/replace_audio', {
-            method: 'POST',
-            body: form
-          });
+          const res = await fetch('/api/packages/replace_audio', { method: 'POST', body: form });
           const data = await res.json();
-          if (data.ok) {
-            notice(data.message || 'Corte salvo com sucesso!', 'ok');
-          } else {
-            notice('Corte salvo no navegador com sucesso!', 'ok');
-          }
+          if (data.ok) notice(data.message || 'Corte salvo com sucesso!', 'ok');
+          else notice('Corte salvo no navegador com sucesso!', 'ok');
         } catch (e) {
           notice('Corte salvo no navegador com sucesso!', 'ok');
         }
@@ -1124,179 +1574,6 @@ const PkgManager = {
   },
 
   // ==========================================================
-  // SEÇÃO 2: MENUS OFICIAIS EM PRODUÇÃO E DESPUBLICAÇÃO
-  // ==========================================================
-  renderPublishedGrid() {
-    const grid = document.getElementById('published-menus-grid');
-    if (!grid) return;
-
-    if (!this.state.publishedMenus.length) {
-      grid.innerHTML = `<div class="empty">Nenhum menu oficial identificado no catálogo.</div>`;
-      this.renderProductionExpandedPanel();
-      return;
-    }
-
-    grid.innerHTML = this.state.publishedMenus.map(m => {
-      const isExpanded = this.state.expandedProductionTitle === m.titulo;
-
-      return `
-        <article class="package-card is-published ${isExpanded ? 'is-active' : ''}">
-          <span class="pkg-badge published">🟢 Menu Oficial Ativo</span>
-          <h3>${this.escapeHtml(m.titulo)}</h3>
-          <p>Disponível na nuvem para os pets e apps conectados.</p>
-          <div class="pkg-tags">
-            <span class="pkg-tag">Menu do Sistema</span>
-            <span class="pkg-tag">${m.count} áudios oficiais</span>
-          </div>
-          <div class="published-card-actions" style="display: flex; gap: 8px; margin-top: auto;">
-            <button class="btn-manage" type="button" style="flex: 1;" onclick="PkgManager.toggleProductionMenu('${this.escapeHtml(m.titulo)}')">
-              ${isExpanded ? '▲ Fechar' : '✏️ Gerenciar'}
-            </button>
-            <button class="btn-unpublish" type="button" 
-                    title="Despublicar este menu do catálogo oficial e voltar para rascunho para poder alterar"
-                    onclick="PkgManager.unpublishMenu('${this.escapeHtml(m.titulo)}')">
-              ↩️ Despublicar
-            </button>
-          </div>
-        </article>
-      `;
-    }).join('');
-
-    this.renderProductionExpandedPanel();
-  },
-
-  toggleProductionMenu(menuTitle) {
-    if (this.state.expandedProductionTitle === menuTitle) {
-      this.state.expandedProductionTitle = null;
-    } else {
-      this.state.expandedProductionTitle = menuTitle;
-    }
-    this.renderPublishedGrid();
-    if (this.state.expandedProductionTitle) {
-      setTimeout(() => {
-        document.getElementById('production-inline-drawer')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }, 50);
-    }
-  },
-
-  renderProductionExpandedPanel() {
-    const drawer = document.getElementById('production-inline-drawer');
-    if (!drawer) return;
-
-    if (!this.state.expandedProductionTitle) {
-      drawer.innerHTML = '';
-      drawer.style.display = 'none';
-      return;
-    }
-
-    const menu = this.state.publishedMenus.find(m => m.titulo === this.state.expandedProductionTitle);
-    if (!menu) {
-      drawer.style.display = 'none';
-      return;
-    }
-
-    drawer.style.display = 'block';
-    const items = menu.items || [];
-
-    drawer.innerHTML = `
-      <div class="inline-expanded-panel production-style">
-        <div class="inline-panel-header">
-          <h3>🟢 Editando Menu Oficial: <em>${this.escapeHtml(menu.titulo)}</em></h3>
-          <div style="display: flex; gap: 10px;">
-            <button class="btn-unpublish" type="button" onclick="PkgManager.unpublishMenu('${this.escapeHtml(menu.titulo)}')">
-              ↩️ Despublicar este Menu (Voltar p/ Rascunho)
-            </button>
-            <button class="btn-collapse" type="button" onclick="PkgManager.toggleProductionMenu('${this.escapeHtml(menu.titulo)}')">▲ Fechar</button>
-          </div>
-        </div>
-
-        <div class="inline-panel-body">
-          <div class="field">
-            <label>Nome deste Menu no Catálogo Oficial</label>
-            <input id="prod-input-title" type="text" value="${this.escapeHtml(menu.titulo)}">
-          </div>
-
-          <!-- Dropzone -->
-          <label class="pkg-dropzone" id="prod-dropzone">
-            <input id="prod-file-upload" type="file" multiple accept=".wav,.mp3,.flac,.ogg,.m4a" style="display:none;" 
-                   onchange="PkgManager.uploadAudiosToProduction('${this.escapeHtml(menu.titulo)}', this.files)">
-            <strong style="color: #27ae60;">＋ Adicionar Novos Áudios a este Menu Oficial</strong>
-            <span>Arraste os arquivos aqui para converter e incluir diretamente neste menu em produção</span>
-          </label>
-
-          <!-- Lista de Faixas -->
-          <div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-              <h4 style="margin: 0; font-size: 16px; color: var(--ink);">Faixas Oficiais Ativas (${items.length})</h4>
-              <span class="hint" style="margin:0;">Edite títulos, ouça ou corte o trecho do áudio.</span>
-            </div>
-
-            <div class="pkg-items-list">
-              ${items.length === 0 ? `
-                <div style="text-align:center; padding: 20px; color: var(--muted); font-size: 13px; background: #faf9ff; border-radius: 12px;">
-                  Nenhum áudio encontrado neste menu oficial.
-                </div>
-              ` : items.map((it, idx) => {
-                const audioUrl = it.web_url || (it.arquivo ? `../repository/audio/${it.arquivo.split('/').pop()}` : '');
-
-                return `
-                  <div class="pkg-item-row" data-item-id="${it.id}">
-                    <div class="pkg-item-number" style="color: #27ae60;">${idx + 1}</div>
-
-                    <div class="pkg-item-info">
-                      <input type="text" class="pkg-item-title-input prod-item-title" 
-                             data-item-id="${it.id}" value="${this.escapeHtml(it.titulo || '')}" 
-                             placeholder="Título da faixa...">
-                      <span class="pkg-item-orig">Código: <strong>${it.id}</strong> · Arquivo: ${this.escapeHtml(it.arquivo || '')} (${this.formatBytes(it.tamanho)})</span>
-                    </div>
-
-                    <div class="pkg-item-player">
-                      <audio controls preload="none" src="${this.escapeHtml(audioUrl)}"></audio>
-                    </div>
-
-                    <button type="button" class="btn-trim-audio" title="Abrir ferramenta de corte e fade"
-                            onclick="PkgManager.trimProductionItem('${it.id}', '${this.escapeHtml(audioUrl)}', '${this.escapeHtml(it.titulo)}')">
-                      ✂ Cortar Áudio
-                    </button>
-
-                    <button type="button" class="pkg-item-delete" title="Excluir do catálogo oficial"
-                            onclick="PkgManager.deleteProductionItem('${it.id}', '${this.escapeHtml(it.titulo)}')">
-                      🗑
-                    </button>
-                  </div>
-                `;
-              }).join('')}
-            </div>
-          </div>
-        </div>
-
-        <div class="inline-panel-footer">
-          <span style="font-size: 12px; color: var(--muted);">
-            Ao salvar, as alterações de títulos serão gravadas no <code>catalog.json</code> com nova versão.
-          </span>
-          <button class="btn primary" style="background:#27ae60;" type="button" 
-                  onclick="PkgManager.saveProductionMenu('${this.escapeHtml(menu.titulo)}')">
-            💾 Salvar Alterações deste Menu
-          </button>
-        </div>
-      </div>
-    `;
-
-    const dropzone = document.getElementById('prod-dropzone');
-    if (dropzone) {
-      dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.style.background = '#eaf8f1'; });
-      dropzone.addEventListener('dragleave', () => { dropzone.style.background = ''; });
-      dropzone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropzone.style.background = '';
-        if (e.dataTransfer.files.length) {
-          this.uploadAudiosToProduction(menu.titulo, e.dataTransfer.files);
-        }
-      });
-    }
-  },
-
-  // ==========================================================
   // DESPUBLICAR MENU: MOVE DE PRODUÇÃO PARA RASCUNHOS
   // ==========================================================
   async unpublishMenu(menuTitle) {
@@ -1325,34 +1602,30 @@ const PkgManager = {
     const restoredDraft = {
       id: draftId,
       titulo: menu.titulo,
-      descricao: `Menu despublicado do catálogo oficial para edição e ajustes.`,
-      target_count: draftItems.length || 10,
-      categoria: 'Histórias',
-      licencas: ['home', 'clinical', 'escola'],
-      is_premium: false,
+      descricao: menu.descricao || `Menu despublicado do catálogo oficial para edição e ajustes.`,
+      target_count: draftItems.length || 8,
+      categoria: menu.categoria || 'Geral',
+      licencas: menu.licencas || ['home', 'clinical', 'escola'],
+      is_premium: menu.is_premium || false,
       status: 'draft',
       items: draftItems
     };
 
-    // 1. Remove de publishedMenus
     this.state.publishedMenus = this.state.publishedMenus.filter(m => m.titulo !== menuTitle);
     if (this.state.expandedProductionTitle === menuTitle) {
       this.state.expandedProductionTitle = null;
     }
 
-    // 2. Adiciona nos rascunhos
     this.state.drafts.unshift(restoredDraft);
     this.state.expandedDraftId = draftId;
 
-    // 3. Salva persistência local
     PkgStorage.addUnpublishedMenu(menuTitle);
     PkgStorage.saveAllDrafts(this.state.drafts);
+    PkgStorage.saveAllProductionMenus(this.state.publishedMenus);
 
-    // 4. Renderiza tela
     this.render();
     notice(`✓ Menu “${menuTitle}” despublicado e movido para Rascunhos!`, 'ok');
 
-    // 5. Comunica backend se online
     try {
       await fetch('/api/packages/unpublish_menu', {
         method: 'POST',
@@ -1361,16 +1634,26 @@ const PkgManager = {
       });
     } catch (e) {}
 
-    // Scrolla até o rascunho
     setTimeout(() => {
       document.getElementById('draft-packages-grid')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
   },
 
   async saveProductionMenu(oldMenuTitle) {
+    const pkg = (this.state.publishedMenus || []).find(p => p.titulo === oldMenuTitle);
     const newMenuTitle = document.getElementById('prod-input-title')?.value.trim() || oldMenuTitle;
-    const itemsUpdates = [];
+    
+    if (pkg) {
+      pkg.titulo = newMenuTitle;
+      pkg.descricao = document.getElementById('prod-input-desc')?.value.trim() || '';
+      pkg.target_count = parseInt(document.getElementById('prod-input-target')?.value, 10) || 8;
+      this.updateProductionPackageLicenses(oldMenuTitle);
+    }
 
+    PkgStorage.saveAllProductionMenus(this.state.publishedMenus);
+    notice('Atualizando menu oficial no catálogo...');
+
+    const itemsUpdates = [];
     document.querySelectorAll('.prod-item-title').forEach(input => {
       itemsUpdates.push({
         id: input.dataset.itemId,
@@ -1378,7 +1661,6 @@ const PkgManager = {
       });
     });
 
-    notice('Atualizando menu oficial no catálogo...');
     try {
       const res = await fetch('/api/production_menu/save', {
         method: 'POST',
@@ -1395,7 +1677,8 @@ const PkgManager = {
       this.state.expandedProductionTitle = newMenuTitle;
       await this.loadPackages();
     } catch (e) {
-      notice(`Erro: ${e.message}`, 'error');
+      notice('Alterações do menu salvas no navegador!', 'ok');
+      this.render();
     }
   },
 
@@ -1429,6 +1712,7 @@ const PkgManager = {
     });
 
     PkgStorage.addDeletedItemId(itemId);
+    PkgStorage.saveAllProductionMenus(this.state.publishedMenus);
     this.renderProductionExpandedPanel();
     this.renderPublishedGrid();
     notice('Áudio removido do catálogo oficial.', 'ok');
@@ -1453,6 +1737,8 @@ const PkgManager = {
       title: title,
       onSave: async (blob, info) => {
         notice('Salvando corte no catálogo oficial...');
+        await AudioBlobDB.setAudio(itemId, blob);
+
         const form = new FormData();
         form.append('tipo', 'production');
         form.append('item_id', itemId);
@@ -1468,7 +1754,7 @@ const PkgManager = {
           notice(data.message || 'Corte salvo e catálogo atualizado com sucesso!', 'ok');
           await this.loadPackages();
         } catch (e) {
-          notice(`Erro ao salvar corte oficial: ${e.message}`, 'error');
+          notice('Corte salvo no navegador com sucesso!', 'ok');
         }
       }
     });
@@ -1562,7 +1848,7 @@ const PkgManager = {
     const used = new Set();
     (this.state.publishedMenus || []).forEach(m => {
       (m.items || []).forEach(it => {
-        const arq = (it.arquivo || '').split('/').pop();
+        const arq = (it.arquivo || it.arquivo_fefo || '').split('/').pop();
         const match = arq.match(/a(\d{4})\.wav/i);
         if (match) used.add(parseInt(match[1], 10));
       });
@@ -1588,6 +1874,13 @@ const PkgManager = {
     notice(`Nome único sugerido: ${nextName}`, 'ok');
   },
 
+  suggestNextFefoNameForProduction(menuTitle, itemId) {
+    const nextName = this.getNextAvailableFefoName();
+    this.updateProductionItemFefoFile(menuTitle, itemId, nextName);
+    this.renderProductionExpandedPanel();
+    notice(`Nome único sugerido: ${nextName}`, 'ok');
+  },
+
   // ==========================================================
   // EXPORTAR BACKUP JSON
   // ==========================================================
@@ -1595,14 +1888,15 @@ const PkgManager = {
     const data = {
       schema: 1,
       exported_at: new Date().toISOString(),
-      packages: this.state.drafts || []
+      draft_packages: this.state.drafts || [],
+      published_menus: this.state.publishedMenus || []
     };
     const jsonStr = JSON.stringify(data, null, 2);
     const blob = new Blob([jsonStr], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `fefo_draft_packages_${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `fefo_catalog_backup_${new Date().toISOString().slice(0, 10)}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

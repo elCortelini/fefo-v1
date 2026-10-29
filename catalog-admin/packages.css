@@ -1062,3 +1062,193 @@
 .save-status-badge.visible {
   opacity: 1;
 }
+
+
+/* ========================================================== */
+/* FORMULÁRIO DE METADADOS ALINHADO (LADO A LADO)             */
+/* ========================================================== */
+.pkg-meta-form {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+  background: #faf8ff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 18px;
+}
+
+.pkg-meta-form.production-meta {
+  background: #f4fbf7;
+  border-color: #b7eed4;
+}
+
+.pkg-meta-form .field-full {
+  grid-column: 1 / -1;
+}
+
+.pkg-field-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pkg-field-box label {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pkg-field-box input[type="text"],
+.pkg-field-box input[type="number"],
+.pkg-field-box textarea {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  background: #ffffff;
+  border: 1px solid #d9d1ed;
+  border-radius: 10px;
+  padding: 10px 14px;
+  transition: all 0.15s ease;
+}
+
+.pkg-field-box input:focus,
+.pkg-field-box textarea:focus {
+  outline: none;
+  border-color: var(--purple);
+  box-shadow: 0 0 0 3px rgba(118, 87, 197, 0.18);
+}
+
+.production-meta .pkg-field-box input:focus,
+.production-meta .pkg-field-box textarea:focus {
+  border-color: #27ae60;
+  box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.2);
+}
+
+/* Linha de Licenças Lado a Lado (Pill Buttons) */
+.pkg-licenses-container {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.pkg-licenses-container .pkg-licenses-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pkg-licenses-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.pkg-license-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 9px 18px !important;
+  background: #ffffff !important;
+  border: 2px solid #e1d9f4 !important;
+  border-radius: 999px !important;
+  cursor: pointer !important;
+  font-size: 13.5px !important;
+  font-weight: 800 !important;
+  color: var(--ink) !important;
+  transition: all 0.15s ease !important;
+  user-select: none !important;
+  width: auto !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02) !important;
+}
+
+.pkg-license-pill:hover {
+  border-color: var(--purple) !important;
+  background: #faf8ff !important;
+  transform: translateY(-1px);
+}
+
+.pkg-license-pill input[type="checkbox"] {
+  width: 17px !important;
+  height: 17px !important;
+  accent-color: var(--purple) !important;
+  margin: 0 !important;
+  cursor: pointer !important;
+}
+
+.pkg-license-pill:has(input:checked) {
+  background: #f1ecff !important;
+  border-color: var(--purple) !important;
+  color: var(--purple) !important;
+  box-shadow: 0 3px 10px rgba(118, 87, 197, 0.18) !important;
+}
+
+.pkg-license-pill.premium:has(input:checked) {
+  background: #fff9e6 !important;
+  border-color: #f1c40f !important;
+  color: #8c6800 !important;
+  box-shadow: 0 3px 10px rgba(241, 196, 15, 0.22) !important;
+}
+
+.production-meta .pkg-license-pill:hover {
+  border-color: #27ae60 !important;
+  background: #f4fbf7 !important;
+}
+
+.production-meta .pkg-license-pill input[type="checkbox"] {
+  accent-color: #27ae60 !important;
+}
+
+.production-meta .pkg-license-pill:has(input:checked) {
+  background: #e8f8f0 !important;
+  border-color: #27ae60 !important;
+  color: #127547 !important;
+  box-shadow: 0 3px 10px rgba(39, 174, 96, 0.18) !important;
+}
+
+/* ========================================================== */
+/* PACOTES EM PRODUÇÃO (MESMO LAYOUT, COR VERDE/ESMERALDA)    */
+/* ========================================================== */
+.inline-expanded-panel.production-style {
+  border-color: #27ae60 !important;
+  background: #ffffff !important;
+}
+
+.inline-expanded-panel.production-style .inline-panel-header {
+  border-bottom-color: #d1f2e1 !important;
+}
+
+.inline-expanded-panel.production-style .inline-panel-header h3 {
+  color: #127547 !important;
+}
+
+.inline-expanded-panel.production-style .pkg-dropzone {
+  border-color: #27ae60 !important;
+  background: #f4fbf7 !important;
+}
+
+.inline-expanded-panel.production-style .pkg-dropzone:hover {
+  background: #e8f8f0 !important;
+}
+
+.inline-expanded-panel.production-style .pkg-item-number {
+  background: #e8f8f0 !important;
+  color: #127547 !important;
+  font-weight: 900;
+  border-radius: 8px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+}
