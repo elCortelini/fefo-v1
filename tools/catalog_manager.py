@@ -348,6 +348,75 @@ class Handler(SimpleHTTPRequestHandler):
                 else:
                     result = {'ok': False, 'message': 'Pacote não encontrado.'}
 
+            elif self.path == '/api/tts/generate':
+                payload = json.loads(body.decode('utf-8'))
+                text = payload.get('text', '').strip()
+                voice_id = payload.get('voice_id') or os.environ.get('ELEVENLABS_VOICE_ID', '')
+                api_key = payload.get('api_key') or os.environ.get('ELEVENLABS_API_KEY', '')
+                provider = payload.get('provider', 'auto')
+                pkg_id = payload.get('package_id')
+                item_id = payload.get('item_id')
+
+                if not text: raise ValueError('Texto ausente para geração de áudio.')
+
+                # 1. Geração via ElevenLabs se configurado
+                if api_key and (provider == 'elevenlabs' or provider == 'auto'):
+                    import urllib.request
+                    vid = voice_id or '21m00Tcm4TlvDq8ikWAM'
+                    url = f"https://api.elevenlabs.io/v1/text-to-speech/{vid}"
+                    req_data = json.dumps({
+                        "text": text,
+                        "model_id": "eleven_multilingual_v2",
+                        "voice_settings": { "stability": 0.5, "similarity_boost": 0.8 }
+                    }).encode('utf-8')
+                    req = urllib.request.Request(url, data=req_data, headers={
+                        "Content-Type": "application/json",
+                        "xi-api-key": api_key
+                    })
+                    with urllib.request.urlopen(req) as resp:
+                        audio_bytes = resp.read()
+                else:
+                    # 2. Fallback com edge-tts de alta velocidade
+                    import asyncio, edge_tts
+                    tmp_mp3 = ROOT / f"temp_tts_{int(time.time()*1000)%100000}.mp3"
+                    async def run_edge():
+                        communicate = edge_tts.Communicate(text, 'pt-BR-ThalitaNeural', pitch='+10Hz', rate='+6%')
+                        await communicate.save(str(tmp_mp3))
+                    asyncio.run(run_edge())
+                    audio_bytes = tmp_mp3.read_bytes()
+                    if tmp_mp3.exists(): tmp_mp3.unlink()
+
+                # Salva arquivo WAV convertido na pasta de rascunhos
+                out_dir = DRAFTS_AUDIO_DIR / (pkg_id or 'tts')
+                out_dir.mkdir(parents=True, exist_ok=True)
+                out_name = f"tts_{item_id or 'fefo'}_{int(time.time()*1000)%100000}.wav"
+                dest_wav = out_dir / out_name
+
+                tmp_in = ROOT / f"temp_in_{out_name}.mp3"
+                tmp_in.write_bytes(audio_bytes)
+                convert_audio_to_fefo_standard(tmp_in, dest_wav)
+                if tmp_in.exists(): tmp_in.unlink()
+
+                # Atualiza item no draft se informado
+                if pkg_id and item_id:
+                    drafts_data = load_json_file(DRAFT_PACKAGES_FILE, {"packages": []})
+                    pkg = next((p for p in drafts_data.get('packages', []) if p.get('id') == pkg_id), None)
+                    if pkg:
+                        it = next((x for x in pkg.get('items', []) if x.get('id') == item_id), None)
+                        if it:
+                            it['arquivo_draft'] = str(dest_wav.relative_to(ROOT)).replace('\\', '/')
+                            it['web_url'] = f"/repository/drafts/audio/{pkg_id}/{out_name}"
+                            it['arquivo_origem'] = f"Voz IA FEFO ({out_name})"
+                            it['tamanho'] = dest_wav.stat().st_size
+                            it['status'] = 'ready'
+                            save_json_file(DRAFT_PACKAGES_FILE, drafts_data)
+
+                result = {
+                    'ok': True,
+                    'web_url': f"/repository/drafts/audio/{pkg_id or 'tts'}/{out_name}",
+                    'message': '✓ Áudio gerado com a voz do FEFO com sucesso!'
+                }
+
             elif self.path == '/api/packages/upload_single_item_audio':
                 msg = BytesParser(policy=default).parsebytes(b'Content-Type: ' + content_type.encode() + b'\r\n\r\n' + body)
                 pkg_id = None; item_id = None; audio_data = None; filename = 'audio.wav'

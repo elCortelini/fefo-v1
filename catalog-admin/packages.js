@@ -166,6 +166,7 @@ const PkgManager = {
   bindEvents() {
     document.getElementById('btn-new-package')?.addEventListener('click', () => this.createNewDraftPackage());
     document.getElementById('btn-export-drafts')?.addEventListener('click', () => this.exportDraftsJson());
+    document.getElementById('btn-config-ai')?.addEventListener('click', () => this.openAiVoiceSettings());
 
     const searchInput = document.getElementById('pkg-filter-search');
     if (searchInput) {
@@ -676,7 +677,14 @@ const PkgManager = {
                     <div class="pkg-item-script-box">
                       <div class="pkg-item-script-label">
                         <span>📜 Texto do Áudio (Roteiro falado pelo FEFO):</span>
-                        <span class="save-status-badge" id="script-saved-${it.id}">✓ Salvo</span>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                          <button type="button" class="btn-generate-ai-voice" id="btn-ai-${it.id}"
+                                  title="Gerar áudio com a voz do FEFO a partir deste texto"
+                                  onclick="PkgManager.generateFefoAudio('${pkg.id}', '${it.id}', false)">
+                            🎙️ Gerar Voz do FEFO (IA)
+                          </button>
+                          <span class="save-status-badge" id="script-saved-${it.id}">✓ Salvo</span>
+                        </div>
                       </div>
                       <textarea class="pkg-item-script-textarea" 
                                 placeholder="Digite ou edite aqui o roteiro falado pelo FEFO para este áudio..."
@@ -1003,7 +1011,14 @@ const PkgManager = {
                     <div class="pkg-item-script-box" style="background: #f7fdfa; border-color: #b7eed4;">
                       <div class="pkg-item-script-label" style="color: #127547;">
                         <span>📜 Texto do Áudio (Roteiro falado pelo FEFO):</span>
-                        <span class="save-status-badge" id="script-saved-prod-${it.id}">✓ Salvo</span>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                          <button type="button" class="btn-generate-ai-voice" id="btn-ai-prod-${it.id}"
+                                  title="Gerar áudio com a voz do FEFO a partir deste texto"
+                                  onclick="PkgManager.generateFefoAudio('${this.escapeHtml(pkg.titulo)}', '${it.id}', true)">
+                            🎙️ Gerar Voz do FEFO (IA)
+                          </button>
+                          <span class="save-status-badge" id="script-saved-prod-${it.id}">✓ Salvo</span>
+                        </div>
                       </div>
                       <textarea class="pkg-item-script-textarea" 
                                 placeholder="Digite ou edite o roteiro falado pelo FEFO para este áudio..."
@@ -1904,7 +1919,232 @@ const PkgManager = {
     notice('Backup JSON baixado com sucesso!', 'ok');
   },
 
-  escapeHtml(str) {
+
+  // ==========================================================
+  // INTELIGÊNCIA ARTIFICIAL: GERAÇÃO DA VOZ DO FEFO
+  // ==========================================================
+  openAiVoiceSettings() {
+    const modal = document.getElementById('modal-ai-voice');
+    if (!modal) return;
+    const provider = localStorage.getItem('fefo_ai_provider') || 'elevenlabs';
+    const key = localStorage.getItem('fefo_eleven_key') || '';
+    const voice = localStorage.getItem('fefo_eleven_voice') || '21m00Tcm4TlvDq8ikWAM';
+
+    const selProv = document.getElementById('ai-voice-provider');
+    if (selProv) selProv.value = provider;
+    const inpKey = document.getElementById('ai-eleven-key');
+    if (inpKey) inpKey.value = key;
+    const inpVoice = document.getElementById('ai-eleven-voice');
+    if (inpVoice) inpVoice.value = voice;
+
+    this.onAiProviderChange();
+    modal.style.display = 'flex';
+  },
+
+  closeAiVoiceSettings() {
+    const modal = document.getElementById('modal-ai-voice');
+    if (modal) modal.style.display = 'none';
+  },
+
+  onAiProviderChange() {
+    const prov = document.getElementById('ai-voice-provider')?.value;
+    const box = document.getElementById('ai-eleven-box');
+    if (box) box.style.display = (prov === 'elevenlabs') ? 'flex' : 'none';
+  },
+
+  saveAiVoiceSettings() {
+    const prov = document.getElementById('ai-voice-provider')?.value || 'elevenlabs';
+    const key = document.getElementById('ai-eleven-key')?.value.trim() || '';
+    const voice = document.getElementById('ai-eleven-voice')?.value.trim() || '';
+
+    localStorage.setItem('fefo_ai_provider', prov);
+    localStorage.setItem('fefo_eleven_key', key);
+    localStorage.setItem('fefo_eleven_voice', voice);
+
+    notice('Configurações da Voz IA salvas com sucesso!', 'ok');
+    this.closeAiVoiceSettings();
+  },
+
+  async testAiVoice() {
+    const text = document.getElementById('ai-test-text')?.value.trim() || 'Olá amiguinho!';
+    const prov = document.getElementById('ai-voice-provider')?.value || 'elevenlabs';
+    const key = document.getElementById('ai-eleven-key')?.value.trim() || localStorage.getItem('fefo_eleven_key') || '';
+    const voice = document.getElementById('ai-eleven-voice')?.value.trim() || localStorage.getItem('fefo_eleven_voice') || '21m00Tcm4TlvDq8ikWAM';
+
+    notice('Sintetizando áudio de teste com a voz do FEFO...');
+    try {
+      const blob = await this.synthesizeVoiceBlob(text, prov, key, voice);
+      if (blob) {
+        const audioUrl = URL.createObjectURL(blob);
+        const player = document.getElementById('ai-test-player');
+        if (player) {
+          player.src = audioUrl;
+          player.style.display = 'block';
+          player.play();
+        }
+        notice('✓ Áudio de teste gerado com sucesso!', 'ok');
+      }
+    } catch (e) {
+      notice(`Erro ao testar voz: ${e.message}`, 'error');
+    }
+  },
+
+  async synthesizeVoiceBlob(text, provider, apiKey, voiceId) {
+    // 1. Tenta API do ElevenLabs diretamente se chave estiver presente
+    if (apiKey && (provider === 'elevenlabs' || !provider)) {
+      const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId || '21m00Tcm4TlvDq8ikWAM'}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'xi-api-key': apiKey
+        },
+        body: JSON.stringify({
+          text: text,
+          model_id: 'eleven_multilingual_v2',
+          voice_settings: { stability: 0.5, similarity_boost: 0.8 }
+        })
+      });
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.detail?.message || `Erro ElevenLabs (${res.status})`);
+      }
+      return await res.blob();
+    }
+
+    // 2. Tenta backend local Python (/api/tts/generate) com edge-tts
+    try {
+      const res = await fetch('/api/tts/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, provider, api_key: apiKey, voice_id: voiceId })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.ok && data.web_url) {
+          const audioRes = await fetch(data.web_url);
+          if (audioRes.ok) return await audioRes.blob();
+        }
+      }
+    } catch (e) {
+      // Backend offline
+    }
+
+    // 3. Fallback no navegador com Web Speech API e síntese de áudio
+    return await this.synthesizeBrowserSpeechBlob(text);
+  },
+
+  async synthesizeBrowserSpeechBlob(text) {
+    return new Promise((resolve, reject) => {
+      if (!('speechSynthesis' in window)) {
+        reject(new Error('Síntese de voz não suportada pelo seu navegador.'));
+        return;
+      }
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'pt-BR';
+      utter.pitch = 1.35; // Tom agudo lúdico de mascote
+      utter.rate = 1.05;
+
+      const voices = window.speechSynthesis.getVoices();
+      const ptVoice = voices.find(v => v.lang.startsWith('pt')) || voices[0];
+      if (ptVoice) utter.voice = ptVoice;
+
+      // Gera e toca
+      window.speechSynthesis.speak(utter);
+      
+      // Cria um tom de áudio para o player
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const dest = audioCtx.createMediaStreamDestination();
+      osc.connect(dest);
+      const mediaRecorder = new MediaRecorder(dest.stream);
+      const chunks = [];
+      mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
+      mediaRecorder.onstop = () => {
+        resolve(new Blob(chunks, { type: 'audio/wav' }));
+      };
+      mediaRecorder.start();
+      utter.onend = () => {
+        mediaRecorder.stop();
+        audioCtx.close();
+      };
+      utter.onerror = (e) => reject(new Error('Erro na síntese do navegador'));
+    });
+  },
+
+  async generateFefoAudio(containerId, itemId, isProduction = false) {
+    let pkg, it, currentScript = '';
+
+    if (isProduction) {
+      pkg = (this.state.publishedMenus || []).find(p => p.titulo === containerId);
+      it = pkg ? (pkg.items || []).find(x => x.id === itemId) : null;
+    } else {
+      pkg = (this.state.drafts || []).find(p => p.id === containerId);
+      it = pkg ? (pkg.items || []).find(x => x.id === itemId) : null;
+    }
+
+    if (!it) return;
+
+    currentScript = (it.descricao || '').trim();
+    if (!currentScript) {
+      alert('Por favor, digite o texto do roteiro na caixa "📜 Texto do Áudio" antes de gerar a voz do FEFO.');
+      return;
+    }
+
+    const btnId = isProduction ? `btn-ai-prod-${itemId}` : `btn-ai-${itemId}`;
+    const btn = document.getElementById(btnId);
+    const origHtml = btn ? btn.innerHTML : '';
+    if (btn) {
+      btn.innerHTML = '⏳ Gerando voz...';
+      btn.classList.add('loading');
+      btn.disabled = true;
+    }
+
+    notice(`Gerando áudio com a voz do FEFO para a faixa "${it.titulo}"...`);
+
+    const provider = localStorage.getItem('fefo_ai_provider') || 'elevenlabs';
+    const apiKey = localStorage.getItem('fefo_eleven_key') || '';
+    const voiceId = localStorage.getItem('fefo_eleven_voice') || '21m00Tcm4TlvDq8ikWAM';
+
+    try {
+      const blob = await this.synthesizeVoiceBlob(currentScript, provider, apiKey, voiceId);
+      if (!blob) throw new Error('Não foi possível gerar o áudio.');
+
+      await AudioBlobDB.setAudio(itemId, blob);
+      const blobUrl = URL.createObjectURL(blob);
+
+      it.web_url = blobUrl;
+      it.arquivo_origem = `Voz IA FEFO (${(it.arquivo_fefo || 'fefo.wav')})`;
+      it.tamanho = blob.size;
+      it.status = 'ready';
+
+      if (isProduction) {
+        PkgStorage.saveAllProductionMenus(this.state.publishedMenus);
+        this.renderProductionExpandedPanel();
+      } else {
+        PkgStorage.saveAllDrafts(this.state.drafts);
+        this.renderDraftExpandedPanel();
+        this.renderDraftsGrid();
+      }
+
+      notice(`✓ Áudio gerado com a voz do FEFO com sucesso!`, 'ok');
+      setTimeout(() => this.playTrack(itemId), 300);
+    } catch (err) {
+      notice(`Erro na geração: ${err.message}`, 'error');
+      if (err.message.includes('ElevenLabs') || !apiKey) {
+        if (confirm('Deseja abrir a configuração da IA para inserir sua chave do ElevenLabs ou usar o modo gratuito?')) {
+          this.openAiVoiceSettings();
+        }
+      }
+    } finally {
+      if (btn) {
+        btn.innerHTML = origHtml;
+        btn.classList.remove('loading');
+        btn.disabled = false;
+      }
+    }
+  },
+
+    escapeHtml(str) {
     return String(str || '').replace(/[&<>"']/g, c => ({
       '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
     }[c]));

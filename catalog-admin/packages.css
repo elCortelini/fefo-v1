@@ -1252,3 +1252,44 @@
   justify-content: center;
   font-size: 13px;
 }
+
+
+/* Botão de Geração de Voz com IA */
+.btn-generate-ai-voice {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: linear-gradient(135deg, #7657c5, #5333a5);
+  color: #ffffff !important;
+  border: none;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 8px rgba(118, 87, 197, 0.25);
+  white-space: nowrap;
+}
+
+.btn-generate-ai-voice:hover {
+  background: linear-gradient(135deg, #8767db, #6441bf);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(118, 87, 197, 0.35);
+}
+
+.btn-generate-ai-voice.loading {
+  background: #a29bb6 !important;
+  cursor: wait;
+  transform: none;
+  opacity: 0.8;
+}
+
+.production-meta .btn-generate-ai-voice {
+  background: linear-gradient(135deg, #27ae60, #1e8449);
+  box-shadow: 0 2px 8px rgba(39, 174, 96, 0.25);
+}
+
+.production-meta .btn-generate-ai-voice:hover {
+  background: linear-gradient(135deg, #2ecc71, #229954);
+}

@@ -116,7 +116,11 @@
 
           </div>
 
-          <div class="pkg-actions" style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <div class="pkg-actions" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+
+            <button class="btn secondary" id="btn-config-ai" type="button" style="font-size: 13px; padding: 10px 16px; background: #f0eaff; color: #5a3ba2; border: 1px solid #d4c7f7;" title="Configurar a IA para clonagem de voz do FEFO (ElevenLabs / Neural)">
+              🎙️ Configurar Voz IA do FEFO
+            </button>
 
             <button class="btn secondary" id="btn-export-drafts" type="button" style="font-size: 13px; padding: 10px 16px;" title="Baixar arquivo JSON com todas as alterações e rascunhos para backup">
               💾 Baixar Backup JSON
@@ -547,6 +551,58 @@
   <script src="packages.js?v=unified-10"></script>
 
   <script src="cards-packs.js?v=unified-10"></script>
+
+
+    <!-- Modal de Configuração da Voz do FEFO (IA) -->
+    <div id="modal-ai-voice" class="audio-trimmer-backdrop" style="display: none;">
+      <div class="audio-trimmer-container" style="max-width: 580px; background: #ffffff; color: var(--ink); border: 2px solid var(--purple);">
+        <div class="trimmer-header" style="border-bottom: 1px solid var(--line); padding-bottom: 12px;">
+          <div>
+            <span class="trimmer-badge" style="background: var(--purple); color: #fff;">🎙️ INTELIGÊNCIA ARTIFICIAL</span>
+            <h3 style="margin: 4px 0 0; color: var(--ink); font-size: 20px;">Configurar Voz Clonada do FEFO</h3>
+          </div>
+          <button type="button" class="editor-close" style="color: var(--muted);" onclick="PkgManager.closeAiVoiceSettings()">✕</button>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 16px; padding: 12px 0;">
+          <div class="pkg-field-box">
+            <label>Motor de Voz (Provedor)</label>
+            <select id="ai-voice-provider" class="pkg-filter-select" style="width: 100%;" onchange="PkgManager.onAiProviderChange()">
+              <option value="elevenlabs">⭐ ElevenLabs (Clonagem de Estúdio com a Voz Real do FEFO)</option>
+              <option value="free_neural">⚡ Síntese Neural Rápida (pt-BR Lúdico / Gratuito sem Chave)</option>
+            </select>
+          </div>
+
+          <div id="ai-eleven-box" style="display: flex; flex-direction: column; gap: 14px;">
+            <div class="pkg-field-box">
+              <label>Chave de API do ElevenLabs (API Key)</label>
+              <input type="password" id="ai-eleven-key" placeholder="xi-api-key..." autocomplete="off">
+              <span class="hint" style="font-size: 11.5px;">Obtenha em <a href="https://elevenlabs.io" target="_blank" style="color: var(--purple); font-weight:800;">elevenlabs.io</a> (Perfil -> API Keys).</span>
+            </div>
+
+            <div class="pkg-field-box">
+              <label>ID da Voz Clonada do FEFO (Voice ID)</label>
+              <input type="text" id="ai-eleven-voice" placeholder="Ex: 21m00Tcm4TlvDq8ikWAM (ou o ID da voz do FEFO)">
+              <span class="hint" style="font-size: 11.5px;">Crie uma voz no <em>VoiceLab</em> do ElevenLabs enviando áudios do FEFO e cole o ID aqui.</span>
+            </div>
+          </div>
+
+          <div style="background: #faf8ff; border: 1px dashed var(--line); border-radius: 12px; padding: 12px;">
+            <label style="font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase;">Teste da Voz:</label>
+            <div style="display: flex; gap: 8px; margin-top: 6px;">
+              <input type="text" id="ai-test-text" value="Olá amiguinho! Eu sou o Fefo, vamos brincar juntos hoje?" style="flex: 1; font-size: 13px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px;">
+              <button class="btn primary" type="button" style="padding: 8px 16px; font-size: 13px;" onclick="PkgManager.testAiVoice()">▶ Ouvir Teste</button>
+            </div>
+            <audio id="ai-test-player" style="display:none;" controls></audio>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--line); padding-top: 14px;">
+          <button class="btn secondary" type="button" onclick="PkgManager.closeAiVoiceSettings()">Cancelar</button>
+          <button class="btn primary" type="button" onclick="PkgManager.saveAiVoiceSettings()">💾 Salvar Configurações</button>
+        </div>
+      </div>
+    </div>
 
 </body>
 
