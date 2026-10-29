@@ -165,6 +165,12 @@ def sign_catalog_locally():
         print(f"[Aviso] Erro em sign_catalog.ps1: {e}")
 
 class Handler(SimpleHTTPRequestHandler):
+    def copyfile(self, source, outputfile):
+        try:
+            super().copyfile(source, outputfile)
+        except (ConnectionResetError, BrokenPipeError, ConnectionAbortedError):
+            pass
+
     def end_headers(self):
         self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
@@ -178,6 +184,13 @@ class Handler(SimpleHTTPRequestHandler):
         parsed = urlparse(self.path)
         if parsed.path in ('/', '/catalog-admin', '/catalog-admin.html'):
             self.send_response(302); self.send_header('Location', '/catalog-admin/index.html'); self.end_headers()
+            return
+
+        if parsed.path == '/api/pedagogical_catalog':
+            ped_file = ROOT / 'repository/pedagogical_catalog.json'
+            data_dict = load_json_file(ped_file, {'items': []})
+            data = json.dumps({'ok': True, 'catalog': data_dict}, ensure_ascii=False).encode('utf-8')
+            self.send_response(200); self.send_header('Content-Type', 'application/json; charset=utf-8'); self.send_header('Content-Length', str(len(data))); self.end_headers(); self.wfile.write(data)
             return
 
         # 1. ABA ÁUDIOS & MENUS
@@ -306,6 +319,31 @@ class Handler(SimpleHTTPRequestHandler):
                     pkg['items'] = [it for it in pkg['items'] if it.get('id') != item_id]
                     save_json_file(DRAFT_PACKAGES_FILE, drafts_data)
                 result = {'ok': True, 'message': 'Faixa removida com sucesso.'}
+
+            elif self.path == '/api/packages/update_item_metadata':
+                payload = json.loads(body.decode('utf-8'))
+                pkg_id = payload.get('package_id')
+                item_id = payload.get('item_id')
+                new_title = payload.get('titulo')
+                new_fefo = payload.get('arquivo_fefo')
+                drafts_data = load_json_file(DRAFT_PACKAGES_FILE, {'packages': []})
+                pkg = next((p for p in drafts_data.get('packages', []) if p.get('id') == pkg_id), None)
+                if pkg:
+                    it = next((x for x in pkg.get('items', []) if x.get('id') == item_id), None)
+                    if it:
+                        if new_title is not None and isinstance(new_title, str):
+                            it['titulo'] = new_title.strip()
+                        if new_fefo is not None and isinstance(new_fefo, str):
+                            clean_fefo = new_fefo.strip()
+                            if clean_fefo and not clean_fefo.lower().endswith('.wav'):
+                                clean_fefo += '.wav'
+                            it['arquivo_fefo'] = clean_fefo
+                        save_json_file(DRAFT_PACKAGES_FILE, drafts_data)
+                        result = {'ok': True, 'message': 'Faixa atualizada com sucesso.'}
+                    else:
+                        result = {'ok': False, 'message': 'Faixa não encontrada.'}
+                else:
+                    result = {'ok': False, 'message': 'Pacote não encontrado.'}
 
             elif self.path == '/api/packages/upload_audio':
                 msg = BytesParser(policy=default).parsebytes(b'Content-Type: ' + content_type.encode() + b'\r\n\r\n' + body)
@@ -789,6 +827,9 @@ class Handler(SimpleHTTPRequestHandler):
             self.send_response(200); self.send_header('Content-Type', 'application/json; charset=utf-8'); self.send_header('Content-Length', str(len(data))); self.end_headers(); self.wfile.write(data)
 
         except Exception as e:
+            import traceback
+            sys.stderr.write(f'[catalog_manager] Erro em {self.path}: {e}\n')
+            traceback.print_exc(file=sys.stderr)
             err_data = json.dumps({'ok': False, 'message': str(e)}, ensure_ascii=False).encode('utf-8')
             self.send_response(500); self.send_header('Content-Type', 'application/json; charset=utf-8'); self.send_header('Content-Length', str(len(err_data))); self.end_headers(); self.wfile.write(err_data)
 
@@ -797,10 +838,27 @@ class Handler(SimpleHTTPRequestHandler):
 
 if __name__ == '__main__':
     os.chdir(ROOT)
-    server = ThreadingHTTPServer(('127.0.0.1', 8765), Handler)
     url = 'http://127.0.0.1:8765/catalog-admin/index.html'
+    try:
+        server = ThreadingHTTPServer(('127.0.0.1', 8765), Handler)
+    except OSError as e:
+        if '10048' in str(e) or 'address already in use' in str(e).lower():
+            print(f'[Aviso] O Administrador de Catálogo já está em execução!')
+            print(f'Abrindo no navegador: {url}')
+            try: webbrowser.open(url)
+            except Exception: pass
+            sys.exit(0)
+        raise e
+
     print(f'Administrador do Catálogo FEFO Pet em execução: {url}')
     try: webbrowser.open(url)
     except Exception: pass
-    try: server.serve_forever()
-    except KeyboardInterrupt: print("\nServidor encerrado.")
+    while True:
+        try:
+            server.serve_forever()
+        except KeyboardInterrupt:
+            print("\nServidor encerrado.")
+            break
+        except Exception as e:
+            sys.stderr.write(f'[catalog_manager] Aviso no servidor: {e}\n')
+            time.sleep(0.5)
