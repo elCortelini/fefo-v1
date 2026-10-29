@@ -116,7 +116,11 @@
 
           </div>
 
-          <div class="pkg-actions">
+          <div class="pkg-actions" style="display: flex; gap: 10px; flex-wrap: wrap;">
+
+            <button class="btn secondary" id="btn-export-drafts" type="button" style="font-size: 13px; padding: 10px 16px;" title="Baixar arquivo JSON com todas as alterações e rascunhos para backup">
+              💾 Baixar Backup JSON
+            </button>
 
             <button class="btn primary" id="btn-new-package" type="button" style="font-size: 14px; padding: 12px 22px;">
 
@@ -177,6 +181,18 @@
           <input type="text" id="pkg-filter-search" class="pkg-filter-input" 
 
                  placeholder="🔍 Filtrar tópicos por nome, palavra-chave ou código (ex: 'desafios', 'corpo', 'de1')...">
+
+          <select id="pkg-filter-license" class="pkg-filter-select">
+
+            <option value="all">Todas as Licenças (Home, Clínica, Escola)</option>
+
+            <option value="home">🏡 Licença Home</option>
+
+            <option value="clinical">🩺 Licença Clínica</option>
+
+            <option value="escola">🏫 Licença Escola</option>
+
+          </select>
 
           <select id="pkg-filter-category" class="pkg-filter-select">
 

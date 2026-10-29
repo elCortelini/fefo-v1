@@ -943,3 +943,122 @@
   color: #f0f6fc;
   font-style: italic;
 }
+
+
+/* ========================================================== */
+/* CUSTOM AUDIO REPLACEMENT, EDITABLE SCRIPTS & UNPUBLISH    */
+/* ========================================================== */
+
+.pkg-item-script-box {
+  margin: 8px 0 10px;
+  background: #fbfaff;
+  border: 1px solid #e2ddf5;
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+
+.pkg-item-script-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--purple);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.pkg-item-script-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: inherit;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--ink);
+  background: #ffffff;
+  border: 1px solid #d4cdec;
+  border-radius: 8px;
+  padding: 8px 12px;
+  resize: vertical;
+  min-height: 52px;
+  transition: all 0.15s ease;
+}
+
+.pkg-item-script-textarea:focus {
+  outline: none;
+  border-color: var(--purple);
+  box-shadow: 0 0 0 3px rgba(118, 87, 197, 0.15);
+  background: #fff;
+}
+
+.btn-replace-audio {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #f0f4ff;
+  color: #2b569a;
+  border: 1px solid #c7d8f8;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-replace-audio:hover {
+  background: #2b569a;
+  color: #ffffff;
+  border-color: #1e3f73;
+  transform: translateY(-1px);
+}
+
+.btn-replace-audio.btn-add-audio {
+  background: #eefbee;
+  color: #1c7430;
+  border-color: #bce3c5;
+}
+
+.btn-replace-audio.btn-add-audio:hover {
+  background: #1c7430;
+  color: #ffffff;
+}
+
+.btn-unpublish {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff8eb;
+  color: #b25e00;
+  border: 1px solid #fed89b;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-unpublish:hover {
+  background: #e67e22;
+  color: #ffffff;
+  border-color: #d35400;
+  transform: translateY(-1px);
+}
+
+.save-status-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: #27ae60;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.save-status-badge.visible {
+  opacity: 1;
+}

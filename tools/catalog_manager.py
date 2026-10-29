@@ -326,6 +326,7 @@ class Handler(SimpleHTTPRequestHandler):
                 item_id = payload.get('item_id')
                 new_title = payload.get('titulo')
                 new_fefo = payload.get('arquivo_fefo')
+                new_desc = payload.get('descricao')
                 drafts_data = load_json_file(DRAFT_PACKAGES_FILE, {'packages': []})
                 pkg = next((p for p in drafts_data.get('packages', []) if p.get('id') == pkg_id), None)
                 if pkg:
@@ -338,12 +339,76 @@ class Handler(SimpleHTTPRequestHandler):
                             if clean_fefo and not clean_fefo.lower().endswith('.wav'):
                                 clean_fefo += '.wav'
                             it['arquivo_fefo'] = clean_fefo
+                        if new_desc is not None and isinstance(new_desc, str):
+                            it['descricao'] = new_desc.strip()
                         save_json_file(DRAFT_PACKAGES_FILE, drafts_data)
                         result = {'ok': True, 'message': 'Faixa atualizada com sucesso.'}
                     else:
                         result = {'ok': False, 'message': 'Faixa não encontrada.'}
                 else:
                     result = {'ok': False, 'message': 'Pacote não encontrado.'}
+
+            elif self.path == '/api/packages/upload_single_item_audio':
+                msg = BytesParser(policy=default).parsebytes(b'Content-Type: ' + content_type.encode() + b'\r\n\r\n' + body)
+                pkg_id = None; item_id = None; audio_data = None; filename = 'audio.wav'
+                for part in msg.walk():
+                    if part.get_content_disposition() != 'form-data': continue
+                    name = part.get_param('name', header='content-disposition')
+                    if name == 'package_id': pkg_id = part.get_content().strip()
+                    elif name == 'item_id': item_id = part.get_content().strip()
+                    elif name == 'file' and part.get_filename():
+                        filename = part.get_filename()
+                        audio_data = part.get_payload(decode=True)
+
+                if not pkg_id or not item_id or not audio_data:
+                    raise ValueError('Dados incompletos para upload de áudio.')
+
+                clean_filename = re.sub(r'[^\w\.-]', '_', filename)
+                pkg_dir = DRAFTS_AUDIO_DIR / pkg_id
+                pkg_dir.mkdir(parents=True, exist_ok=True)
+                dest_file = pkg_dir / clean_filename
+                dest_file.write_bytes(audio_data)
+
+                drafts_data = load_json_file(DRAFT_PACKAGES_FILE, {'packages': []})
+                pkg = next((p for p in drafts_data.get('packages', []) if p.get('id') == pkg_id), None)
+                if pkg:
+                    it = next((x for x in pkg.get('items', []) if x.get('id') == item_id), None)
+                    if it:
+                        it['arquivo_origem'] = filename
+                        it['arquivo_draft'] = str(dest_file.relative_to(ROOT)).replace('\\', '/')
+                        it['web_url'] = f'/repository/drafts/audio/{pkg_id}/{clean_filename}'
+                        it['tamanho'] = len(audio_data)
+                        it['status'] = 'needs_trim'
+                        save_json_file(DRAFT_PACKAGES_FILE, drafts_data)
+                        result = {'ok': True, 'item': it, 'message': f'✓ Áudio “{filename}” carregado na faixa!'}
+                    else:
+                        result = {'ok': False, 'message': 'Faixa não encontrada no pacote.'}
+                else:
+                    result = {'ok': False, 'message': 'Pacote não encontrado.'}
+
+            elif self.path == '/api/packages/unpublish_menu':
+                payload = json.loads(body.decode('utf-8'))
+                menu_titulo = payload.get('menu_titulo')
+                restored_pkg = payload.get('package')
+                if not menu_titulo: raise ValueError('menu_titulo ausente.')
+
+                cat = json.loads(CATALOG.read_text(encoding='utf-8'))
+                audios = cat.get('audio', [])
+                cat['audio'] = [a for a in audios if a.get('menu') != menu_titulo]
+                new_ver = int(cat.get('catalogVersion', 1)) + 1
+                cat['catalogVersion'] = new_ver
+                CATALOG.write_text(json.dumps(cat, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+                sign_catalog_locally()
+
+                if restored_pkg:
+                    drafts_data = load_json_file(DRAFT_PACKAGES_FILE, {'packages': []})
+                    pkgs = drafts_data.setdefault('packages', [])
+                    idx = next((i for i, p in enumerate(pkgs) if p.get('id') == restored_pkg.get('id') or p.get('titulo') == menu_titulo), -1)
+                    if idx >= 0: pkgs[idx] = restored_pkg
+                    else: pkgs.insert(0, restored_pkg)
+                    save_json_file(DRAFT_PACKAGES_FILE, drafts_data)
+
+                result = {'ok': True, 'catalogVersion': new_ver, 'message': f'✓ Menu “{menu_titulo}” despublicado e transferido para os rascunhos!'}
 
             elif self.path == '/api/packages/upload_audio':
                 msg = BytesParser(policy=default).parsebytes(b'Content-Type: ' + content_type.encode() + b'\r\n\r\n' + body)
