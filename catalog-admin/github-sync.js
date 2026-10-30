@@ -381,13 +381,132 @@ const GitHubSync = {
   },
 
   // ==========================================================
+  // OPERAÇÕES DE PACOTES DE CARDS (CARDS INTERATIVOS)
+  // ==========================================================
+  async saveDraftCardPacks(packsList) {
+    if (!this.isConfigured()) throw new Error('Token do GitHub não configurado.');
+    const filePath = 'repository/draft_card_packs.json';
+    let fileObj = {
+      schema: 1,
+      description: "FEFO Interactive Card Packs - Rascunho interno de pacotes de cards interativos, mini cards e ações.",
+      updated_at: new Date().toISOString(),
+      card_packs: packsList
+    };
+    const jsonStr = JSON.stringify(fileObj, null, 2) + '\n';
+    return await this.commitFile(
+      filePath,
+      jsonStr,
+      `chore(cards): salvar ${packsList.length} pacote(s) de cards via Web Admin`
+    );
+  },
+
+  async publishOfficialCardPack(pack) {
+    if (!this.isConfigured()) throw new Error('Token do GitHub não configurado.');
+    const catFile = await this.getFile('repository/catalog.json');
+    if (!catFile.exists || !catFile.content) {
+      throw new Error('Não foi possível ler o repository/catalog.json no GitHub.');
+    }
+
+    let catalog = JSON.parse(catFile.content);
+    catalog.card_packs = catalog.card_packs || [];
+
+    const publishedPack = {
+      id: pack.id,
+      titulo: pack.titulo,
+      descricao: pack.descricao || '',
+      status: 'published',
+      cards: pack.cards || []
+    };
+
+    const idx = catalog.card_packs.findIndex(p => p.id === pack.id);
+    if (idx >= 0) {
+      catalog.card_packs[idx] = publishedPack;
+    } else {
+      catalog.card_packs.push(publishedPack);
+    }
+
+    const newVersion = (parseInt(catalog.catalogVersion, 10) || 1) + 1;
+    catalog.catalogVersion = newVersion;
+    catalog.updated_at = new Date().toISOString();
+
+    await this.commitFile(
+      'repository/catalog.json',
+      JSON.stringify(catalog, null, 2) + '\n',
+      `feat(catalog): publicar pacote de cards “${pack.titulo}” (v${newVersion}) via Web Admin`
+    );
+
+    // Atualiza draft_card_packs.json
+    try {
+      const draftsFile = await this.getFile('repository/draft_card_packs.json');
+      if (draftsFile.exists && draftsFile.content) {
+        let draftsData = JSON.parse(draftsFile.content);
+        draftsData.card_packs = draftsData.card_packs || [];
+        const p = draftsData.card_packs.find(x => x.id === pack.id);
+        if (p) p.status = 'published';
+        draftsData.updated_at = new Date().toISOString();
+        await this.commitFile(
+          'repository/draft_card_packs.json',
+          JSON.stringify(draftsData, null, 2) + '\n',
+          `chore(cards): marcar pacote de cards “${pack.titulo}” como publicado`
+        );
+      }
+    } catch (e) {}
+
+    return {
+      ok: true,
+      catalogVersion: newVersion,
+      message: `🎉 Pacote de Cards “${pack.titulo}” publicado com sucesso no catálogo oficial v${newVersion}!`
+    };
+  },
+
+  // ==========================================================
   // INTERFACE DE USUÁRIO (MODAL & BADGE)
   // ==========================================================
 
-  initUI() {
+  async initUI() {
     this.injectBadge();
     this.injectModal();
-    this.updateStatusBadge();
+
+    // Auto-hidratação via URL parameter ?gh_token=... ou ?token=...
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tokenParam = urlParams.get('gh_token') || urlParams.get('token');
+      if (tokenParam) {
+        this.setToken(tokenParam);
+        const repoParam = urlParams.get('gh_repo') || urlParams.get('repo');
+        if (repoParam) this.setRepo(repoParam);
+        const branchParam = urlParams.get('gh_branch') || urlParams.get('branch');
+        if (branchParam) this.setBranch(branchParam);
+
+        urlParams.delete('gh_token');
+        urlParams.delete('token');
+        urlParams.delete('gh_repo');
+        urlParams.delete('repo');
+        urlParams.delete('gh_branch');
+        urlParams.delete('branch');
+        const newQuery = urlParams.toString();
+        const newUrl = window.location.pathname + (newQuery ? '?' + newQuery : '') + window.location.hash;
+        window.history.replaceState({}, document.title, newUrl);
+        if (window.notice) window.notice('✓ Token do GitHub ativado com sucesso!', 'ok');
+      }
+    } catch (e) {}
+
+    // Auto-hidratação via /api/config (servidor local) se não houver token no localStorage
+    if (!this.getToken()) {
+      try {
+        const res = await fetch('/api/config');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.ok && data.config?.github_token) {
+            this.setToken(data.config.github_token);
+            if (data.config.github_repo) this.setRepo(data.config.github_repo);
+            if (data.config.github_branch) this.setBranch(data.config.github_branch);
+          }
+        }
+      } catch (e) {}
+    }
+
+    await this.updateStatusBadge();
   },
 
   injectBadge() {

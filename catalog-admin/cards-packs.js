@@ -473,21 +473,44 @@ const CardPackManager = {
   async saveCardPackDetails(packId) {
     const pack = this.state.drafts.find(p => p.id === packId);
     if (!pack) return;
-    pack.titulo = document.getElementById('cardpack-input-title').value.trim() || 'Sem título';
-    pack.descricao = document.getElementById('cardpack-input-desc').value.trim();
-    pack.target_count = parseInt(document.getElementById('cardpack-input-target').value, 10) || 10;
+    pack.titulo = document.getElementById('cardpack-input-title')?.value.trim() || pack.titulo || 'Sem título';
+    pack.descricao = document.getElementById('cardpack-input-desc')?.value.trim() || '';
+    pack.target_count = parseInt(document.getElementById('cardpack-input-target')?.value, 10) || 10;
+    
+    CardPackStorage.saveCustomCardPacks(this.state.drafts);
     notice('Salvando rascunho do pacote de cards...');
+
+    let savedLocally = false;
     try {
       const res = await fetch('/api/card_packs/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pack: pack })
       });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.message);
-      notice(data.message || 'Pacote de cards salvo!', 'ok');
-      this.renderDraftsGrid();
-    } catch (e) { notice(`Erro: ${e.message}`, 'error'); }
+      if (res.ok) {
+        const data = await res.json();
+        if (data.ok) {
+          savedLocally = true;
+          notice(data.message || 'Pacote de cards salvo no servidor local!', 'ok');
+        }
+      }
+    } catch (e) {}
+
+    if (!savedLocally) {
+      if (window.GitHubSync && window.GitHubSync.isConfigured()) {
+        notice('☁️ Salvando pacote de cards diretamente no GitHub...');
+        try {
+          await window.GitHubSync.saveDraftCardPacks(this.state.drafts);
+          notice('✓ Pacote de cards salvo com sucesso no GitHub!', 'ok');
+        } catch (ghErr) {
+          notice(`Aviso: Salvo no navegador. Falha no GitHub (${ghErr.message})`, 'error');
+        }
+      } else {
+        notice('✓ Pacote de cards salvo no navegador!', 'ok');
+      }
+    }
+
+    this.renderDraftsGrid();
   },
 
   async deleteCardPack(packId) {
@@ -525,17 +548,36 @@ const CardPackManager = {
     if (!confirm(`Publicar o pacote “${pack.titulo}” com ${count} card(s) no catálogo oficial?`)) return;
 
     notice('Publicando pacote de cards oficial...', '');
+    let publishedLocally = false;
     try {
       const res = await fetch('/api/card_packs/publish_official', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pack_id: packId })
       });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.message);
-      notice(data.message || 'Pacote de cards publicado!', 'ok');
-      await this.loadCardPacks();
-    } catch (e) { notice(`Erro na publicação: ${e.message}`, 'error'); }
+      if (res.ok) {
+        const data = await res.json();
+        if (data.ok) {
+          publishedLocally = true;
+          notice(data.message || 'Pacote de cards publicado!', 'ok');
+          await this.loadCardPacks();
+          return;
+        }
+      }
+    } catch (e) {}
+
+    if (window.GitHubSync && window.GitHubSync.isConfigured()) {
+      try {
+        const ghRes = await window.GitHubSync.publishOfficialCardPack(pack);
+        notice(ghRes.message, 'ok');
+        await this.loadCardPacks();
+      } catch (ghErr) {
+        notice(`Erro na publicação via GitHub: ${ghErr.message}`, 'error');
+      }
+    } else {
+      notice('Servidor local offline. Conecte seu token do GitHub no topo para publicar de qualquer computador!', 'error');
+      window.GitHubSync?.openModal();
+    }
   },
 
   escapeHtml(str) {

@@ -36,3 +36,11 @@ WhatsApp Image*
 
 __pycache__/
 *.pyc
+
+
+# Configurações locais e segredos de ambiente
+.env
+local_config.json
+*.secret
+github-recovery-codes.txt
+*recovery*

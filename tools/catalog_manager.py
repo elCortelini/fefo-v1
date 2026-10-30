@@ -192,6 +192,13 @@ class Handler(SimpleHTTPRequestHandler):
             self.send_response(200); self.send_header('Content-Type', 'application/json; charset=utf-8'); self.send_header('Content-Length', str(len(data))); self.end_headers(); self.wfile.write(data)
             return
 
+        if parsed.path == '/api/config':
+            cfg_file = ROOT / 'local_config.json'
+            cfg_data = load_json_file(cfg_file, {})
+            data = json.dumps({'ok': True, 'config': cfg_data}, ensure_ascii=False).encode('utf-8')
+            self.send_response(200); self.send_header('Content-Type', 'application/json; charset=utf-8'); self.send_header('Content-Length', str(len(data))); self.end_headers(); self.wfile.write(data)
+            return
+
         # 1. ABA ÁUDIOS & MENUS
         if parsed.path == '/api/packages':
             drafts = load_json_file(DRAFT_PACKAGES_FILE, {"packages": []})
