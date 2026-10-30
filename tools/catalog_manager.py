@@ -374,7 +374,7 @@ class Handler(SimpleHTTPRequestHandler):
                         "voice_settings": {
                             "stability": stability,
                             "similarity_boost": similarity,
-                            "speed": speed
+                            "use_speaker_boost": True
                         }
                     }).encode('utf-8')
                     req = urllib.request.Request(url, data=req_data, headers={

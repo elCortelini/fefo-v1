@@ -1296,43 +1296,114 @@
 
 
 /* ========================================================== */
-/* CARDS DE PACOTES COMPACTOS E DIRETOS                       */
+/* LISTA DE BOXES DE PACOTES (VISUAL COMPACTO EM LISTA)       */
 /* Destaque para: Nome, Contagem de Áudios e Licenças         */
 /* ========================================================== */
 
 .packages-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
-  gap: 14px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
   margin-top: 14px;
 }
 
 .package-card {
-  padding: 14px 16px !important;
-  border-radius: 16px !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 10px 16px !important;
+  border-radius: 14px !important;
   min-height: auto !important;
+  gap: 12px !important;
+  background: #ffffff !important;
+  border: 1.5px solid var(--line) !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03) !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  cursor: pointer;
 }
 
-.package-card h3 {
-  margin: 0 0 6px 0 !important;
-  font-size: 16.5px !important;
-  line-height: 1.3 !important;
+.package-card:hover {
+  transform: translateY(-1px);
+  border-color: #bfa8fa !important;
+  box-shadow: 0 4px 12px rgba(108, 92, 231, 0.08) !important;
+}
+
+.package-card.is-active {
+  border-color: var(--purple) !important;
+  box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.16) !important;
+  background: #faf8ff !important;
+}
+
+.package-card.is-published {
+  border-color: #d1f2e2 !important;
+  background: #ffffff !important;
+}
+
+.package-card.is-published:hover {
+  border-color: #27ae60 !important;
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.1) !important;
+}
+
+.package-card.is-published.is-active {
+  border-color: #27ae60 !important;
+  box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.18) !important;
+  background: #f4fbf7 !important;
+}
+
+.pkg-list-col {
+  display: flex;
+  align-items: center;
+}
+
+.pkg-list-main {
+  flex: 1 1 35%;
+  min-width: 200px;
+  gap: 10px;
+}
+
+.pkg-list-main .pkg-badge {
+  margin: 0 !important;
+  flex-shrink: 0;
+  font-size: 11px;
+  padding: 3px 8px;
+}
+
+.pkg-list-title {
+  margin: 0 !important;
+  font-size: 15.5px !important;
   font-weight: 900 !important;
   color: var(--ink) !important;
+  line-height: 1.25 !important;
 }
 
-.pkg-compact-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
+.pkg-list-lic {
+  flex: 1 1 35%;
+  justify-content: flex-start;
 }
 
-.pkg-compact-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin: 6px 0 10px;
+.pkg-list-actions {
+  flex: 0 0 auto;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.pkg-list-actions .btn-manage {
+  margin: 0 !important;
+  padding: 7px 13px !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  border-radius: 8px !important;
+  white-space: nowrap !important;
+}
+
+.pkg-list-actions .btn-unpublish {
+  margin: 0 !important;
+  padding: 7px 11px !important;
+  font-size: 11.5px !important;
+  font-weight: 800 !important;
+  border-radius: 8px !important;
+  white-space: nowrap !important;
 }
 
 .pkg-audio-count-pill {
@@ -1341,12 +1412,12 @@
   gap: 5px;
   font-size: 12px;
   font-weight: 800;
-  color: var(--ink);
+  color: var(--purple);
   background: #f4f1fd;
   border: 1px solid #e1d9f4;
-  padding: 4px 10px;
-  border-radius: 8px;
-  align-self: flex-start;
+  padding: 5px 11px;
+  border-radius: 999px;
+  white-space: nowrap;
 }
 
 .package-card.is-published .pkg-audio-count-pill {
@@ -1357,22 +1428,26 @@
 
 .pkg-tags.compact-tags {
   display: flex;
-  gap: 4px;
+  gap: 5px;
   flex-wrap: wrap;
   margin: 0 !important;
 }
 
 .pkg-tags.compact-tags .pkg-tag {
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 800;
-  padding: 2px 7px;
+  padding: 3px 8px;
   border-radius: 6px;
 }
 
-.package-card .btn-manage {
-  padding: 7px 12px !important;
-  font-size: 12px !important;
-  font-weight: 800 !important;
-  border-radius: 8px !important;
-  margin-top: 4px !important;
+@media (max-width: 820px) {
+  .package-card {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+  .pkg-list-main, .pkg-list-lic, .pkg-list-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
 }

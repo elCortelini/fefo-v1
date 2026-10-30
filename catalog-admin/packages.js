@@ -478,14 +478,12 @@ const PkgManager = {
       return `
         <article class="package-card is-draft ${isExpanded ? 'is-active' : ''}" 
                  onclick="PkgManager.toggleDraftPackage('${pkg.id}')">
-          <div class="pkg-compact-header">
-            <span class="pkg-badge draft" style="margin: 0;">🟡 Rascunho</span>
-            <span class="pkg-audio-count-pill">🎵 <strong>${itemsCount}</strong> áudios</span>
+          <div class="pkg-list-col pkg-list-main">
+            <span class="pkg-badge draft">🟡 Rascunho</span>
+            <h3 class="pkg-list-title">${this.escapeHtml(pkg.titulo)}</h3>
           </div>
 
-          <h3>${this.escapeHtml(pkg.titulo)}</h3>
-
-          <div class="pkg-compact-meta">
+          <div class="pkg-list-col pkg-list-lic">
             <div class="pkg-tags compact-tags">
               <span class="pkg-tag" style="background:#f4f1fd; color:var(--purple);">${this.escapeHtml(pkg.categoria || 'Geral')}</span>
               <span class="pkg-tag">${licLabels}</span>
@@ -493,9 +491,12 @@ const PkgManager = {
             </div>
           </div>
 
-          <button class="btn-manage" type="button">
-            ${isExpanded ? '▲ Fechar Edição' : '▼ Gerenciar & Cortar Áudios'}
-          </button>
+          <div class="pkg-list-col pkg-list-actions">
+            <span class="pkg-audio-count-pill">🎵 <strong>${itemsCount}</strong> ${itemsCount === 1 ? 'áudio' : 'áudios'}</span>
+            <button class="btn-manage" type="button">
+              ${isExpanded ? '▲ Fechar Edição' : '▼ Gerenciar & Cortar'}
+            </button>
+          </div>
         </article>
       `;
     }).join('');
@@ -805,14 +806,12 @@ const PkgManager = {
       return `
         <article class="package-card is-published ${isExpanded ? 'is-active' : ''}"
                  onclick="PkgManager.toggleProductionMenu('${this.escapeHtml(pkg.titulo)}')">
-          <div class="pkg-compact-header">
-            <span class="pkg-badge published" style="margin: 0;">🟢 Menu Oficial</span>
-            <span class="pkg-audio-count-pill">🎵 <strong>${itemsCount}</strong> áudios</span>
+          <div class="pkg-list-col pkg-list-main">
+            <span class="pkg-badge published">🟢 Menu Oficial</span>
+            <h3 class="pkg-list-title">${this.escapeHtml(pkg.titulo)}</h3>
           </div>
 
-          <h3>${this.escapeHtml(pkg.titulo)}</h3>
-
-          <div class="pkg-compact-meta">
+          <div class="pkg-list-col pkg-list-lic">
             <div class="pkg-tags compact-tags">
               <span class="pkg-tag" style="background:#e8f8f0; color:#127547;">${this.escapeHtml(pkg.categoria || 'Menus do Sistema')}</span>
               <span class="pkg-tag" style="background:#e8f8f0; color:#127547;">${licLabels}</span>
@@ -820,12 +819,12 @@ const PkgManager = {
             </div>
           </div>
 
-          <div class="published-card-actions" style="display: flex; gap: 6px; margin-top: auto;">
-            <button class="btn-manage" type="button" style="flex: 1;">
+          <div class="pkg-list-col pkg-list-actions">
+            <span class="pkg-audio-count-pill">🎵 <strong>${itemsCount}</strong> ${itemsCount === 1 ? 'áudio' : 'áudios'}</span>
+            <button class="btn-manage" type="button">
               ${isExpanded ? '▲ Fechar' : '▼ Gerenciar & Cortar'}
             </button>
             <button class="btn-unpublish" type="button" 
-                    style="padding: 7px 10px; font-size: 11.5px;"
                     title="Despublicar este menu do catálogo oficial e voltar para rascunho para poder alterar"
                     onclick="event.stopPropagation(); PkgManager.unpublishMenu('${this.escapeHtml(pkg.titulo)}')">
               ↩️ Despublicar
@@ -1502,7 +1501,7 @@ const PkgManager = {
     } catch (e) {}
   },
 
-  trimDraftItem(pkgId, itemId, audioUrl, title, description = '', itemCode = '') {
+  async trimDraftItem(pkgId, itemId, audioUrl, title, description = '', itemCode = '') {
     if (!window.openAudioTrimmer) {
       alert('Ferramenta de corte indisponível.');
       return;
@@ -1512,8 +1511,17 @@ const PkgManager = {
     const it = pkg ? (pkg.items || []).find(x => x.id === itemId) : null;
     const currentDesc = it && it.descricao !== undefined ? it.descricao : description;
 
+    let effectiveUrl = audioUrl;
+    if (!effectiveUrl && it && it.web_url) {
+      effectiveUrl = this.resolveUrl(it.web_url);
+    }
+    if (!effectiveUrl) {
+      const blob = await AudioBlobDB.getAudio(itemId);
+      if (blob) effectiveUrl = URL.createObjectURL(blob);
+    }
+
     window.openAudioTrimmer({
-      url: audioUrl,
+      url: effectiveUrl,
       title: title,
       description: currentDesc,
       itemCode: itemCode,
@@ -1732,14 +1740,20 @@ const PkgManager = {
     } catch (e) {}
   },
 
-  trimProductionItem(itemId, audioUrl, title) {
+  async trimProductionItem(itemId, audioUrl, title) {
     if (!window.openAudioTrimmer) {
       alert('Ferramenta de corte indisponível.');
       return;
     }
 
+    let effectiveUrl = audioUrl;
+    if (!effectiveUrl) {
+      const blob = await AudioBlobDB.getAudio(itemId);
+      if (blob) effectiveUrl = URL.createObjectURL(blob);
+    }
+
     window.openAudioTrimmer({
-      url: audioUrl,
+      url: effectiveUrl,
       title: title,
       onSave: async (blob, info) => {
         notice('Salvando corte no catálogo oficial...');
@@ -1769,9 +1783,16 @@ const PkgManager = {
   // ==========================================================
   // CONTROLES DE ÁUDIO CUSTOMIZADOS (PLAY / PAUSE / STOP)
   // ==========================================================
-  playTrack(itemId) {
-    const aud = document.getElementById(`audio-player-${itemId}`);
+  async playTrack(itemId) {
+    let aud = document.getElementById(`audio-player-${itemId}`);
     if (!aud) return;
+
+    if (!aud.src || aud.src === '' || aud.src === window.location.href) {
+      const blob = await AudioBlobDB.getAudio(itemId);
+      if (blob) {
+        aud.src = URL.createObjectURL(blob);
+      }
+    }
 
     document.querySelectorAll('audio').forEach(a => {
       if (a !== aud && !a.paused) {
@@ -1980,36 +2001,89 @@ const PkgManager = {
     const statusEl = document.getElementById('ai-sample-status');
     const nameEl = document.getElementById('ai-sample-name');
     if (nameEl) nameEl.textContent = `Enviando "${file.name}"...`;
-    if (statusEl) statusEl.textContent = 'Processando amostra...';
+    if (statusEl) {
+      statusEl.textContent = 'Processando amostra e clonando...';
+      statusEl.style.color = 'var(--purple)';
+    }
 
-    const apiKey = document.getElementById('ai-eleven-key')?.value.trim() || localStorage.getItem('fefo_eleven_key') || '';
-    const form = new FormData();
-    form.append('api_key', apiKey);
-    form.append('voice_name', 'Voz do FEFO');
-    form.append('file', file, file.name);
+    let apiKey = document.getElementById('ai-eleven-key')?.value.trim() || localStorage.getItem('fefo_eleven_key') || '';
+    if (apiKey) localStorage.setItem('fefo_eleven_key', apiKey);
 
     try {
-      const res = await fetch('/api/tts/clone_sample', { method: 'POST', body: form });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.message || 'Falha ao processar amostra.');
-
+      // 1. Sempre armazena a amostra no IndexedDB do navegador
+      await AudioBlobDB.setAudio('fefo_voice_sample', file);
       localStorage.setItem('fefo_ai_sample_name', file.name);
       if (nameEl) nameEl.textContent = `✓ Amostra: ${file.name}`;
 
-      if (data.voice_id) {
-        localStorage.setItem('fefo_eleven_voice', data.voice_id);
-        const inpVoice = document.getElementById('ai-eleven-voice');
-        if (inpVoice) inpVoice.value = data.voice_id;
-        if (statusEl) statusEl.textContent = '✓ Voz Clonada no ElevenLabs!';
-        notice(`✓ Voz clonada no ElevenLabs com sucesso! ID: ${data.voice_id}`, 'ok');
-      } else {
-        if (statusEl) statusEl.textContent = '✓ Salvo como Referência Local!';
-        notice(`✓ Amostra da voz "${file.name}" salva com sucesso!`, 'ok');
+      // 2. Se houver chave ElevenLabs, clona diretamente via API do ElevenLabs (funciona online no GitHub Pages e local)
+      if (apiKey) {
+        if (statusEl) statusEl.textContent = 'Clonando voz no ElevenLabs...';
+        const form = new FormData();
+        form.append('name', `Voz do FEFO (${file.name.replace(/\.[^/.]+$/, '')})`);
+        form.append('description', 'Voz clonada do FEFO Pet a partir de amostra de áudio');
+        form.append('files', file, file.name);
+
+        const elRes = await fetch('https://api.elevenlabs.io/v1/voices/add', {
+          method: 'POST',
+          headers: { 'xi-api-key': apiKey },
+          body: form
+        });
+
+        if (elRes.ok) {
+          const elData = await elRes.json();
+          if (elData && elData.voice_id) {
+            localStorage.setItem('fefo_eleven_voice', elData.voice_id);
+            const inpVoice = document.getElementById('ai-eleven-voice');
+            if (inpVoice) inpVoice.value = elData.voice_id;
+            if (statusEl) {
+              statusEl.textContent = '✓ Voz Clonada no ElevenLabs!';
+              statusEl.style.color = '#27ae60';
+            }
+            notice(`✓ Voz do FEFO clonada com sucesso! Voice ID: ${elData.voice_id}`, 'ok');
+            return;
+          }
+        } else {
+          const errData = await elRes.json().catch(() => ({}));
+          throw new Error(errData.detail?.message || `Erro ElevenLabs (${elRes.status})`);
+        }
       }
+
+      // 3. Tenta backend local Python se estiver rodando
+      try {
+        const formLocal = new FormData();
+        formLocal.append('api_key', apiKey);
+        formLocal.append('voice_name', 'Voz do FEFO');
+        formLocal.append('file', file, file.name);
+        const localRes = await fetch('/api/tts/clone_sample', { method: 'POST', body: formLocal });
+        if (localRes.ok) {
+          const localData = await localRes.json();
+          if (localData.ok && localData.voice_id) {
+            localStorage.setItem('fefo_eleven_voice', localData.voice_id);
+            const inpVoice = document.getElementById('ai-eleven-voice');
+            if (inpVoice) inpVoice.value = localData.voice_id;
+            if (statusEl) {
+              statusEl.textContent = '✓ Voz Clonada com Sucesso!';
+              statusEl.style.color = '#27ae60';
+            }
+            notice(`✓ Amostra salva e voz clonada com sucesso!`, 'ok');
+            return;
+          }
+        }
+      } catch (eLoc) {}
+
+      // 4. Salva localmente com aviso para preencher a chave
+      if (statusEl) {
+        statusEl.textContent = '✓ Amostra salva localmente!';
+        statusEl.style.color = '#2980b9';
+      }
+      notice(`Amostra "${file.name}" salva! Insira sua chave da ElevenLabs para clonar o timbre do FEFO na IA.`, 'ok');
     } catch (e) {
-      if (nameEl) nameEl.textContent = `✓ Amostra local: ${file.name}`;
-      localStorage.setItem('fefo_ai_sample_name', file.name);
-      notice(`Amostra "${file.name}" salva localmente.`, 'ok');
+      console.error('Erro na clonagem:', e);
+      if (statusEl) {
+        statusEl.textContent = `⚠️ ${e.message || 'Erro ao processar'}`;
+        statusEl.style.color = '#e74c3c';
+      }
+      notice(`Atenção ao clonar voz: ${e.message}`, 'error');
     }
   },
 
@@ -2063,9 +2137,12 @@ const PkgManager = {
   },
 
   async synthesizeVoiceBlob(text, provider, apiKey, voiceId, speed = 1.0, pitch = 10, stability = 0.5, similarity = 0.8) {
+    if (!apiKey) apiKey = localStorage.getItem('fefo_eleven_key') || '';
+    if (!voiceId) voiceId = localStorage.getItem('fefo_eleven_voice') || '21m00Tcm4TlvDq8ikWAM';
+
     // 1. Tenta API do ElevenLabs diretamente se chave estiver presente
     if (apiKey && (provider === 'elevenlabs' || !provider)) {
-      const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId || '21m00Tcm4TlvDq8ikWAM'}`, {
+      const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -2075,9 +2152,9 @@ const PkgManager = {
           text: text,
           model_id: 'eleven_multilingual_v2',
           voice_settings: {
-            stability: stability,
-            similarity_boost: similarity,
-            speed: speed
+            stability: Math.max(0, Math.min(1, stability)),
+            similarity_boost: Math.max(0, Math.min(1, similarity)),
+            use_speaker_boost: true
           }
         })
       });
@@ -2088,7 +2165,7 @@ const PkgManager = {
       return await res.blob();
     }
 
-    // 2. Tenta backend local Python (/api/tts/generate) com edge-tts
+    // 2. Tenta backend local Python (/api/tts/generate) com edge-tts se backend estiver rodando
     try {
       const res = await fetch('/api/tts/generate', {
         method: 'POST',
@@ -2115,44 +2192,8 @@ const PkgManager = {
       // Backend offline
     }
 
-    // 3. Fallback no navegador com Web Speech API e síntese de áudio
-    return await this.synthesizeBrowserSpeechBlob(text, speed, pitch);
-  },
-
-  async synthesizeBrowserSpeechBlob(text, speed = 1.0, pitch = 10) {
-    return new Promise((resolve, reject) => {
-      if (!('speechSynthesis' in window)) {
-        reject(new Error('Síntese de voz não suportada pelo seu navegador.'));
-        return;
-      }
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = 'pt-BR';
-      utter.pitch = Math.max(0.5, Math.min(2.0, 1.0 + (pitch / 30)));
-      utter.rate = Math.max(0.5, Math.min(2.0, speed));
-
-      const voices = window.speechSynthesis.getVoices();
-      const ptVoice = voices.find(v => v.lang.startsWith('pt')) || voices[0];
-      if (ptVoice) utter.voice = ptVoice;
-
-      window.speechSynthesis.speak(utter);
-      
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = audioCtx.createOscillator();
-      const dest = audioCtx.createMediaStreamDestination();
-      osc.connect(dest);
-      const mediaRecorder = new MediaRecorder(dest.stream);
-      const chunks = [];
-      mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
-      mediaRecorder.onstop = () => {
-        resolve(new Blob(chunks, { type: 'audio/wav' }));
-      };
-      mediaRecorder.start();
-      utter.onend = () => {
-        mediaRecorder.stop();
-        audioCtx.close();
-      };
-      utter.onerror = (e) => reject(new Error('Erro na síntese do navegador'));
-    });
+    // 3. Fallback orientando a inserir a chave do ElevenLabs
+    throw new Error('Para sintetizar áudios com a voz do FEFO no site online, é necessário inserir sua chave da ElevenLabs em "⚙️ Configurar Voz IA".');
   },
 
   async generateFefoAudio(containerId, itemId, isProduction = false) {
@@ -2195,7 +2236,7 @@ const PkgManager = {
 
     try {
       const blob = await this.synthesizeVoiceBlob(currentScript, provider, apiKey, voiceId, speed, pitch, stability, similarity);
-      if (!blob) throw new Error('Não foi possível gerar o áudio.');
+      if (!blob || blob.size === 0) throw new Error('Não foi possível gerar o áudio.');
 
       await AudioBlobDB.setAudio(itemId, blob);
       const blobUrl = URL.createObjectURL(blob);
@@ -2216,11 +2257,14 @@ const PkgManager = {
       }
 
       notice(`✓ Áudio carregado na faixa! Você já pode ouvir ou cortar na ferramenta de corte.`, 'ok');
-      setTimeout(() => this.playTrack(itemId), 250);
+      setTimeout(() => {
+        this.setupAudioListeners(itemId);
+        this.playTrack(itemId);
+      }, 300);
     } catch (err) {
-      notice(`Erro na geração: ${err.message}`, 'error');
+      notice(`Atenção: ${err.message}`, 'error');
       if (err.message.includes('ElevenLabs') || !apiKey) {
-        if (confirm('Deseja abrir a configuração da IA para inserir sua chave do ElevenLabs ou usar o modo gratuito?')) {
+        if (confirm(`${err.message}\n\nDeseja abrir a configuração da IA para inserir sua chave do ElevenLabs?`)) {
           this.openAiVoiceSettings();
         }
       }

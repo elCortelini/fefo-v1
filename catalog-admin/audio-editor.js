@@ -254,11 +254,12 @@
     if (!buffer || !canvas) return;
     const rect = canvas.getBoundingClientRect();
     const ratio = window.devicePixelRatio || 1;
-    canvas.width = Math.max(1, Math.floor(rect.width * ratio));
-    canvas.height = Math.max(1, Math.floor(rect.height * ratio));
+    const width = Math.max(200, Math.floor(rect.width || canvas.clientWidth || 750));
+    const height = Math.max(80, Math.floor(rect.height || canvas.clientHeight || 160));
+    canvas.width = Math.floor(width * ratio);
+    canvas.height = Math.floor(height * ratio);
 
     const ctx = canvas.getContext('2d');
-    const width = rect.width, height = rect.height;
     ctx.scale(ratio, ratio);
 
     ctx.fillStyle = '#0f274a';
@@ -435,6 +436,18 @@
 
       saveBtn.disabled = false;
       sync();
+      requestAnimationFrame(() => {
+        sync();
+        draw();
+      });
+      setTimeout(() => {
+        sync();
+        draw();
+      }, 60);
+      setTimeout(() => {
+        sync();
+        draw();
+      }, 250);
       setStatus(`Áudio carregado (${fmt(buffer.duration)}). Arraste os seletores azuis para definir o início e o fim.`, 'ok');
     } catch (err) {
       setStatus(`Não foi possível carregar o áudio: ${err.message}`, 'error');
