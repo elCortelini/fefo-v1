@@ -569,8 +569,9 @@
           <div class="pkg-field-box">
             <label>Motor de Voz (Provedor)</label>
             <select id="ai-voice-provider" class="pkg-filter-select" style="width: 100%;" onchange="PkgManager.onAiProviderChange()">
-              <option value="elevenlabs">⭐ ElevenLabs (Clonagem de Estúdio com a Voz Real do FEFO)</option>
-              <option value="free_neural">⚡ Síntese Neural Rápida (pt-BR Lúdico / Gratuito sem Chave)</option>
+              <option value="custom_sample">🎙️ Voz Personalizada do FEFO (Usar Áudio Base Enviado)</option>
+              <option value="elevenlabs">⭐ ElevenLabs IA (Clonagem de Estúdio com API Key)</option>
+              <option value="free_neural">⚡ Voz do Sistema (Síntese pt-BR Gratuita)</option>
             </select>
           </div>
 
@@ -589,6 +590,13 @@
                 📂 Selecionar Áudio do FEFO (.mp3 / .wav)
               </button>
               <span id="ai-sample-name" style="font-size: 12px; font-weight: 800; color: var(--ink);">Nenhum arquivo enviado</span>
+            </div>
+            <!-- Player para ouvir o áudio base imediatamente -->
+            <div id="ai-sample-player-container" style="margin-top: 12px; padding: 10px; background: #ffffff; border: 1px solid #e1d9f4; border-radius: 10px; display: none;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <span style="font-size: 11px; font-weight: 800; color: var(--purple);">▶ Ouvir Áudio Base do FEFO Carregado:</span>
+              </div>
+              <audio id="ai-sample-player" controls style="width: 100%; height: 36px;"></audio>
             </div>
           </div>
 

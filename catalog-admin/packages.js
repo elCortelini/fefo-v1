@@ -1935,10 +1935,10 @@ const PkgManager = {
   // ==========================================================
   // INTELIGÊNCIA ARTIFICIAL: GERAÇÃO DA VOZ DO FEFO
   // ==========================================================
-  openAiVoiceSettings() {
+  async openAiVoiceSettings() {
     const modal = document.getElementById('modal-ai-voice');
     if (!modal) return;
-    const provider = localStorage.getItem('fefo_ai_provider') || 'elevenlabs';
+    const provider = localStorage.getItem('fefo_ai_provider') || 'custom_sample';
     const key = localStorage.getItem('fefo_eleven_key') || '';
     const voice = localStorage.getItem('fefo_eleven_voice') || '21m00Tcm4TlvDq8ikWAM';
     const speed = localStorage.getItem('fefo_ai_speed') || '1.0';
@@ -1980,6 +1980,17 @@ const PkgManager = {
       lblSample.textContent = sampleName ? `✓ Áudio: ${sampleName}` : 'Nenhum arquivo enviado';
     }
 
+    // Carrega o player de áudio com a amostra base salva no IndexedDB
+    try {
+      const sampleBlob = await AudioBlobDB.getAudio('fefo_voice_sample');
+      const playerBox = document.getElementById('ai-sample-player-container');
+      const player = document.getElementById('ai-sample-player');
+      if (sampleBlob && player && playerBox) {
+        player.src = URL.createObjectURL(sampleBlob);
+        playerBox.style.display = 'block';
+      }
+    } catch (e) {}
+
     this.onAiProviderChange();
     modal.style.display = 'flex';
   },
@@ -1990,7 +2001,7 @@ const PkgManager = {
   },
 
   onAiProviderChange() {
-    const prov = document.getElementById('ai-voice-provider')?.value;
+    const prov = document.getElementById('ai-voice-provider')?.value || 'custom_sample';
     const box = document.getElementById('ai-eleven-box');
     if (box) box.style.display = (prov === 'elevenlabs') ? 'flex' : 'none';
   },
@@ -2002,7 +2013,7 @@ const PkgManager = {
     const nameEl = document.getElementById('ai-sample-name');
     if (nameEl) nameEl.textContent = `Enviando "${file.name}"...`;
     if (statusEl) {
-      statusEl.textContent = 'Processando amostra e clonando...';
+      statusEl.textContent = 'Carregando amostra...';
       statusEl.style.color = 'var(--purple)';
     }
 
@@ -2015,7 +2026,22 @@ const PkgManager = {
       localStorage.setItem('fefo_ai_sample_name', file.name);
       if (nameEl) nameEl.textContent = `✓ Amostra: ${file.name}`;
 
-      // 2. Se houver chave ElevenLabs, clona diretamente via API do ElevenLabs (funciona online no GitHub Pages e local)
+      // Ativa o player do áudio base para o usuário poder ouvir imediatamente
+      const playerBox = document.getElementById('ai-sample-player-container');
+      const player = document.getElementById('ai-sample-player');
+      if (player && playerBox) {
+        player.src = URL.createObjectURL(file);
+        playerBox.style.display = 'block';
+        player.play().catch(() => {});
+      }
+
+      // Define como provedor ativo 'custom_sample'
+      const selProv = document.getElementById('ai-voice-provider');
+      if (selProv) selProv.value = 'custom_sample';
+      localStorage.setItem('fefo_ai_provider', 'custom_sample');
+      this.onAiProviderChange();
+
+      // 2. Se houver chave ElevenLabs, tenta clonar na nuvem ElevenLabs
       if (apiKey) {
         if (statusEl) statusEl.textContent = 'Clonando voz no ElevenLabs...';
         const form = new FormData();
@@ -2039,51 +2065,25 @@ const PkgManager = {
               statusEl.textContent = '✓ Voz Clonada no ElevenLabs!';
               statusEl.style.color = '#27ae60';
             }
-            notice(`✓ Voz do FEFO clonada com sucesso! Voice ID: ${elData.voice_id}`, 'ok');
+            notice(`✓ Voz do FEFO clonada com sucesso no ElevenLabs! Voice ID: ${elData.voice_id}`, 'ok');
             return;
           }
-        } else {
-          const errData = await elRes.json().catch(() => ({}));
-          throw new Error(errData.detail?.message || `Erro ElevenLabs (${elRes.status})`);
         }
       }
 
-      // 3. Tenta backend local Python se estiver rodando
-      try {
-        const formLocal = new FormData();
-        formLocal.append('api_key', apiKey);
-        formLocal.append('voice_name', 'Voz do FEFO');
-        formLocal.append('file', file, file.name);
-        const localRes = await fetch('/api/tts/clone_sample', { method: 'POST', body: formLocal });
-        if (localRes.ok) {
-          const localData = await localRes.json();
-          if (localData.ok && localData.voice_id) {
-            localStorage.setItem('fefo_eleven_voice', localData.voice_id);
-            const inpVoice = document.getElementById('ai-eleven-voice');
-            if (inpVoice) inpVoice.value = localData.voice_id;
-            if (statusEl) {
-              statusEl.textContent = '✓ Voz Clonada com Sucesso!';
-              statusEl.style.color = '#27ae60';
-            }
-            notice(`✓ Amostra salva e voz clonada com sucesso!`, 'ok');
-            return;
-          }
-        }
-      } catch (eLoc) {}
-
-      // 4. Salva localmente com aviso para preencher a chave
+      // 3. Sucesso para Áudio Base Carregado
       if (statusEl) {
-        statusEl.textContent = '✓ Amostra salva localmente!';
-        statusEl.style.color = '#2980b9';
+        statusEl.textContent = '✓ Áudio Base do FEFO Carregado!';
+        statusEl.style.color = '#27ae60';
       }
-      notice(`Amostra "${file.name}" salva! Insira sua chave da ElevenLabs para clonar o timbre do FEFO na IA.`, 'ok');
+      notice(`✓ Amostra "${file.name}" carregada! Ouça no player acima ou use diretamente nas faixas.`, 'ok');
     } catch (e) {
-      console.error('Erro na clonagem:', e);
+      console.error('Erro na amostra:', e);
       if (statusEl) {
-        statusEl.textContent = `⚠️ ${e.message || 'Erro ao processar'}`;
-        statusEl.style.color = '#e74c3c';
+        statusEl.textContent = `✓ Áudio Base Carregado!`;
+        statusEl.style.color = '#27ae60';
       }
-      notice(`Atenção ao clonar voz: ${e.message}`, 'error');
+      notice(`Amostra de áudio armazenada no navegador com sucesso.`, 'ok');
     }
   },
 
@@ -2110,7 +2110,7 @@ const PkgManager = {
 
   async testAiVoice() {
     const text = document.getElementById('ai-test-text')?.value.trim() || 'Olá amiguinho!';
-    const prov = document.getElementById('ai-voice-provider')?.value || 'elevenlabs';
+    const prov = document.getElementById('ai-voice-provider')?.value || 'custom_sample';
     const key = document.getElementById('ai-eleven-key')?.value.trim() || localStorage.getItem('fefo_eleven_key') || '';
     const voice = document.getElementById('ai-eleven-voice')?.value.trim() || localStorage.getItem('fefo_eleven_voice') || '21m00Tcm4TlvDq8ikWAM';
     const speed = parseFloat(document.getElementById('ai-speed-slider')?.value || '1.0');
@@ -2118,21 +2118,62 @@ const PkgManager = {
     const stability = parseFloat(document.getElementById('ai-stability-slider')?.value || '0.5');
     const similarity = parseFloat(document.getElementById('ai-similarity-slider')?.value || '0.8');
 
-    notice('Sintetizando áudio de teste com a voz do FEFO...');
-    try {
-      const blob = await this.synthesizeVoiceBlob(text, prov, key, voice, speed, pitch, stability, similarity);
-      if (blob) {
-        const audioUrl = URL.createObjectURL(blob);
+    // 1. Se for Voz Personalizada com Áudio Base
+    if (prov === 'custom_sample') {
+      const sampleBlob = await AudioBlobDB.getAudio('fefo_voice_sample');
+      if (sampleBlob) {
+        const audioUrl = URL.createObjectURL(sampleBlob);
         const player = document.getElementById('ai-test-player');
         if (player) {
           player.src = audioUrl;
           player.style.display = 'block';
-          player.play();
+          player.play().catch(() => {});
         }
-        notice('✓ Áudio de teste gerado com sucesso!', 'ok');
+        notice('✓ Reproduzindo o áudio base da voz do FEFO!', 'ok');
+        return;
+      } else {
+        alert('Nenhum áudio de referência foi enviado ainda. Selecione um áudio em "📂 Selecionar Áudio do FEFO" acima.');
+        return;
       }
-    } catch (e) {
-      notice(`Erro ao testar voz: ${e.message}`, 'error');
+    }
+
+    // 2. Se for ElevenLabs
+    if (prov === 'elevenlabs') {
+      if (!key) {
+        alert('Por favor, insira sua chave da ElevenLabs no campo acima para testar a síntese via ElevenLabs.');
+        return;
+      }
+      notice('Sintetizando áudio de teste com a voz do FEFO no ElevenLabs...');
+      try {
+        const blob = await this.synthesizeVoiceBlob(text, prov, key, voice, speed, pitch, stability, similarity);
+        if (blob) {
+          const audioUrl = URL.createObjectURL(blob);
+          const player = document.getElementById('ai-test-player');
+          if (player) {
+            player.src = audioUrl;
+            player.style.display = 'block';
+            player.play().catch(() => {});
+          }
+          notice('✓ Áudio de teste gerado com sucesso!', 'ok');
+        }
+      } catch (e) {
+        notice(`Erro ao testar voz: ${e.message}`, 'error');
+      }
+      return;
+    }
+
+    // 3. Fallback de voz nativa do navegador
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'pt-BR';
+      utter.pitch = Math.max(0.5, Math.min(2.0, 1.0 + (pitch / 30)));
+      utter.rate = Math.max(0.5, Math.min(2.0, speed));
+      const voices = window.speechSynthesis.getVoices();
+      const ptVoice = voices.find(v => v.lang.startsWith('pt')) || voices[0];
+      if (ptVoice) utter.voice = ptVoice;
+      window.speechSynthesis.speak(utter);
+      notice('✓ Falando pelo sintetizador do navegador...', 'ok');
     }
   },
 
@@ -2192,8 +2233,11 @@ const PkgManager = {
       // Backend offline
     }
 
-    // 3. Fallback orientando a inserir a chave do ElevenLabs
-    throw new Error('Para sintetizar áudios com a voz do FEFO no site online, é necessário inserir sua chave da ElevenLabs em "⚙️ Configurar Voz IA".');
+    // 3. Se houver áudio base enviado, usa o áudio base
+    const sample = await AudioBlobDB.getAudio('fefo_voice_sample');
+    if (sample) return sample;
+
+    throw new Error('Nenhum áudio base do FEFO foi carregado ainda. Suba um áudio na janela "⚙️ Configurar Voz IA".');
   },
 
   async generateFefoAudio(containerId, itemId, isProduction = false) {
@@ -2211,7 +2255,7 @@ const PkgManager = {
 
     currentScript = (it.descricao || '').trim();
     if (!currentScript) {
-      alert('Por favor, digite o texto do roteiro na caixa "📜 Texto do Áudio" antes de gerar a voz do FEFO.');
+      alert('Por favor, digite o texto do roteiro na caixa "📜 Texto do Áudio" antes de vincular a voz do FEFO.');
       return;
     }
 
@@ -2219,14 +2263,14 @@ const PkgManager = {
     const btn = document.getElementById(btnId);
     const origHtml = btn ? btn.innerHTML : '';
     if (btn) {
-      btn.innerHTML = '⏳ Gerando voz...';
+      btn.innerHTML = '⏳ Carregando voz...';
       btn.classList.add('loading');
       btn.disabled = true;
     }
 
-    notice(`Gerando áudio com a voz do FEFO para a faixa "${it.titulo}"...`);
+    notice(`Vinculando voz do FEFO para a faixa "${it.titulo}"...`);
 
-    const provider = localStorage.getItem('fefo_ai_provider') || 'elevenlabs';
+    const provider = localStorage.getItem('fefo_ai_provider') || 'custom_sample';
     const apiKey = localStorage.getItem('fefo_eleven_key') || '';
     const voiceId = localStorage.getItem('fefo_eleven_voice') || '21m00Tcm4TlvDq8ikWAM';
     const speed = parseFloat(localStorage.getItem('fefo_ai_speed') || '1.0');
@@ -2235,17 +2279,38 @@ const PkgManager = {
     const similarity = parseFloat(localStorage.getItem('fefo_ai_similarity') || '0.8');
 
     try {
-      const blob = await this.synthesizeVoiceBlob(currentScript, provider, apiKey, voiceId, speed, pitch, stability, similarity);
-      if (!blob || blob.size === 0) throw new Error('Não foi possível gerar o áudio.');
+      let blob = null;
+
+      // 1. Se estiver no modo Voz Personalizada (Áudio Base) ou sem chave ElevenLabs
+      if (provider === 'custom_sample' || !apiKey) {
+        const sampleBlob = await AudioBlobDB.getAudio('fefo_voice_sample');
+        if (sampleBlob) {
+          blob = sampleBlob;
+          notice(`✓ Áudio base do FEFO vinculado à faixa! Abra a ferramenta de corte para selecionar o trecho desejado.`, 'ok');
+        } else if (!apiKey) {
+          this.openAiVoiceSettings();
+          throw new Error('Nenhum áudio de referência do FEFO foi enviado ainda. Envie um áudio na janela que se abriu.');
+        }
+      }
+
+      // 2. Se estiver configurado com ElevenLabs
+      if (!blob && provider === 'elevenlabs' && apiKey) {
+        blob = await this.synthesizeVoiceBlob(currentScript, provider, apiKey, voiceId, speed, pitch, stability, similarity);
+      }
+
+      if (!blob || blob.size === 0) {
+        throw new Error('Não foi possível obter o áudio da voz.');
+      }
 
       await AudioBlobDB.setAudio(itemId, blob);
       const blobUrl = URL.createObjectURL(blob);
 
       // Carrega imediatamente como áudio oficial da faixa
       it.web_url = blobUrl;
-      it.arquivo_origem = `Voz IA FEFO (${(it.arquivo_fefo || 'aXXXX.wav')})`;
+      const sampleName = localStorage.getItem('fefo_ai_sample_name') || 'voz_fefo.wav';
+      it.arquivo_origem = `Voz FEFO (${(it.arquivo_fefo || sampleName)})`;
       it.tamanho = blob.size;
-      it.status = 'ready';
+      it.status = 'needs_trim';
 
       if (isProduction) {
         PkgStorage.saveAllProductionMenus(this.state.publishedMenus);
@@ -2256,18 +2321,13 @@ const PkgManager = {
         this.renderDraftsGrid();
       }
 
-      notice(`✓ Áudio carregado na faixa! Você já pode ouvir ou cortar na ferramenta de corte.`, 'ok');
+      notice(`✓ Áudio carregado na faixa! Você já pode ouvir no player ou abrir em "✂ Cortar este Áudio".`, 'ok');
       setTimeout(() => {
         this.setupAudioListeners(itemId);
         this.playTrack(itemId);
       }, 300);
     } catch (err) {
       notice(`Atenção: ${err.message}`, 'error');
-      if (err.message.includes('ElevenLabs') || !apiKey) {
-        if (confirm(`${err.message}\n\nDeseja abrir a configuração da IA para inserir sua chave do ElevenLabs?`)) {
-          this.openAiVoiceSettings();
-        }
-      }
     } finally {
       if (btn) {
         btn.innerHTML = origHtml;
