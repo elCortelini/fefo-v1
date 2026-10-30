@@ -1451,3 +1451,229 @@
     justify-content: space-between;
   }
 }
+
+/* ======================================================== */
+/* BOX DE FAIXA DE ÁUDIO (DESIGN MOCKUP FAIXA VERDE)        */
+/* ======================================================== */
+
+.track-card-box {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: stretch !important;
+  background: #cbf6d8 !important; /* Verde pastel suave do print */
+  border: 2px solid #8be4aa !important;
+  border-radius: 24px !important;
+  padding: 18px 20px !important;
+  gap: 16px !important;
+  margin-bottom: 16px !important;
+  box-shadow: 0 4px 14px rgba(74, 222, 128, 0.12) !important;
+  position: relative !important;
+  transition: all 0.2s ease !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+}
+
+.track-card-box:hover {
+  box-shadow: 0 6px 18px rgba(74, 222, 128, 0.2) !important;
+  border-color: #5cdb88 !important;
+}
+
+/* Badge vertical FAIXA 01 */
+.track-vertical-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 19px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: #0f172a;
+  text-transform: uppercase;
+  padding: 0 4px;
+  user-select: none;
+  min-width: 32px;
+}
+
+/* Corpo principal do card */
+.track-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* Linhas Superior e Inferior */
+.track-row-top,
+.track-row-bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.track-field-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.track-label {
+  font-size: 13.5px;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 0;
+}
+
+/* Inputs brancos e limpos */
+.track-input-clean {
+  background: #ffffff !important;
+  border: 1px solid #9ee2b7 !important;
+  border-radius: 10px !important;
+  padding: 9px 14px !important;
+  font-size: 14.5px !important;
+  font-weight: 700 !important;
+  color: #0f172a !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03) !important;
+  outline: none !important;
+}
+
+.track-input-clean:focus {
+  border-color: #22c55e !important;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2) !important;
+}
+
+/* Botões verdes preenchidos com cantos arredondados */
+.btn-track-action {
+  background: #52c41a !important; /* Verde sólido vibrante do print */
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 12px !important;
+  font-weight: 800 !important;
+  font-size: 13.5px !important;
+  padding: 10px 22px !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  box-shadow: 0 2px 6px rgba(82, 196, 26, 0.3) !important;
+  transition: all 0.15s ease !important;
+}
+
+.btn-track-action:hover {
+  background: #47ad16 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 10px rgba(82, 196, 26, 0.4) !important;
+}
+
+.btn-track-save {
+  padding: 10px 28px !important;
+}
+
+/* Player nativo estilizado */
+.track-row-player {
+  width: 100%;
+}
+
+.track-row-player audio {
+  width: 100%;
+  height: 42px;
+  border-radius: 30px;
+  outline: none;
+}
+
+/* Linhas divisórias acordeon (Gerar com IA e Cortar) */
+.track-accordion-toggle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  padding: 6px 0;
+  margin: 2px 0;
+}
+
+.track-accordion-toggle::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 1;
+}
+
+.track-accordion-toggle.green::before {
+  background: #48bb78; /* Linha verde do print */
+}
+
+.track-accordion-toggle.purple::before {
+  background: #8b5cf6; /* Linha roxa do print */
+}
+
+.track-accordion-toggle .acc-text {
+  position: relative;
+  z-index: 2;
+  background: #cbf6d8; /* Mesma cor de fundo do card para cobrir a linha */
+  padding: 0 16px;
+  font-size: 13.5px;
+  font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.track-accordion-toggle.green .acc-text {
+  color: #1b4332;
+}
+
+.track-accordion-toggle.purple .acc-text {
+  color: #4c1d95;
+}
+
+.track-accordion-toggle .acc-arrow {
+  display: inline-block;
+  font-size: 10px;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.track-accordion-toggle.is-open .acc-arrow {
+  transform: rotate(180deg);
+}
+
+.track-accordion-panel {
+  display: none;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 14px 16px;
+  border: 1px solid #b7eed4;
+  margin-top: 2px;
+  animation: fadeIn 0.2s ease;
+}
+
+.track-accordion-panel.is-open {
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .track-card-box {
+    flex-direction: column !important;
+    gap: 12px !important;
+    padding: 14px !important;
+  }
+  .track-vertical-badge {
+    writing-mode: horizontal-tb !important;
+    transform: none !important;
+    justify-content: flex-start !important;
+    font-size: 16px !important;
+  }
+  .track-row-top,
+  .track-row-bottom {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+}

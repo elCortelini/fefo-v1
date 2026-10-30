@@ -618,129 +618,104 @@ const PkgManager = {
               ` : items.map((it, idx) => {
                 const audioUrl = this.resolveUrl(it.web_url || (it.arquivo_draft ? `/repository/drafts/audio/${pkg.id}/${it.arquivo_draft.split('/').pop()}` : ''));
                 const hasAudio = !!audioUrl;
-                const isNeedsTrim = it.status === 'needs_trim';
-                const isReady = it.status === 'ready' || it.status === 'published';
-
-                let statusBadge = '';
-                if (isReady) {
-                  statusBadge = '<span class="status-pill status-ready" title="Áudio cortado e pronto para o Pet">🟢 Cortado / Pronto</span>';
-                } else if (hasAudio) {
-                  statusBadge = '<span class="status-pill status-trim" title="Áudio bruto carregado. Pronto para cortar!">🟡 Pronto p/ Cortar</span>';
-                } else {
-                  statusBadge = '<span class="status-pill status-pending" title="Sem áudio gravado ainda para este item">🔴 Sem Áudio</span>';
-                }
-
                 const safeDesc = JSON.stringify(it.descricao || '').replace(/'/g, "&#39;");
                 const fefoFileName = it.arquivo_fefo || '';
 
                 return `
-                  <div class="pkg-item-row" data-item-id="${it.id}">
-                    <div class="pkg-item-header-line">
-                      <span class="pkg-item-badge-index">Faixa ${idx + 1}</span>
+                  <div class="pkg-item-row track-card-box" data-item-id="${it.id}">
+                    <!-- LADO ESQUERDO: TAG VERTICAL FAIXA 01 -->
+                    <div class="track-vertical-badge">
+                      <span>FAIXA ${String(idx + 1).padStart(2, '0')}</span>
+                    </div>
 
-                      <div class="pkg-item-inputs-group">
-                        <div class="pkg-input-field">
-                          <label class="pkg-field-label">🏷️ Nome no App / Menu</label>
-                          <input type="text" class="pkg-item-title-input" value="${this.escapeHtml(it.titulo || '')}" 
+                    <!-- CONTEÚDO PRINCIPAL -->
+                    <div class="track-card-body">
+                      <!-- LINHA SUPERIOR: Nome no APP + Selecionar Audio -->
+                      <div class="track-row-top">
+                        <div class="track-field-group">
+                          <label class="track-label">Nome no APP</label>
+                          <input type="text" class="track-input-clean pkg-item-title-input" 
+                                 value="${this.escapeHtml(it.titulo || '')}" 
                                  placeholder="Nome exibido no app..." 
                                  oninput="PkgManager.updateDraftItemTitle('${pkg.id}', '${it.id}', this.value)">
                         </div>
-
-                        <div class="pkg-input-field fefo-file">
-                          <label class="pkg-field-label">🤖 Arquivo no Pet FEFO</label>
-                          <div class="fefo-file-box">
-                            <input type="text" id="fefo-input-${it.id}" class="pkg-item-fefo-input" value="${this.escapeHtml(fefoFileName)}" 
-                                   placeholder="a0001.wav" 
-                                   oninput="PkgManager.updateDraftItemFefoFile('${pkg.id}', '${it.id}', this.value)">
-                            <button type="button" class="btn-suggest-name" title="Sugerir próximo arquivo aXXXX.wav livre"
-                                    onclick="PkgManager.suggestNextFefoName('${pkg.id}', '${it.id}')">
-                              ⚡ Sugerir
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div class="header-status-and-delete">
-                        ${statusBadge}
-                        <button type="button" class="pkg-item-delete" title="Remover faixa"
-                                onclick="PkgManager.deleteDraftItem('${pkg.id}', '${it.id}')">
-                          🗑
+                        <button type="button" class="btn-track-action"
+                                title="Carregar ou substituir áudio do seu computador"
+                                onclick="PkgManager.promptChooseAudio('${pkg.id}', '${it.id}', false)">
+                          Selecionar Audio
                         </button>
                       </div>
-                    </div>
 
-                    <!-- TEXTO / ROTEIRO FALADO PELO FEFO (EDITÁVEL) -->
-                    <div class="pkg-item-script-box">
-                      <div class="pkg-item-script-label">
-                        <span>📜 Texto do Áudio (Roteiro falado pelo FEFO):</span>
-                        <div style="display: flex; gap: 8px; align-items: center;">
-                          <button type="button" class="btn-generate-ai-voice" id="btn-ai-${it.id}"
-                                  title="Gerar áudio com a voz do FEFO a partir deste texto"
-                                  onclick="PkgManager.generateFefoAudio('${pkg.id}', '${it.id}', false)">
-                            🎙️ Gerar Voz do FEFO (IA)
+                      <!-- LINHA DO PLAYER DE ÁUDIO -->
+                      <div class="track-row-player">
+                        <audio id="audio-player-${it.id}" src="${this.escapeHtml(audioUrl)}" controls preload="metadata"></audio>
+                      </div>
+
+                      <!-- DIVISÓRIA ACORDEON 1: Gerar Audio com IA -->
+                      <div class="track-accordion-toggle green" onclick="PkgManager.toggleTrackAccordion('${it.id}', 'ai')">
+                        <span class="acc-text">Gerar Audio com IA <span class="acc-arrow" id="arrow-ai-${it.id}">▼</span></span>
+                      </div>
+                      <div class="track-accordion-panel" id="panel-ai-${it.id}">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                          <span style="font-size: 11.5px; font-weight: 800; color: #1b4332;">📜 Texto do Áudio (Roteiro falado pelo FEFO):</span>
+                          <div style="display: flex; gap: 8px; align-items: center;">
+                            <button type="button" class="btn-generate-ai-voice" id="btn-ai-${it.id}"
+                                    title="Gerar áudio com a voz do FEFO a partir deste texto"
+                                    onclick="PkgManager.generateFefoAudio('${pkg.id}', '${it.id}', false)">
+                              🎙️ Gerar Voz do FEFO (IA)
+                            </button>
+                            <span class="save-status-badge" id="script-saved-${it.id}">✓ Salvo</span>
+                          </div>
+                        </div>
+                        <textarea class="pkg-item-script-textarea" 
+                                  placeholder="Digite ou edite aqui o roteiro falado pelo FEFO para este áudio..."
+                                  oninput="PkgManager.updateDraftItemScript('${pkg.id}', '${it.id}', this.value)">${this.escapeHtml(it.descricao || '')}</textarea>
+                      </div>
+
+                      <!-- DIVISÓRIA ACORDEON 2: Ajustar / Cortar -->
+                      <div class="track-accordion-toggle purple" onclick="PkgManager.toggleTrackAccordion('${it.id}', 'trim')">
+                        <span class="acc-text">Ajustar / Cortar <span class="acc-arrow" id="arrow-trim-${it.id}">▼</span></span>
+                      </div>
+                      <div class="track-accordion-panel" id="panel-trim-${it.id}">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                          <span style="font-size: 12px; font-weight: 800; color: #4c1d95;">
+                            📁 Arquivo de Origem: <strong>${this.escapeHtml(it.arquivo_origem || (hasAudio ? 'Áudio Vinculado' : 'Nenhum'))}</strong>
+                            ${it.tamanho ? `(${this.formatBytes(it.tamanho)})` : ''}
+                          </span>
+                          <button type="button" class="btn primary" style="background:#8b5cf6; border-color:#7c3aed; font-size: 12.5px; padding: 7px 16px; border-radius: 8px;"
+                                  onclick='PkgManager.trimDraftItem("${pkg.id}", "${it.id}", "${this.escapeHtml(audioUrl)}", "${this.escapeHtml(it.titulo)}", ${safeDesc}, "${this.escapeHtml(fefoFileName)}")'>
+                            ✂ Abrir Ferramenta de Corte & Waveform
                           </button>
-                          <span class="save-status-badge" id="script-saved-${it.id}">✓ Salvo</span>
                         </div>
                       </div>
-                      <textarea class="pkg-item-script-textarea" 
-                                placeholder="Digite ou edite aqui o roteiro falado pelo FEFO para este áudio..."
-                                oninput="PkgManager.updateDraftItemScript('${pkg.id}', '${it.id}', this.value)">${this.escapeHtml(it.descricao || '')}</textarea>
-                    </div>
 
-                    <div class="pkg-item-actions-line">
-                      <span class="pkg-item-orig">
-                        📁 Arquivo: <strong>${this.escapeHtml(it.arquivo_origem || (hasAudio ? 'Áudio Vinculado' : 'Nenhum'))}</strong>
-                        ${it.tamanho ? `(${this.formatBytes(it.tamanho)})` : ''}
-                      </span>
-
-                      ${hasAudio ? `
-                        <div class="custom-audio-controller">
-                          <audio id="audio-player-${it.id}" src="${this.escapeHtml(audioUrl)}" preload="none"></audio>
-                          <div class="audio-ctrl-buttons">
-                            <button type="button" class="btn-audio-ctrl btn-play" id="btn-play-${it.id}" 
-                                    onclick="PkgManager.playTrack('${it.id}')" title="Tocar áudio">
-                              ▶ Play
+                      <!-- LINHA INFERIOR: Arquivo no PET + Salvar -->
+                      <div class="track-row-bottom">
+                        <div class="track-field-group">
+                          <label class="track-label">Arquivo no PET</label>
+                          <div style="display: flex; gap: 6px; align-items: center;">
+                            <input type="text" id="fefo-input-${it.id}" class="track-input-clean pkg-item-fefo-input" 
+                                   value="${this.escapeHtml(fefoFileName)}" 
+                                   placeholder="a0001.wav" 
+                                   oninput="PkgManager.updateDraftItemFefoFile('${pkg.id}', '${it.id}', this.value)">
+                            <button type="button" class="btn-suggest-name" title="Sugerir próximo arquivo livre"
+                                    onclick="PkgManager.suggestNextFefoName('${pkg.id}', '${it.id}')">
+                              ⚡
                             </button>
-                            <button type="button" class="btn-audio-ctrl btn-pause" id="btn-pause-${it.id}" 
-                                    onclick="PkgManager.pauseTrack('${it.id}')" title="Pausar áudio">
-                              ⏸ Pause
-                            </button>
-                            <button type="button" class="btn-audio-ctrl btn-stop" id="btn-stop-${it.id}" 
-                                    onclick="PkgManager.stopTrack('${it.id}')" title="Parar e voltar ao início">
-                              ⏹ Stop
-                            </button>
-                          </div>
-                          <div class="audio-time-slider-box">
-                            <span id="time-current-${it.id}" class="time-label">0:00</span>
-                            <input type="range" id="seek-${it.id}" class="audio-seek-slider" min="0" max="100" value="0"
-                                   oninput="PkgManager.seekTrack('${it.id}', this.value)">
-                            <span id="time-total-${it.id}" class="time-label">0:00</span>
                           </div>
                         </div>
-
                         <div style="display: flex; gap: 8px; align-items: center;">
-                          <button type="button" class="btn-trim-audio ${isNeedsTrim ? 'highlight-trim' : ''}" 
-                                  title="Abrir ferramenta de corte com o roteiro na tela"
-                                  onclick='PkgManager.trimDraftItem("${pkg.id}", "${it.id}", "${this.escapeHtml(audioUrl)}", "${this.escapeHtml(it.titulo)}", ${safeDesc}, "${this.escapeHtml(fefoFileName)}")'>
-                            ✂ ${isReady ? 'Reajustar Corte' : 'Cortar este Áudio'}
+                          <button type="button" class="btn-track-action btn-track-save"
+                                  title="Salvar alterações desta faixa"
+                                  onclick="PkgManager.saveSingleItem('${pkg.id}', '${it.id}', false)">
+                            Salvar
                           </button>
-
-                          <button type="button" class="btn-replace-audio" 
-                                  title="Substituir por outro arquivo de áudio do seu computador"
-                                  onclick="PkgManager.promptChooseAudio('${pkg.id}', '${it.id}', false)">
-                            📁 Trocar Áudio
+                          <button type="button" class="pkg-item-delete" title="Remover faixa"
+                                  onclick="PkgManager.deleteDraftItem('${pkg.id}', '${it.id}')">
+                            🗑
                           </button>
                         </div>
-                      ` : `
-                        <div style="display: flex; gap: 10px; align-items: center;">
-                          <span class="hint-missing-audio">Aguardando gravação do áudio</span>
-                          <button type="button" class="btn-replace-audio btn-add-audio" 
-                                  title="Carregar um arquivo de áudio para esta faixa"
-                                  onclick="PkgManager.promptChooseAudio('${pkg.id}', '${it.id}', false)">
-                            ➕ Escolher Áudio
-                          </button>
-                        </div>
-                      `}
+                      </div>
                     </div>
                   </div>
                 `;
@@ -835,6 +810,31 @@ const PkgManager = {
     }).join('');
 
     this.renderProductionExpandedPanel();
+  },
+
+  toggleTrackAccordion(itemId, type) {
+    const panel = document.getElementById(`panel-${type}-${itemId}`);
+    const toggle = panel?.previousElementSibling;
+    if (!panel) return;
+
+    const isOpen = panel.classList.contains('is-open');
+    if (isOpen) {
+      panel.classList.remove('is-open');
+      toggle?.classList.remove('is-open');
+    } else {
+      panel.classList.add('is-open');
+      toggle?.classList.add('is-open');
+    }
+  },
+
+  saveSingleItem(containerId, itemId, isProduction = false) {
+    if (isProduction) {
+      PkgStorage.saveAllProductionMenus(this.state.publishedMenus);
+      notice('✓ Faixa do catálogo oficial salva com sucesso!', 'ok');
+    } else {
+      PkgStorage.saveAllDrafts(this.state.drafts);
+      notice('✓ Faixa do rascunho salva com sucesso!', 'ok');
+    }
   },
 
   toggleProductionMenu(menuTitle) {
@@ -961,114 +961,100 @@ const PkgManager = {
                 const fefoFileName = (it.arquivo || '').split('/').pop() || it.arquivo_fefo || '';
 
                 return `
-                  <div class="pkg-item-row" data-item-id="${it.id}">
-                    <div class="pkg-item-header-line">
-                      <span class="pkg-item-badge-index" style="background:#e8f8f0; color:#127547;">Faixa ${idx + 1}</span>
+                  <div class="pkg-item-row track-card-box" data-item-id="${it.id}">
+                    <!-- LADO ESQUERDO: TAG VERTICAL FAIXA 01 -->
+                    <div class="track-vertical-badge">
+                      <span>FAIXA ${String(idx + 1).padStart(2, '0')}</span>
+                    </div>
 
-                      <div class="pkg-item-inputs-group">
-                        <div class="pkg-input-field">
-                          <label class="pkg-field-label">🏷️ Nome no App / Menu</label>
-                          <input type="text" class="pkg-item-title-input prod-item-title" 
+                    <!-- CONTEÚDO PRINCIPAL -->
+                    <div class="track-card-body">
+                      <!-- LINHA SUPERIOR: Nome no APP + Selecionar Audio -->
+                      <div class="track-row-top">
+                        <div class="track-field-group">
+                          <label class="track-label">Nome no APP</label>
+                          <input type="text" class="track-input-clean pkg-item-title-input prod-item-title" 
                                  data-item-id="${it.id}" value="${this.escapeHtml(it.titulo || '')}" 
-                                 placeholder="Título da faixa..."
+                                 placeholder="Título da faixa..." 
                                  oninput="PkgManager.updateProductionItemTitle('${this.escapeHtml(pkg.titulo)}', '${it.id}', this.value)">
                         </div>
-
-                        <div class="pkg-input-field fefo-file">
-                          <label class="pkg-field-label">🤖 Arquivo no Pet FEFO</label>
-                          <div class="fefo-file-box">
-                            <input type="text" class="pkg-item-fefo-input" value="${this.escapeHtml(fefoFileName)}" 
-                                   placeholder="a0001.wav"
-                                   oninput="PkgManager.updateProductionItemFefoFile('${this.escapeHtml(pkg.titulo)}', '${it.id}', this.value)">
-                            <button type="button" class="btn-suggest-name" title="Sugerir próximo arquivo aXXXX.wav livre"
-                                    onclick="PkgManager.suggestNextFefoNameForProduction('${this.escapeHtml(pkg.titulo)}', '${it.id}')">
-                              ⚡ Sugerir
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div class="header-status-and-delete">
-                        <span class="status-pill status-ready">🟢 Ativo no Catálogo</span>
-                        <button type="button" class="pkg-item-delete" title="Excluir do catálogo oficial"
-                                onclick="PkgManager.deleteProductionItem('${it.id}', '${this.escapeHtml(it.titulo)}')">
-                          🗑
+                        <button type="button" class="btn-track-action"
+                                title="Carregar ou substituir áudio do seu computador"
+                                onclick="PkgManager.promptChooseAudio('${this.escapeHtml(pkg.titulo)}', '${it.id}', true)">
+                          Selecionar Audio
                         </button>
                       </div>
-                    </div>
 
-                    <!-- TEXTO / ROTEIRO FALADO PELO FEFO (EDITÁVEL) -->
-                    <div class="pkg-item-script-box" style="background: #f7fdfa; border-color: #b7eed4;">
-                      <div class="pkg-item-script-label" style="color: #127547;">
-                        <span>📜 Texto do Áudio (Roteiro falado pelo FEFO):</span>
-                        <div style="display: flex; gap: 8px; align-items: center;">
-                          <button type="button" class="btn-generate-ai-voice" id="btn-ai-prod-${it.id}"
-                                  title="Gerar áudio com a voz do FEFO a partir deste texto"
-                                  onclick="PkgManager.generateFefoAudio('${this.escapeHtml(pkg.titulo)}', '${it.id}', true)">
-                            🎙️ Gerar Voz do FEFO (IA)
+                      <!-- LINHA DO PLAYER DE ÁUDIO -->
+                      <div class="track-row-player">
+                        <audio id="audio-player-${it.id}" src="${this.escapeHtml(audioUrl)}" controls preload="metadata"></audio>
+                      </div>
+
+                      <!-- DIVISÓRIA ACORDEON 1: Gerar Audio com IA -->
+                      <div class="track-accordion-toggle green" onclick="PkgManager.toggleTrackAccordion('${it.id}', 'ai')">
+                        <span class="acc-text">Gerar Audio com IA <span class="acc-arrow" id="arrow-ai-${it.id}">▼</span></span>
+                      </div>
+                      <div class="track-accordion-panel" id="panel-ai-${it.id}">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                          <span style="font-size: 11.5px; font-weight: 800; color: #1b4332;">📜 Texto do Áudio (Roteiro falado pelo FEFO):</span>
+                          <div style="display: flex; gap: 8px; align-items: center;">
+                            <button type="button" class="btn-generate-ai-voice" id="btn-ai-prod-${it.id}"
+                                    title="Gerar áudio com a voz do FEFO a partir deste texto"
+                                    onclick="PkgManager.generateFefoAudio('${this.escapeHtml(pkg.titulo)}', '${it.id}', true)">
+                              🎙️ Gerar Voz do FEFO (IA)
+                            </button>
+                            <span class="save-status-badge" id="script-saved-prod-${it.id}">✓ Salvo</span>
+                          </div>
+                        </div>
+                        <textarea class="pkg-item-script-textarea" 
+                                  placeholder="Digite ou edite o roteiro falado pelo FEFO para este áudio..."
+                                  oninput="PkgManager.updateProductionItemScript('${this.escapeHtml(pkg.titulo)}', '${it.id}', this.value)">${this.escapeHtml(it.descricao || '')}</textarea>
+                      </div>
+
+                      <!-- DIVISÓRIA ACORDEON 2: Ajustar / Cortar -->
+                      <div class="track-accordion-toggle purple" onclick="PkgManager.toggleTrackAccordion('${it.id}', 'trim')">
+                        <span class="acc-text">Ajustar / Cortar <span class="acc-arrow" id="arrow-trim-${it.id}">▼</span></span>
+                      </div>
+                      <div class="track-accordion-panel" id="panel-trim-${it.id}">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                          <span style="font-size: 12px; font-weight: 800; color: #4c1d95;">
+                            📁 Arquivo de Origem: <strong>${this.escapeHtml(fefoFileName)}</strong>
+                            ${it.tamanho ? `(${this.formatBytes(it.tamanho)})` : ''}
+                          </span>
+                          <button type="button" class="btn primary" style="background:#8b5cf6; border-color:#7c3aed; font-size: 12.5px; padding: 7px 16px; border-radius: 8px;"
+                                  onclick='PkgManager.trimProductionItem("${it.id}", "${this.escapeHtml(audioUrl)}", "${this.escapeHtml(it.titulo)}")'>
+                            ✂ Abrir Ferramenta de Corte & Waveform
                           </button>
-                          <span class="save-status-badge" id="script-saved-prod-${it.id}">✓ Salvo</span>
                         </div>
                       </div>
-                      <textarea class="pkg-item-script-textarea" 
-                                placeholder="Digite ou edite o roteiro falado pelo FEFO para este áudio..."
-                                oninput="PkgManager.updateProductionItemScript('${this.escapeHtml(pkg.titulo)}', '${it.id}', this.value)">${this.escapeHtml(it.descricao || '')}</textarea>
-                    </div>
 
-                    <div class="pkg-item-actions-line">
-                      <span class="pkg-item-orig">
-                        📁 Arquivo: <strong>${this.escapeHtml(fefoFileName)}</strong>
-                        ${it.tamanho ? `(${this.formatBytes(it.tamanho)})` : ''}
-                      </span>
-
-                      ${hasAudio ? `
-                        <div class="custom-audio-controller">
-                          <audio id="audio-player-${it.id}" src="${this.escapeHtml(audioUrl)}" preload="none"></audio>
-                          <div class="audio-ctrl-buttons">
-                            <button type="button" class="btn-audio-ctrl btn-play" id="btn-play-${it.id}" 
-                                    onclick="PkgManager.playTrack('${it.id}')" title="Tocar áudio">
-                              ▶ Play
+                      <!-- LINHA INFERIOR: Arquivo no PET + Salvar -->
+                      <div class="track-row-bottom">
+                        <div class="track-field-group">
+                          <label class="track-label">Arquivo no PET</label>
+                          <div style="display: flex; gap: 6px; align-items: center;">
+                            <input type="text" class="track-input-clean pkg-item-fefo-input" 
+                                   value="${this.escapeHtml(fefoFileName)}" 
+                                   placeholder="a0001.wav" 
+                                   oninput="PkgManager.updateProductionItemFefoFile('${this.escapeHtml(pkg.titulo)}', '${it.id}', this.value)">
+                            <button type="button" class="btn-suggest-name" title="Sugerir próximo arquivo livre"
+                                    onclick="PkgManager.suggestNextFefoNameForProduction('${this.escapeHtml(pkg.titulo)}', '${it.id}')">
+                              ⚡
                             </button>
-                            <button type="button" class="btn-audio-ctrl btn-pause" id="btn-pause-${it.id}" 
-                                    onclick="PkgManager.pauseTrack('${it.id}')" title="Pausar áudio">
-                              ⏸ Pause
-                            </button>
-                            <button type="button" class="btn-audio-ctrl btn-stop" id="btn-stop-${it.id}" 
-                                    onclick="PkgManager.stopTrack('${it.id}')" title="Parar e voltar ao início">
-                              ⏹ Stop
-                            </button>
-                          </div>
-                          <div class="audio-time-slider-box">
-                            <span id="time-current-${it.id}" class="time-label">0:00</span>
-                            <input type="range" id="seek-${it.id}" class="audio-seek-slider" min="0" max="100" value="0"
-                                   oninput="PkgManager.seekTrack('${it.id}', this.value)">
-                            <span id="time-total-${it.id}" class="time-label">0:00</span>
                           </div>
                         </div>
-
                         <div style="display: flex; gap: 8px; align-items: center;">
-                          <button type="button" class="btn-trim-audio" 
-                                  title="Abrir ferramenta de corte e fade"
-                                  onclick='PkgManager.trimProductionItem("${it.id}", "${this.escapeHtml(audioUrl)}", "${this.escapeHtml(it.titulo)}")'>
-                            ✂ Cortar Áudio
+                          <button type="button" class="btn-track-action btn-track-save"
+                                  title="Salvar alterações desta faixa"
+                                  onclick="PkgManager.saveSingleItem('${this.escapeHtml(pkg.titulo)}', '${it.id}', true)">
+                            Salvar
                           </button>
-
-                          <button type="button" class="btn-replace-audio" 
-                                  title="Substituir arquivo de áudio"
-                                  onclick="PkgManager.promptChooseAudio('${this.escapeHtml(pkg.titulo)}', '${it.id}', true)">
-                            📁 Trocar Áudio
+                          <button type="button" class="pkg-item-delete" title="Excluir do catálogo oficial"
+                                  onclick="PkgManager.deleteProductionItem('${it.id}', '${this.escapeHtml(it.titulo)}')">
+                            🗑
                           </button>
                         </div>
-                      ` : `
-                        <div style="display: flex; gap: 10px; align-items: center;">
-                          <span class="hint-missing-audio">Aguardando áudio</span>
-                          <button type="button" class="btn-replace-audio btn-add-audio" 
-                                  title="Carregar um arquivo de áudio para esta faixa"
-                                  onclick="PkgManager.promptChooseAudio('${this.escapeHtml(pkg.titulo)}', '${it.id}', true)">
-                            ➕ Escolher Áudio
-                          </button>
-                        </div>
-                      `}
+                      </div>
                     </div>
                   </div>
                 `;
