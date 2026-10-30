@@ -466,9 +466,6 @@ const PkgManager = {
     grid.innerHTML = filteredDrafts.map(pkg => {
       const isExpanded = this.state.expandedDraftId === pkg.id;
       const itemsCount = (pkg.items || []).length;
-      const targetCount = pkg.target_count || (itemsCount > 0 ? itemsCount : 10);
-      const pct = Math.min(100, Math.round((itemsCount / targetCount) * 100));
-      const isCompleted = itemsCount >= targetCount && targetCount > 0;
 
       const licLabels = (pkg.licencas || ['home']).map(l => {
         const map = { home: '🏡 Home', clinical: '🩺 Clínica', escola: '🏫 Escola' };
@@ -476,28 +473,28 @@ const PkgManager = {
       }).join(' · ');
 
       return `
-        <article class="package-card is-draft ${isExpanded ? 'is-active' : ''}" 
-                 onclick="PkgManager.toggleDraftPackage('${pkg.id}')">
-          <div class="pkg-list-col pkg-list-main">
-            <span class="pkg-badge draft">🟡 Rascunho</span>
-            <h3 class="pkg-list-title">${this.escapeHtml(pkg.titulo)}</h3>
-          </div>
-
-          <div class="pkg-list-col pkg-list-lic">
-            <div class="pkg-tags compact-tags">
-              <span class="pkg-tag" style="background:#f4f1fd; color:var(--purple);">${this.escapeHtml(pkg.categoria || 'Geral')}</span>
-              <span class="pkg-tag">${licLabels}</span>
-              ${pkg.is_premium ? '<span class="pkg-tag premium">⭐ Premium</span>' : ''}
+        <div class="pkg-accordion-wrapper" id="pkg-acc-draft-${pkg.id}">
+          <article class="package-card is-draft ${isExpanded ? 'is-active' : ''}" 
+                   onclick="PkgManager.toggleDraftPackage('${pkg.id}')"
+                   style="cursor: pointer;">
+            <div class="pkg-list-col pkg-list-main">
+              <h3 class="pkg-list-title">${this.escapeHtml(pkg.titulo)}</h3>
             </div>
-          </div>
 
-          <div class="pkg-list-col pkg-list-actions">
-            <span class="pkg-audio-count-pill">🎵 <strong>${itemsCount}</strong> ${itemsCount === 1 ? 'áudio' : 'áudios'}</span>
-            <button class="btn-manage" type="button">
-              ${isExpanded ? '▲ Fechar Edição' : '▼ Gerenciar & Cortar'}
-            </button>
-          </div>
-        </article>
+            <div class="pkg-list-col pkg-list-lic">
+              <div class="pkg-tags compact-tags">
+                <span class="pkg-tag">${licLabels}</span>
+                ${pkg.is_premium ? '<span class="pkg-tag premium">⭐ Premium</span>' : ''}
+              </div>
+            </div>
+
+            <div class="pkg-list-col pkg-list-actions">
+              <span class="pkg-audio-count-pill">🎵 <strong>${itemsCount}</strong> ${itemsCount === 1 ? 'áudio' : 'áudios'}</span>
+            </div>
+          </article>
+
+          <div class="package-drawer-wrapper" id="drawer-wrap-draft-${pkg.id}" style="${isExpanded ? 'display:block;' : 'display:none;'}"></div>
+        </div>
       `;
     }).join('');
 
@@ -513,20 +510,30 @@ const PkgManager = {
     this.renderDraftsGrid();
     if (this.state.expandedDraftId) {
       setTimeout(() => {
-        document.getElementById('draft-inline-drawer')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        document.getElementById(`pkg-acc-draft-${pkgId}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }, 50);
     }
   },
 
   renderDraftExpandedPanel() {
-    const drawer = document.getElementById('draft-inline-drawer');
-    if (!drawer) return;
-
-    if (!this.state.expandedDraftId) {
-      drawer.innerHTML = '';
-      drawer.style.display = 'none';
-      return;
+    const globalDrawer = document.getElementById('draft-inline-drawer');
+    if (globalDrawer) {
+      globalDrawer.innerHTML = '';
+      globalDrawer.style.display = 'none';
     }
+
+    (this.state.drafts || []).forEach(p => {
+      const el = document.getElementById(`drawer-wrap-draft-${p.id}`);
+      if (el && p.id !== this.state.expandedDraftId) {
+        el.innerHTML = '';
+        el.style.display = 'none';
+      }
+    });
+
+    if (!this.state.expandedDraftId) return;
+
+    const drawer = document.getElementById(`drawer-wrap-draft-${this.state.expandedDraftId}`);
+    if (!drawer) return;
 
     const pkg = (this.state.drafts || []).find(p => p.id === this.state.expandedDraftId);
     if (!pkg) {
@@ -764,43 +771,42 @@ const PkgManager = {
     grid.innerHTML = this.state.publishedMenus.map(pkg => {
       const isExpanded = this.state.expandedProductionTitle === pkg.titulo;
       const itemsCount = (pkg.items || []).length;
-      const targetCount = pkg.target_count || (itemsCount > 0 ? itemsCount : 8);
-      const pct = Math.min(100, Math.round((itemsCount / targetCount) * 100));
-      const isCompleted = itemsCount >= targetCount && targetCount > 0;
 
       const licLabels = (pkg.licencas || ['home', 'clinical', 'escola']).map(l => {
         const map = { home: '🏡 Home', clinical: '🩺 Clínica', escola: '🏫 Escola' };
         return map[l] || l;
       }).join(' · ');
 
+      const encTitle = encodeURIComponent(pkg.titulo);
+
       return `
-        <article class="package-card is-published ${isExpanded ? 'is-active' : ''}"
-                 onclick="PkgManager.toggleProductionMenu('${this.escapeHtml(pkg.titulo)}')">
-          <div class="pkg-list-col pkg-list-main">
-            <span class="pkg-badge published">🟢 Menu Oficial</span>
-            <h3 class="pkg-list-title">${this.escapeHtml(pkg.titulo)}</h3>
-          </div>
-
-          <div class="pkg-list-col pkg-list-lic">
-            <div class="pkg-tags compact-tags">
-              <span class="pkg-tag" style="background:#e8f8f0; color:#127547;">${this.escapeHtml(pkg.categoria || 'Menus do Sistema')}</span>
-              <span class="pkg-tag" style="background:#e8f8f0; color:#127547;">${licLabels}</span>
-              ${pkg.is_premium ? '<span class="pkg-tag premium">⭐ Premium</span>' : ''}
+        <div class="pkg-accordion-wrapper" id="pkg-acc-prod-${encTitle}">
+          <article class="package-card is-published ${isExpanded ? 'is-active' : ''}"
+                   onclick="PkgManager.toggleProductionMenu('${this.escapeHtml(pkg.titulo)}')"
+                   style="cursor: pointer;">
+            <div class="pkg-list-col pkg-list-main">
+              <h3 class="pkg-list-title">${this.escapeHtml(pkg.titulo)}</h3>
             </div>
-          </div>
 
-          <div class="pkg-list-col pkg-list-actions">
-            <span class="pkg-audio-count-pill">🎵 <strong>${itemsCount}</strong> ${itemsCount === 1 ? 'áudio' : 'áudios'}</span>
-            <button class="btn-manage" type="button">
-              ${isExpanded ? '▲ Fechar' : '▼ Gerenciar & Cortar'}
-            </button>
-            <button class="btn-unpublish" type="button" 
-                    title="Despublicar este menu do catálogo oficial e voltar para rascunho para poder alterar"
-                    onclick="event.stopPropagation(); PkgManager.unpublishMenu('${this.escapeHtml(pkg.titulo)}')">
-              ↩️ Despublicar
-            </button>
-          </div>
-        </article>
+            <div class="pkg-list-col pkg-list-lic">
+              <div class="pkg-tags compact-tags">
+                <span class="pkg-tag" style="background:#e8f8f0; color:#127547;">${licLabels}</span>
+                ${pkg.is_premium ? '<span class="pkg-tag premium">⭐ Premium</span>' : ''}
+              </div>
+            </div>
+
+            <div class="pkg-list-col pkg-list-actions">
+              <span class="pkg-audio-count-pill">🎵 <strong>${itemsCount}</strong> ${itemsCount === 1 ? 'áudio' : 'áudios'}</span>
+              <button class="btn-unpublish" type="button" 
+                      title="Despublicar este menu do catálogo oficial e voltar para rascunho para poder alterar"
+                      onclick="event.stopPropagation(); PkgManager.unpublishMenu('${this.escapeHtml(pkg.titulo)}')">
+                ↩️ Despublicar
+              </button>
+            </div>
+          </article>
+
+          <div class="package-drawer-wrapper" id="drawer-wrap-prod-${encTitle}" style="${isExpanded ? 'display:block;' : 'display:none;'}"></div>
+        </div>
       `;
     }).join('');
 
@@ -940,20 +946,30 @@ const PkgManager = {
     this.renderPublishedGrid();
     if (this.state.expandedProductionTitle) {
       setTimeout(() => {
-        document.getElementById('production-inline-drawer')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        document.getElementById(`pkg-acc-prod-${encodeURIComponent(menuTitle)}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }, 50);
     }
   },
 
   renderProductionExpandedPanel() {
-    const drawer = document.getElementById('production-inline-drawer');
-    if (!drawer) return;
-
-    if (!this.state.expandedProductionTitle) {
-      drawer.innerHTML = '';
-      drawer.style.display = 'none';
-      return;
+    const globalDrawer = document.getElementById('production-inline-drawer');
+    if (globalDrawer) {
+      globalDrawer.innerHTML = '';
+      globalDrawer.style.display = 'none';
     }
+
+    (this.state.publishedMenus || []).forEach(p => {
+      const el = document.getElementById(`drawer-wrap-prod-${encodeURIComponent(p.titulo)}`);
+      if (el && p.titulo !== this.state.expandedProductionTitle) {
+        el.innerHTML = '';
+        el.style.display = 'none';
+      }
+    });
+
+    if (!this.state.expandedProductionTitle) return;
+
+    const drawer = document.getElementById(`drawer-wrap-prod-${encodeURIComponent(this.state.expandedProductionTitle)}`);
+    if (!drawer) return;
 
     const pkg = this.state.publishedMenus.find(m => m.titulo === this.state.expandedProductionTitle);
     if (!pkg) {
