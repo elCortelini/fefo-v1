@@ -410,89 +410,42 @@ const PkgManager = {
   // SEÇÃO 1: PACOTES EM RASCUNHO (DRAFTS)
   // ==========================================================
   renderDraftsGrid() {
-    const grid = document.getElementById('draft-packages-grid');
+    const grid = document.getElementById('packages-drafts-grid');
     if (!grid) return;
 
     let filteredDrafts = this.state.drafts || [];
-
-    if (this.state.filterSearch) {
-      const q = this.state.filterSearch;
-      filteredDrafts = filteredDrafts.filter(p => {
-        const tit = (p.titulo || '').toLowerCase();
-        const cat = (p.categoria || '').toLowerCase();
-        const desc = (p.descricao || '').toLowerCase();
-        const hasItem = (p.items || []).some(it =>
-          (it.titulo || '').toLowerCase().includes(q) ||
-          (it.codigo_item || '').toLowerCase().includes(q) ||
-          (it.descricao || '').toLowerCase().includes(q) ||
-          (it.arquivo_fefo || '').toLowerCase().includes(q)
-        );
-        return tit.includes(q) || cat.includes(q) || desc.includes(q) || hasItem;
-      });
-    }
-
-    if (this.state.filterLicense && this.state.filterLicense !== 'all') {
-      filteredDrafts = filteredDrafts.filter(p => {
-        const lics = p.licencas || ['home'];
-        return lics.includes(this.state.filterLicense);
-      });
-    }
-
-    if (this.state.filterCategory && this.state.filterCategory !== 'all') {
-      filteredDrafts = filteredDrafts.filter(p => p.categoria === this.state.filterCategory);
-    }
-
-    if (this.state.filterStatus && this.state.filterStatus !== 'all') {
-      filteredDrafts = filteredDrafts.filter(p => {
-        const items = p.items || [];
-        if (this.state.filterStatus === 'ready') return items.some(it => it.status === 'ready' || it.status === 'published');
-        if (this.state.filterStatus === 'needs_trim') return items.some(it => it.status === 'needs_trim');
-        if (this.state.filterStatus === 'pending') return items.some(it => it.status === 'pending_audio' || (!it.web_url && !it.arquivo_draft));
-        return true;
-      });
+    if (this.state.searchQuery) {
+      filteredDrafts = filteredDrafts.filter(p => 
+        (p.titulo || '').toLowerCase().includes(this.state.searchQuery)
+      );
     }
 
     if (!filteredDrafts.length) {
       grid.innerHTML = `
-        <div class="empty" style="grid-column: 1/-1; padding: 28px 16px; background: #faf9ff; border-radius: 16px; border: 1px dashed var(--line); text-align: center;">
-          <p style="font-size: 15px; font-weight: 800; color: var(--purple); margin: 0 0 6px;">Nenhum pacote encontrado com os filtros selecionados.</p>
-          <span style="color: var(--muted); font-size: 13px;">Tente alterar os termos da busca ou selecionar outra categoria/licença.</span>
+        <div class="empty">
+          <p>Nenhum rascunho de pacote encontrado.</p>
+          <button class="btn primary" onclick="PkgManager.createNewDraftPackage()">＋ Criar Novo Rascunho</button>
         </div>
       `;
       this.renderDraftExpandedPanel();
       return;
     }
 
-    grid.innerHTML = filteredDrafts.map(pkg => {
+    grid.innerHTML = filteredDrafts.map((pkg, idx) => {
       const isExpanded = this.state.expandedDraftId === pkg.id;
-      const itemsCount = (pkg.items || []).length;
-
-      const licLabels = (pkg.licencas || ['home']).map(l => {
-        const map = { home: '🏡 Home', clinical: '🩺 Clínica', escola: '🏫 Escola' };
-        return map[l] || l;
-      }).join(' · ');
+      const numLabel = `MENU/Pacote ${idx + 1}`;
 
       return `
         <div class="pkg-accordion-wrapper" id="pkg-acc-draft-${pkg.id}">
-          <article class="package-card is-draft ${isExpanded ? 'is-active' : ''}" 
-                   onclick="PkgManager.toggleDraftPackage('${pkg.id}')"
-                   style="cursor: pointer;">
-            <div class="pkg-list-col pkg-list-main">
-              <h3 class="pkg-list-title">${this.escapeHtml(pkg.titulo)}</h3>
-            </div>
-
-            <div class="pkg-list-col pkg-list-lic">
-              <div class="pkg-tags compact-tags">
-                <span class="pkg-tag">${licLabels}</span>
-                ${pkg.is_premium ? '<span class="pkg-tag premium">⭐ Premium</span>' : ''}
+          ${!isExpanded ? `
+            <div class="pkg-collapsed-row" onclick="PkgManager.toggleDraftPackage('${pkg.id}')">
+              <div class="pkg-collapsed-title">${numLabel}</div>
+              <div class="green-line-toggle">
+                <hr />
+                <span class="line-arrow">▼</span>
               </div>
             </div>
-
-            <div class="pkg-list-col pkg-list-actions">
-              <span class="pkg-audio-count-pill">🎵 <strong>${itemsCount}</strong> ${itemsCount === 1 ? 'áudio' : 'áudios'}</span>
-            </div>
-          </article>
-
+          ` : ''}
           <div class="package-drawer-wrapper" id="drawer-wrap-draft-${pkg.id}" style="${isExpanded ? 'display:block;' : 'display:none;'}"></div>
         </div>
       `;
@@ -535,7 +488,8 @@ const PkgManager = {
     const drawer = document.getElementById(`drawer-wrap-draft-${this.state.expandedDraftId}`);
     if (!drawer) return;
 
-    const pkg = (this.state.drafts || []).find(p => p.id === this.state.expandedDraftId);
+    const pkgIdx = (this.state.drafts || []).findIndex(p => p.id === this.state.expandedDraftId);
+    const pkg = (this.state.drafts || [])[pkgIdx];
     if (!pkg) {
       drawer.style.display = 'none';
       return;
@@ -548,91 +502,68 @@ const PkgManager = {
     const hasEscola = (pkg.licencas || []).includes('escola');
 
     drawer.innerHTML = `
-      <div class="inline-expanded-panel">
-        <div class="inline-panel-header">
-          <h3>📦 Editando Menu / Pacote: <em>${this.escapeHtml(pkg.titulo)}</em></h3>
-          <button class="btn-collapse" type="button" onclick="PkgManager.toggleDraftPackage('${pkg.id}')">▲ Fechar / Recolher</button>
-        </div>
-
-        <div class="inline-panel-body">
-          <!-- FORMULÁRIO DE METADADOS ALINHADO (LADO A LADO) -->
-          <div class="pkg-meta-form">
-            <div class="pkg-field-box">
-              <label>Nome do Menu / Pacote</label>
-              <input type="text" id="draft-input-title" value="${this.escapeHtml(pkg.titulo)}" 
-                     placeholder="Nome do pacote..."
-                     oninput="PkgManager.updateDraftPackageProperty('${pkg.id}', 'titulo', this.value)">
-            </div>
-
-            <div class="pkg-field-box">
-              <label>Meta de Faixas (Target Count)</label>
-              <input type="number" min="1" max="100" id="draft-input-target" value="${pkg.target_count || (items.length > 0 ? items.length : 10)}"
-                     oninput="PkgManager.updateDraftPackageProperty('${pkg.id}', 'target_count', parseInt(this.value, 10) || 10)">
-            </div>
-
-            <div class="pkg-field-box field-full">
-              <label>Descrição Pedagógica do Menu</label>
-              <textarea id="draft-input-desc" rows="2" 
-                        placeholder="Breve descrição dos objetivos pedagógicos deste menu..."
-                        oninput="PkgManager.updateDraftPackageProperty('${pkg.id}', 'descricao', this.value)">${this.escapeHtml(pkg.descricao || '')}</textarea>
-            </div>
-
-            <div class="pkg-licenses-container">
-              <span class="pkg-licenses-label">Licenças Disponíveis & Visibilidade:</span>
-              <div class="pkg-licenses-row">
-                <label class="pkg-license-pill">
-                  <input type="checkbox" id="draft-check-home" ${hasHome ? 'checked' : ''} onchange="PkgManager.updateDraftPackageLicenses('${pkg.id}')">
-                  <span>🏡 Home (Família)</span>
-                </label>
-                <label class="pkg-license-pill">
-                  <input type="checkbox" id="draft-check-clinical" ${hasClinical ? 'checked' : ''} onchange="PkgManager.updateDraftPackageLicenses('${pkg.id}')">
-                  <span>🩺 Clínica</span>
-                </label>
-                <label class="pkg-license-pill">
-                  <input type="checkbox" id="draft-check-escola" ${hasEscola ? 'checked' : ''} onchange="PkgManager.updateDraftPackageLicenses('${pkg.id}')">
-                  <span>🏫 Escola</span>
-                </label>
-                <label class="pkg-license-pill premium">
-                  <input type="checkbox" id="draft-check-premium" ${pkg.is_premium ? 'checked' : ''} onchange="PkgManager.updateDraftPackageProperty('${pkg.id}', 'is_premium', this.checked)">
-                  <span>⭐ Pacote Premium</span>
-                </label>
-              </div>
-            </div>
+      <div class="pkg-expanded-card" id="pkg-card-${pkg.id}">
+        <!-- Linha Superior: Nome à esquerda e Licenças à direita -->
+        <div class="pkg-expanded-top">
+          <div class="pkg-expanded-info">
+            <div class="pkg-expanded-num">MENU/Pacote ${pkgIdx + 1}</div>
+            <label class="pkg-expanded-label">Alterar nome do MENU/Pacote</label>
+            <input type="text" class="pkg-input-pill" id="draft-title-input-${pkg.id}" 
+                   value="${this.escapeHtml(pkg.titulo)}" 
+                   placeholder="Nome exemplo"
+                   oninput="PkgManager.updateDraftPackageProperty('${pkg.id}', 'titulo', this.value)">
           </div>
 
-          <!-- Dropzone -->
-          <label class="pkg-dropzone" id="draft-dropzone">
-            <input id="draft-file-upload" type="file" multiple accept=".wav,.mp3,.flac,.ogg,.m4a,.aac" style="display:none;" 
-                   onchange="PkgManager.uploadAudiosToDraft('${pkg.id}', this.files)">
-            <strong>＋ Arrastar ou Selecionar Vários Áudios para este Pacote</strong>
-            <span>Envie múltiplos arquivos .mp3 ou .wav para alimentar as faixas deste menu</span>
-          </label>
-
-          <!-- Lista de Faixas -->
-          <div style="margin-top: 24px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-              <h4 style="margin: 0; font-size: 16px; color: var(--ink);">Faixas deste Menu (${items.length})</h4>
-              <button class="btn secondary" type="button" style="font-size: 12px; padding: 6px 12px;" onclick="PkgManager.addNewEmptyItem('${pkg.id}')">
-                ＋ Adicionar Nova Faixa em Branco
-              </button>
+          <div class="pkg-lic-section">
+            <div class="pkg-lic-title">Licenças</div>
+            <div class="pkg-lic-box">
+              <label class="pkg-lic-item">
+                <input type="checkbox" ${hasHome ? 'checked' : ''} onchange="PkgManager.toggleDraftLicense('${pkg.id}', 'home')">
+                <span>🏠 Home</span>
+              </label>
+              <label class="pkg-lic-item">
+                <input type="checkbox" ${hasClinical ? 'checked' : ''} onchange="PkgManager.toggleDraftLicense('${pkg.id}', 'clinical')">
+                <span>🏠 Clinica</span>
+              </label>
+              <label class="pkg-lic-item">
+                <input type="checkbox" ${hasEscola ? 'checked' : ''} onchange="PkgManager.toggleDraftLicense('${pkg.id}', 'escola')">
+                <span>🏠 Escola</span>
+              </label>
+              <label class="pkg-lic-item">
+                <input type="checkbox" ${pkg.is_premium ? 'checked' : ''} onchange="PkgManager.toggleDraftPremium('${pkg.id}')">
+                <span>🏠 Premium</span>
+              </label>
             </div>
+          </div>
+        </div>
 
-            <div class="pkg-items-list">
-              ${items.length === 0 ? `
-                <div style="text-align:center; padding: 24px; color: var(--muted); font-size: 13px; background: #faf9ff; border-radius: 12px; border: 1px dashed var(--line);">
-                  Nenhuma faixa cadastrada neste menu. Clique em "Adicionar Nova Faixa" ou arraste áudios acima.
+        <!-- Lista de Faixas do Pacote -->
+        <div class="pkg-tracks-section">
+          ${items.length === 0 ? `
+            <div style="text-align:center; padding: 18px; color: #166534; font-size: 13px; font-weight: 700;">
+              Nenhuma faixa cadastrada ainda. Clique no botão abaixo para adicionar.
+            </div>
+          ` : items.map((it, tIdx) => {
+            const isTrackOpen = this.state.expandedTrackIds && this.state.expandedTrackIds.has(it.id);
+            const audioUrl = this.resolveUrl(it.web_url || (it.arquivo_draft ? `/repository/drafts/audio/${pkg.id}/${it.arquivo_draft.split('/').pop()}` : ''));
+            const safeDesc = JSON.stringify(it.descricao || '').replace(/'/g, "&#39;");
+            const fefoFileName = it.arquivo_fefo || '';
+
+            return `
+              <div class="pkg-track-collapsible-item" id="track-item-wrap-${it.id}">
+                <div class="pkg-track-toggle-row" onclick="PkgManager.toggleTrackCard('${it.id}')">
+                  <div class="pkg-track-name">FAIXA ${String(tIdx + 1).padStart(2, '0')}</div>
+                  <div class="green-line-toggle">
+                    <hr />
+                    <span class="line-arrow" id="track-arrow-${it.id}">${isTrackOpen ? '▲' : '▼'}</span>
+                  </div>
                 </div>
-              ` : items.map((it, idx) => {
-                const audioUrl = this.resolveUrl(it.web_url || (it.arquivo_draft ? `/repository/drafts/audio/${pkg.id}/${it.arquivo_draft.split('/').pop()}` : ''));
-                const hasAudio = !!audioUrl;
-                const safeDesc = JSON.stringify(it.descricao || '').replace(/'/g, "&#39;");
-                const fefoFileName = it.arquivo_fefo || '';
 
-                return `
+                <div class="track-mount-container" id="track-mount-${it.id}" style="${isTrackOpen ? 'display:block;' : 'display:none;'}">
                   <div class="pkg-item-row track-card-box" data-item-id="${it.id}">
                     <!-- LADO ESQUERDO: TAG VERTICAL FAIXA 01 -->
                     <div class="track-vertical-badge">
-                      <span>FAIXA ${String(idx + 1).padStart(2, '0')}</span>
+                      <span>FAIXA ${String(tIdx + 1).padStart(2, '0')}</span>
                     </div>
 
                     <!-- CONTEÚDO PRINCIPAL -->
@@ -643,7 +574,7 @@ const PkgManager = {
                           <label class="track-label">Nome no APP</label>
                           <input type="text" class="track-input-clean pkg-item-title-input" 
                                  value="${this.escapeHtml(it.titulo || '')}" 
-                                 placeholder="Nome exibido no app..." 
+                                 placeholder="Nome exemplo..." 
                                  oninput="PkgManager.updateDraftItemTitle('${pkg.id}', '${it.id}', this.value)">
                         </div>
                         <button type="button" class="btn-track-action"
@@ -716,46 +647,41 @@ const PkgManager = {
                       </div>
                     </div>
                   </div>
-                `;
-              }).join('')}
-            </div>
-          </div>
+                </div>
+              </div>
+            `;
+          }).join('')}
         </div>
 
-        <div class="inline-panel-footer">
-          <div style="display: flex; gap: 8px;">
-            <button class="remove-btn" type="button" onclick="PkgManager.deleteDraftPackage('${pkg.id}')">🗑 Excluir Pacote</button>
-            <button class="btn secondary" type="button" onclick="PkgManager.saveDraftPackageDetails('${pkg.id}')">💾 Salvar Rascunho</button>
-          </div>
-
-          <button class="btn-publish-pkg" type="button" onclick="PkgManager.publishDraftPackage('${pkg.id}')">
-            🚀 Publicar Pacote no Catálogo Oficial
+        <div style="display: flex; justify-content: flex-start; margin: 6px 0;">
+          <button type="button" class="btn-add-track-pill" onclick="PkgManager.addNewEmptyItem('${pkg.id}')">
+            ＋ Adicionar Nova Faixa
           </button>
+        </div>
+
+        <!-- Botões de Ação do Pacote (Publicar, Excluir, Salvar) -->
+        <div class="pkg-expanded-actions">
+          <button type="button" class="btn-pkg-action blue" onclick="PkgManager.publishDraftPackage('${pkg.id}')">
+            Publicar
+          </button>
+          <button type="button" class="btn-pkg-action red" onclick="PkgManager.deleteDraftPackage('${pkg.id}')">
+            Excluir
+          </button>
+          <button type="button" class="btn-pkg-action green" onclick="PkgManager.saveDraftPackageDetails('${pkg.id}')">
+            Salvar
+          </button>
+        </div>
+
+        <!-- Seta central de recolhimento -->
+        <div class="pkg-collapse-arrow-btn" title="Recolher pacote" onclick="PkgManager.toggleDraftPackage('${pkg.id}')">
+          ▲
         </div>
       </div>
     `;
-
-    const dropzone = document.getElementById('draft-dropzone');
-    if (dropzone) {
-      dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.style.background = '#f2efff'; });
-      dropzone.addEventListener('dragleave', () => { dropzone.style.background = ''; });
-      dropzone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropzone.style.background = '';
-        if (e.dataTransfer.files.length) {
-          this.uploadAudiosToDraft(pkg.id, e.dataTransfer.files);
-        }
-      });
-    }
-
-    items.forEach(it => this.setupAudioListeners(it.id));
   },
 
-  // ==========================================================
-  // SEÇÃO 2: MENUS EM PRODUÇÃO (MESMO LAYOUT, COR VERDE/ESMERALDA)
-  // ==========================================================
   renderPublishedGrid() {
-    const grid = document.getElementById('published-menus-grid');
+    const grid = document.getElementById('packages-published-grid');
     if (!grid) return;
 
     if (!this.state.publishedMenus.length) {
@@ -764,173 +690,28 @@ const PkgManager = {
       return;
     }
 
-    grid.innerHTML = this.state.publishedMenus.map(pkg => {
+    grid.innerHTML = this.state.publishedMenus.map((pkg, idx) => {
       const isExpanded = this.state.expandedProductionTitle === pkg.titulo;
-      const itemsCount = (pkg.items || []).length;
-
-      const licLabels = (pkg.licencas || ['home', 'clinical', 'escola']).map(l => {
-        const map = { home: '🏡 Home', clinical: '🩺 Clínica', escola: '🏫 Escola' };
-        return map[l] || l;
-      }).join(' · ');
-
+      const numLabel = `MENU/Pacote ${idx + 1}`;
       const encTitle = encodeURIComponent(pkg.titulo);
 
       return `
         <div class="pkg-accordion-wrapper" id="pkg-acc-prod-${encTitle}">
-          <article class="package-card is-published ${isExpanded ? 'is-active' : ''}"
-                   onclick="PkgManager.toggleProductionMenu('${this.escapeHtml(pkg.titulo)}')"
-                   style="cursor: pointer;">
-            <div class="pkg-list-col pkg-list-main">
-              <h3 class="pkg-list-title">${this.escapeHtml(pkg.titulo)}</h3>
-            </div>
-
-            <div class="pkg-list-col pkg-list-lic">
-              <div class="pkg-tags compact-tags">
-                <span class="pkg-tag" style="background:#e8f8f0; color:#127547;">${licLabels}</span>
-                ${pkg.is_premium ? '<span class="pkg-tag premium">⭐ Premium</span>' : ''}
+          ${!isExpanded ? `
+            <div class="pkg-collapsed-row" onclick="PkgManager.toggleProductionMenu('${this.escapeHtml(pkg.titulo)}')">
+              <div class="pkg-collapsed-title">${numLabel}</div>
+              <div class="green-line-toggle">
+                <hr />
+                <span class="line-arrow">▼</span>
               </div>
             </div>
-
-            <div class="pkg-list-col pkg-list-actions">
-              <span class="pkg-audio-count-pill">🎵 <strong>${itemsCount}</strong> ${itemsCount === 1 ? 'áudio' : 'áudios'}</span>
-              <button class="btn-unpublish" type="button" 
-                      title="Despublicar este menu do catálogo oficial e voltar para rascunho para poder alterar"
-                      onclick="event.stopPropagation(); PkgManager.unpublishMenu('${this.escapeHtml(pkg.titulo)}')">
-                ↩️ Despublicar
-              </button>
-            </div>
-          </article>
-
+          ` : ''}
           <div class="package-drawer-wrapper" id="drawer-wrap-prod-${encTitle}" style="${isExpanded ? 'display:block;' : 'display:none;'}"></div>
         </div>
       `;
     }).join('');
 
     this.renderProductionExpandedPanel();
-  },
-
-  toggleTrackAccordion(itemId, type, isProduction = false) {
-    const panel = document.getElementById(`panel-${type}-${itemId}`);
-    const toggle = panel?.previousElementSibling;
-    if (!panel) return;
-
-    const isOpen = panel.classList.contains('is-open');
-    if (isOpen) {
-      panel.classList.remove('is-open');
-      toggle?.classList.remove('is-open');
-      if (type === 'trim') {
-        const audioEl = panel.querySelector('audio');
-        if (audioEl) audioEl.pause();
-      }
-    } else {
-      panel.classList.add('is-open');
-      toggle?.classList.add('is-open');
-      if (type === 'trim') {
-        this.loadInlineTrimmer(itemId, isProduction);
-      }
-    }
-  },
-
-  async loadInlineTrimmer(itemId, isProduction = false, forceUrl = null) {
-    const mountEl = document.getElementById(`trimmer-mount-${itemId}`);
-    if (!mountEl) return;
-
-    let it = null, pkg = null;
-    if (isProduction) {
-      for (const m of (this.state.publishedMenus || [])) {
-        const found = (m.items || []).find(x => x.id === itemId);
-        if (found) { it = found; pkg = m; break; }
-      }
-    } else {
-      for (const p of (this.state.drafts || [])) {
-        const found = (p.items || []).find(x => x.id === itemId);
-        if (found) { it = found; pkg = p; break; }
-      }
-    }
-
-    const title = it ? (it.titulo || 'Faixa') : 'Faixa';
-    const description = it ? (it.descricao || '') : '';
-    const itemCode = it ? (it.arquivo_origem || it.arquivo_pet || it.arquivo_fefo || '') : '';
-
-    let effectiveUrl = forceUrl;
-    if (!effectiveUrl && it) {
-      if (it.web_url) {
-        effectiveUrl = this.resolveUrl(it.web_url);
-      }
-      if (!effectiveUrl) {
-        const blob = await AudioBlobDB.getAudio(itemId);
-        if (blob) effectiveUrl = URL.createObjectURL(blob);
-      }
-    }
-
-    if (!effectiveUrl) {
-      mountEl.innerHTML = `
-        <div style="text-align:center; padding: 22px 14px; background: #0f274a; border-radius: 18px; border: 1.5px dashed #2a5288; color: #a4c2e6;">
-          <div style="font-size: 26px; margin-bottom: 6px;">✂️</div>
-          <div style="font-weight: 800; font-size: 14px; color: #fff;">Nenhum áudio carregado nesta faixa para cortar.</div>
-          <div style="font-size: 12px; margin-top: 4px; color: #7ea3d1;">Selecione um áudio no botão acima ou gere com a IA para poder cortar e ajustar o trecho.</div>
-        </div>
-      `;
-      return;
-    }
-
-    if (window.mountAudioTrimmer) {
-      window.mountAudioTrimmer(mountEl, {
-        url: effectiveUrl,
-        title: title,
-        description: description,
-        itemCode: itemCode,
-        onSave: async (blob, info) => {
-          notice('Salvando corte do áudio...', 'ok');
-          await AudioBlobDB.setAudio(itemId, blob);
-          const newUrl = URL.createObjectURL(blob);
-
-          if (it) {
-            it.web_url = newUrl;
-            it.status = 'ready';
-          }
-
-          const player = document.getElementById(`audio-${itemId}`);
-          if (player) {
-            player.src = newUrl;
-            player.load();
-          }
-
-          if (isProduction) {
-            const form = new FormData();
-            form.append('tipo', 'production');
-            form.append('item_id', itemId);
-            form.append('file', blob, 'trimmed.wav');
-
-            try {
-              const res = await fetch('/api/packages/replace_audio', {
-                method: 'POST',
-                body: form
-              });
-              const data = await res.json();
-              if (!data.ok) throw new Error(data.message);
-              notice(data.message || '✓ Corte salvo e catálogo atualizado!', 'ok');
-            } catch (e) {
-              notice(`Erro ao salvar corte no catálogo: ${e.message}`, 'error');
-            }
-          } else {
-            notice('✓ Corte aplicado e áudio atualizado na faixa!', 'ok');
-          }
-
-          this.loadInlineTrimmer(itemId, isProduction, newUrl);
-        }
-      });
-    }
-  },
-
-  saveSingleItem(containerId, itemId, isProduction = false) {
-    if (isProduction) {
-      PkgStorage.saveAllProductionMenus(this.state.publishedMenus);
-      notice('✓ Faixa do catálogo oficial salva com sucesso!', 'ok');
-    } else {
-      PkgStorage.saveAllDrafts(this.state.drafts);
-      notice('✓ Faixa do rascunho salva com sucesso!', 'ok');
-    }
   },
 
   toggleProductionMenu(menuTitle) {
@@ -967,7 +748,8 @@ const PkgManager = {
     const drawer = document.getElementById(`drawer-wrap-prod-${encodeURIComponent(this.state.expandedProductionTitle)}`);
     if (!drawer) return;
 
-    const pkg = this.state.publishedMenus.find(m => m.titulo === this.state.expandedProductionTitle);
+    const pkgIdx = (this.state.publishedMenus || []).findIndex(m => m.titulo === this.state.expandedProductionTitle);
+    const pkg = (this.state.publishedMenus || [])[pkgIdx];
     if (!pkg) {
       drawer.style.display = 'none';
       return;
@@ -980,97 +762,67 @@ const PkgManager = {
     const hasEscola = (pkg.licencas || ['home', 'clinical', 'escola']).includes('escola');
 
     drawer.innerHTML = `
-      <div class="inline-expanded-panel production-style">
-        <div class="inline-panel-header">
-          <h3>🟢 Editando Menu Oficial: <em>${this.escapeHtml(pkg.titulo)}</em></h3>
-          <div style="display: flex; gap: 10px;">
-            <button class="btn-unpublish" type="button" onclick="PkgManager.unpublishMenu('${this.escapeHtml(pkg.titulo)}')">
-              ↩️ Despublicar este Menu (Voltar p/ Rascunho)
-            </button>
-            <button class="btn-collapse" type="button" onclick="PkgManager.toggleProductionMenu('${this.escapeHtml(pkg.titulo)}')">▲ Fechar</button>
+      <div class="pkg-expanded-card" id="pkg-card-prod-${encodeURIComponent(pkg.titulo)}">
+        <!-- Linha Superior: Nome à esquerda e Licenças à direita -->
+        <div class="pkg-expanded-top">
+          <div class="pkg-expanded-info">
+            <div class="pkg-expanded-num">MENU/Pacote ${pkgIdx + 1}</div>
+            <label class="pkg-expanded-label">Alterar nome do MENU/Pacote</label>
+            <input type="text" class="pkg-input-pill" id="prod-title-input-${encodeURIComponent(pkg.titulo)}" 
+                   value="${this.escapeHtml(pkg.titulo)}" 
+                   placeholder="Nome exemplo"
+                   oninput="PkgManager.updateProductionPackageProperty('${this.escapeHtml(pkg.titulo)}', 'titulo', this.value)">
+          </div>
+
+          <div class="pkg-lic-section">
+            <div class="pkg-lic-title">Licenças</div>
+            <div class="pkg-lic-box">
+              <label class="pkg-lic-item">
+                <input type="checkbox" ${hasHome ? 'checked' : ''} onchange="PkgManager.toggleProductionLicense('${this.escapeHtml(pkg.titulo)}', 'home')">
+                <span>🏠 Home</span>
+              </label>
+              <label class="pkg-lic-item">
+                <input type="checkbox" ${hasClinical ? 'checked' : ''} onchange="PkgManager.toggleProductionLicense('${this.escapeHtml(pkg.titulo)}', 'clinical')">
+                <span>🏠 Clinica</span>
+              </label>
+              <label class="pkg-lic-item">
+                <input type="checkbox" ${hasEscola ? 'checked' : ''} onchange="PkgManager.toggleProductionLicense('${this.escapeHtml(pkg.titulo)}', 'escola')">
+                <span>🏠 Escola</span>
+              </label>
+              <label class="pkg-lic-item">
+                <input type="checkbox" ${pkg.is_premium ? 'checked' : ''} onchange="PkgManager.toggleProductionPremium('${this.escapeHtml(pkg.titulo)}')">
+                <span>🏠 Premium</span>
+              </label>
+            </div>
           </div>
         </div>
 
-        <div class="inline-panel-body">
-          <!-- FORMULÁRIO DE METADADOS ALINHADO (LADO A LADO) -->
-          <div class="pkg-meta-form production-meta">
-            <div class="pkg-field-box">
-              <label>Nome do Menu Oficial</label>
-              <input type="text" id="prod-input-title" value="${this.escapeHtml(pkg.titulo)}" 
-                     placeholder="Nome exibido no catálogo..."
-                     oninput="PkgManager.updateProductionPackageProperty('${this.escapeHtml(pkg.titulo)}', 'titulo', this.value)">
+        <!-- Lista de Faixas do Menu -->
+        <div class="pkg-tracks-section">
+          ${items.length === 0 ? `
+            <div style="text-align:center; padding: 18px; color: #166534; font-size: 13px; font-weight: 700;">
+              Nenhuma faixa neste menu oficial. Clique abaixo para adicionar.
             </div>
+          ` : items.map((it, tIdx) => {
+            const isTrackOpen = this.state.expandedTrackIds && this.state.expandedTrackIds.has(it.id);
+            const audioUrl = this.resolveUrl(it.web_url || (it.arquivo_draft ? `/repository/drafts/audio/${pkg.titulo}/${it.arquivo_draft.split('/').pop()}` : ''));
+            const fefoFileName = it.arquivo_pet || it.arquivo_fefo || '';
 
-            <div class="pkg-field-box">
-              <label>Meta de Faixas (Target Count)</label>
-              <input type="number" min="1" max="100" id="prod-input-target" value="${pkg.target_count || (items.length > 0 ? items.length : 8)}"
-                     oninput="PkgManager.updateProductionPackageProperty('${this.escapeHtml(pkg.titulo)}', 'target_count', parseInt(this.value, 10) || 8)">
-            </div>
-
-            <div class="pkg-field-box field-full">
-              <label>Descrição do Menu no Catálogo Oficial</label>
-              <textarea id="prod-input-desc" rows="2" 
-                        placeholder="Descrição oficial..."
-                        oninput="PkgManager.updateProductionPackageProperty('${this.escapeHtml(pkg.titulo)}', 'descricao', this.value)">${this.escapeHtml(pkg.descricao || '')}</textarea>
-            </div>
-
-            <div class="pkg-licenses-container">
-              <span class="pkg-licenses-label">Licenças Disponíveis:</span>
-              <div class="pkg-licenses-row">
-                <label class="pkg-license-pill">
-                  <input type="checkbox" id="prod-check-home" ${hasHome ? 'checked' : ''} onchange="PkgManager.updateProductionPackageLicenses('${this.escapeHtml(pkg.titulo)}')">
-                  <span>🏡 Home (Família)</span>
-                </label>
-                <label class="pkg-license-pill">
-                  <input type="checkbox" id="prod-check-clinical" ${hasClinical ? 'checked' : ''} onchange="PkgManager.updateProductionPackageLicenses('${this.escapeHtml(pkg.titulo)}')">
-                  <span>🩺 Clínica</span>
-                </label>
-                <label class="pkg-license-pill">
-                  <input type="checkbox" id="prod-check-escola" ${hasEscola ? 'checked' : ''} onchange="PkgManager.updateProductionPackageLicenses('${this.escapeHtml(pkg.titulo)}')">
-                  <span>🏫 Escola</span>
-                </label>
-                <label class="pkg-license-pill premium">
-                  <input type="checkbox" id="prod-check-premium" ${pkg.is_premium ? 'checked' : ''} onchange="PkgManager.updateProductionPackageProperty('${this.escapeHtml(pkg.titulo)}', 'is_premium', this.checked)">
-                  <span>⭐ Pacote Premium</span>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <!-- Dropzone -->
-          <label class="pkg-dropzone" id="prod-dropzone">
-            <input id="prod-file-upload" type="file" multiple accept=".wav,.mp3,.flac,.ogg,.m4a" style="display:none;" 
-                   onchange="PkgManager.uploadAudiosToProduction('${this.escapeHtml(pkg.titulo)}', this.files)">
-            <strong style="color: #27ae60;">＋ Adicionar Novos Áudios a este Menu Oficial</strong>
-            <span>Arraste os arquivos aqui para converter e incluir diretamente neste menu em produção</span>
-          </label>
-
-          <!-- Lista de Faixas -->
-          <div style="margin-top: 24px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-              <h4 style="margin: 0; font-size: 16px; color: var(--ink);">Faixas Oficiais Ativas (${items.length})</h4>
-              <button class="btn secondary" type="button" style="font-size: 12px; padding: 6px 12px; background: #e8f8f0; color: #127547;" 
-                      onclick="PkgManager.addNewEmptyProductionItem('${this.escapeHtml(pkg.titulo)}')">
-                ＋ Adicionar Nova Faixa Oficial
-              </button>
-            </div>
-
-            <div class="pkg-items-list">
-              ${items.length === 0 ? `
-                <div style="text-align:center; padding: 20px; color: var(--muted); font-size: 13px; background: #faf9ff; border-radius: 12px;">
-                  Nenhum áudio encontrado neste menu oficial.
+            return `
+              <div class="pkg-track-collapsible-item" id="track-item-wrap-${it.id}">
+                <div class="pkg-track-toggle-row" onclick="PkgManager.toggleTrackCard('${it.id}')">
+                  <div class="pkg-track-name">FAIXA ${String(tIdx + 1).padStart(2, '0')}</div>
+                  <div class="green-line-toggle">
+                    <hr />
+                    <span class="line-arrow" id="track-arrow-${it.id}">${isTrackOpen ? '▲' : '▼'}</span>
+                  </div>
                 </div>
-              ` : items.map((it, idx) => {
-                const audioUrl = this.resolveUrl(it.web_url || (it.arquivo ? `../repository/audio/${it.arquivo.split('/').pop()}` : ''));
-                const hasAudio = !!audioUrl;
-                const safeDesc = JSON.stringify(it.descricao || '').replace(/'/g, "&#39;");
-                const fefoFileName = (it.arquivo || '').split('/').pop() || it.arquivo_fefo || '';
 
-                return `
+                <div class="track-mount-container" id="track-mount-${it.id}" style="${isTrackOpen ? 'display:block;' : 'display:none;'}">
                   <div class="pkg-item-row track-card-box" data-item-id="${it.id}">
                     <!-- LADO ESQUERDO: TAG VERTICAL FAIXA 01 -->
                     <div class="track-vertical-badge">
-                      <span>FAIXA ${String(idx + 1).padStart(2, '0')}</span>
+                      <span>FAIXA ${String(tIdx + 1).padStart(2, '0')}</span>
                     </div>
 
                     <!-- CONTEÚDO PRINCIPAL -->
@@ -1080,12 +832,12 @@ const PkgManager = {
                         <div class="track-field-group">
                           <label class="track-label">Nome no APP</label>
                           <input type="text" class="track-input-clean pkg-item-title-input prod-item-title" 
-                                 data-item-id="${it.id}" value="${this.escapeHtml(it.titulo || '')}" 
-                                 placeholder="Título da faixa..." 
+                                 value="${this.escapeHtml(it.titulo || '')}" 
+                                 placeholder="Nome exemplo..." 
                                  oninput="PkgManager.updateProductionItemTitle('${this.escapeHtml(pkg.titulo)}', '${it.id}', this.value)">
                         </div>
                         <button type="button" class="btn-track-action"
-                                title="Carregar ou substituir áudio do seu computador"
+                                title="Carregar ou substituir áudio do catálogo"
                                 onclick="PkgManager.promptChooseAudio('${this.escapeHtml(pkg.titulo)}', '${it.id}', true)">
                           Selecionar Audio
                         </button>
@@ -1146,126 +898,135 @@ const PkgManager = {
                                   onclick="PkgManager.saveSingleItem('${this.escapeHtml(pkg.titulo)}', '${it.id}', true)">
                             Salvar
                           </button>
-                          <button type="button" class="pkg-item-delete" title="Excluir do catálogo oficial"
-                                  onclick="PkgManager.deleteProductionItem('${it.id}', '${this.escapeHtml(it.titulo)}')">
+                          <button type="button" class="pkg-item-delete" title="Remover áudio do catálogo"
+                                  onclick="PkgManager.deleteProductionItem('${this.escapeHtml(pkg.titulo)}', '${it.id}')">
                             🗑
                           </button>
                         </div>
                       </div>
                     </div>
                   </div>
-                `;
-              }).join('')}
-            </div>
-          </div>
+                </div>
+              </div>
+            `;
+          }).join('')}
         </div>
 
-        <div class="inline-panel-footer">
-          <button class="btn-unpublish" type="button" onclick="PkgManager.unpublishMenu('${this.escapeHtml(pkg.titulo)}')">
-            ↩️ Despublicar Menu (Deixar Off e Mover p/ Rascunho)
+        <div style="display: flex; justify-content: flex-start; margin: 6px 0;">
+          <button type="button" class="btn-add-track-pill" onclick="PkgManager.addNewEmptyProductionItem('${this.escapeHtml(pkg.titulo)}')">
+            ＋ Adicionar Nova Faixa
           </button>
+        </div>
 
-          <button class="btn primary" style="background:#27ae60;" type="button" 
-                  onclick="PkgManager.saveProductionMenu('${this.escapeHtml(pkg.titulo)}')">
-            💾 Salvar Alterações deste Menu Oficial
+        <!-- Botões de Ação do Pacote (Despublicar, Excluir, Salvar) -->
+        <div class="pkg-expanded-actions">
+          <button type="button" class="btn-pkg-action blue" onclick="PkgManager.unpublishMenu('${this.escapeHtml(pkg.titulo)}')">
+            Despublicar
           </button>
+          <button type="button" class="btn-pkg-action red" onclick="PkgManager.deleteProductionMenuDirect('${this.escapeHtml(pkg.titulo)}')">
+            Excluir
+          </button>
+          <button type="button" class="btn-pkg-action green" onclick="PkgManager.saveProductionPackageDetails('${this.escapeHtml(pkg.titulo)}')">
+            Salvar
+          </button>
+        </div>
+
+        <!-- Seta central de recolhimento -->
+        <div class="pkg-collapse-arrow-btn" title="Recolher pacote" onclick="PkgManager.toggleProductionMenu('${this.escapeHtml(pkg.titulo)}')">
+          ▲
         </div>
       </div>
     `;
+  },
 
-    const dropzone = document.getElementById('prod-dropzone');
-    if (dropzone) {
-      dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.style.background = '#eaf8f1'; });
-      dropzone.addEventListener('dragleave', () => { dropzone.style.background = ''; });
-      dropzone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropzone.style.background = '';
-        if (e.dataTransfer.files.length) {
-          this.uploadAudiosToProduction(pkg.titulo, e.dataTransfer.files);
-        }
-      });
+  toggleTrackCard(trackId) {
+    if (!this.state.expandedTrackIds) this.state.expandedTrackIds = new Set();
+    const mount = document.getElementById(`track-mount-${trackId}`);
+    const arrow = document.getElementById(`track-arrow-${trackId}`);
+    if (!mount) return;
+
+    const isOpen = mount.style.display !== 'none';
+    if (isOpen) {
+      mount.style.display = 'none';
+      this.state.expandedTrackIds.delete(trackId);
+      if (arrow) arrow.textContent = '▼';
+    } else {
+      mount.style.display = 'block';
+      this.state.expandedTrackIds.add(trackId);
+      if (arrow) arrow.textContent = '▲';
+      this.setupAudioListeners(trackId);
     }
-
-    items.forEach(it => this.setupAudioListeners(it.id));
   },
 
-  // ==========================================================
-  // ATUALIZAÇÃO DE PROPRIEDADES E SALVAMENTO DE RASCUNHO
-  // ==========================================================
-  updateDraftPackageProperty(pkgId, prop, value) {
+  toggleDraftLicense(pkgId, licKey) {
     const pkg = (this.state.drafts || []).find(p => p.id === pkgId);
     if (!pkg) return;
-    pkg[prop] = value;
-    PkgStorage.saveAllDrafts(this.state.drafts);
-  },
-
-  updateDraftPackageLicenses(pkgId) {
-    const pkg = (this.state.drafts || []).find(p => p.id === pkgId);
-    if (!pkg) return;
-    pkg.licencas = [];
-    if (document.getElementById('draft-check-home')?.checked) pkg.licencas.push('home');
-    if (document.getElementById('draft-check-clinical')?.checked) pkg.licencas.push('clinical');
-    if (document.getElementById('draft-check-escola')?.checked) pkg.licencas.push('escola');
-    PkgStorage.saveAllDrafts(this.state.drafts);
-  },
-
-  updateDraftItemTitle(pkgId, itemId, newTitle) {
-    const pkg = (this.state.drafts || []).find(p => p.id === pkgId);
-    if (!pkg) return;
-    const it = (pkg.items || []).find(x => x.id === itemId);
-    if (!it) return;
-    it.titulo = newTitle.trim();
-    PkgStorage.saveAllDrafts(this.state.drafts);
-    this.scheduleBackendMetadataSave(pkgId, itemId, { titulo: it.titulo });
-  },
-
-  updateDraftItemFefoFile(pkgId, itemId, newName) {
-    let clean = (newName || '').trim().toLowerCase();
-    if (clean && !clean.endsWith('.wav')) clean += '.wav';
-    const pkg = (this.state.drafts || []).find(p => p.id === pkgId);
-    if (!pkg) return;
-    const it = (pkg.items || []).find(x => x.id === itemId);
-    if (!it) return;
-    it.arquivo_fefo = clean;
-    PkgStorage.saveAllDrafts(this.state.drafts);
-    this.scheduleBackendMetadataSave(pkgId, itemId, { arquivo_fefo: clean });
-  },
-
-  updateDraftItemScript(pkgId, itemId, newDesc) {
-    const pkg = (this.state.drafts || []).find(p => p.id === pkgId);
-    if (!pkg) return;
-    const it = (pkg.items || []).find(x => x.id === itemId);
-    if (!it) return;
-    it.descricao = newDesc;
-    PkgStorage.saveAllDrafts(this.state.drafts);
-
-    const badge = document.getElementById(`script-saved-${itemId}`);
-    if (badge) {
-      badge.classList.add('visible');
-      clearTimeout(this.debounceTimers[`badge_${itemId}`]);
-      this.debounceTimers[`badge_${itemId}`] = setTimeout(() => badge.classList.remove('visible'), 2000);
+    pkg.licencas = pkg.licencas || [];
+    if (pkg.licencas.includes(licKey)) {
+      pkg.licencas = pkg.licencas.filter(l => l !== licKey);
+    } else {
+      pkg.licencas.push(licKey);
     }
-    this.scheduleBackendMetadataSave(pkgId, itemId, { descricao: newDesc });
+    PkgStorage.saveAllDrafts(this.state.drafts);
   },
 
-  // ==========================================================
-  // ATUALIZAÇÃO DE PROPRIEDADES DE PRODUÇÃO
-  // ==========================================================
-  updateProductionPackageProperty(menuTitle, prop, value) {
+  toggleDraftPremium(pkgId) {
+    const pkg = (this.state.drafts || []).find(p => p.id === pkgId);
+    if (!pkg) return;
+    pkg.is_premium = !pkg.is_premium;
+    PkgStorage.saveAllDrafts(this.state.drafts);
+  },
+
+  toggleProductionLicense(menuTitle, licKey) {
     const pkg = (this.state.publishedMenus || []).find(p => p.titulo === menuTitle);
     if (!pkg) return;
-    pkg[prop] = value;
+    pkg.licencas = pkg.licencas || [];
+    if (pkg.licencas.includes(licKey)) {
+      pkg.licencas = pkg.licencas.filter(l => l !== licKey);
+    } else {
+      pkg.licencas.push(licKey);
+    }
     PkgStorage.saveAllProductionMenus(this.state.publishedMenus);
   },
 
-  updateProductionPackageLicenses(menuTitle) {
+  toggleProductionPremium(menuTitle) {
     const pkg = (this.state.publishedMenus || []).find(p => p.titulo === menuTitle);
     if (!pkg) return;
-    pkg.licencas = [];
-    if (document.getElementById('prod-check-home')?.checked) pkg.licencas.push('home');
-    if (document.getElementById('prod-check-clinical')?.checked) pkg.licencas.push('clinical');
-    if (document.getElementById('prod-check-escola')?.checked) pkg.licencas.push('escola');
+    pkg.is_premium = !pkg.is_premium;
     PkgStorage.saveAllProductionMenus(this.state.publishedMenus);
+  },
+
+  saveDraftPackageDetails(pkgId) {
+    const pkg = (this.state.drafts || []).find(p => p.id === pkgId);
+    if (!pkg) return;
+    const titleInput = document.getElementById(`draft-title-input-${pkgId}`);
+    if (titleInput && titleInput.value.trim()) {
+      pkg.titulo = titleInput.value.trim();
+    }
+    PkgStorage.saveAllDrafts(this.state.drafts);
+    notice('✓ Pacote salvo com sucesso!', 'ok');
+    this.renderDraftsGrid();
+  },
+
+  saveProductionPackageDetails(menuTitle) {
+    const pkg = (this.state.publishedMenus || []).find(p => p.titulo === menuTitle);
+    if (!pkg) return;
+    const titleInput = document.getElementById(`prod-title-input-${encodeURIComponent(menuTitle)}`);
+    if (titleInput && titleInput.value.trim()) {
+      pkg.titulo = titleInput.value.trim();
+    }
+    PkgStorage.saveAllProductionMenus(this.state.publishedMenus);
+    notice('✓ Menu oficial salvo com sucesso!', 'ok');
+    this.renderPublishedGrid();
+  },
+
+  async deleteProductionMenuDirect(menuTitle) {
+    if (!confirm(`Tem certeza que deseja excluir o menu oficial “${menuTitle}”?`)) return;
+    this.state.publishedMenus = (this.state.publishedMenus || []).filter(p => p.titulo !== menuTitle);
+    if (this.state.expandedProductionTitle === menuTitle) this.state.expandedProductionTitle = null;
+    PkgStorage.saveAllProductionMenus(this.state.publishedMenus);
+    notice(`Menu “${menuTitle}” excluído.`, 'ok');
+    this.renderPublishedGrid();
   },
 
   updateProductionItemTitle(menuTitle, itemId, newTitle) {

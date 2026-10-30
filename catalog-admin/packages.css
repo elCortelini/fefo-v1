@@ -1914,3 +1914,287 @@
     align-items: stretch !important;
   }
 }
+
+/* ======================================================== */
+/* LAYOUT DE PACOTES FIEL AO PRINT MODELO                   */
+/* ======================================================== */
+
+/* Linha verde com seta central */
+.green-line-toggle {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  padding: 4px 0 !important;
+  width: 100% !important;
+}
+
+.green-line-toggle hr {
+  width: 100% !important;
+  border: 0 !important;
+  border-top: 2.5px solid #5cdb88 !important;
+  margin: 0 !important;
+}
+
+.green-line-toggle .line-arrow {
+  position: absolute !important;
+  color: #15803d !important;
+  font-size: 11px !important;
+  background: transparent !important;
+  line-height: 1 !important;
+  pointer-events: none !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+}
+
+/* Item de Pacote Recolhido na Lista */
+.pkg-collapsed-row {
+  margin-bottom: 18px !important;
+  cursor: pointer !important;
+  padding: 4px 0 !important;
+  transition: opacity 0.15s ease !important;
+}
+
+.pkg-collapsed-row:hover {
+  opacity: 0.82 !important;
+}
+
+.pkg-collapsed-title {
+  font-size: 17px !important;
+  font-weight: 900 !important;
+  color: #000000 !important;
+  margin-bottom: 2px !important;
+  letter-spacing: -0.2px !important;
+}
+
+/* Card de Pacote Expandido */
+.pkg-expanded-card {
+  background: #edf7f0 !important; /* Fundo verde acinzentado bem suave do print */
+  border-radius: 24px !important;
+  padding: 24px 28px !important;
+  margin-bottom: 24px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03) !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+}
+
+.pkg-expanded-top {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: flex-start !important;
+  gap: 24px !important;
+  flex-wrap: wrap !important;
+}
+
+.pkg-expanded-info {
+  flex: 1 !important;
+  min-width: 260px !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.pkg-expanded-num {
+  font-size: 17px !important;
+  font-weight: 900 !important;
+  color: #000000 !important;
+  margin-bottom: 12px !important;
+}
+
+.pkg-expanded-label {
+  font-size: 14.5px !important;
+  font-weight: 900 !important;
+  color: #000000 !important;
+  margin-bottom: 8px !important;
+}
+
+.pkg-input-pill {
+  background: #ffffff !important;
+  border: none !important;
+  border-radius: 12px !important;
+  padding: 11px 18px !important;
+  font-family: inherit !important;
+  font-size: 14.5px !important;
+  font-weight: 800 !important;
+  color: #000000 !important;
+  width: 100% !important;
+  max-width: 440px !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04) !important;
+  box-sizing: border-box !important;
+}
+
+.pkg-input-pill:focus {
+  outline: 2px solid #5cdb88 !important;
+}
+
+/* Seção de Licenças (Caixa Verde) */
+.pkg-lic-section {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+}
+
+.pkg-lic-title {
+  font-size: 15px !important;
+  font-weight: 900 !important;
+  color: #000000 !important;
+  margin-bottom: 6px !important;
+  text-align: center !important;
+}
+
+.pkg-lic-box {
+  background: #62d689 !important;
+  border-radius: 16px !important;
+  padding: 12px 20px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  box-shadow: 0 4px 12px rgba(98, 214, 137, 0.25) !important;
+  min-width: 165px !important;
+  box-sizing: border-box !important;
+}
+
+.pkg-lic-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  color: #000000 !important;
+  user-select: none !important;
+}
+
+.pkg-lic-item input[type="checkbox"] {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  width: 22px !important;
+  height: 22px !important;
+  background: #ffffff !important;
+  border-radius: 6px !important;
+  display: grid !important;
+  place-content: center !important;
+  cursor: pointer !important;
+  margin: 0 !important;
+  border: none !important;
+  transition: all 0.15s ease !important;
+}
+
+.pkg-lic-item input[type="checkbox"]::before {
+  content: "✓" !important;
+  font-size: 15px !important;
+  font-weight: 900 !important;
+  color: #22c55e !important;
+  transform: scale(0) !important;
+  transition: transform 0.15s ease !important;
+  line-height: 1 !important;
+}
+
+.pkg-lic-item input[type="checkbox"]:checked::before {
+  transform: scale(1) !important;
+}
+
+/* Faixas dentro do Pacote */
+.pkg-tracks-section {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  margin-top: 14px !important;
+}
+
+.pkg-track-toggle-row {
+  cursor: pointer !important;
+  padding: 2px 0 !important;
+}
+
+.pkg-track-name {
+  font-size: 15px !important;
+  font-weight: 900 !important;
+  color: #000000 !important;
+  margin-bottom: 2px !important;
+}
+
+.track-mount-container {
+  margin-top: 6px !important;
+  margin-bottom: 12px !important;
+}
+
+.btn-add-track-pill {
+  background: #ffffff !important;
+  border: 1.5px dashed #5cdb88 !important;
+  color: #15803d !important;
+  font-family: inherit !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  padding: 8px 20px !important;
+  border-radius: 999px !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+.btn-add-track-pill:hover {
+  background: #f0fdf4 !important;
+  border-color: #22c55e !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Botões de Ação do Pacote (Publicar, Excluir, Salvar) */
+.pkg-expanded-actions {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 18px !important;
+  margin-top: 12px !important;
+  flex-wrap: wrap !important;
+}
+
+.btn-pkg-action {
+  border: none !important;
+  border-radius: 12px !important;
+  padding: 11px 34px !important;
+  font-family: inherit !important;
+  font-size: 15px !important;
+  font-weight: 900 !important;
+  color: #ffffff !important;
+  cursor: pointer !important;
+  transition: transform 0.15s, filter 0.15s !important;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08) !important;
+}
+
+.btn-pkg-action:hover {
+  transform: translateY(-1px) !important;
+  filter: brightness(1.08) !important;
+}
+
+.btn-pkg-action.blue {
+  background: #4f6ff6 !important;
+}
+
+.btn-pkg-action.red {
+  background: #e25752 !important;
+}
+
+.btn-pkg-action.green {
+  background: #62d689 !important;
+}
+
+/* Seta central de recolhimento */
+.pkg-collapse-arrow-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #15803d !important;
+  font-size: 18px !important;
+  cursor: pointer !important;
+  margin-top: 4px !important;
+  line-height: 1 !important;
+  user-select: none !important;
+  transition: transform 0.15s ease !important;
+}
+
+.pkg-collapse-arrow-btn:hover {
+  transform: translateY(-2px) !important;
+}
