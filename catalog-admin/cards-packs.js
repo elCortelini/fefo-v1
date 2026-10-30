@@ -8,6 +8,58 @@
 // ==========================================================
 // 1. GERENCIADOR DE CARDS
 // ==========================================================
+// ==========================================================
+// 0. PERSISTÊNCIA LOCAL DE CARDS, FACES E SONS DO SISTEMA
+// ==========================================================
+const CardPackStorage = {
+  getDeletedPackIds() {
+    try { return JSON.parse(localStorage.getItem('fefo_deleted_card_pack_ids') || '[]'); } catch (e) { return []; }
+  },
+  addDeletedPackId(id) {
+    const list = this.getDeletedPackIds();
+    if (!list.includes(id)) {
+      list.push(id);
+      localStorage.setItem('fefo_deleted_card_pack_ids', JSON.stringify(list));
+    }
+  },
+  getDeletedCardIds() {
+    try { return JSON.parse(localStorage.getItem('fefo_deleted_card_ids') || '[]'); } catch (e) { return []; }
+  },
+  addDeletedCardId(id) {
+    const list = this.getDeletedCardIds();
+    if (!list.includes(id)) {
+      list.push(id);
+      localStorage.setItem('fefo_deleted_card_ids', JSON.stringify(list));
+    }
+  },
+  getCustomCardPacks() {
+    try { return JSON.parse(localStorage.getItem('fefo_custom_card_packs') || '[]'); } catch (e) { return []; }
+  },
+  saveCustomCardPacks(packs) {
+    try { localStorage.setItem('fefo_custom_card_packs', JSON.stringify(packs)); } catch (e) {}
+  },
+  getDeletedFaceIds() {
+    try { return JSON.parse(localStorage.getItem('fefo_deleted_face_ids') || '[]'); } catch (e) { return []; }
+  },
+  addDeletedFaceId(id) {
+    const list = this.getDeletedFaceIds();
+    if (!list.includes(id)) {
+      list.push(id);
+      localStorage.setItem('fefo_deleted_face_ids', JSON.stringify(list));
+    }
+  },
+  getDeletedSysSounds() {
+    try { return JSON.parse(localStorage.getItem('fefo_deleted_sys_sounds') || '[]'); } catch (e) { return []; }
+  },
+  addDeletedSysSound(name) {
+    const list = this.getDeletedSysSounds();
+    if (!list.includes(name)) {
+      list.push(name);
+      localStorage.setItem('fefo_deleted_sys_sounds', JSON.stringify(list));
+    }
+  }
+};
+
 const CardPackManager = {
   state: { drafts: [], published: [], expandedPackId: null, loading: false },
 

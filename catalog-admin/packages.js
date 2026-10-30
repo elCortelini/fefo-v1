@@ -389,7 +389,7 @@ const PkgManager = {
     if (elPub) elPub.textContent = totalPub;
 
     const catSelect = document.getElementById('pkg-filter-category');
-    if (catSelect && catSelect.options.length <= 1) {
+    if (catSelect && catSelect.options && catSelect.options.length <= 1) {
       const sortedCats = Array.from(cats).sort();
       sortedCats.forEach(cat => {
         const opt = document.createElement('option');
@@ -401,7 +401,11 @@ const PkgManager = {
   },
 
   render() {
-    this.updateKPIs();
+    try {
+      this.updateKPIs();
+    } catch (e) {
+      console.warn('Erro ao atualizar KPIs:', e);
+    }
     this.renderDraftsGrid();
     this.renderPublishedGrid();
   },
@@ -438,12 +442,8 @@ const PkgManager = {
       return `
         <div class="pkg-accordion-wrapper" id="pkg-acc-draft-${pkg.id}">
           ${!isExpanded ? `
-            <div class="pkg-collapsed-row" onclick="PkgManager.toggleDraftPackage('${pkg.id}')">
-              <div class="pkg-collapsed-title">${numLabel}</div>
-              <div class="green-line-toggle">
-                <hr />
-                <span class="line-arrow">▼</span>
-              </div>
+            <div class="pkg-collapsed-bar draft-bar" onclick="PkgManager.toggleDraftPackage('${pkg.id}')">
+              <span>${numLabel}</span>
             </div>
           ` : ''}
           <div class="package-drawer-wrapper" id="drawer-wrap-draft-${pkg.id}" style="${isExpanded ? 'display:block;' : 'display:none;'}"></div>
@@ -502,16 +502,29 @@ const PkgManager = {
     const hasEscola = (pkg.licencas || []).includes('escola');
 
     drawer.innerHTML = `
-      <div class="pkg-expanded-card" id="pkg-card-${pkg.id}">
-        <!-- Linha Superior: Nome à esquerda e Licenças à direita -->
+      <div class="pkg-expanded-card draft-card" id="pkg-card-${pkg.id}">
+        <!-- Linha Superior: Nome e Botões à esquerda e Licenças à direita -->
         <div class="pkg-expanded-top">
-          <div class="pkg-expanded-info">
+          <div class="pkg-expanded-left">
             <div class="pkg-expanded-num">MENU/Pacote ${pkgIdx + 1}</div>
             <label class="pkg-expanded-label">Alterar nome do MENU/Pacote</label>
             <input type="text" class="pkg-input-pill" id="draft-title-input-${pkg.id}" 
                    value="${this.escapeHtml(pkg.titulo)}" 
                    placeholder="Nome exemplo"
                    oninput="PkgManager.updateDraftPackageProperty('${pkg.id}', 'titulo', this.value)">
+
+            <!-- 3 Botões de Ação diretamente abaixo do input conforme print modelo -->
+            <div class="pkg-action-pills-row">
+              <button type="button" class="btn-pkg-action blue" onclick="PkgManager.publishDraftPackage('${pkg.id}')">
+                Publicar
+              </button>
+              <button type="button" class="btn-pkg-action red" onclick="PkgManager.deleteDraftPackage('${pkg.id}')">
+                Excluir
+              </button>
+              <button type="button" class="btn-pkg-action green" onclick="PkgManager.saveDraftPackageDetails('${pkg.id}')">
+                Salvar
+              </button>
+            </div>
           </div>
 
           <div class="pkg-lic-section">
@@ -519,19 +532,23 @@ const PkgManager = {
             <div class="pkg-lic-box">
               <label class="pkg-lic-item">
                 <input type="checkbox" ${hasHome ? 'checked' : ''} onchange="PkgManager.toggleDraftLicense('${pkg.id}', 'home')">
-                <span>🏠 Home</span>
+                <span class="lic-icon">🏠</span>
+                <span class="lic-name">Home</span>
               </label>
               <label class="pkg-lic-item">
                 <input type="checkbox" ${hasClinical ? 'checked' : ''} onchange="PkgManager.toggleDraftLicense('${pkg.id}', 'clinical')">
-                <span>🏠 Clinica</span>
+                <span class="lic-icon">🏠</span>
+                <span class="lic-name">Clinica</span>
               </label>
               <label class="pkg-lic-item">
                 <input type="checkbox" ${hasEscola ? 'checked' : ''} onchange="PkgManager.toggleDraftLicense('${pkg.id}', 'escola')">
-                <span>🏠 Escola</span>
+                <span class="lic-icon">🏠</span>
+                <span class="lic-name">Escola</span>
               </label>
               <label class="pkg-lic-item">
                 <input type="checkbox" ${pkg.is_premium ? 'checked' : ''} onchange="PkgManager.toggleDraftPremium('${pkg.id}')">
-                <span>🏠 Premium</span>
+                <span class="lic-icon">🏠</span>
+                <span class="lic-name">Premium</span>
               </label>
             </div>
           </div>
@@ -553,9 +570,9 @@ const PkgManager = {
               <div class="pkg-track-collapsible-item" id="track-item-wrap-${it.id}">
                 <div class="pkg-track-toggle-row" onclick="PkgManager.toggleTrackCard('${it.id}')">
                   <div class="pkg-track-name">FAIXA ${String(tIdx + 1).padStart(2, '0')}</div>
-                  <div class="green-line-toggle">
+                  <div class="track-line-toggle gold">
                     <hr />
-                    <span class="line-arrow" id="track-arrow-${it.id}">${isTrackOpen ? '▲' : '▼'}</span>
+                    <span class="track-arrow" id="track-arrow-${it.id}">${isTrackOpen ? '▲' : '▼'}</span>
                   </div>
                 </div>
 
@@ -659,21 +676,8 @@ const PkgManager = {
           </button>
         </div>
 
-        <!-- Botões de Ação do Pacote (Publicar, Excluir, Salvar) -->
-        <div class="pkg-expanded-actions">
-          <button type="button" class="btn-pkg-action blue" onclick="PkgManager.publishDraftPackage('${pkg.id}')">
-            Publicar
-          </button>
-          <button type="button" class="btn-pkg-action red" onclick="PkgManager.deleteDraftPackage('${pkg.id}')">
-            Excluir
-          </button>
-          <button type="button" class="btn-pkg-action green" onclick="PkgManager.saveDraftPackageDetails('${pkg.id}')">
-            Salvar
-          </button>
-        </div>
-
-        <!-- Seta central de recolhimento -->
-        <div class="pkg-collapse-arrow-btn" title="Recolher pacote" onclick="PkgManager.toggleDraftPackage('${pkg.id}')">
+        <!-- Seta central de recolhimento no fundo do card -->
+        <div class="pkg-collapse-arrow-btn gold" title="Recolher pacote" onclick="PkgManager.toggleDraftPackage('${pkg.id}')">
           ▲
         </div>
       </div>
@@ -698,12 +702,8 @@ const PkgManager = {
       return `
         <div class="pkg-accordion-wrapper" id="pkg-acc-prod-${encTitle}">
           ${!isExpanded ? `
-            <div class="pkg-collapsed-row" onclick="PkgManager.toggleProductionMenu('${this.escapeHtml(pkg.titulo)}')">
-              <div class="pkg-collapsed-title">${numLabel}</div>
-              <div class="green-line-toggle">
-                <hr />
-                <span class="line-arrow">▼</span>
-              </div>
+            <div class="pkg-collapsed-bar published-bar" onclick="PkgManager.toggleProductionMenu('${this.escapeHtml(pkg.titulo)}')">
+              <span>${numLabel}</span>
             </div>
           ` : ''}
           <div class="package-drawer-wrapper" id="drawer-wrap-prod-${encTitle}" style="${isExpanded ? 'display:block;' : 'display:none;'}"></div>
@@ -762,16 +762,29 @@ const PkgManager = {
     const hasEscola = (pkg.licencas || ['home', 'clinical', 'escola']).includes('escola');
 
     drawer.innerHTML = `
-      <div class="pkg-expanded-card" id="pkg-card-prod-${encodeURIComponent(pkg.titulo)}">
-        <!-- Linha Superior: Nome à esquerda e Licenças à direita -->
+      <div class="pkg-expanded-card published-card" id="pkg-card-prod-${encodeURIComponent(pkg.titulo)}">
+        <!-- Linha Superior: Nome e Botões à esquerda e Licenças à direita -->
         <div class="pkg-expanded-top">
-          <div class="pkg-expanded-info">
+          <div class="pkg-expanded-left">
             <div class="pkg-expanded-num">MENU/Pacote ${pkgIdx + 1}</div>
             <label class="pkg-expanded-label">Alterar nome do MENU/Pacote</label>
             <input type="text" class="pkg-input-pill" id="prod-title-input-${encodeURIComponent(pkg.titulo)}" 
                    value="${this.escapeHtml(pkg.titulo)}" 
                    placeholder="Nome exemplo"
                    oninput="PkgManager.updateProductionPackageProperty('${this.escapeHtml(pkg.titulo)}', 'titulo', this.value)">
+
+            <!-- 3 Botões de Ação diretamente abaixo do input conforme print modelo -->
+            <div class="pkg-action-pills-row">
+              <button type="button" class="btn-pkg-action blue" onclick="PkgManager.unpublishMenu('${this.escapeHtml(pkg.titulo)}')">
+                Publicar
+              </button>
+              <button type="button" class="btn-pkg-action red" onclick="PkgManager.deleteProductionMenuDirect('${this.escapeHtml(pkg.titulo)}')">
+                Excluir
+              </button>
+              <button type="button" class="btn-pkg-action green" onclick="PkgManager.saveProductionPackageDetails('${this.escapeHtml(pkg.titulo)}')">
+                Salvar
+              </button>
+            </div>
           </div>
 
           <div class="pkg-lic-section">
@@ -779,19 +792,23 @@ const PkgManager = {
             <div class="pkg-lic-box">
               <label class="pkg-lic-item">
                 <input type="checkbox" ${hasHome ? 'checked' : ''} onchange="PkgManager.toggleProductionLicense('${this.escapeHtml(pkg.titulo)}', 'home')">
-                <span>🏠 Home</span>
+                <span class="lic-icon">🏠</span>
+                <span class="lic-name">Home</span>
               </label>
               <label class="pkg-lic-item">
                 <input type="checkbox" ${hasClinical ? 'checked' : ''} onchange="PkgManager.toggleProductionLicense('${this.escapeHtml(pkg.titulo)}', 'clinical')">
-                <span>🏠 Clinica</span>
+                <span class="lic-icon">🏠</span>
+                <span class="lic-name">Clinica</span>
               </label>
               <label class="pkg-lic-item">
                 <input type="checkbox" ${hasEscola ? 'checked' : ''} onchange="PkgManager.toggleProductionLicense('${this.escapeHtml(pkg.titulo)}', 'escola')">
-                <span>🏠 Escola</span>
+                <span class="lic-icon">🏠</span>
+                <span class="lic-name">Escola</span>
               </label>
               <label class="pkg-lic-item">
                 <input type="checkbox" ${pkg.is_premium ? 'checked' : ''} onchange="PkgManager.toggleProductionPremium('${this.escapeHtml(pkg.titulo)}')">
-                <span>🏠 Premium</span>
+                <span class="lic-icon">🏠</span>
+                <span class="lic-name">Premium</span>
               </label>
             </div>
           </div>
@@ -812,9 +829,9 @@ const PkgManager = {
               <div class="pkg-track-collapsible-item" id="track-item-wrap-${it.id}">
                 <div class="pkg-track-toggle-row" onclick="PkgManager.toggleTrackCard('${it.id}')">
                   <div class="pkg-track-name">FAIXA ${String(tIdx + 1).padStart(2, '0')}</div>
-                  <div class="green-line-toggle">
+                  <div class="track-line-toggle green">
                     <hr />
-                    <span class="line-arrow" id="track-arrow-${it.id}">${isTrackOpen ? '▲' : '▼'}</span>
+                    <span class="track-arrow" id="track-arrow-${it.id}">${isTrackOpen ? '▲' : '▼'}</span>
                   </div>
                 </div>
 
@@ -918,21 +935,8 @@ const PkgManager = {
           </button>
         </div>
 
-        <!-- Botões de Ação do Pacote (Despublicar, Excluir, Salvar) -->
-        <div class="pkg-expanded-actions">
-          <button type="button" class="btn-pkg-action blue" onclick="PkgManager.unpublishMenu('${this.escapeHtml(pkg.titulo)}')">
-            Despublicar
-          </button>
-          <button type="button" class="btn-pkg-action red" onclick="PkgManager.deleteProductionMenuDirect('${this.escapeHtml(pkg.titulo)}')">
-            Excluir
-          </button>
-          <button type="button" class="btn-pkg-action green" onclick="PkgManager.saveProductionPackageDetails('${this.escapeHtml(pkg.titulo)}')">
-            Salvar
-          </button>
-        </div>
-
-        <!-- Seta central de recolhimento -->
-        <div class="pkg-collapse-arrow-btn" title="Recolher pacote" onclick="PkgManager.toggleProductionMenu('${this.escapeHtml(pkg.titulo)}')">
+        <!-- Seta central de recolhimento no fundo do card -->
+        <div class="pkg-collapse-arrow-btn green" title="Recolher pacote" onclick="PkgManager.toggleProductionMenu('${this.escapeHtml(pkg.titulo)}')">
           ▲
         </div>
       </div>
