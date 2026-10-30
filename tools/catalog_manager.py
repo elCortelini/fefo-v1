@@ -9,7 +9,6 @@ from urllib.parse import urlparse, parse_qs
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
-INBOX = ROOT / 'FEFO_novos_conteudos'
 CATALOG = ROOT / 'repository/catalog.json'
 
 DRAFT_PACKAGES_FILE = ROOT / 'repository/draft_packages.json'

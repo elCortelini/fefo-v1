@@ -226,62 +226,82 @@ const PkgManager = {
 
     // 2. Fallback estático (GitHub Pages ou servidor offline)
     if (!isApiOnline) {
+      let dData = null;
+      let cData = null;
+
       try {
         const [draftsRes, catRes] = await Promise.all([
           fetch('../repository/draft_packages.json', { cache: 'no-store' }),
           fetch('../repository/catalog.json', { cache: 'no-store' })
         ]);
 
-        if (draftsRes.ok) {
-          const dData = await draftsRes.json();
-          drafts = dData.packages || [];
-        }
-
-        if (catRes.ok) {
-          const cData = await catRes.json();
-          const audios = cData.audio || [];
-          const menusDict = {};
-
-          for (const a of audios) {
-            if (deletedItemIds.includes(a.id)) continue;
-            const mName = (a.menu || 'Sem menu').trim();
-            if (unpubMenus.includes(mName)) continue; // Menu despublicado
-
-            if (!menusDict[mName]) {
-              menusDict[mName] = {
-                id: `pub_${mName.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`,
-                titulo: mName,
-                descricao: `Menu oficial ativo no catálogo com áudios configurados para o Pet CYD e App.`,
-                target_count: 8,
-                categoria: 'Menus do Sistema',
-                licencas: ['home', 'clinical', 'escola'],
-                is_premium: false,
-                status: 'published',
-                count: 0,
-                items: []
-              };
-            }
-
-            const fileName = (a.arquivo || '').split('/').pop();
-            menusDict[mName].items.push({
-              id: a.id,
-              codigo_item: a.id,
-              titulo: a.titulo || fileName,
-              descricao: a.descricao || '',
-              arquivo: a.arquivo,
-              arquivo_fefo: fileName,
-              arquivo_origem: fileName,
-              web_url: `../repository/audio/${fileName}`,
-              tamanho: a.tamanho || 0,
-              status: 'ready'
-            });
-            menusDict[mName].count = menusDict[mName].items.length;
-            menusDict[mName].target_count = Math.max(menusDict[mName].items.length, menusDict[mName].target_count);
-          }
-          published = Object.values(menusDict);
-        }
+        if (draftsRes && draftsRes.ok) dData = await draftsRes.json();
+        if (catRes && catRes.ok) cData = await catRes.json();
       } catch (err) {
-        console.warn('Erro ao carregar arquivos do repositório:', err);
+        // file:/// ou falha de rede estática
+      }
+
+      // Se falhou e GitHubSync estiver configurado, busca diretamente da API do GitHub
+      if ((!dData || !cData) && window.GitHubSync && window.GitHubSync.isConfigured()) {
+        try {
+          if (!dData) {
+            const ghDrafts = await window.GitHubSync.getFile('repository/draft_packages.json');
+            if (ghDrafts.exists && ghDrafts.content) dData = JSON.parse(ghDrafts.content);
+          }
+          if (!cData) {
+            const ghCat = await window.GitHubSync.getFile('repository/catalog.json');
+            if (ghCat.exists && ghCat.content) cData = JSON.parse(ghCat.content);
+          }
+        } catch (ghErr) {
+          console.warn('[loadPackages] Falha no fallback do GitHub API:', ghErr);
+        }
+      }
+
+      if (dData && dData.packages) {
+        drafts = dData.packages || [];
+      }
+
+      if (cData && cData.audio) {
+        const audios = cData.audio || [];
+        const menusDict = {};
+
+        for (const a of audios) {
+          if (deletedItemIds.includes(a.id)) continue;
+          const mName = (a.menu || 'Sem menu').trim();
+          if (unpubMenus.includes(mName)) continue; // Menu despublicado
+
+          if (!menusDict[mName]) {
+            menusDict[mName] = {
+              id: `pub_${mName.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`,
+              titulo: mName,
+              descricao: `Menu oficial ativo no catálogo com áudios configurados para o Pet CYD e App.`,
+              target_count: 8,
+              categoria: 'Menus do Sistema',
+              licencas: ['home', 'clinical', 'escola'],
+              is_premium: false,
+              status: 'published',
+              count: 0,
+              items: []
+            };
+          }
+
+          const fileName = (a.arquivo || '').split('/').pop();
+          menusDict[mName].items.push({
+            id: a.id,
+            codigo_item: a.id,
+            titulo: a.titulo || fileName,
+            descricao: a.descricao || '',
+            arquivo: a.arquivo,
+            arquivo_fefo: fileName,
+            arquivo_origem: fileName,
+            web_url: `../repository/audio/${fileName}`,
+            tamanho: a.tamanho || 0,
+            status: 'ready'
+          });
+          menusDict[mName].count = menusDict[mName].items.length;
+          menusDict[mName].target_count = Math.max(menusDict[mName].items.length, menusDict[mName].target_count);
+        }
+        published = Object.values(menusDict);
       }
     }
 
@@ -1142,19 +1162,59 @@ const PkgManager = {
     PkgStorage.saveAllProductionMenus(this.state.publishedMenus);
   },
 
-  saveDraftPackageDetails(pkgId) {
+  async saveDraftPackageDetails(pkgId) {
     const pkg = (this.state.drafts || []).find(p => p.id === pkgId);
     if (!pkg) return;
-    const titleInput = document.getElementById(`draft-title-input-${pkgId}`);
+    const titleInput = document.getElementById(`draft-title-input-${pkgId}`) || document.getElementById('draft-input-title');
     if (titleInput && titleInput.value.trim()) {
       pkg.titulo = titleInput.value.trim();
     }
+    const descInput = document.getElementById('draft-input-desc');
+    if (descInput) pkg.descricao = descInput.value.trim();
+    const targetInput = document.getElementById('draft-input-target');
+    if (targetInput) pkg.target_count = parseInt(targetInput.value, 10) || 10;
+    this.updateDraftPackageLicenses(pkgId);
+
     PkgStorage.saveAllDrafts(this.state.drafts);
-    notice('✓ Pacote salvo com sucesso!', 'ok');
+    notice('Salvando rascunho do pacote...');
+
+    // 1. Tenta API do servidor Python local
+    let savedOnBackend = false;
+    try {
+      const res = await fetch('/api/packages/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ package: pkg })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.ok) {
+          savedOnBackend = true;
+          notice(data.message || 'Pacote salvo no servidor local e repositório!', 'ok');
+        }
+      }
+    } catch (e) {}
+
+    // 2. Se o servidor local estiver offline, sincroniza direto no GitHub REST API
+    if (!savedOnBackend) {
+      if (window.GitHubSync && window.GitHubSync.isConfigured()) {
+        notice('☁️ Enviando alterações diretamente para o GitHub...');
+        try {
+          await window.GitHubSync.saveDraftPackages(this.state.drafts);
+          notice('✓ Pacote salvo com sucesso no GitHub!', 'ok');
+        } catch (ghErr) {
+          console.warn('Erro ao salvar no GitHub:', ghErr);
+          notice(`Aviso: Salvo no navegador. Falha no GitHub (${ghErr.message})`, 'error');
+        }
+      } else {
+        notice('✓ Rascunho salvo no navegador! (Para salvar no GitHub de qualquer PC, configure seu Token no topo)', 'ok');
+      }
+    }
+
     this.renderDraftsGrid();
   },
 
-  saveProductionPackageDetails(menuTitle) {
+  async saveProductionPackageDetails(menuTitle) {
     const pkg = (this.state.publishedMenus || []).find(p => p.titulo === menuTitle);
     if (!pkg) return;
     const titleInput = document.getElementById(`prod-title-input-${encodeURIComponent(menuTitle)}`);
@@ -1162,7 +1222,31 @@ const PkgManager = {
       pkg.titulo = titleInput.value.trim();
     }
     PkgStorage.saveAllProductionMenus(this.state.publishedMenus);
-    notice('✓ Menu oficial salvo com sucesso!', 'ok');
+    notice('Salvando alterações do menu oficial...');
+
+    if (window.GitHubSync && window.GitHubSync.isConfigured()) {
+      try {
+        const catFile = await window.GitHubSync.getFile('repository/catalog.json');
+        if (catFile.exists && catFile.content) {
+          let catalog = JSON.parse(catFile.content);
+          catalog.audio = catalog.audio || [];
+          catalog.audio.forEach(a => {
+            if (a.menu === menuTitle) {
+              a.menu = pkg.titulo;
+            }
+          });
+          const newVersion = (parseInt(catalog.catalogVersion, 10) || 1) + 1;
+          catalog.catalogVersion = newVersion;
+          catalog.updated_at = new Date().toISOString();
+          await window.GitHubSync.commitFile('repository/catalog.json', JSON.stringify(catalog, null, 2) + '\n', `feat(catalog): renomear menu oficial para “${pkg.titulo}”`);
+          notice(`✓ Menu oficial salvo e atualizado no GitHub (Catálogo v${newVersion})!`, 'ok');
+        }
+      } catch (e) {
+        notice('✓ Alterações salvas no navegador!', 'ok');
+      }
+    } else {
+      notice('✓ Menu oficial salvo no navegador!', 'ok');
+    }
     this.renderPublishedGrid();
   },
 
@@ -1295,33 +1379,7 @@ const PkgManager = {
     }, 100);
   },
 
-  async saveDraftPackageDetails(pkgId) {
-    const pkg = this.state.drafts.find(p => p.id === pkgId);
-    if (!pkg) return;
 
-    pkg.titulo = document.getElementById('draft-input-title')?.value.trim() || pkg.titulo;
-    pkg.descricao = document.getElementById('draft-input-desc')?.value.trim() || '';
-    pkg.target_count = parseInt(document.getElementById('draft-input-target')?.value, 10) || 10;
-    this.updateDraftPackageLicenses(pkgId);
-    pkg.is_premium = document.getElementById('draft-check-premium')?.checked || false;
-
-    PkgStorage.saveAllDrafts(this.state.drafts);
-    notice('Salvando rascunho do pacote...');
-
-    try {
-      const res = await fetch('/api/packages/save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ package: pkg })
-      });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.message || 'Erro ao salvar.');
-      notice(data.message || 'Pacote salvo no servidor e catálogo!', 'ok');
-    } catch (e) {
-      notice('Rascunho salvo no navegador com sucesso!', 'ok');
-    }
-    this.renderDraftsGrid();
-  },
 
   // ==========================================================
   // ESCOLHER / TROCAR ÁUDIO DE UMA FAIXA INDIVIDUAL
@@ -1556,24 +1614,46 @@ const PkgManager = {
       return;
     }
 
-    const confirmMsg = `🚀 PUBLICAR PACOTE OFICIAL\n\nPublicar “${pkg.titulo}” como MENU OFICIAL com ${count} faixa(s)?\n\nO áudio será convertido para o padrão do CYD ESP32 (WAV 16-bit Mono 22050Hz) e o catálogo será atualizado.`;
+    const confirmMsg = `🚀 PUBLICAR PACOTE OFICIAL\n\nPublicar “${pkg.titulo}” como MENU OFICIAL com ${count} faixa(s)?\n\nO catálogo oficial será atualizado e os áudios ficarão disponíveis para download nos celulares e no FEFO Pet!`;
     if (!confirm(confirmMsg)) return;
 
-    notice('Convertendo e publicando menu no catálogo oficial... aguarde...', '');
+    notice('Publicando menu no catálogo oficial... aguarde...', '');
 
+    // 1. Tenta API do servidor local
+    let publishedLocally = false;
     try {
       const res = await fetch('/api/packages/publish_official', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ package_id: pkgId })
       });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.message || 'Falha na publicação.');
-      notice(data.message || 'Pacote publicado com sucesso!', 'ok');
-      this.state.expandedDraftId = null;
-      await this.loadPackages();
-    } catch (err) {
-      notice(`Erro na publicação: ${err.message}`, 'error');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.ok) {
+          publishedLocally = true;
+          notice(data.message || 'Pacote publicado com sucesso!', 'ok');
+          this.state.expandedDraftId = null;
+          await this.loadPackages();
+          return;
+        }
+      }
+    } catch (err) {}
+
+    // 2. Se a API local estiver offline, publica diretamente pelo GitHub REST API!
+    if (window.GitHubSync && window.GitHubSync.isConfigured()) {
+      try {
+        const ghResult = await window.GitHubSync.publishOfficialMenu(pkg, (msg) => {
+          notice(msg, '');
+        });
+        notice(ghResult.message, 'ok');
+        this.state.expandedDraftId = null;
+        await this.loadPackages();
+      } catch (ghErr) {
+        notice(`Erro na publicação via GitHub: ${ghErr.message}`, 'error');
+      }
+    } else {
+      notice('Servidor local offline. Para publicar de qualquer computador, clique no botão “⚙️ Conectar GitHub” no topo!', 'error');
+      window.GitHubSync?.openModal();
     }
   },
 
