@@ -673,20 +673,15 @@ const PkgManager = {
                       </div>
 
                       <!-- DIVISÓRIA ACORDEON 2: Ajustar / Cortar -->
-                      <div class="track-accordion-toggle purple" onclick="PkgManager.toggleTrackAccordion('${it.id}', 'trim')">
+                      <div class="track-accordion-toggle purple" onclick="PkgManager.toggleTrackAccordion('${it.id}', 'trim', false)">
                         <span class="acc-text">Ajustar / Cortar <span class="acc-arrow" id="arrow-trim-${it.id}">▼</span></span>
                       </div>
                       <div class="track-accordion-panel" id="panel-trim-${it.id}">
-                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                          <span style="font-size: 12px; font-weight: 800; color: #4c1d95;">
-                            📁 Arquivo de Origem: <strong>${this.escapeHtml(it.arquivo_origem || (hasAudio ? 'Áudio Vinculado' : 'Nenhum'))}</strong>
-                            ${it.tamanho ? `(${this.formatBytes(it.tamanho)})` : ''}
-                          </span>
-                          <button type="button" class="btn primary" style="background:#8b5cf6; border-color:#7c3aed; font-size: 12.5px; padding: 7px 16px; border-radius: 8px;"
-                                  onclick='PkgManager.trimDraftItem("${pkg.id}", "${it.id}", "${this.escapeHtml(audioUrl)}", "${this.escapeHtml(it.titulo)}", ${safeDesc}, "${this.escapeHtml(fefoFileName)}")'>
-                            ✂ Abrir Ferramenta de Corte & Waveform
-                          </button>
+                        <div style="margin-bottom: 8px; font-size: 12px; font-weight: 800; color: #4c1d95;">
+                          📁 Arquivo de Origem: <strong>${this.escapeHtml(it.arquivo_origem || (hasAudio ? 'Áudio Vinculado' : 'Nenhum'))}</strong>
+                          ${it.tamanho ? `(${this.formatBytes(it.tamanho)})` : ''}
                         </div>
+                        <div id="trimmer-mount-${it.id}" class="inline-trimmer-mount"></div>
                       </div>
 
                       <!-- LINHA INFERIOR: Arquivo no PET + Salvar -->
@@ -812,7 +807,7 @@ const PkgManager = {
     this.renderProductionExpandedPanel();
   },
 
-  toggleTrackAccordion(itemId, type) {
+  toggleTrackAccordion(itemId, type, isProduction = false) {
     const panel = document.getElementById(`panel-${type}-${itemId}`);
     const toggle = panel?.previousElementSibling;
     if (!panel) return;
@@ -821,9 +816,108 @@ const PkgManager = {
     if (isOpen) {
       panel.classList.remove('is-open');
       toggle?.classList.remove('is-open');
+      if (type === 'trim') {
+        const audioEl = panel.querySelector('audio');
+        if (audioEl) audioEl.pause();
+      }
     } else {
       panel.classList.add('is-open');
       toggle?.classList.add('is-open');
+      if (type === 'trim') {
+        this.loadInlineTrimmer(itemId, isProduction);
+      }
+    }
+  },
+
+  async loadInlineTrimmer(itemId, isProduction = false, forceUrl = null) {
+    const mountEl = document.getElementById(`trimmer-mount-${itemId}`);
+    if (!mountEl) return;
+
+    let it = null, pkg = null;
+    if (isProduction) {
+      for (const m of (this.state.publishedMenus || [])) {
+        const found = (m.items || []).find(x => x.id === itemId);
+        if (found) { it = found; pkg = m; break; }
+      }
+    } else {
+      for (const p of (this.state.drafts || [])) {
+        const found = (p.items || []).find(x => x.id === itemId);
+        if (found) { it = found; pkg = p; break; }
+      }
+    }
+
+    const title = it ? (it.titulo || 'Faixa') : 'Faixa';
+    const description = it ? (it.descricao || '') : '';
+    const itemCode = it ? (it.arquivo_origem || it.arquivo_pet || it.arquivo_fefo || '') : '';
+
+    let effectiveUrl = forceUrl;
+    if (!effectiveUrl && it) {
+      if (it.web_url) {
+        effectiveUrl = this.resolveUrl(it.web_url);
+      }
+      if (!effectiveUrl) {
+        const blob = await AudioBlobDB.getAudio(itemId);
+        if (blob) effectiveUrl = URL.createObjectURL(blob);
+      }
+    }
+
+    if (!effectiveUrl) {
+      mountEl.innerHTML = `
+        <div style="text-align:center; padding: 22px 14px; background: #0f274a; border-radius: 18px; border: 1.5px dashed #2a5288; color: #a4c2e6;">
+          <div style="font-size: 26px; margin-bottom: 6px;">✂️</div>
+          <div style="font-weight: 800; font-size: 14px; color: #fff;">Nenhum áudio carregado nesta faixa para cortar.</div>
+          <div style="font-size: 12px; margin-top: 4px; color: #7ea3d1;">Selecione um áudio no botão acima ou gere com a IA para poder cortar e ajustar o trecho.</div>
+        </div>
+      `;
+      return;
+    }
+
+    if (window.mountAudioTrimmer) {
+      window.mountAudioTrimmer(mountEl, {
+        url: effectiveUrl,
+        title: title,
+        description: description,
+        itemCode: itemCode,
+        onSave: async (blob, info) => {
+          notice('Salvando corte do áudio...', 'ok');
+          await AudioBlobDB.setAudio(itemId, blob);
+          const newUrl = URL.createObjectURL(blob);
+
+          if (it) {
+            it.web_url = newUrl;
+            it.status = 'ready';
+          }
+
+          const player = document.getElementById(`audio-${itemId}`);
+          if (player) {
+            player.src = newUrl;
+            player.load();
+          }
+
+          if (isProduction) {
+            const form = new FormData();
+            form.append('tipo', 'production');
+            form.append('item_id', itemId);
+            form.append('file', blob, 'trimmed.wav');
+
+            try {
+              const res = await fetch('/api/packages/replace_audio', {
+                method: 'POST',
+                body: form
+              });
+              const data = await res.json();
+              if (!data.ok) throw new Error(data.message);
+              notice(data.message || '✓ Corte salvo e catálogo atualizado!', 'ok');
+            } catch (e) {
+              notice(`Erro ao salvar corte no catálogo: ${e.message}`, 'error');
+            }
+          } else {
+            notice('✓ Corte aplicado e áudio atualizado na faixa!', 'ok');
+          }
+
+          this.loadInlineTrimmer(itemId, isProduction, newUrl);
+        }
+      });
     }
   },
 
@@ -1012,20 +1106,15 @@ const PkgManager = {
                       </div>
 
                       <!-- DIVISÓRIA ACORDEON 2: Ajustar / Cortar -->
-                      <div class="track-accordion-toggle purple" onclick="PkgManager.toggleTrackAccordion('${it.id}', 'trim')">
+                      <div class="track-accordion-toggle purple" onclick="PkgManager.toggleTrackAccordion('${it.id}', 'trim', true)">
                         <span class="acc-text">Ajustar / Cortar <span class="acc-arrow" id="arrow-trim-${it.id}">▼</span></span>
                       </div>
                       <div class="track-accordion-panel" id="panel-trim-${it.id}">
-                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                          <span style="font-size: 12px; font-weight: 800; color: #4c1d95;">
-                            📁 Arquivo de Origem: <strong>${this.escapeHtml(fefoFileName)}</strong>
-                            ${it.tamanho ? `(${this.formatBytes(it.tamanho)})` : ''}
-                          </span>
-                          <button type="button" class="btn primary" style="background:#8b5cf6; border-color:#7c3aed; font-size: 12.5px; padding: 7px 16px; border-radius: 8px;"
-                                  onclick='PkgManager.trimProductionItem("${it.id}", "${this.escapeHtml(audioUrl)}", "${this.escapeHtml(it.titulo)}")'>
-                            ✂ Abrir Ferramenta de Corte & Waveform
-                          </button>
+                        <div style="margin-bottom: 8px; font-size: 12px; font-weight: 800; color: #4c1d95;">
+                          📁 Arquivo de Origem: <strong>${this.escapeHtml(fefoFileName)}</strong>
+                          ${it.tamanho ? `(${this.formatBytes(it.tamanho)})` : ''}
                         </div>
+                        <div id="trimmer-mount-${it.id}" class="inline-trimmer-mount"></div>
                       </div>
 
                       <!-- LINHA INFERIOR: Arquivo no PET + Salvar -->
