@@ -2355,3 +2355,90 @@
   width: 100% !important;
   box-sizing: border-box !important;
 }
+
+
+/* ======================================================== */
+/* HARMONIZAÇÃO DOS BOTÕES DA FERRAMENTA DE CORTE           */
+/* Cores integradas com a paleta âmbar/dourado e verde      */
+/* ======================================================== */
+
+.inline-trimmer-card {
+  background: #fffdf7 !important;
+  border: 1.5px solid #ecd18a !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 14px rgba(212, 159, 23, 0.08) !important;
+}
+
+.inline-trimmer-card .trimmer-canvas-box {
+  border: 1.5px solid #ecd18a !important;
+  border-radius: 12px !important;
+}
+
+.inline-trimmer-card .editor-play {
+  background: #d49f17 !important; /* Âmbar dourado do tema */
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 12px !important;
+  font-weight: 800 !important;
+  font-size: 13.5px !important;
+  padding: 10px 22px !important;
+  cursor: pointer !important;
+  box-shadow: 0 3px 8px rgba(212, 159, 23, 0.3) !important;
+  transition: all 0.15s ease !important;
+}
+
+.inline-trimmer-card .editor-play:hover {
+  background: #b8860b !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 5px 12px rgba(184, 134, 11, 0.38) !important;
+}
+
+.inline-trimmer-card .editor-play.playing {
+  background: #e25752 !important; /* Vermelho suave quando pausar */
+}
+
+.inline-trimmer-card .editor-reset {
+  color: #8c6700 !important;
+  font-weight: 800 !important;
+  font-size: 13px !important;
+  background: none !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: color 0.15s ease !important;
+}
+
+.inline-trimmer-card .editor-reset:hover {
+  color: #5c4300 !important;
+  text-decoration: underline !important;
+}
+
+.inline-trimmer-card .editor-save {
+  background: #62d689 !important; /* Verde padrão do botão Salvar */
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 12px !important;
+  font-weight: 800 !important;
+  font-size: 14px !important;
+  padding: 10px 24px !important;
+  cursor: pointer !important;
+  box-shadow: 0 3px 8px rgba(98, 214, 137, 0.35) !important;
+  transition: all 0.15s ease !important;
+}
+
+.inline-trimmer-card .editor-save:hover {
+  background: #4ec275 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 5px 12px rgba(78, 194, 117, 0.45) !important;
+}
+
+.inline-trimmer-card .trimmer-badge {
+  background: #ecd18a !important;
+  color: #5c4300 !important;
+  font-weight: 900 !important;
+}
+
+.inline-trimmer-card .trimmer-time-pill {
+  background: #fffdf5 !important;
+  border: 1px solid #ecd18a !important;
+  color: #5c4300 !important;
+}

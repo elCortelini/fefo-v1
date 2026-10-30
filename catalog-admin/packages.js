@@ -454,6 +454,62 @@ const PkgManager = {
     this.renderDraftExpandedPanel();
   },
 
+  
+  updateDraftPackageProperty(pkgId, prop, val) {
+    const pkg = (this.state.drafts || []).find(p => p.id === pkgId);
+    if (!pkg) return;
+    pkg[prop] = val;
+    PkgStorage.saveAllDrafts(this.state.drafts);
+    if (prop === 'titulo') {
+      const titleEl = document.getElementById(`pkg-expanded-title-${pkgId}`);
+      if (titleEl) titleEl.textContent = val.trim() || 'Sem título';
+    }
+  },
+
+  updateProductionPackageProperty(menuTitle, prop, val) {
+    const pkg = (this.state.publishedMenus || []).find(p => p.titulo === menuTitle);
+    if (!pkg) return;
+    pkg[prop] = val;
+    PkgStorage.saveAllProductionMenus(this.state.publishedMenus);
+    if (prop === 'titulo') {
+      const enc = encodeURIComponent(menuTitle);
+      const titleEl = document.getElementById(`pkg-prod-expanded-title-${enc}`);
+      if (titleEl) titleEl.textContent = val.trim() || 'Sem título';
+    }
+  },
+
+  updateDraftItemTitle(pkgId, itemId, newTitle) {
+    const pkg = (this.state.drafts || []).find(p => p.id === pkgId);
+    if (!pkg) return;
+    const it = (pkg.items || []).find(x => x.id === itemId);
+    if (!it) return;
+    it.titulo = newTitle.trim();
+    PkgStorage.saveAllDrafts(this.state.drafts);
+    const headerTitle = document.getElementById(`track-header-title-${itemId}`);
+    if (headerTitle) {
+      const tIdx = (pkg.items || []).indexOf(it);
+      headerTitle.textContent = `FAIXA ${String(tIdx + 1).padStart(2, '0')}${it.titulo ? ' - ' + it.titulo : ''}`;
+    }
+  },
+
+  updateDraftItemScript(pkgId, itemId, val) {
+    const pkg = (this.state.drafts || []).find(p => p.id === pkgId);
+    if (!pkg) return;
+    const it = (pkg.items || []).find(x => x.id === itemId);
+    if (!it) return;
+    it.descricao = val;
+    PkgStorage.saveAllDrafts(this.state.drafts);
+  },
+
+  updateDraftItemFefoFile(pkgId, itemId, val) {
+    const pkg = (this.state.drafts || []).find(p => p.id === pkgId);
+    if (!pkg) return;
+    const it = (pkg.items || []).find(x => x.id === itemId);
+    if (!it) return;
+    it.arquivo_fefo = val.trim().toLowerCase();
+    PkgStorage.saveAllDrafts(this.state.drafts);
+  },
+
   toggleDraftPackage(pkgId) {
     if (this.state.expandedDraftId === pkgId) {
       this.state.expandedDraftId = null;
@@ -506,7 +562,7 @@ const PkgManager = {
         <!-- Linha Superior: Nome e Botões à esquerda e Licenças à direita -->
         <div class="pkg-expanded-top">
           <div class="pkg-expanded-left">
-            <div class="pkg-expanded-num">MENU/Pacote ${pkgIdx + 1}</div>
+            <div class="pkg-expanded-num" id="pkg-expanded-title-${pkg.id}">${this.escapeHtml(pkg.titulo || `MENU/Pacote ${pkgIdx + 1}`)}</div>
             <label class="pkg-expanded-label">Alterar nome do MENU/Pacote</label>
             <input type="text" class="pkg-input-pill" id="draft-title-input-${pkg.id}" 
                    value="${this.escapeHtml(pkg.titulo)}" 
@@ -569,7 +625,7 @@ const PkgManager = {
             return `
               <div class="pkg-track-collapsible-item" id="track-item-wrap-${it.id}">
                 <div class="pkg-track-toggle-row" onclick="PkgManager.toggleTrackCard('${it.id}')">
-                  <div class="pkg-track-name">FAIXA ${String(tIdx + 1).padStart(2, '0')}</div>
+                  <div class="pkg-track-name" id="track-header-title-${it.id}">FAIXA ${String(tIdx + 1).padStart(2, '0')}${it.titulo ? ' - ' + this.escapeHtml(it.titulo) : ''}</div>
                   <div class="track-line-toggle gold">
                     <hr />
                     <span class="track-arrow" id="track-arrow-${it.id}">${isTrackOpen ? '▲' : '▼'}</span>
@@ -766,7 +822,7 @@ const PkgManager = {
         <!-- Linha Superior: Nome e Botões à esquerda e Licenças à direita -->
         <div class="pkg-expanded-top">
           <div class="pkg-expanded-left">
-            <div class="pkg-expanded-num">MENU/Pacote ${pkgIdx + 1}</div>
+            <div class="pkg-expanded-num" id="pkg-prod-expanded-title-${encodeURIComponent(pkg.titulo)}">${this.escapeHtml(pkg.titulo || `MENU/Pacote ${pkgIdx + 1}`)}</div>
             <label class="pkg-expanded-label">Alterar nome do MENU/Pacote</label>
             <input type="text" class="pkg-input-pill" id="prod-title-input-${encodeURIComponent(pkg.titulo)}" 
                    value="${this.escapeHtml(pkg.titulo)}" 
@@ -828,7 +884,7 @@ const PkgManager = {
             return `
               <div class="pkg-track-collapsible-item" id="track-item-wrap-${it.id}">
                 <div class="pkg-track-toggle-row" onclick="PkgManager.toggleTrackCard('${it.id}')">
-                  <div class="pkg-track-name">FAIXA ${String(tIdx + 1).padStart(2, '0')}</div>
+                  <div class="pkg-track-name" id="track-header-title-${it.id}">FAIXA ${String(tIdx + 1).padStart(2, '0')}${it.titulo ? ' - ' + this.escapeHtml(it.titulo) : ''}</div>
                   <div class="track-line-toggle green">
                     <hr />
                     <span class="track-arrow" id="track-arrow-${it.id}">${isTrackOpen ? '▲' : '▼'}</span>
