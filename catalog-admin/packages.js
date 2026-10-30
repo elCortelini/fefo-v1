@@ -410,7 +410,7 @@ const PkgManager = {
   // SEÇÃO 1: PACOTES EM RASCUNHO (DRAFTS)
   // ==========================================================
   renderDraftsGrid() {
-    const grid = document.getElementById('packages-drafts-grid');
+    const grid = document.getElementById('draft-packages-grid');
     if (!grid) return;
 
     let filteredDrafts = this.state.drafts || [];
@@ -433,7 +433,7 @@ const PkgManager = {
 
     grid.innerHTML = filteredDrafts.map((pkg, idx) => {
       const isExpanded = this.state.expandedDraftId === pkg.id;
-      const numLabel = `MENU/Pacote ${idx + 1}`;
+      const numLabel = `MENU/Pacote ${idx + 1}${pkg.titulo ? ` - ${this.escapeHtml(pkg.titulo)}` : ''}`;
 
       return `
         <div class="pkg-accordion-wrapper" id="pkg-acc-draft-${pkg.id}">
@@ -681,7 +681,7 @@ const PkgManager = {
   },
 
   renderPublishedGrid() {
-    const grid = document.getElementById('packages-published-grid');
+    const grid = document.getElementById('published-menus-grid');
     if (!grid) return;
 
     if (!this.state.publishedMenus.length) {
@@ -692,7 +692,7 @@ const PkgManager = {
 
     grid.innerHTML = this.state.publishedMenus.map((pkg, idx) => {
       const isExpanded = this.state.expandedProductionTitle === pkg.titulo;
-      const numLabel = `MENU/Pacote ${idx + 1}`;
+      const numLabel = `MENU/Pacote ${idx + 1}${pkg.titulo ? ` - ${this.escapeHtml(pkg.titulo)}` : ''}`;
       const encTitle = encodeURIComponent(pkg.titulo);
 
       return `
