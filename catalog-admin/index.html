@@ -555,7 +555,7 @@
 
     <!-- Modal de Configuração da Voz do FEFO (IA) -->
     <div id="modal-ai-voice" class="audio-trimmer-backdrop" style="display: none;">
-      <div class="audio-trimmer-container" style="max-width: 580px; background: #ffffff; color: var(--ink); border: 2px solid var(--purple);">
+      <div class="audio-trimmer-container" style="max-width: 640px; background: #ffffff; color: var(--ink); border: 2px solid var(--purple); max-height: 90vh; overflow-y: auto;">
         <div class="trimmer-header" style="border-bottom: 1px solid var(--line); padding-bottom: 12px;">
           <div>
             <span class="trimmer-badge" style="background: var(--purple); color: #fff;">🎙️ INTELIGÊNCIA ARTIFICIAL</span>
@@ -564,7 +564,8 @@
           <button type="button" class="editor-close" style="color: var(--muted);" onclick="PkgManager.closeAiVoiceSettings()">✕</button>
         </div>
 
-        <div style="display: flex; flex-direction: column; gap: 16px; padding: 12px 0;">
+        <div style="display: flex; flex-direction: column; gap: 16px; padding: 14px 0;">
+          <!-- Motor de Voz -->
           <div class="pkg-field-box">
             <label>Motor de Voz (Provedor)</label>
             <select id="ai-voice-provider" class="pkg-filter-select" style="width: 100%;" onchange="PkgManager.onAiProviderChange()">
@@ -573,27 +574,81 @@
             </select>
           </div>
 
-          <div id="ai-eleven-box" style="display: flex; flex-direction: column; gap: 14px;">
+          <!-- Seção de Clonagem por Áudio -->
+          <div style="background: #fbf9ff; border: 1px solid #e1d9f4; border-radius: 14px; padding: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <label style="font-size: 11px; font-weight: 900; color: var(--purple); text-transform: uppercase;">📁 Áudio de Referência para Clonar a Voz do FEFO:</label>
+              <span id="ai-sample-status" style="font-size: 11px; font-weight: 800; color: #27ae60;"></span>
+            </div>
+            <p style="margin: 0 0 10px; font-size: 12px; color: var(--muted); line-height: 1.4;">
+              Envie um arquivo curto (10 a 60 segundos) com a voz limpa do FEFO falando em português para clonar seu timbre único.
+            </p>
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+              <input type="file" id="ai-voice-sample-input" accept="audio/*,.wav,.mp3,.m4a" style="display: none;" onchange="PkgManager.handleVoiceSampleUpload(this.files)">
+              <button type="button" class="btn secondary" style="font-size: 12px; padding: 8px 14px;" onclick="document.getElementById('ai-voice-sample-input').click()">
+                📂 Selecionar Áudio do FEFO (.mp3 / .wav)
+              </button>
+              <span id="ai-sample-name" style="font-size: 12px; font-weight: 800; color: var(--ink);">Nenhum arquivo enviado</span>
+            </div>
+          </div>
+
+          <!-- Chave ElevenLabs e Voice ID -->
+          <div id="ai-eleven-box" style="display: flex; flex-direction: column; gap: 12px;">
             <div class="pkg-field-box">
               <label>Chave de API do ElevenLabs (API Key)</label>
               <input type="password" id="ai-eleven-key" placeholder="xi-api-key..." autocomplete="off">
-              <span class="hint" style="font-size: 11.5px;">Obtenha em <a href="https://elevenlabs.io" target="_blank" style="color: var(--purple); font-weight:800;">elevenlabs.io</a> (Perfil -> API Keys).</span>
+              <span class="hint" style="font-size: 11.5px;">Necessária para criar a voz clonada com máxima expressividade.</span>
             </div>
 
             <div class="pkg-field-box">
               <label>ID da Voz Clonada do FEFO (Voice ID)</label>
-              <input type="text" id="ai-eleven-voice" placeholder="Ex: 21m00Tcm4TlvDq8ikWAM (ou o ID da voz do FEFO)">
-              <span class="hint" style="font-size: 11.5px;">Crie uma voz no <em>VoiceLab</em> do ElevenLabs enviando áudios do FEFO e cole o ID aqui.</span>
+              <input type="text" id="ai-eleven-voice" placeholder="Gerado automaticamente ao enviar o áudio acima (ou cole o ID)">
             </div>
           </div>
 
+          <!-- Controles de Timbre e Velocidade -->
+          <div style="background: #fdfdfe; border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+            <div class="pkg-field-box">
+              <div style="display: flex; justify-content: space-between;">
+                <label>Velocidade da Voz</label>
+                <span id="ai-speed-val" style="font-size: 11px; font-weight: 900; color: var(--purple);">1.0x</span>
+              </div>
+              <input type="range" id="ai-speed-slider" min="0.7" max="1.4" step="0.05" value="1.0" oninput="document.getElementById('ai-speed-val').textContent = this.value + 'x'">
+            </div>
+
+            <div class="pkg-field-box">
+              <div style="display: flex; justify-content: space-between;">
+                <label>Ajuste de Timbre (Pitch)</label>
+                <span id="ai-pitch-val" style="font-size: 11px; font-weight: 900; color: var(--purple);">+10 Hz (Lúdico)</span>
+              </div>
+              <input type="range" id="ai-pitch-slider" min="-15" max="35" step="1" value="10" oninput="document.getElementById('ai-pitch-val').textContent = (this.value >= 0 ? '+' : '') + this.value + ' Hz'">
+            </div>
+
+            <div class="pkg-field-box">
+              <div style="display: flex; justify-content: space-between;">
+                <label>Estabilidade da Fala</label>
+                <span id="ai-stability-val" style="font-size: 11px; font-weight: 900; color: var(--purple);">50%</span>
+              </div>
+              <input type="range" id="ai-stability-slider" min="0.1" max="1.0" step="0.05" value="0.5" oninput="document.getElementById('ai-stability-val').textContent = Math.round(this.value * 100) + '%'">
+            </div>
+
+            <div class="pkg-field-box">
+              <div style="display: flex; justify-content: space-between;">
+                <label>Fidelidade / Similaridade</label>
+                <span id="ai-similarity-val" style="font-size: 11px; font-weight: 900; color: var(--purple);">80%</span>
+              </div>
+              <input type="range" id="ai-similarity-slider" min="0.3" max="1.0" step="0.05" value="0.8" oninput="document.getElementById('ai-similarity-val').textContent = Math.round(this.value * 100) + '%'">
+            </div>
+          </div>
+
+          <!-- Teste da Voz -->
           <div style="background: #faf8ff; border: 1px dashed var(--line); border-radius: 12px; padding: 12px;">
-            <label style="font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase;">Teste da Voz:</label>
+            <label style="font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase;">Ouvir Prévia da Voz:</label>
             <div style="display: flex; gap: 8px; margin-top: 6px;">
               <input type="text" id="ai-test-text" value="Olá amiguinho! Eu sou o Fefo, vamos brincar juntos hoje?" style="flex: 1; font-size: 13px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px;">
               <button class="btn primary" type="button" style="padding: 8px 16px; font-size: 13px;" onclick="PkgManager.testAiVoice()">▶ Ouvir Teste</button>
             </div>
-            <audio id="ai-test-player" style="display:none;" controls></audio>
+            <audio id="ai-test-player" style="display:none; width: 100%; margin-top: 10px;" controls></audio>
           </div>
         </div>
 

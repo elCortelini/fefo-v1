@@ -478,23 +478,18 @@ const PkgManager = {
       return `
         <article class="package-card is-draft ${isExpanded ? 'is-active' : ''}" 
                  onclick="PkgManager.toggleDraftPackage('${pkg.id}')">
-          <span class="pkg-badge draft">🟡 Rascunho de Menu</span>
-          <h3>${this.escapeHtml(pkg.titulo)}</h3>
-          <p>${this.escapeHtml(pkg.descricao || 'Pacote pedagógico em desenvolvimento.')}</p>
-          
-          <div class="pkg-tags">
-            <span class="pkg-tag">${this.escapeHtml(pkg.categoria || 'Geral')}</span>
-            <span class="pkg-tag">${licLabels}</span>
-            ${pkg.is_premium ? '<span class="pkg-tag premium">⭐ Premium</span>' : ''}
+          <div class="pkg-compact-header">
+            <span class="pkg-badge draft" style="margin: 0;">🟡 Rascunho</span>
+            <span class="pkg-audio-count-pill">🎵 <strong>${itemsCount}</strong> áudios</span>
           </div>
 
-          <div class="pkg-progress">
-            <div class="pkg-progress-bar">
-              <div class="pkg-progress-fill ${isCompleted ? 'is-complete' : ''}" style="width: ${pct}%"></div>
-            </div>
-            <div class="pkg-progress-label">
-              <span><strong>${itemsCount}</strong> de ${targetCount} faixas cadastradas</span>
-              <span><strong>${pct}%</strong></span>
+          <h3>${this.escapeHtml(pkg.titulo)}</h3>
+
+          <div class="pkg-compact-meta">
+            <div class="pkg-tags compact-tags">
+              <span class="pkg-tag" style="background:#f4f1fd; color:var(--purple);">${this.escapeHtml(pkg.categoria || 'Geral')}</span>
+              <span class="pkg-tag">${licLabels}</span>
+              ${pkg.is_premium ? '<span class="pkg-tag premium">⭐ Premium</span>' : ''}
             </div>
           </div>
 
@@ -810,31 +805,27 @@ const PkgManager = {
       return `
         <article class="package-card is-published ${isExpanded ? 'is-active' : ''}"
                  onclick="PkgManager.toggleProductionMenu('${this.escapeHtml(pkg.titulo)}')">
-          <span class="pkg-badge published">🟢 Menu Oficial Ativo</span>
+          <div class="pkg-compact-header">
+            <span class="pkg-badge published" style="margin: 0;">🟢 Menu Oficial</span>
+            <span class="pkg-audio-count-pill">🎵 <strong>${itemsCount}</strong> áudios</span>
+          </div>
+
           <h3>${this.escapeHtml(pkg.titulo)}</h3>
-          <p>${this.escapeHtml(pkg.descricao || 'Menu oficial do catálogo disponível na nuvem para os pets e apps conectados.')}</p>
 
-          <div class="pkg-tags">
-            <span class="pkg-tag" style="background:#e8f8f0; color:#127547;">${this.escapeHtml(pkg.categoria || 'Menus do Sistema')}</span>
-            <span class="pkg-tag" style="background:#e8f8f0; color:#127547;">${licLabels}</span>
-            ${pkg.is_premium ? '<span class="pkg-tag premium">⭐ Premium</span>' : ''}
-          </div>
-
-          <div class="pkg-progress">
-            <div class="pkg-progress-bar" style="background:#d1f2e1;">
-              <div class="pkg-progress-fill ${isCompleted ? 'is-complete' : ''}" style="width: ${pct}%; background: #27ae60;"></div>
-            </div>
-            <div class="pkg-progress-label">
-              <span><strong>${itemsCount}</strong> de ${targetCount} faixas oficiais</span>
-              <span><strong>${pct}%</strong></span>
+          <div class="pkg-compact-meta">
+            <div class="pkg-tags compact-tags">
+              <span class="pkg-tag" style="background:#e8f8f0; color:#127547;">${this.escapeHtml(pkg.categoria || 'Menus do Sistema')}</span>
+              <span class="pkg-tag" style="background:#e8f8f0; color:#127547;">${licLabels}</span>
+              ${pkg.is_premium ? '<span class="pkg-tag premium">⭐ Premium</span>' : ''}
             </div>
           </div>
 
-          <div class="published-card-actions" style="display: flex; gap: 8px; margin-top: auto;">
+          <div class="published-card-actions" style="display: flex; gap: 6px; margin-top: auto;">
             <button class="btn-manage" type="button" style="flex: 1;">
-              ${isExpanded ? '▲ Fechar Edição' : '▼ Gerenciar & Cortar Áudios'}
+              ${isExpanded ? '▲ Fechar' : '▼ Gerenciar & Cortar'}
             </button>
             <button class="btn-unpublish" type="button" 
+                    style="padding: 7px 10px; font-size: 11.5px;"
                     title="Despublicar este menu do catálogo oficial e voltar para rascunho para poder alterar"
                     onclick="event.stopPropagation(); PkgManager.unpublishMenu('${this.escapeHtml(pkg.titulo)}')">
               ↩️ Despublicar
@@ -1929,6 +1920,11 @@ const PkgManager = {
     const provider = localStorage.getItem('fefo_ai_provider') || 'elevenlabs';
     const key = localStorage.getItem('fefo_eleven_key') || '';
     const voice = localStorage.getItem('fefo_eleven_voice') || '21m00Tcm4TlvDq8ikWAM';
+    const speed = localStorage.getItem('fefo_ai_speed') || '1.0';
+    const pitch = localStorage.getItem('fefo_ai_pitch') || '10';
+    const stability = localStorage.getItem('fefo_ai_stability') || '0.5';
+    const similarity = localStorage.getItem('fefo_ai_similarity') || '0.8';
+    const sampleName = localStorage.getItem('fefo_ai_sample_name') || '';
 
     const selProv = document.getElementById('ai-voice-provider');
     if (selProv) selProv.value = provider;
@@ -1936,6 +1932,32 @@ const PkgManager = {
     if (inpKey) inpKey.value = key;
     const inpVoice = document.getElementById('ai-eleven-voice');
     if (inpVoice) inpVoice.value = voice;
+
+    const inpSpeed = document.getElementById('ai-speed-slider');
+    if (inpSpeed) {
+      inpSpeed.value = speed;
+      document.getElementById('ai-speed-val').textContent = speed + 'x';
+    }
+    const inpPitch = document.getElementById('ai-pitch-slider');
+    if (inpPitch) {
+      inpPitch.value = pitch;
+      document.getElementById('ai-pitch-val').textContent = (parseInt(pitch, 10) >= 0 ? '+' : '') + pitch + ' Hz';
+    }
+    const inpStab = document.getElementById('ai-stability-slider');
+    if (inpStab) {
+      inpStab.value = stability;
+      document.getElementById('ai-stability-val').textContent = Math.round(parseFloat(stability) * 100) + '%';
+    }
+    const inpSim = document.getElementById('ai-similarity-slider');
+    if (inpSim) {
+      inpSim.value = similarity;
+      document.getElementById('ai-similarity-val').textContent = Math.round(parseFloat(similarity) * 100) + '%';
+    }
+
+    const lblSample = document.getElementById('ai-sample-name');
+    if (lblSample) {
+      lblSample.textContent = sampleName ? `✓ Áudio: ${sampleName}` : 'Nenhum arquivo enviado';
+    }
 
     this.onAiProviderChange();
     modal.style.display = 'flex';
@@ -1952,14 +1974,61 @@ const PkgManager = {
     if (box) box.style.display = (prov === 'elevenlabs') ? 'flex' : 'none';
   },
 
+  async handleVoiceSampleUpload(files) {
+    if (!files || !files.length) return;
+    const file = files[0];
+    const statusEl = document.getElementById('ai-sample-status');
+    const nameEl = document.getElementById('ai-sample-name');
+    if (nameEl) nameEl.textContent = `Enviando "${file.name}"...`;
+    if (statusEl) statusEl.textContent = 'Processando amostra...';
+
+    const apiKey = document.getElementById('ai-eleven-key')?.value.trim() || localStorage.getItem('fefo_eleven_key') || '';
+    const form = new FormData();
+    form.append('api_key', apiKey);
+    form.append('voice_name', 'Voz do FEFO');
+    form.append('file', file, file.name);
+
+    try {
+      const res = await fetch('/api/tts/clone_sample', { method: 'POST', body: form });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.message || 'Falha ao processar amostra.');
+
+      localStorage.setItem('fefo_ai_sample_name', file.name);
+      if (nameEl) nameEl.textContent = `✓ Amostra: ${file.name}`;
+
+      if (data.voice_id) {
+        localStorage.setItem('fefo_eleven_voice', data.voice_id);
+        const inpVoice = document.getElementById('ai-eleven-voice');
+        if (inpVoice) inpVoice.value = data.voice_id;
+        if (statusEl) statusEl.textContent = '✓ Voz Clonada no ElevenLabs!';
+        notice(`✓ Voz clonada no ElevenLabs com sucesso! ID: ${data.voice_id}`, 'ok');
+      } else {
+        if (statusEl) statusEl.textContent = '✓ Salvo como Referência Local!';
+        notice(`✓ Amostra da voz "${file.name}" salva com sucesso!`, 'ok');
+      }
+    } catch (e) {
+      if (nameEl) nameEl.textContent = `✓ Amostra local: ${file.name}`;
+      localStorage.setItem('fefo_ai_sample_name', file.name);
+      notice(`Amostra "${file.name}" salva localmente.`, 'ok');
+    }
+  },
+
   saveAiVoiceSettings() {
     const prov = document.getElementById('ai-voice-provider')?.value || 'elevenlabs';
     const key = document.getElementById('ai-eleven-key')?.value.trim() || '';
     const voice = document.getElementById('ai-eleven-voice')?.value.trim() || '';
+    const speed = document.getElementById('ai-speed-slider')?.value || '1.0';
+    const pitch = document.getElementById('ai-pitch-slider')?.value || '10';
+    const stability = document.getElementById('ai-stability-slider')?.value || '0.5';
+    const similarity = document.getElementById('ai-similarity-slider')?.value || '0.8';
 
     localStorage.setItem('fefo_ai_provider', prov);
     localStorage.setItem('fefo_eleven_key', key);
     localStorage.setItem('fefo_eleven_voice', voice);
+    localStorage.setItem('fefo_ai_speed', speed);
+    localStorage.setItem('fefo_ai_pitch', pitch);
+    localStorage.setItem('fefo_ai_stability', stability);
+    localStorage.setItem('fefo_ai_similarity', similarity);
 
     notice('Configurações da Voz IA salvas com sucesso!', 'ok');
     this.closeAiVoiceSettings();
@@ -1970,10 +2039,14 @@ const PkgManager = {
     const prov = document.getElementById('ai-voice-provider')?.value || 'elevenlabs';
     const key = document.getElementById('ai-eleven-key')?.value.trim() || localStorage.getItem('fefo_eleven_key') || '';
     const voice = document.getElementById('ai-eleven-voice')?.value.trim() || localStorage.getItem('fefo_eleven_voice') || '21m00Tcm4TlvDq8ikWAM';
+    const speed = parseFloat(document.getElementById('ai-speed-slider')?.value || '1.0');
+    const pitch = parseInt(document.getElementById('ai-pitch-slider')?.value || '10', 10);
+    const stability = parseFloat(document.getElementById('ai-stability-slider')?.value || '0.5');
+    const similarity = parseFloat(document.getElementById('ai-similarity-slider')?.value || '0.8');
 
     notice('Sintetizando áudio de teste com a voz do FEFO...');
     try {
-      const blob = await this.synthesizeVoiceBlob(text, prov, key, voice);
+      const blob = await this.synthesizeVoiceBlob(text, prov, key, voice, speed, pitch, stability, similarity);
       if (blob) {
         const audioUrl = URL.createObjectURL(blob);
         const player = document.getElementById('ai-test-player');
@@ -1989,7 +2062,7 @@ const PkgManager = {
     }
   },
 
-  async synthesizeVoiceBlob(text, provider, apiKey, voiceId) {
+  async synthesizeVoiceBlob(text, provider, apiKey, voiceId, speed = 1.0, pitch = 10, stability = 0.5, similarity = 0.8) {
     // 1. Tenta API do ElevenLabs diretamente se chave estiver presente
     if (apiKey && (provider === 'elevenlabs' || !provider)) {
       const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId || '21m00Tcm4TlvDq8ikWAM'}`, {
@@ -2001,7 +2074,11 @@ const PkgManager = {
         body: JSON.stringify({
           text: text,
           model_id: 'eleven_multilingual_v2',
-          voice_settings: { stability: 0.5, similarity_boost: 0.8 }
+          voice_settings: {
+            stability: stability,
+            similarity_boost: similarity,
+            speed: speed
+          }
         })
       });
       if (!res.ok) {
@@ -2016,7 +2093,16 @@ const PkgManager = {
       const res = await fetch('/api/tts/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, provider, api_key: apiKey, voice_id: voiceId })
+        body: JSON.stringify({
+          text,
+          provider,
+          api_key: apiKey,
+          voice_id: voiceId,
+          speed,
+          pitch,
+          stability,
+          similarity
+        })
       });
       if (res.ok) {
         const data = await res.json();
@@ -2030,10 +2116,10 @@ const PkgManager = {
     }
 
     // 3. Fallback no navegador com Web Speech API e síntese de áudio
-    return await this.synthesizeBrowserSpeechBlob(text);
+    return await this.synthesizeBrowserSpeechBlob(text, speed, pitch);
   },
 
-  async synthesizeBrowserSpeechBlob(text) {
+  async synthesizeBrowserSpeechBlob(text, speed = 1.0, pitch = 10) {
     return new Promise((resolve, reject) => {
       if (!('speechSynthesis' in window)) {
         reject(new Error('Síntese de voz não suportada pelo seu navegador.'));
@@ -2041,17 +2127,15 @@ const PkgManager = {
       }
       const utter = new SpeechSynthesisUtterance(text);
       utter.lang = 'pt-BR';
-      utter.pitch = 1.35; // Tom agudo lúdico de mascote
-      utter.rate = 1.05;
+      utter.pitch = Math.max(0.5, Math.min(2.0, 1.0 + (pitch / 30)));
+      utter.rate = Math.max(0.5, Math.min(2.0, speed));
 
       const voices = window.speechSynthesis.getVoices();
       const ptVoice = voices.find(v => v.lang.startsWith('pt')) || voices[0];
       if (ptVoice) utter.voice = ptVoice;
 
-      // Gera e toca
       window.speechSynthesis.speak(utter);
       
-      // Cria um tom de áudio para o player
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       const osc = audioCtx.createOscillator();
       const dest = audioCtx.createMediaStreamDestination();
@@ -2104,16 +2188,21 @@ const PkgManager = {
     const provider = localStorage.getItem('fefo_ai_provider') || 'elevenlabs';
     const apiKey = localStorage.getItem('fefo_eleven_key') || '';
     const voiceId = localStorage.getItem('fefo_eleven_voice') || '21m00Tcm4TlvDq8ikWAM';
+    const speed = parseFloat(localStorage.getItem('fefo_ai_speed') || '1.0');
+    const pitch = parseInt(localStorage.getItem('fefo_ai_pitch') || '10', 10);
+    const stability = parseFloat(localStorage.getItem('fefo_ai_stability') || '0.5');
+    const similarity = parseFloat(localStorage.getItem('fefo_ai_similarity') || '0.8');
 
     try {
-      const blob = await this.synthesizeVoiceBlob(currentScript, provider, apiKey, voiceId);
+      const blob = await this.synthesizeVoiceBlob(currentScript, provider, apiKey, voiceId, speed, pitch, stability, similarity);
       if (!blob) throw new Error('Não foi possível gerar o áudio.');
 
       await AudioBlobDB.setAudio(itemId, blob);
       const blobUrl = URL.createObjectURL(blob);
 
+      // Carrega imediatamente como áudio oficial da faixa
       it.web_url = blobUrl;
-      it.arquivo_origem = `Voz IA FEFO (${(it.arquivo_fefo || 'fefo.wav')})`;
+      it.arquivo_origem = `Voz IA FEFO (${(it.arquivo_fefo || 'aXXXX.wav')})`;
       it.tamanho = blob.size;
       it.status = 'ready';
 
@@ -2126,8 +2215,8 @@ const PkgManager = {
         this.renderDraftsGrid();
       }
 
-      notice(`✓ Áudio gerado com a voz do FEFO com sucesso!`, 'ok');
-      setTimeout(() => this.playTrack(itemId), 300);
+      notice(`✓ Áudio carregado na faixa! Você já pode ouvir ou cortar na ferramenta de corte.`, 'ok');
+      setTimeout(() => this.playTrack(itemId), 250);
     } catch (err) {
       notice(`Erro na geração: ${err.message}`, 'error');
       if (err.message.includes('ElevenLabs') || !apiKey) {

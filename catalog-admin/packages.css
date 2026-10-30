@@ -1293,3 +1293,86 @@
 .production-meta .btn-generate-ai-voice:hover {
   background: linear-gradient(135deg, #2ecc71, #229954);
 }
+
+
+/* ========================================================== */
+/* CARDS DE PACOTES COMPACTOS E DIRETOS                       */
+/* Destaque para: Nome, Contagem de Áudios e Licenças         */
+/* ========================================================== */
+
+.packages-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
+  gap: 14px !important;
+  margin-top: 14px;
+}
+
+.package-card {
+  padding: 14px 16px !important;
+  border-radius: 16px !important;
+  min-height: auto !important;
+}
+
+.package-card h3 {
+  margin: 0 0 6px 0 !important;
+  font-size: 16.5px !important;
+  line-height: 1.3 !important;
+  font-weight: 900 !important;
+  color: var(--ink) !important;
+}
+
+.pkg-compact-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.pkg-compact-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 6px 0 10px;
+}
+
+.pkg-audio-count-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--ink);
+  background: #f4f1fd;
+  border: 1px solid #e1d9f4;
+  padding: 4px 10px;
+  border-radius: 8px;
+  align-self: flex-start;
+}
+
+.package-card.is-published .pkg-audio-count-pill {
+  background: #e8f8f0;
+  border-color: #b7eed4;
+  color: #127547;
+}
+
+.pkg-tags.compact-tags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin: 0 !important;
+}
+
+.pkg-tags.compact-tags .pkg-tag {
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 6px;
+}
+
+.package-card .btn-manage {
+  padding: 7px 12px !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  border-radius: 8px !important;
+  margin-top: 4px !important;
+}

@@ -356,6 +356,10 @@ class Handler(SimpleHTTPRequestHandler):
                 provider = payload.get('provider', 'auto')
                 pkg_id = payload.get('package_id')
                 item_id = payload.get('item_id')
+                speed = float(payload.get('speed', 1.0))
+                pitch = int(payload.get('pitch', 10))
+                stability = float(payload.get('stability', 0.5))
+                similarity = float(payload.get('similarity', 0.8))
 
                 if not text: raise ValueError('Texto ausente para geração de áudio.')
 
@@ -367,7 +371,11 @@ class Handler(SimpleHTTPRequestHandler):
                     req_data = json.dumps({
                         "text": text,
                         "model_id": "eleven_multilingual_v2",
-                        "voice_settings": { "stability": 0.5, "similarity_boost": 0.8 }
+                        "voice_settings": {
+                            "stability": stability,
+                            "similarity_boost": similarity,
+                            "speed": speed
+                        }
                     }).encode('utf-8')
                     req = urllib.request.Request(url, data=req_data, headers={
                         "Content-Type": "application/json",
@@ -379,8 +387,11 @@ class Handler(SimpleHTTPRequestHandler):
                     # 2. Fallback com edge-tts de alta velocidade
                     import asyncio, edge_tts
                     tmp_mp3 = ROOT / f"temp_tts_{int(time.time()*1000)%100000}.mp3"
+                    pitch_str = f"+{pitch}Hz" if pitch >= 0 else f"{pitch}Hz"
+                    rate_pct = int((speed - 1.0) * 100)
+                    rate_str = f"+{rate_pct}%" if rate_pct >= 0 else f"{rate_pct}%"
                     async def run_edge():
-                        communicate = edge_tts.Communicate(text, 'pt-BR-ThalitaNeural', pitch='+10Hz', rate='+6%')
+                        communicate = edge_tts.Communicate(text, 'pt-BR-ThalitaNeural', pitch=pitch_str, rate=rate_str)
                         await communicate.save(str(tmp_mp3))
                     asyncio.run(run_edge())
                     audio_bytes = tmp_mp3.read_bytes()
@@ -415,6 +426,55 @@ class Handler(SimpleHTTPRequestHandler):
                     'ok': True,
                     'web_url': f"/repository/drafts/audio/{pkg_id or 'tts'}/{out_name}",
                     'message': '✓ Áudio gerado com a voz do FEFO com sucesso!'
+                }
+
+            elif self.path == '/api/tts/clone_sample':
+                msg = BytesParser(policy=default).parsebytes(b'Content-Type: ' + content_type.encode() + b'\r\n\r\n' + body)
+                api_key = None; voice_name = 'Voz do FEFO'; audio_data = None; filename = 'sample.mp3'
+                for part in msg.walk():
+                    if part.get_content_disposition() != 'form-data': continue
+                    name = part.get_param('name', header='content-disposition')
+                    if name == 'api_key': api_key = part.get_content().strip()
+                    elif name == 'voice_name': voice_name = part.get_content().strip()
+                    elif name == 'file' and part.get_filename():
+                        filename = part.get_filename()
+                        audio_data = part.get_payload(decode=True)
+
+                if not audio_data: raise ValueError('Arquivo de áudio da voz de referência ausente.')
+
+                sample_dir = ROOT / 'repository/voice_samples'
+                sample_dir.mkdir(parents=True, exist_ok=True)
+                clean_name = re.sub(r'[^\w\.-]', '_', filename)
+                sample_file = sample_dir / clean_name
+                sample_file.write_bytes(audio_data)
+
+                voice_id = None
+                if api_key:
+                    import urllib.request
+                    boundary = f"----WebKitFormBoundary{int(time.time()*1000)}"
+                    body_parts = []
+                    body_parts.append(f"--{boundary}\r\nContent-Disposition: form-data; name=\"name\"\r\n\r\n{voice_name}\r\n".encode('utf-8'))
+                    body_parts.append(f"--{boundary}\r\nContent-Disposition: form-data; name=\"description\"\r\n\r\nVoz clonada do FEFO Pet\r\n".encode('utf-8'))
+                    body_parts.append(f"--{boundary}\r\nContent-Disposition: form-data; name=\"files\"; filename=\"{clean_name}\"\r\nContent-Type: audio/mpeg\r\n\r\n".encode('utf-8') + audio_data + b"\r\n")
+                    body_parts.append(f"--{boundary}--\r\n".encode('utf-8'))
+                    full_body = b"".join(body_parts)
+
+                    req = urllib.request.Request("https://api.elevenlabs.io/v1/voices/add", data=full_body, headers={
+                        "Content-Type": f"multipart/form-data; boundary={boundary}",
+                        "xi-api-key": api_key
+                    })
+                    try:
+                        with urllib.request.urlopen(req) as resp:
+                            res_json = json.loads(resp.read().decode('utf-8'))
+                            voice_id = res_json.get('voice_id')
+                    except Exception as err:
+                        raise ValueError(f"Erro ElevenLabs ao clonar: {err}")
+
+                result = {
+                    'ok': True,
+                    'voice_id': voice_id,
+                    'sample_url': f"/repository/voice_samples/{clean_name}",
+                    'message': f"✓ Amostra '{filename}' salva e voz clonada com sucesso!" if voice_id else f"✓ Amostra '{filename}' salva como voz de referência!"
                 }
 
             elif self.path == '/api/packages/upload_single_item_audio':
