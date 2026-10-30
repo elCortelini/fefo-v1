@@ -755,42 +755,28 @@
   max-width: 100% !important;
   background: #ffffff !important;
   color: #1e293b !important;
-  border-radius: 20px !important;
-  padding: 18px 20px !important;
-  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.08) !important;
-  border: 2px solid #8be4aa !important;
+  border-radius: 18px !important;
+  padding: 14px 18px !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04) !important;
+  border: none !important; /* Sem borda da box */
   display: flex !important;
   flex-direction: column !important;
-  gap: 14px !important;
+  gap: 12px !important;
   box-sizing: border-box !important;
-  margin-top: 8px !important;
+  margin-top: 4px !important;
 }
 
 .inline-trimmer-card .trimmer-header {
   display: flex !important;
-  justify-content: space-between !important;
+  justify-content: flex-end !important;
   align-items: center !important;
-}
-
-.inline-trimmer-card .trimmer-badge {
-  font-size: 11px !important;
-  font-weight: 900 !important;
-  letter-spacing: 0.08em !important;
-  color: #15803d !important;
-}
-
-.inline-trimmer-card .trimmer-title {
-  margin: 4px 0 0 !important;
-  color: #0f172a !important;
-  font-size: 16px !important;
-  font-weight: 800 !important;
 }
 
 .inline-trimmer-card .trimmer-script-box {
   background: #f5f3ff !important;
   border: 1.5px solid #ddd6fe !important;
-  border-radius: 14px !important;
-  padding: 12px 16px !important;
+  border-radius: 12px !important;
+  padding: 10px 14px !important;
   margin: 0 !important;
 }
 
@@ -798,7 +784,7 @@
   display: flex !important;
   justify-content: space-between !important;
   align-items: center !important;
-  margin-bottom: 6px !important;
+  margin-bottom: 4px !important;
 }
 
 .inline-trimmer-card .trimmer-script-badge {
@@ -808,62 +794,68 @@
   color: #6d28d9 !important;
 }
 
-.inline-trimmer-card .trimmer-script-code {
-  font-size: 11px !important;
-  font-weight: 800 !important;
-  background: #ede9fe !important;
-  padding: 2px 8px !important;
-  border-radius: 6px !important;
-  color: #5b21b6 !important;
-}
-
 .inline-trimmer-card .trimmer-script-text {
   margin: 0 !important;
-  font-size: 13.5px !important;
-  line-height: 1.45 !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
   color: #3b0764 !important;
   font-style: italic !important;
 }
 
 .inline-trimmer-card .trimmer-canvas-box {
   background: #0b1f3a !important;
-  border-radius: 16px !important;
+  border-radius: 14px !important;
   overflow: hidden !important;
-  border: 2px solid #8be4aa !important;
+  border: 1.5px solid #8be4aa !important;
 }
 
 .inline-trimmer-card .trimmer-waveform {
   width: 100% !important;
-  height: 145px !important;
+  height: 140px !important;
   display: block !important;
   cursor: ew-resize !important;
 }
 
 .inline-trimmer-card .trimmer-controls-grid {
-  display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)) !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
   gap: 12px !important;
   background: #f0fdf4 !important;
   border: 1.5px solid #bbf7d0 !important;
-  padding: 12px 16px !important;
+  padding: 10px 14px !important;
   border-radius: 14px !important;
+  flex-wrap: nowrap !important;
 }
 
 .inline-trimmer-card .trimmer-controls-grid label {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
   display: flex !important;
   flex-direction: column !important;
-  gap: 4px !important;
-  font-size: 11.5px !important;
+  gap: 3px !important;
+  font-size: 11px !important;
   font-weight: 800 !important;
   color: #166534 !important;
+}
+
+.inline-trimmer-card .trimmer-controls-grid label span {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  white-space: nowrap !important;
+  font-size: 11px !important;
 }
 
 .inline-trimmer-card .trimmer-controls-grid label output {
   font-weight: 900 !important;
   color: #0f172a !important;
+  font-size: 11px !important;
 }
 
 .inline-trimmer-card .trimmer-controls-grid input[type="range"] {
+  width: 100% !important;
   accent-color: #22c55e !important;
   cursor: pointer !important;
 }
@@ -871,8 +863,9 @@
 .inline-trimmer-card .trimmer-bottom-bar {
   display: flex !important;
   align-items: center !important;
+  justify-content: space-between !important;
   gap: 12px !important;
-  flex-wrap: wrap !important;
+  width: 100% !important;
   margin-top: 2px !important;
 }
 

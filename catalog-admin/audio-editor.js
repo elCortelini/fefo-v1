@@ -59,30 +59,31 @@
 
     const html = `
       <div class="audio-trimmer-container inline-trimmer-card">
-        <div class="trimmer-header">
-          <div>
-            <span class="trimmer-badge">✂ FERRAMENTA DE CORTE</span>
-            <h3 class="trimmer-title" style="margin: 4px 0 0; color: #fff; font-size: 17px; font-weight: 800;">Cortar: ${escapeHtml(title)}</h3>
+        ${showClose ? `
+          <div class="trimmer-header" style="margin-bottom: 8px;">
+            <button type="button" class="editor-close" title="Fechar">✕</button>
           </div>
-          ${showClose ? '<button type="button" class="editor-close" title="Fechar">✕</button>' : ''}
-        </div>
+        ` : ''}
 
         ${description && description.trim() ? `
           <div class="trimmer-script-box">
             <div class="trimmer-script-header">
               <span class="trimmer-script-badge">📜 ROTEIRO / FALA DO FEFO</span>
-              ${itemCode ? `<span class="trimmer-script-code">[Código: ${escapeHtml(itemCode)}]</span>` : ''}
             </div>
             <p class="trimmer-script-text">"${escapeHtml(description.trim())}"</p>
           </div>
         ` : ''}
 
         <div class="trimmer-canvas-box">
-          <canvas class="trimmer-waveform" style="width:100%; height:150px; display:block; cursor:ew-resize;"></canvas>
+          <canvas class="trimmer-waveform" style="width:100%; height:140px; display:block; cursor:ew-resize;"></canvas>
           <audio hidden></audio>
         </div>
 
         <div class="trimmer-controls-grid">
+          <label>
+            <span>Fade In: <output class="trimmer-fadein-val">0.0s</output></span>
+            <input class="trimmer-fadein-slider" type="range" min="0" max="5" step="0.1" value="0">
+          </label>
           <label>
             <span>Início: <output class="trimmer-start-val">0.00s</output></span>
             <input class="trimmer-start-slider" type="range" min="0" max="1" step="0.01" value="0">
@@ -92,24 +93,22 @@
             <input class="trimmer-end-slider" type="range" min="0" max="1" step="0.01" value="1">
           </label>
           <label>
-            <span>Zoom: <output class="trimmer-zoom-val">1x</output></span>
-            <input class="trimmer-zoom-slider" type="range" min="1" max="20" step="1" value="1">
-          </label>
-          <label>
-            <span>Fade In: <output class="trimmer-fadein-val">0.0s</output></span>
-            <input class="trimmer-fadein-slider" type="range" min="0" max="5" step="0.1" value="0">
-          </label>
-          <label>
             <span>Fade Out: <output class="trimmer-fadeout-val">0.0s</output></span>
             <input class="trimmer-fadeout-slider" type="range" min="0" max="5" step="0.1" value="0">
+          </label>
+          <label>
+            <span>Zoom: <output class="trimmer-zoom-val">1x</output></span>
+            <input class="trimmer-zoom-slider" type="range" min="1" max="20" step="1" value="1">
           </label>
         </div>
 
         <div class="trimmer-bottom-bar">
-          <button type="button" class="editor-play" title="Ouvir o trecho selecionado">▶ Ouvir Trecho</button>
-          <button type="button" class="editor-reset" style="margin: 0 8px;">↶ Redefinir Tudo</button>
-          <div class="editor-status" style="margin: 0; flex: 1;">Ajuste as réguas para cortar.</div>
-          <button type="button" class="editor-save" style="background:#2ecc71; color:#fff;">✓ Aplicar Corte</button>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <button type="button" class="editor-play" title="Ouvir o trecho selecionado">▶ Ouvir Trecho</button>
+            <button type="button" class="editor-reset">↶ Redefinir Tudo</button>
+          </div>
+          <div class="editor-status" style="display: none;">Ajuste as réguas para cortar.</div>
+          <button type="button" class="editor-save" style="background:#22c55e; color:#fff;">✓ Aplicar Corte</button>
         </div>
       </div>
     `;

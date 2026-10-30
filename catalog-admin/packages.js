@@ -684,10 +684,6 @@ const PkgManager = {
                         <span class="acc-text">Ajustar / Cortar <span class="acc-arrow" id="arrow-trim-${it.id}">▼</span></span>
                       </div>
                       <div class="track-accordion-panel" id="panel-trim-${it.id}">
-                        <div style="margin-bottom: 8px; font-size: 12px; font-weight: 800; color: #4c1d95;">
-                          📁 Arquivo de Origem: <strong>${this.escapeHtml(it.arquivo_origem || (hasAudio ? 'Áudio Vinculado' : 'Nenhum'))}</strong>
-                          ${it.tamanho ? `(${this.formatBytes(it.tamanho)})` : ''}
-                        </div>
                         <div id="trimmer-mount-${it.id}" class="inline-trimmer-mount"></div>
                       </div>
 
@@ -1126,10 +1122,6 @@ const PkgManager = {
                         <span class="acc-text">Ajustar / Cortar <span class="acc-arrow" id="arrow-trim-${it.id}">▼</span></span>
                       </div>
                       <div class="track-accordion-panel" id="panel-trim-${it.id}">
-                        <div style="margin-bottom: 8px; font-size: 12px; font-weight: 800; color: #4c1d95;">
-                          📁 Arquivo de Origem: <strong>${this.escapeHtml(fefoFileName)}</strong>
-                          ${it.tamanho ? `(${this.formatBytes(it.tamanho)})` : ''}
-                        </div>
                         <div id="trimmer-mount-${it.id}" class="inline-trimmer-mount"></div>
                       </div>
 
