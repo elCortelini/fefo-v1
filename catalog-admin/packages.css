@@ -2268,3 +2268,90 @@
 .pkg-collapse-arrow-btn.green {
   color: #15803d !important;
 }
+
+
+/* ======================================================== */
+/* HARMONIZAÇÃO DOS CARDS DE FAIXA DENTRO DE RASCUNHOS      */
+/* Cores em tonalidades de amarelo/âmbar suave              */
+/* ======================================================== */
+
+.draft-card .track-card-box {
+  background: #fffdf5 !important; /* Amarelo/creme suave */
+  border: 2px solid #ecd18a !important; /* Borda dourada sutil */
+  box-shadow: 0 4px 14px rgba(220, 160, 20, 0.08) !important;
+}
+
+.draft-card .track-card-box:hover {
+  border-color: #d49f17 !important;
+  box-shadow: 0 6px 18px rgba(220, 160, 20, 0.15) !important;
+}
+
+.draft-card .track-vertical-badge {
+  color: #5c4300 !important;
+}
+
+.draft-card .track-input-clean {
+  background: #ffffff !important;
+  border: 1.5px solid #ecd18a !important;
+  color: #2b1f00 !important;
+}
+
+.draft-card .track-input-clean:focus {
+  border-color: #d49f17 !important;
+  box-shadow: 0 0 0 3px rgba(212, 159, 23, 0.2) !important;
+}
+
+.draft-card .btn-track-action {
+  background: #d49f17 !important; /* Âmbar dourado elegante */
+  color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(212, 159, 23, 0.28) !important;
+}
+
+.draft-card .btn-track-action:hover {
+  background: #b8860b !important;
+  box-shadow: 0 4px 10px rgba(184, 134, 11, 0.35) !important;
+}
+
+.draft-card .btn-track-action.save {
+  background: #d49f17 !important;
+}
+
+.draft-card .track-accordion-toggle::before {
+  background: #ecd18a !important;
+}
+
+.draft-card .track-accordion-toggle .acc-text {
+  background: #fffdf5 !important;
+  color: #6d4f00 !important;
+}
+
+.draft-card .track-accordion-toggle:hover .acc-text {
+  color: #b8860b !important;
+}
+
+.draft-card .track-accordion-panel {
+  background: #ffffff !important;
+  border: 1.5px solid #ecd18a !important;
+  border-radius: 12px !important;
+  box-shadow: 0 2px 8px rgba(212, 159, 23, 0.06) !important;
+}
+
+.draft-card .btn-generate-ai-voice {
+  background: #d49f17 !important;
+  color: #ffffff !important;
+  border-radius: 8px !important;
+  border: none !important;
+  padding: 6px 14px !important;
+  font-weight: 800 !important;
+  font-size: 12px !important;
+  cursor: pointer !important;
+}
+
+.draft-card .btn-generate-ai-voice:hover {
+  background: #b8860b !important;
+}
+
+.draft-card .inline-trimmer-mount {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}

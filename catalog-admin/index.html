@@ -26,15 +26,15 @@
 
   <title>Administrador do Catálogo · FEFO Pet</title>
 
-  <link rel="stylesheet" href="admin.css?v=unified-17">
+  <link rel="stylesheet" href="admin.css?v=unified-18">
 
-  <link rel="stylesheet" href="packages.css?v=unified-17">
+  <link rel="stylesheet" href="packages.css?v=unified-18">
 
-  <link rel="stylesheet" href="cards-packs.css?v=unified-17">
+  <link rel="stylesheet" href="cards-packs.css?v=unified-18">
 
-  <link rel="stylesheet" href="audio-editor.css?v=unified-17">
+  <link rel="stylesheet" href="audio-editor.css?v=unified-18">
 
-  <link rel="stylesheet" href="image-editor.css?v=unified-17">
+  <link rel="stylesheet" href="image-editor.css?v=unified-18">
 
 </head>
 
@@ -86,7 +86,7 @@
 
     <!-- Status Global de Notificações -->
 
-    <div id="status" class="status" role="status" style="margin-bottom: 16px;">Pronto para começar.</div>
+    <div id="status" class="status" role="status" style="display: none; margin-bottom: 16px;"></div>
 
 
 
@@ -100,81 +100,20 @@
 
       <div class="card" style="padding: 28px;">
 
-        <div class="packages-toolbar" style="margin-bottom: 24px;">
-
+        <div class="packages-toolbar" style="margin-bottom: 20px;">
           <div>
-
-            <p class="eyebrow">ESTRUTURA DE MENUS</p>
-
-            <h2 style="margin: 0 0 6px; font-size: 26px;">Menus de Áudio</h2>
-
-            <div style="font-size: 13px; color: var(--muted); line-height: 1.4;">
-
-              Cada pacote representa um <strong>MENU no app e no pet CYD</strong>. Clique em qualquer pacote abaixo para expandir, ouvir, cortar e editar suas faixas.
-
-            </div>
-
+            <h2 style="margin: 0; font-size: 26px;">Menus de Áudio</h2>
           </div>
-
           <div class="pkg-actions" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-
-            <button class="btn secondary" id="btn-config-ai" type="button" style="font-size: 13px; padding: 10px 16px; background: #f0eaff; color: #5a3ba2; border: 1px solid #d4c7f7;" title="Configurar a IA para clonagem de voz do FEFO (ElevenLabs / Neural)">
-              🎙️ Configurar Voz IA do FEFO
-            </button>
-
-            <button class="btn secondary" id="btn-export-drafts" type="button" style="font-size: 13px; padding: 10px 16px;" title="Baixar arquivo JSON com todas as alterações e rascunhos para backup">
-              💾 Baixar Backup JSON
-            </button>
-
             <button class="btn primary" id="btn-new-package" type="button" style="font-size: 14px; padding: 12px 22px;">
-
               ＋ Criar Novo Pacote / Menu
-
             </button>
-
           </div>
-
         </div>
 
 
 
-        <!-- Painel Unificado da Matriz Pedagógica & Status -->
-
-        <div class="pkg-kpi-banner">
-
-          <div class="pkg-kpi-card highlight">
-
-            <span class="pkg-kpi-num" id="kpi-total-items">327</span>
-
-            <span class="pkg-kpi-label">Atividades da Grade Unificada</span>
-
-          </div>
-
-          <div class="pkg-kpi-card">
-
-            <span class="pkg-kpi-num" id="kpi-total-scripts">269</span>
-
-            <span class="pkg-kpi-label">Roteiros Falados do FEFO</span>
-
-          </div>
-
-          <div class="pkg-kpi-card">
-
-            <span class="pkg-kpi-num" id="kpi-total-packages">43</span>
-
-            <span class="pkg-kpi-label">Tópicos & Menus Estruturados</span>
-
-          </div>
-
-          <div class="pkg-kpi-card">
-
-            <span class="pkg-kpi-num" id="kpi-total-published">34</span>
-
-            <span class="pkg-kpi-label">Áudios no Catálogo Oficial</span>
-
-          </div>
-
-        </div>
+        
 
 
 
@@ -221,31 +160,15 @@
 
 
         <!-- Rascunhos de Menus -->
-
-        <div style="margin-bottom: 40px;">
-
-          <div class="card-title" style="margin-bottom: 8px;">
-
-            <div>
-
-              <p class="eyebrow">EM CONSTRUÇÃO</p>
-
-              <h3 style="margin: 0; font-size: 21px;">🟡 Pacotes em Rascunho</h3>
-
-            </div>
-
+        <div style="margin-bottom: 36px;">
+          <div class="pkg-section-header">
+            <span class="pkg-pin">📌</span>
+            <h3>PACOTES EM RASCUNHO</h3>
           </div>
-
-          <p class="hint" style="margin: 0 0 14px;">Cadastre as faixas aos poucos conforme forem gravadas. Ao clicar no card, os áudios expandem logo abaixo.</p>
-
           <div id="draft-packages-grid" class="packages-grid">
-
             <div class="empty">Carregando pacotes em rascunho…</div>
-
           </div>
-
           <div id="draft-inline-drawer" style="display: none;"></div>
-
         </div>
 
 
@@ -255,31 +178,15 @@
 
 
         <!-- Menus Oficiais (Produção) -->
-
         <div>
-
-          <div class="card-title" style="margin-bottom: 8px;">
-
-            <div>
-
-              <p class="eyebrow">PRODUÇÃO</p>
-
-              <h3 style="margin: 0; font-size: 21px;">🟢 Menus Oficiais no Catálogo</h3>
-
-            </div>
-
+          <div class="pkg-section-header">
+            <span class="pkg-pin">📌</span>
+            <h3>PACOTES PUBLICADOS</h3>
           </div>
-
-          <p class="hint" style="margin: 0 0 14px;">Menus disponíveis para download e execução nos pets. Clique em <strong>“✏️ EDITAR MENU”</strong> para editar títulos, cortar trechos ou adicionar novas faixas.</p>
-
           <div id="published-menus-grid" class="packages-grid">
-
             <div class="empty">Carregando menus oficiais…</div>
-
           </div>
-
           <div id="production-inline-drawer" style="display: none;"></div>
-
         </div>
 
       </div>
@@ -542,15 +449,15 @@
 
 
 
-  <script src="admin.js?v=unified-17"></script>
+  <script src="admin.js?v=unified-18"></script>
 
-  <script src="audio-editor.js?v=unified-17"></script>
+  <script src="audio-editor.js?v=unified-18"></script>
 
-  <script src="image-editor.js?v=unified-17"></script>
+  <script src="image-editor.js?v=unified-18"></script>
 
-  <script src="packages.js?v=unified-17"></script>
+  <script src="packages.js?v=unified-18"></script>
 
-  <script src="cards-packs.js?v=unified-17"></script>
+  <script src="cards-packs.js?v=unified-18"></script>
 
 
     <!-- Modal de Configuração da Voz do FEFO (IA) -->

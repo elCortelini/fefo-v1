@@ -943,6 +943,92 @@ const PkgManager = {
     `;
   },
 
+  
+  async toggleTrackAccordion(itemId, type, isProduction = false) {
+    const panel = document.getElementById(`panel-${type}-${itemId}`);
+    const arrow = document.getElementById(`arrow-${type}-${itemId}`);
+    if (!panel) return;
+
+    const isOpen = panel.classList.contains('is-open');
+
+    if (isOpen) {
+      panel.classList.remove('is-open');
+      if (arrow) arrow.textContent = '▼';
+    } else {
+      panel.classList.add('is-open');
+      if (arrow) arrow.textContent = '▲';
+
+      if (type === 'trim') {
+        const mount = document.getElementById(`trimmer-mount-${itemId}`);
+        if (mount && !mount.dataset.mounted) {
+          mount.dataset.mounted = 'true';
+          mount.innerHTML = '<div style="padding:14px; text-align:center; color:#856404; font-size:12.5px; font-weight:700;">Carregando ferramenta de corte...</div>';
+
+          let item = null;
+          if (isProduction) {
+            (this.state.publishedMenus || []).some(m => {
+              const found = (m.items || []).find(x => x.id === itemId);
+              if (found) { item = found; return true; }
+            });
+          } else {
+            (this.state.drafts || []).some(p => {
+              const found = (p.items || []).find(x => x.id === itemId);
+              if (found) { item = found; return true; }
+            });
+          }
+
+          let effectiveUrl = item ? this.resolveUrl(item.web_url || '') : '';
+          if (!effectiveUrl) {
+            const blob = await AudioBlobDB.getAudio(itemId);
+            if (blob) effectiveUrl = URL.createObjectURL(blob);
+          }
+
+          if (!effectiveUrl) {
+            mount.innerHTML = `
+              <div style="padding:14px; text-align:center; color:#c0392b; font-size:12.5px; font-weight:700;">
+                ⚠️ Nenhum áudio carregado nesta faixa para cortar. Selecione um arquivo primeiro.
+              </div>
+            `;
+            mount.dataset.mounted = '';
+            return;
+          }
+
+          if (window.mountAudioTrimmer) {
+            mount.innerHTML = '';
+            window.mountAudioTrimmer(mount, {
+              url: effectiveUrl,
+              title: item ? (item.titulo || '') : '',
+              description: item ? (item.descricao || '') : '',
+              showClose: false,
+              onSave: async (blob, info) => {
+                notice('Salvando corte na faixa...', 'ok');
+                await AudioBlobDB.setAudio(itemId, blob);
+                if (item) {
+                  item.web_url = URL.createObjectURL(blob);
+                  item.status = 'ready';
+                  item.tamanho = blob.size;
+                }
+                const player = document.getElementById(`audio-player-${itemId}`);
+                if (player) {
+                  player.src = item.web_url;
+                  player.load();
+                }
+                if (isProduction) {
+                  PkgStorage.saveAllProductionMenus(this.state.publishedMenus);
+                } else {
+                  PkgStorage.saveAllDrafts(this.state.drafts);
+                }
+                notice('Áudio cortado com sucesso!', 'ok');
+              }
+            });
+          } else {
+            mount.innerHTML = '<div style="color:red; padding:10px;">Módulo de corte indisponível.</div>';
+          }
+        }
+      }
+    }
+  },
+
   toggleTrackCard(trackId) {
     if (!this.state.expandedTrackIds) this.state.expandedTrackIds = new Set();
     const mount = document.getElementById(`track-mount-${trackId}`);
