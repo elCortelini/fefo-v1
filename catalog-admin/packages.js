@@ -2001,9 +2001,107 @@ const PkgManager = {
   },
 
   onAiProviderChange() {
-    const prov = document.getElementById('ai-voice-provider')?.value || 'custom_sample';
+    const prov = document.getElementById('ai-voice-provider')?.value || 'elevenlabs';
     const box = document.getElementById('ai-eleven-box');
+    const help = document.getElementById('ai-provider-help');
     if (box) box.style.display = (prov === 'elevenlabs') ? 'flex' : 'none';
+    if (help) {
+      if (prov === 'elevenlabs') {
+        help.innerHTML = '⭐ <strong>ElevenLabs IA:</strong> Analisa o áudio do FEFO enviado acima, clona seu timbre único e sintetiza <em>qualquer texto digitado</em> com a voz clonada do FEFO.';
+        help.style.color = 'var(--purple)';
+        help.style.background = '#faf9ff';
+      } else if (prov === 'custom_sample') {
+        help.innerHTML = '📁 <strong>Áudio Base Direto:</strong> Aplica o áudio enviado diretamente na faixa para você recortar os trechos desejados (não gera novas falas por texto).';
+        help.style.color = '#127547';
+        help.style.background = '#e8f8f0';
+      } else {
+        help.innerHTML = '⚡ <strong>Voz Padrão do Computador:</strong> Usa a voz nativa do seu navegador (Microsoft/Google pt-BR). É um robô genérico do sistema e <em>não clona seu áudio</em>.';
+        help.style.color = '#856404';
+        help.style.background = '#fff3cd';
+      }
+    }
+  },
+
+  async triggerElevenClone() {
+    const sampleBlob = await AudioBlobDB.getAudio('fefo_voice_sample');
+    if (!sampleBlob) {
+      alert('Selecione primeiro o arquivo de áudio do FEFO no botão "📂 Selecionar Áudio do FEFO".');
+      return null;
+    }
+    const sampleName = localStorage.getItem('fefo_ai_sample_name') || 'voz_fefo.mp3';
+    let apiKey = document.getElementById('ai-eleven-key')?.value.trim() || localStorage.getItem('fefo_eleven_key') || '';
+    if (!apiKey) {
+      apiKey = prompt('Por favor, digite ou cole sua chave de API da ElevenLabs (xi-api-key):');
+      if (!apiKey || !apiKey.trim()) return null;
+      apiKey = apiKey.trim();
+      localStorage.setItem('fefo_eleven_key', apiKey);
+      const inpKey = document.getElementById('ai-eleven-key');
+      if (inpKey) inpKey.value = apiKey;
+    }
+
+    const selProv = document.getElementById('ai-voice-provider');
+    if (selProv) selProv.value = 'elevenlabs';
+    localStorage.setItem('fefo_ai_provider', 'elevenlabs');
+    this.onAiProviderChange();
+
+    const statusEl = document.getElementById('ai-sample-status');
+    const btnClone = document.getElementById('btn-clone-now');
+    const origBtn = btnClone ? btnClone.innerHTML : '';
+    if (btnClone) {
+      btnClone.innerHTML = '⏳ Clonando na ElevenLabs...';
+      btnClone.disabled = true;
+    }
+    if (statusEl) {
+      statusEl.textContent = 'Enviando áudio para clonagem na ElevenLabs...';
+      statusEl.style.color = 'var(--purple)';
+    }
+    notice('Enviando áudio para a ElevenLabs criar a voz clonada do FEFO...');
+
+    try {
+      const form = new FormData();
+      form.append('name', `Voz do FEFO (${sampleName.replace(/\.[^/.]+$/, '')})`);
+      form.append('description', 'Voz clonada do FEFO Pet para o catálogo pedagógico');
+      form.append('files', sampleBlob, sampleName);
+
+      const elRes = await fetch('https://api.elevenlabs.io/v1/voices/add', {
+        method: 'POST',
+        headers: { 'xi-api-key': apiKey },
+        body: form
+      });
+
+      if (!elRes.ok) {
+        const errData = await elRes.json().catch(() => ({}));
+        const msg = errData.detail?.message || `Erro ElevenLabs (${elRes.status})`;
+        throw new Error(msg);
+      }
+
+      const elData = await elRes.json();
+      if (elData && elData.voice_id) {
+        localStorage.setItem('fefo_eleven_voice', elData.voice_id);
+        const inpVoice = document.getElementById('ai-eleven-voice');
+        if (inpVoice) inpVoice.value = elData.voice_id;
+        if (statusEl) {
+          statusEl.textContent = `✓ Voz Clonada na ElevenLabs com Sucesso!`;
+          statusEl.style.color = '#27ae60';
+        }
+        notice(`✓ Voz do FEFO clonada com sucesso no ElevenLabs! ID: ${elData.voice_id}`, 'ok');
+        alert(`✓ Sucesso! A voz do FEFO foi clonada na sua conta da ElevenLabs (ID: ${elData.voice_id}). Agora qualquer texto digitado será falado com esta voz!`);
+        return elData.voice_id;
+      }
+    } catch (err) {
+      console.error('Erro clone ElevenLabs:', err);
+      if (statusEl) {
+        statusEl.textContent = `⚠️ ${err.message}`;
+        statusEl.style.color = '#e74c3c';
+      }
+      alert(`Atenção ao clonar na ElevenLabs:\n\n${err.message}\n\nNota: A clonagem instantânea por arquivo requer uma conta ElevenLabs com plano ativo (a partir de $5/mês).`);
+      return null;
+    } finally {
+      if (btnClone) {
+        btnClone.innerHTML = origBtn;
+        btnClone.disabled = false;
+      }
+    }
   },
 
   async handleVoiceSampleUpload(files) {
@@ -2173,7 +2271,7 @@ const PkgManager = {
       const ptVoice = voices.find(v => v.lang.startsWith('pt')) || voices[0];
       if (ptVoice) utter.voice = ptVoice;
       window.speechSynthesis.speak(utter);
-      notice('✓ Falando pelo sintetizador do navegador...', 'ok');
+      notice('Atenção: A "Voz do Sistema" usa o robô nativo do Windows. Para usar o timbre do áudio que você enviou, selecione "ElevenLabs IA".', 'error');
     }
   },
 

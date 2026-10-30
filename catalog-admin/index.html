@@ -569,10 +569,13 @@
           <div class="pkg-field-box">
             <label>Motor de Voz (Provedor)</label>
             <select id="ai-voice-provider" class="pkg-filter-select" style="width: 100%;" onchange="PkgManager.onAiProviderChange()">
-              <option value="custom_sample">🎙️ Voz Personalizada do FEFO (Usar Áudio Base Enviado)</option>
-              <option value="elevenlabs">⭐ ElevenLabs IA (Clonagem de Estúdio com API Key)</option>
-              <option value="free_neural">⚡ Voz do Sistema (Síntese pt-BR Gratuita)</option>
+              <option value="elevenlabs">⭐ ElevenLabs IA (Clona a Voz do Áudio para Falar Qualquer Roteiro)</option>
+              <option value="custom_sample">📁 Usar Áudio Base Enviado Diretamente (Sem IA / Cortar Manual)</option>
+              <option value="free_neural">⚡ Voz Padrão do Computador (Robô do Sistema pt-BR)</option>
             </select>
+            <div id="ai-provider-help" style="font-size: 11.5px; line-height: 1.4; color: var(--purple); margin-top: 6px; padding: 6px 10px; background: #faf9ff; border-radius: 8px; border: 1px solid #e1d9f4;">
+              ⭐ Para que a IA aprenda a voz do seu arquivo e fale <strong>qualquer texto digitado</strong>, é necessário utilizar o <strong>ElevenLabs</strong> com sua chave de API.
+            </div>
           </div>
 
           <!-- Seção de Clonagem por Áudio -->
@@ -593,8 +596,11 @@
             </div>
             <!-- Player para ouvir o áudio base imediatamente -->
             <div id="ai-sample-player-container" style="margin-top: 12px; padding: 10px; background: #ffffff; border: 1px solid #e1d9f4; border-radius: 10px; display: none;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                <span style="font-size: 11px; font-weight: 800; color: var(--purple);">▶ Ouvir Áudio Base do FEFO Carregado:</span>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 6px;">
+                <span style="font-size: 11.5px; font-weight: 800; color: var(--purple);">▶ Áudio Base do FEFO Carregado:</span>
+                <button type="button" class="btn primary" id="btn-clone-now" style="font-size: 11px; padding: 4px 10px; border-radius: 6px;" onclick="PkgManager.triggerElevenClone()">
+                  ⚡ Clonar esta Voz na ElevenLabs
+                </button>
               </div>
               <audio id="ai-sample-player" controls style="width: 100%; height: 36px;"></audio>
             </div>
