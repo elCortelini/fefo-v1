@@ -164,12 +164,10 @@ const CardPackManager = {
   },
 
   async loadCardPacks() {
-    const deletedPackIds = CardPackStorage.getDeletedPackIds();
-    const deletedCardIds = CardPackStorage.getDeletedCardIds();
-
     let drafts = [];
     let published = [];
     let isApiOnline = false;
+    let loadedFromRemote = false;
 
     // 1. Tenta API do servidor local
     try {
@@ -180,85 +178,76 @@ const CardPackManager = {
         drafts = data.drafts || [];
         published = data.published || [];
         isApiOnline = true;
+        loadedFromRemote = true;
       }
     } catch (e) {}
 
-    // 2. Fallback estático ou GitHub API direta
-    if (!isApiOnline) {
-      let dData = null;
-      let cData = null;
-
+    // 2. Se GitHubSync estiver configurado (Modo Nuvem Universal): busca direto da API do GitHub
+    if (!isApiOnline && window.GitHubSync && window.GitHubSync.isConfigured()) {
       try {
-        const [draftsRes, catRes] = await Promise.all([
-          fetch('../repository/draft_card_packs.json', { cache: 'no-store' }),
-          fetch('../repository/catalog.json', { cache: 'no-store' })
+        const [ghDrafts, ghCat] = await Promise.all([
+          window.GitHubSync.getFile('repository/draft_card_packs.json'),
+          window.GitHubSync.getFile('repository/catalog.json')
         ]);
-        if (draftsRes && draftsRes.ok) dData = await draftsRes.json();
-        if (catRes && catRes.ok) cData = await catRes.json();
+        if (ghDrafts && ghDrafts.exists && ghDrafts.content) {
+          const dData = JSON.parse(ghDrafts.content);
+          if (dData && dData.card_packs) {
+            drafts = dData.card_packs;
+            loadedFromRemote = true;
+          }
+        }
+        if (ghCat && ghCat.exists && ghCat.content) {
+          const cData = JSON.parse(ghCat.content);
+          if (cData && cData.card_packs) {
+            published = cData.card_packs;
+            loadedFromRemote = true;
+          }
+        }
+      } catch (ghErr) {
+        console.warn('[loadCardPacks] Falha ao carregar do GitHub REST API:', ghErr);
+      }
+    }
+
+    // 3. Fallback estático com cache-buster de timestamp
+    if (!loadedFromRemote) {
+      try {
+        const ts = Date.now();
+        const [draftsRes, catRes] = await Promise.all([
+          fetch(`../repository/draft_card_packs.json?_t=${ts}`, { cache: 'no-store' }),
+          fetch(`../repository/catalog.json?_t=${ts}`, { cache: 'no-store' })
+        ]);
+        if (draftsRes && draftsRes.ok) {
+          const dData = await draftsRes.json();
+          if (dData && dData.card_packs) {
+            drafts = dData.card_packs;
+            loadedFromRemote = true;
+          }
+        }
+        if (catRes && catRes.ok) {
+          const cData = await catRes.json();
+          if (cData && cData.card_packs) {
+            published = cData.card_packs;
+            loadedFromRemote = true;
+          }
+        }
       } catch (err) {}
-
-      // Fallback via GitHub REST API se configurado
-      if ((!dData || !cData) && window.GitHubSync && window.GitHubSync.isConfigured()) {
-        try {
-          if (!dData) {
-            const ghDrafts = await window.GitHubSync.getFile('repository/draft_card_packs.json');
-            if (ghDrafts.exists && ghDrafts.content) dData = JSON.parse(ghDrafts.content);
-          }
-          if (!cData) {
-            const ghCat = await window.GitHubSync.getFile('repository/catalog.json');
-            if (ghCat.exists && ghCat.content) cData = JSON.parse(ghCat.content);
-          }
-        } catch (ghErr) {
-          console.warn('[loadCardPacks] Falha no fallback do GitHub API:', ghErr);
-        }
-      }
-
-      if (dData && dData.card_packs) {
-        drafts = dData.card_packs || [];
-      }
-      if (cData && cData.card_packs) {
-        published = cData.card_packs || [];
-      }
     }
 
-    // Mescla com edições do localStorage
-    const savedDrafts = CardPackStorage.getCustomCardPacks();
-    if (savedDrafts && Array.isArray(savedDrafts) && savedDrafts.length > 0) {
-      const merged = [];
-      const seen = new Set();
-      savedDrafts.forEach(sd => {
-        if (!deletedPackIds.includes(sd.id)) {
-          merged.push(sd);
-          seen.add(sd.id);
-        }
-      });
-      drafts.forEach(rd => {
-        if (!seen.has(rd.id) && !deletedPackIds.includes(rd.id)) {
-          merged.push(rd);
-          seen.add(rd.id);
-        }
-      });
-      drafts = merged;
+    // 4. Se carregou dados remotos, eles são a autoridade central:
+    if (loadedFromRemote) {
+      CardPackStorage.saveCustomCardPacks(drafts);
+      CardPackStorage.savePublishedCardPacks(published);
+    } else {
+      // Fallback offline
+      const savedDrafts = CardPackStorage.getCustomCardPacks();
+      if (savedDrafts && Array.isArray(savedDrafts) && savedDrafts.length > 0) {
+        drafts = savedDrafts;
+      }
+      const savedProd = CardPackStorage.getPublishedCardPacks();
+      if (savedProd && Array.isArray(savedProd) && savedProd.length > 0) {
+        published = savedProd;
+      }
     }
-
-    const savedProd = CardPackStorage.getPublishedCardPacks();
-    if (savedProd && Array.isArray(savedProd) && savedProd.length > 0) {
-      const prodMap = new Map(savedProd.map(m => [m.id, m]));
-      published = published.map(p => prodMap.get(p.id) || p);
-    }
-
-    // Filtra IDs excluídos
-    drafts = drafts.filter(p => !deletedPackIds.includes(p.id));
-    drafts.forEach(p => {
-      p.licencas = p.licencas || ['home', 'clinical', 'escola'];
-      if (p.cards) p.cards = p.cards.filter(c => !deletedCardIds.includes(c.id));
-    });
-
-    published = published.filter(p => !deletedPackIds.includes(p.id));
-    published.forEach(p => {
-      p.licencas = p.licencas || ['home', 'clinical', 'escola'];
-      if (p.cards) p.cards = p.cards.filter(c => !deletedCardIds.includes(c.id));
-    });
 
     this.state.drafts = drafts;
     this.state.published = published;
@@ -997,10 +986,13 @@ const CardPackManager = {
     }
   },
 
-  saveSingleCardItem(packId, cardId, isProduction = false) {
-    if (isProduction) CardPackStorage.savePublishedCardPacks(this.state.published);
-    else CardPackStorage.saveCustomCardPacks(this.state.drafts);
-    notice('✓ Alterações do card salvas!', 'ok');
+  async saveSingleCardItem(packId, cardId, isProduction = false) {
+    if (isProduction) {
+      CardPackStorage.savePublishedCardPacks(this.state.published);
+      notice('✓ Alterações do card salvas!', 'ok');
+      return;
+    }
+    await this.saveCardPackDetails(packId);
   },
 
   addNewEmptyCardItem(packId) {

@@ -203,14 +203,53 @@ const PkgManager = {
     }
   },
 
-  async loadPackages() {
-    const deletedPkgIds = PkgStorage.getDeletedPkgIds();
-    const deletedItemIds = PkgStorage.getDeletedItemIds();
-    const unpubMenus = PkgStorage.getUnpublishedMenus();
+  parsePublishedMenusFromCatalog(cData) {
+    if (!cData || !cData.audio) return [];
+    const audios = cData.audio || [];
+    const menusDict = {};
 
+    for (const a of audios) {
+      const mName = (a.menu || 'Sem menu').trim();
+
+      if (!menusDict[mName]) {
+        menusDict[mName] = {
+          id: `pub_${mName.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`,
+          titulo: mName,
+          descricao: `Menu oficial ativo no catálogo com áudios configurados para o Pet CYD e App.`,
+          target_count: 8,
+          categoria: 'Menus do Sistema',
+          licencas: ['home', 'clinical', 'escola'],
+          is_premium: false,
+          status: 'published',
+          count: 0,
+          items: []
+        };
+      }
+
+      const fileName = (a.arquivo || '').split('/').pop();
+      menusDict[mName].items.push({
+        id: a.id,
+        codigo_item: a.id,
+        titulo: a.titulo || fileName,
+        descricao: a.descricao || '',
+        arquivo: a.arquivo,
+        arquivo_fefo: fileName,
+        arquivo_origem: fileName,
+        web_url: `../repository/audio/${fileName}`,
+        tamanho: a.tamanho || 0,
+        status: 'ready'
+      });
+      menusDict[mName].count = menusDict[mName].items.length;
+      menusDict[mName].target_count = Math.max(menusDict[mName].items.length, menusDict[mName].target_count);
+    }
+    return Object.values(menusDict);
+  },
+
+  async loadPackages() {
     let drafts = [];
     let published = [];
     let isApiOnline = false;
+    let loadedFromRemote = false;
 
     // 1. Tenta API local do servidor Python se estiver em execução
     try {
@@ -221,133 +260,72 @@ const PkgManager = {
         drafts = data.drafts || [];
         published = data.published_menus || [];
         isApiOnline = true;
+        loadedFromRemote = true;
       }
-    } catch (e) {
-      // Normal no GitHub Pages estático
-    }
+    } catch (e) {}
 
-    // 2. Fallback estático (GitHub Pages ou servidor offline)
-    if (!isApiOnline) {
-      let dData = null;
-      let cData = null;
-
+    // 2. Se GitHubSync estiver configurado (Modo Nuvem Universal): busca direto na API REST do GitHub (sem delay de CDN / cache)
+    if (!isApiOnline && window.GitHubSync && window.GitHubSync.isConfigured()) {
       try {
-        const [draftsRes, catRes] = await Promise.all([
-          fetch('../repository/draft_packages.json', { cache: 'no-store' }),
-          fetch('../repository/catalog.json', { cache: 'no-store' })
+        const [ghDrafts, ghCat] = await Promise.all([
+          window.GitHubSync.getFile('repository/draft_packages.json'),
+          window.GitHubSync.getFile('repository/catalog.json')
         ]);
-
-        if (draftsRes && draftsRes.ok) dData = await draftsRes.json();
-        if (catRes && catRes.ok) cData = await catRes.json();
-      } catch (err) {
-        // file:/// ou falha de rede estática
-      }
-
-      // Se falhou e GitHubSync estiver configurado, busca diretamente da API do GitHub
-      if ((!dData || !cData) && window.GitHubSync && window.GitHubSync.isConfigured()) {
-        try {
-          if (!dData) {
-            const ghDrafts = await window.GitHubSync.getFile('repository/draft_packages.json');
-            if (ghDrafts.exists && ghDrafts.content) dData = JSON.parse(ghDrafts.content);
+        if (ghDrafts && ghDrafts.exists && ghDrafts.content) {
+          const dData = JSON.parse(ghDrafts.content);
+          if (dData && dData.packages) {
+            drafts = dData.packages;
+            loadedFromRemote = true;
           }
-          if (!cData) {
-            const ghCat = await window.GitHubSync.getFile('repository/catalog.json');
-            if (ghCat.exists && ghCat.content) cData = JSON.parse(ghCat.content);
-          }
-        } catch (ghErr) {
-          console.warn('[loadPackages] Falha no fallback do GitHub API:', ghErr);
         }
-      }
-
-      if (dData && dData.packages) {
-        drafts = dData.packages || [];
-      }
-
-      if (cData && cData.audio) {
-        const audios = cData.audio || [];
-        const menusDict = {};
-
-        for (const a of audios) {
-          if (deletedItemIds.includes(a.id)) continue;
-          const mName = (a.menu || 'Sem menu').trim();
-          if (unpubMenus.includes(mName)) continue; // Menu despublicado
-
-          if (!menusDict[mName]) {
-            menusDict[mName] = {
-              id: `pub_${mName.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`,
-              titulo: mName,
-              descricao: `Menu oficial ativo no catálogo com áudios configurados para o Pet CYD e App.`,
-              target_count: 8,
-              categoria: 'Menus do Sistema',
-              licencas: ['home', 'clinical', 'escola'],
-              is_premium: false,
-              status: 'published',
-              count: 0,
-              items: []
-            };
-          }
-
-          const fileName = (a.arquivo || '').split('/').pop();
-          menusDict[mName].items.push({
-            id: a.id,
-            codigo_item: a.id,
-            titulo: a.titulo || fileName,
-            descricao: a.descricao || '',
-            arquivo: a.arquivo,
-            arquivo_fefo: fileName,
-            arquivo_origem: fileName,
-            web_url: `../repository/audio/${fileName}`,
-            tamanho: a.tamanho || 0,
-            status: 'ready'
-          });
-          menusDict[mName].count = menusDict[mName].items.length;
-          menusDict[mName].target_count = Math.max(menusDict[mName].items.length, menusDict[mName].target_count);
+        if (ghCat && ghCat.exists && ghCat.content) {
+          const cData = JSON.parse(ghCat.content);
+          published = this.parsePublishedMenusFromCatalog(cData);
+          loadedFromRemote = true;
         }
-        published = Object.values(menusDict);
+      } catch (ghErr) {
+        console.warn('[loadPackages] Falha ao carregar do GitHub REST API:', ghErr);
       }
     }
 
-    // 3. Mescla com edições salvas no localStorage (Persistência Total)
-    const savedDrafts = PkgStorage.getAllDrafts();
-    if (savedDrafts && Array.isArray(savedDrafts) && savedDrafts.length > 0) {
-      const merged = [];
-      const processedIds = new Set();
-
-      savedDrafts.forEach(sd => {
-        if (!deletedPkgIds.includes(sd.id)) {
-          merged.push(sd);
-          processedIds.add(sd.id);
+    // 3. Fallback estático (se offline ou sem token) com cache-buster de timestamp
+    if (!loadedFromRemote) {
+      try {
+        const ts = Date.now();
+        const [draftsRes, catRes] = await Promise.all([
+          fetch(`../repository/draft_packages.json?_t=${ts}`, { cache: 'no-store' }),
+          fetch(`../repository/catalog.json?_t=${ts}`, { cache: 'no-store' })
+        ]);
+        if (draftsRes && draftsRes.ok) {
+          const dData = await draftsRes.json();
+          if (dData && dData.packages) {
+            drafts = dData.packages;
+            loadedFromRemote = true;
+          }
         }
-      });
-
-      drafts.forEach(rd => {
-        if (!processedIds.has(rd.id) && !deletedPkgIds.includes(rd.id)) {
-          merged.push(rd);
-          processedIds.add(rd.id);
+        if (catRes && catRes.ok) {
+          const cData = await catRes.json();
+          published = this.parsePublishedMenusFromCatalog(cData);
+          loadedFromRemote = true;
         }
-      });
-
-      drafts = merged;
+      } catch (err) {}
     }
 
-    // Mescla produção com localStorage se existir
-    const savedProd = PkgStorage.getAllProductionMenus();
-    if (savedProd && Array.isArray(savedProd) && savedProd.length > 0) {
-      const prodMap = new Map(savedProd.map(m => [m.titulo, m]));
-      published = published.map(p => prodMap.get(p.titulo) || p);
+    // 4. Se carregou dados remotos (GitHub / API / Estático fresco), eles são a autoridade central:
+    if (loadedFromRemote) {
+      PkgStorage.saveAllDrafts(drafts);
+      PkgStorage.saveAllProductionMenus(published);
+    } else {
+      // Somente se falhou completamente a rede e não há internet, usamos o cache local do navegador
+      const savedDrafts = PkgStorage.getAllDrafts();
+      if (savedDrafts && Array.isArray(savedDrafts) && savedDrafts.length > 0) {
+        drafts = savedDrafts;
+      }
+      const savedProd = PkgStorage.getAllProductionMenus();
+      if (savedProd && Array.isArray(savedProd) && savedProd.length > 0) {
+        published = savedProd;
+      }
     }
-
-    // 4. Aplica filtros de exclusão
-    drafts = drafts.filter(p => !deletedPkgIds.includes(p.id));
-    drafts.forEach(p => {
-      if (p.items) p.items = p.items.filter(it => !deletedItemIds.includes(it.id));
-    });
-
-    published = published.filter(m => !unpubMenus.includes(m.titulo));
-    published.forEach(m => {
-      if (m.items) m.items = m.items.filter(it => !deletedItemIds.includes(it.id));
-      m.count = (m.items || []).length;
-    });
 
     // 5. Restaura blobs de áudio do IndexedDB
     for (const p of drafts) {
@@ -1250,6 +1228,29 @@ const PkgManager = {
       notice('✓ Menu oficial salvo no navegador!', 'ok');
     }
     this.renderPublishedGrid();
+  },
+
+  async saveSingleItem(pkgOrMenuTitle, itemId, isProduction = false) {
+    if (isProduction) {
+      return this.saveProductionPackageDetails(pkgOrMenuTitle);
+    }
+    const pkg = (this.state.drafts || []).find(p => p.id === pkgOrMenuTitle);
+    if (!pkg) return;
+    const it = (pkg.items || []).find(x => x.id === itemId);
+    if (it) {
+      const titleInput = document.querySelector(`#track-item-wrap-${itemId} .pkg-item-title-input`);
+      if (titleInput && titleInput.value.trim()) it.titulo = titleInput.value.trim();
+      const fefoInput = document.getElementById(`fefo-input-${itemId}`);
+      if (fefoInput && fefoInput.value.trim()) {
+        let clean = fefoInput.value.trim().toLowerCase();
+        if (clean && !clean.endsWith('.wav')) clean += '.wav';
+        it.arquivo_fefo = clean;
+        it.arquivo = `/usr/a/${clean}`;
+      }
+      const descInput = document.querySelector(`#panel-ai-${itemId} .pkg-item-script-textarea`);
+      if (descInput) it.descricao = descInput.value;
+    }
+    await this.saveDraftPackageDetails(pkgOrMenuTitle);
   },
 
   async deleteProductionMenuDirect(menuTitle) {

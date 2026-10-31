@@ -19,7 +19,12 @@ const GitHubSync = {
   defaultBranch: 'main',
 
   getToken() {
-    return (localStorage.getItem(this.storageKeys.token) || '').trim();
+    const userStored = (localStorage.getItem(this.storageKeys.token) || '').trim();
+    if (userStored) return userStored;
+    if (window.FEFO_CONFIG && window.FEFO_CONFIG.token) {
+      return window.FEFO_CONFIG.token.trim();
+    }
+    return '';
   },
 
   setToken(token) {
@@ -32,7 +37,12 @@ const GitHubSync = {
   },
 
   getRepo() {
-    return (localStorage.getItem(this.storageKeys.repo) || this.defaultRepo).trim();
+    const userStored = (localStorage.getItem(this.storageKeys.repo) || '').trim();
+    if (userStored) return userStored;
+    if (window.FEFO_CONFIG && window.FEFO_CONFIG.repo) {
+      return window.FEFO_CONFIG.repo.trim();
+    }
+    return this.defaultRepo;
   },
 
   setRepo(repo) {
@@ -40,7 +50,12 @@ const GitHubSync = {
   },
 
   getBranch() {
-    return (localStorage.getItem(this.storageKeys.branch) || this.defaultBranch).trim();
+    const userStored = (localStorage.getItem(this.storageKeys.branch) || '').trim();
+    if (userStored) return userStored;
+    if (window.FEFO_CONFIG && window.FEFO_CONFIG.branch) {
+      return window.FEFO_CONFIG.branch.trim();
+    }
+    return this.defaultBranch;
   },
 
   setBranch(branch) {
@@ -560,11 +575,37 @@ const GitHubSync = {
     await this.updateStatusBadge();
   },
 
+  async syncAllNow() {
+    if (window.notice) window.notice('🔄 Sincronizando dados em tempo real com o GitHub...');
+    try {
+      if (window.PkgManager && typeof window.PkgManager.loadPackages === 'function') {
+        await window.PkgManager.loadPackages();
+      }
+      if (window.CardPackManager && typeof window.CardPackManager.loadCardPacks === 'function') {
+        await window.CardPackManager.loadCardPacks();
+      }
+      if (window.notice) window.notice('✓ Sincronização concluída! Todos os pacotes atualizados.', 'ok');
+    } catch (e) {
+      if (window.notice) window.notice(`Erro ao sincronizar: ${e.message}`, 'error');
+    }
+  },
+
   injectBadge() {
     const header = document.querySelector('.hero');
     if (!header) return;
 
-    if (document.getElementById('github-sync-pill')) return;
+    if (document.getElementById('github-sync-wrapper')) return;
+
+    const wrap = document.createElement('div');
+    wrap.id = 'github-sync-wrapper';
+    wrap.style.cssText = `
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    `;
 
     const badgeContainer = document.createElement('div');
     badgeContainer.id = 'github-sync-pill';
@@ -572,7 +613,6 @@ const GitHubSync = {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      margin-top: 10px;
       padding: 6px 14px;
       border-radius: 999px;
       font-size: 13px;
@@ -585,7 +625,34 @@ const GitHubSync = {
     `;
     badgeContainer.onclick = () => this.openModal();
 
-    header.appendChild(badgeContainer);
+    const syncBtn = document.createElement('button');
+    syncBtn.type = 'button';
+    syncBtn.id = 'btn-sync-cloud-now';
+    syncBtn.style.cssText = `
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+      transition: all 0.2s ease;
+      user-select: none;
+    `;
+    syncBtn.innerHTML = `<span>🔄</span><span>Sincronizar Nuvem</span>`;
+    syncBtn.title = 'Buscar as últimas alterações salvas de outros computadores no GitHub';
+    syncBtn.onclick = () => this.syncAllNow();
+    syncBtn.onmouseenter = () => { syncBtn.style.background = '#1d4ed8'; };
+    syncBtn.onmouseleave = () => { syncBtn.style.background = '#2563eb'; };
+
+    wrap.appendChild(badgeContainer);
+    wrap.appendChild(syncBtn);
+    header.appendChild(wrap);
   },
 
   async updateStatusBadge() {
@@ -691,10 +758,15 @@ const GitHubSync = {
           <div id="gh-test-result" style="display: none; padding: 10px 14px; border-radius: 10px; font-size: 13px; font-weight: 600;"></div>
         </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0; padding-top: 16px; margin-top: 20px;">
-          <button type="button" onclick="GitHubSync.clearConfig()" style="background: none; border: none; color: #ef4444; font-size: 13px; font-weight: 700; cursor: pointer; text-decoration: underline;">
-            Desconectar / Limpar
-          </button>
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0; padding-top: 16px; margin-top: 20px; flex-wrap: wrap; gap: 10px;">
+          <div style="display: flex; gap: 12px; align-items: center;">
+            <button type="button" onclick="GitHubSync.clearConfig()" style="background: none; border: none; color: #ef4444; font-size: 13px; font-weight: 700; cursor: pointer; text-decoration: underline;">
+              Desconectar / Limpar
+            </button>
+            <button type="button" onclick="GitHubSync.copyShareableLink()" style="background: none; border: none; color: #2563eb; font-size: 13px; font-weight: 700; cursor: pointer; text-decoration: underline;">
+              🔗 Copiar Link para Outro PC
+            </button>
+          </div>
           <div style="display: flex; gap: 10px;">
             <button type="button" onclick="GitHubSync.handleTest()" style="padding: 9px 16px; border: 1.5px solid #cbd5e1; background: #ffffff; border-radius: 10px; font-size: 13px; font-weight: 700; color: #334155; cursor: pointer;">
               🧪 Testar Conexão
@@ -734,6 +806,27 @@ const GitHubSync = {
   toggleTokenVisibility() {
     const inp = document.getElementById('gh-input-token');
     if (inp) inp.type = inp.type === 'password' ? 'text' : 'password';
+  },
+
+  copyShareableLink() {
+    const token = this.getToken() || document.getElementById('gh-input-token')?.value.trim();
+    if (!token) {
+      alert('Configure e salve o token primeiro para gerar o link de compartilhamento.');
+      return;
+    }
+    const cleanOrigin = window.location.origin;
+    const cleanPath = window.location.pathname;
+    const url = `${cleanOrigin}${cleanPath}?token=${encodeURIComponent(token)}`;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(() => {
+        if (window.notice) window.notice('✓ Link de acesso copiado! Abra este link no outro PC para ativar o token automaticamente.', 'ok');
+        else alert('Link copiado!');
+      }).catch(() => {
+        prompt('Copie o link abaixo para abrir no outro PC:', url);
+      });
+    } else {
+      prompt('Copie o link abaixo para abrir no outro PC:', url);
+    }
   },
 
   async handleTest() {
