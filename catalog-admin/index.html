@@ -26,15 +26,15 @@
 
   <title>Administrador do Catálogo · FEFO Pet</title>
 
-  <link rel="stylesheet" href="admin.css?v=unified-21">
+  <link rel="stylesheet" href="admin.css?v=unified-22">
 
-  <link rel="stylesheet" href="packages.css?v=unified-21">
+  <link rel="stylesheet" href="packages.css?v=unified-22">
 
-  <link rel="stylesheet" href="cards-packs.css?v=unified-21">
+  <link rel="stylesheet" href="cards-packs.css?v=unified-22">
 
-  <link rel="stylesheet" href="audio-editor.css?v=unified-21">
+  <link rel="stylesheet" href="audio-editor.css?v=unified-22">
 
-  <link rel="stylesheet" href="image-editor.css?v=unified-21">
+  <link rel="stylesheet" href="image-editor.css?v=unified-22">
 
 </head>
 
@@ -53,34 +53,48 @@
 
 
     <!-- 4 Abas Principais no Topo -->
-
     <nav class="main-top-tabs" aria-label="Abas principais do catálogo">
-
-      <button class="main-tab-pill active" data-tab="tab-audios" type="button">
-
+      <button class="main-tab-pill active" data-tab="tab-audios" onclick="switchMainTab('tab-audios')" type="button">
         🎵 Áudios & Menus
-
       </button>
-
-      <button class="main-tab-pill" data-tab="tab-cards" type="button">
-
+      <button class="main-tab-pill" data-tab="tab-cards" onclick="switchMainTab('tab-cards')" type="button">
         🃏 Pacotes de Cards
-
       </button>
-
-      <button class="main-tab-pill" data-tab="tab-faces" type="button">
-
+      <button class="main-tab-pill" data-tab="tab-faces" onclick="switchMainTab('tab-faces')" type="button">
         😊 Rostinhos (Faces)
-
       </button>
-
-      <button class="main-tab-pill" data-tab="tab-system" type="button">
-
+      <button class="main-tab-pill" data-tab="tab-system" onclick="switchMainTab('tab-system')" type="button">
         ⚙️ Sons do Sistema
-
       </button>
-
     </nav>
+
+    <script>
+      function switchMainTab(tabId) {
+        if (!tabId) return;
+        document.querySelectorAll('.main-top-tabs .main-tab-pill').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.tab === tabId);
+        });
+        document.querySelectorAll('.main-tab-content').forEach(section => {
+          section.classList.toggle('active', section.id === tabId);
+        });
+        try { localStorage.setItem('fefo_active_tab', tabId); } catch (e) {}
+        if (tabId === 'tab-cards' && window.CardPackManager) {
+          window.CardPackManager.render();
+        } else if (tabId === 'tab-audios' && window.PkgManager) {
+          window.PkgManager.renderDraftsGrid();
+          window.PkgManager.renderPublishedGrid();
+        }
+      }
+      window.switchMainTab = switchMainTab;
+      document.addEventListener('DOMContentLoaded', () => {
+        const hashTab = location.hash ? location.hash.replace('#', '') : null;
+        const savedTab = localStorage.getItem('fefo_active_tab');
+        const initialTab = hashTab || savedTab || 'tab-audios';
+        if (document.getElementById(initialTab)) {
+          switchMainTab(initialTab);
+        }
+      });
+    </script>
 
 
 
@@ -417,17 +431,17 @@
 
 
 
-  <script src="admin.js?v=unified-21"></script>
+  <script src="admin.js?v=unified-22"></script>
 
-  <script src="audio-editor.js?v=unified-21"></script>
+  <script src="audio-editor.js?v=unified-22"></script>
 
-  <script src="image-editor.js?v=unified-21"></script>
+  <script src="image-editor.js?v=unified-22"></script>
 
-  <script src="github-sync.js?v=unified-21"></script>
+  <script src="github-sync.js?v=unified-22"></script>
 
-  <script src="packages.js?v=unified-21"></script>
+  <script src="packages.js?v=unified-22"></script>
 
-  <script src="cards-packs.js?v=unified-21"></script>
+  <script src="cards-packs.js?v=unified-22"></script>
 
 
     <!-- Modal de Configuração da Voz do FEFO (IA) -->

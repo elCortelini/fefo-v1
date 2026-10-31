@@ -133,6 +133,15 @@ const CardPackManager = {
   },
 
   bindEvents() {
+    document.querySelectorAll('.main-top-tabs .main-tab-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tabId = btn.dataset.tab;
+        if (typeof window.switchMainTab === 'function') {
+          window.switchMainTab(tabId);
+        }
+      });
+    });
+
     document.getElementById('btn-new-card-pack')?.addEventListener('click', () => this.createNewCardPack());
   },
 
@@ -307,7 +316,7 @@ const CardPackManager = {
 
     if (this.state.expandedPackId) {
       setTimeout(() => {
-        document.getElementById('card-pack-inline-drawer')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        document.getElementById('card-pack-inline-drawer')?.scrollIntoView?.({ behavior: 'smooth', block: 'nearest' });
       }, 50);
     }
   },
@@ -1066,7 +1075,7 @@ const CardPackManager = {
     this.renderDraftsGrid();
 
     setTimeout(() => {
-      document.getElementById('card-pack-inline-drawer')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      document.getElementById('card-pack-inline-drawer')?.scrollIntoView?.({ behavior: 'smooth', block: 'nearest' });
       document.getElementById(`cardpack-title-input-${newPack.id}`)?.focus();
       document.getElementById(`cardpack-title-input-${newPack.id}`)?.select();
     }, 100);
@@ -1244,7 +1253,7 @@ const CardPackManager = {
 
     if (this.state.expandedProductionId) {
       setTimeout(() => {
-        document.getElementById('published-card-pack-inline-drawer')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        document.getElementById('published-card-pack-inline-drawer')?.scrollIntoView?.({ behavior: 'smooth', block: 'nearest' });
       }, 50);
     }
   },
