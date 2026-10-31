@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "FEFO Content Draft Packages - Grade Completa Pedagógica Unificada com Áudios Vinculados",
-  "updated_at": "2026-10-31T17:51:54.382Z",
+  "updated_at": "2026-10-31T17:52:45.392Z",
   "packages": [
     {
       "id": "pkg_59122",
@@ -19,7 +19,7 @@
       "items": [
         {
           "id": "it_71965_1",
-          "titulo": "Nova Faixa 1",
+          "titulo": "fefo fefo fefo",
           "descricao": "",
           "arquivo_fefo": "a0008.wav",
           "arquivo_origem": "fefo fefo fefo.mp3",
@@ -29,7 +29,7 @@
           "arquivo": "/usr/a/a0008.wav"
         }
       ],
-      "updated_at": "2026-10-31T17:51:54.380Z"
+      "updated_at": "2026-10-31T17:52:45.390Z"
     },
     {
       "id": "pkg_desafio_e_brincadeiras_desafios",
