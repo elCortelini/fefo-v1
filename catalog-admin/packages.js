@@ -311,21 +311,37 @@ const PkgManager = {
       } catch (err) {}
     }
 
-    // 4. Se carregou dados remotos (GitHub / API / Estático fresco), eles são a autoridade central:
-    if (loadedFromRemote) {
-      PkgStorage.saveAllDrafts(drafts);
-      PkgStorage.saveAllProductionMenus(published);
-    } else {
-      // Somente se falhou completamente a rede e não há internet, usamos o cache local do navegador
-      const savedDrafts = PkgStorage.getAllDrafts();
-      if (savedDrafts && Array.isArray(savedDrafts) && savedDrafts.length > 0) {
+    // 4. Mescla inteligente com localStorage: preserva pacotes e edições locais mais recentes
+    const savedDrafts = PkgStorage.getAllDrafts();
+    if (savedDrafts && Array.isArray(savedDrafts) && savedDrafts.length > 0) {
+      if (!loadedFromRemote || drafts.length === 0) {
         drafts = savedDrafts;
+      } else {
+        const remoteMap = new Map(drafts.map(p => [p.id, p]));
+        savedDrafts.forEach(localP => {
+          const remoteP = remoteMap.get(localP.id);
+          if (!remoteP) {
+            drafts.unshift(localP);
+          } else {
+            const localTs = localP.updated_at ? new Date(localP.updated_at).getTime() : 0;
+            const remoteTs = remoteP.updated_at ? new Date(remoteP.updated_at).getTime() : 0;
+            if (localTs > remoteTs) {
+              const idx = drafts.findIndex(p => p.id === localP.id);
+              if (idx >= 0) drafts[idx] = localP;
+            }
+          }
+        });
       }
-      const savedProd = PkgStorage.getAllProductionMenus();
-      if (savedProd && Array.isArray(savedProd) && savedProd.length > 0) {
+    }
+    PkgStorage.saveAllDrafts(drafts);
+
+    const savedProd = PkgStorage.getAllProductionMenus();
+    if (savedProd && Array.isArray(savedProd) && savedProd.length > 0) {
+      if (!loadedFromRemote || published.length === 0) {
         published = savedProd;
       }
     }
+    PkgStorage.saveAllProductionMenus(published);
 
     // 5. Restaura blobs de áudio do IndexedDB
     for (const p of drafts) {
@@ -1145,6 +1161,7 @@ const PkgManager = {
   async saveDraftPackageDetails(pkgId) {
     const pkg = (this.state.drafts || []).find(p => p.id === pkgId);
     if (!pkg) return;
+
     const titleInput = document.getElementById(`draft-title-input-${pkgId}`) || document.getElementById('draft-input-title');
     if (titleInput && titleInput.value.trim()) {
       pkg.titulo = titleInput.value.trim();
@@ -1153,42 +1170,43 @@ const PkgManager = {
     if (descInput) pkg.descricao = descInput.value.trim();
     const targetInput = document.getElementById('draft-input-target');
     if (targetInput) pkg.target_count = parseInt(targetInput.value, 10) || 10;
-    this.updateDraftPackageLicenses(pkgId);
 
-    PkgStorage.saveAllDrafts(this.state.drafts);
-    notice('Salvando rascunho do pacote...');
-
-    // 1. Tenta API do servidor Python local
-    let savedOnBackend = false;
-    try {
-      const res = await fetch('/api/packages/save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ package: pkg })
+    // Captura valores dos campos de cada faixa deste pacote presentes no DOM
+    const drawer = document.getElementById(`drawer-wrap-draft-${pkgId}`);
+    if (drawer) {
+      (pkg.items || []).forEach(it => {
+        const itemWrap = drawer.querySelector(`#track-item-wrap-${it.id}`);
+        if (itemWrap) {
+          const tInput = itemWrap.querySelector('.pkg-item-title-input');
+          if (tInput && tInput.value.trim()) it.titulo = tInput.value.trim();
+          const fInput = itemWrap.querySelector('.pkg-item-fefo-input');
+          if (fInput && fInput.value.trim()) {
+            let clean = fInput.value.trim().toLowerCase();
+            if (clean && !clean.endsWith('.wav')) clean += '.wav';
+            it.arquivo_fefo = clean;
+            it.arquivo = `/usr/a/${clean}`;
+          }
+          const sText = itemWrap.querySelector('.pkg-item-script-textarea');
+          if (sText) it.descricao = sText.value;
+        }
       });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.ok) {
-          savedOnBackend = true;
-          notice(data.message || 'Pacote salvo no servidor local e repositório!', 'ok');
-        }
-      }
-    } catch (e) {}
+    }
 
-    // 2. Se o servidor local estiver offline, sincroniza direto no GitHub REST API
-    if (!savedOnBackend) {
-      if (window.GitHubSync && window.GitHubSync.isConfigured()) {
-        notice('☁️ Enviando alterações diretamente para o GitHub...');
-        try {
-          await window.GitHubSync.saveDraftPackages(this.state.drafts);
-          notice('✓ Pacote salvo com sucesso no GitHub!', 'ok');
-        } catch (ghErr) {
-          console.warn('Erro ao salvar no GitHub:', ghErr);
-          notice(`Aviso: Salvo no navegador. Falha no GitHub (${ghErr.message})`, 'error');
-        }
-      } else {
-        notice('✓ Rascunho salvo no navegador! (Para salvar no GitHub de qualquer PC, configure seu Token no topo)', 'ok');
+    pkg.updated_at = new Date().toISOString();
+    PkgStorage.saveAllDrafts(this.state.drafts);
+    notice('Salvando alterações do pacote...');
+
+    if (window.GitHubSync && window.GitHubSync.isConfigured()) {
+      notice('☁️ Enviando alterações diretamente para o GitHub...');
+      try {
+        await window.GitHubSync.saveDraftPackages(this.state.drafts);
+        notice('✓ Pacote salvo com sucesso no GitHub e localmente!', 'ok');
+      } catch (ghErr) {
+        console.warn('Erro ao salvar no GitHub:', ghErr);
+        notice(`✓ Salvo localmente! Falha no GitHub (${ghErr.message})`, 'error');
       }
+    } else {
+      notice('✓ Pacote salvo localmente no navegador! (Conecte o GitHub no topo para sincronizar entre PCs)', 'ok');
     }
 
     this.renderDraftsGrid();

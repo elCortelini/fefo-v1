@@ -233,21 +233,37 @@ const CardPackManager = {
       } catch (err) {}
     }
 
-    // 4. Se carregou dados remotos, eles são a autoridade central:
-    if (loadedFromRemote) {
-      CardPackStorage.saveCustomCardPacks(drafts);
-      CardPackStorage.savePublishedCardPacks(published);
-    } else {
-      // Fallback offline
-      const savedDrafts = CardPackStorage.getCustomCardPacks();
-      if (savedDrafts && Array.isArray(savedDrafts) && savedDrafts.length > 0) {
+    // 4. Mescla inteligente com localStorage: preserva pacotes e edições locais mais recentes
+    const savedDrafts = CardPackStorage.getCustomCardPacks();
+    if (savedDrafts && Array.isArray(savedDrafts) && savedDrafts.length > 0) {
+      if (!loadedFromRemote || drafts.length === 0) {
         drafts = savedDrafts;
+      } else {
+        const remoteMap = new Map(drafts.map(p => [p.id, p]));
+        savedDrafts.forEach(localP => {
+          const remoteP = remoteMap.get(localP.id);
+          if (!remoteP) {
+            drafts.unshift(localP);
+          } else {
+            const localTs = localP.updated_at ? new Date(localP.updated_at).getTime() : 0;
+            const remoteTs = remoteP.updated_at ? new Date(remoteP.updated_at).getTime() : 0;
+            if (localTs > remoteTs) {
+              const idx = drafts.findIndex(p => p.id === localP.id);
+              if (idx >= 0) drafts[idx] = localP;
+            }
+          }
+        });
       }
-      const savedProd = CardPackStorage.getPublishedCardPacks();
-      if (savedProd && Array.isArray(savedProd) && savedProd.length > 0) {
+    }
+    CardPackStorage.saveCustomCardPacks(drafts);
+
+    const savedProd = CardPackStorage.getPublishedCardPacks();
+    if (savedProd && Array.isArray(savedProd) && savedProd.length > 0) {
+      if (!loadedFromRemote || published.length === 0) {
         published = savedProd;
       }
     }
+    CardPackStorage.savePublishedCardPacks(published);
 
     this.state.drafts = drafts;
     this.state.published = published;
@@ -1061,7 +1077,7 @@ const CardPackManager = {
   // SALVAR E PUBLICAR PACOTE DE CARDS (LOCAL + GITHUB API)
   // ==========================================================
   async saveCardPackDetails(packId) {
-    const pack = this.state.drafts.find(p => p.id === packId);
+    const pack = (this.state.drafts || []).find(p => p.id === packId);
     if (!pack) return;
 
     const titleInput = document.getElementById(`draft-title-input-${packId}`);
@@ -1069,39 +1085,37 @@ const CardPackManager = {
       pack.titulo = titleInput.value.trim();
     }
 
+    // Captura valores dos campos de cada card presentes no DOM
+    const drawer = document.getElementById(`drawer-wrap-draft-${packId}`);
+    if (drawer) {
+      (pack.cards || []).forEach(c => {
+        const cardWrap = drawer.querySelector(`#card-item-wrap-${c.id}`);
+        if (cardWrap) {
+          const tInput = cardWrap.querySelector('.pkg-item-title-input');
+          if (tInput && tInput.value.trim()) c.titulo = tInput.value.trim();
+          const fInput = cardWrap.querySelector('.pkg-item-fefo-input');
+          if (fInput && fInput.value.trim()) c.codigo_acao = fInput.value.trim();
+          const sText = cardWrap.querySelector('.pkg-item-script-textarea');
+          if (sText) c.descricao = sText.value;
+        }
+      });
+    }
+
+    pack.updated_at = new Date().toISOString();
     CardPackStorage.saveCustomCardPacks(this.state.drafts);
     notice('Salvando pacote de cards...');
 
-    // 1. Tenta API do servidor local
-    let savedOnBackend = false;
-    try {
-      const res = await fetch('/api/card_packs/save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pack: pack })
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.ok) {
-          savedOnBackend = true;
-          notice(data.message || 'Pacote de cards salvo no servidor local e repositório!', 'ok');
-        }
+    if (window.GitHubSync && window.GitHubSync.isConfigured()) {
+      notice('☁️ Salvando pacote de cards diretamente no GitHub...');
+      try {
+        await window.GitHubSync.saveDraftCardPacks(this.state.drafts);
+        notice('✓ Pacote de cards salvo com sucesso no GitHub e localmente!', 'ok');
+      } catch (ghErr) {
+        console.warn('Erro ao salvar no GitHub:', ghErr);
+        notice(`✓ Salvo localmente! Falha no GitHub (${ghErr.message})`, 'error');
       }
-    } catch (e) {}
-
-    // 2. Se offline, sincroniza direto via GitHub REST API
-    if (!savedOnBackend) {
-      if (window.GitHubSync && window.GitHubSync.isConfigured()) {
-        notice('☁️ Salvando pacote de cards diretamente no GitHub...');
-        try {
-          await window.GitHubSync.saveDraftCardPacks(this.state.drafts);
-          notice('✓ Pacote de cards salvo com sucesso no GitHub!', 'ok');
-        } catch (ghErr) {
-          notice(`Aviso: Salvo no navegador. Falha no GitHub (${ghErr.message})`, 'error');
-        }
-      } else {
-        notice('✓ Pacote de cards salvo no navegador! (Para salvar no GitHub de qualquer PC, configure seu Token no topo)', 'ok');
-      }
+    } else {
+      notice('✓ Pacote de cards salvo localmente no navegador! (Conecte o GitHub no topo para sincronizar entre PCs)', 'ok');
     }
 
     this.renderDraftsGrid();
