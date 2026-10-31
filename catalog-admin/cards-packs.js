@@ -1,14 +1,16 @@
 /**
- * cards-packs.js - Gerenciador de Pacotes de Cards Interativos do FEFO Pet
+ * cards-packs.js - Gerenciador Unificado de Pacotes de Cards do FEFO Pet
  * 
- * Visual idêntico ao Gerenciador de Menus de Áudio:
+ * Mesma aparência, mesmas funções e mesmo comportamento dos Pacotes de Áudios:
  * - Barras recolhidas em degradê âmbar (Rascunhos) e verde (Publicados)
  * - Título com alteração em tempo real e 3 botões de ação: [ Publicar ] [ Excluir ] [ Salvar ]
- * - Caixa de Licenças lilás/azul pastel com checkboxes circulares brancos
- * - Lista de Cards em estilo sanfona/accordion (CARD 01 - Nome)
- * - ESPAÇO DEDICADO PARA UPLOAD DE IMAGEM DO CARD (drag & drop, preview instantâneo e IndexedDB)
- * - Cortador de áudio integrado (Waveform com tons de amarelo/ouro harmonizados)
- * - Gerador de fala por IA integrado
+ * - Caixa de Licenças lilás/azul pastel (#bfd0fe) com ícones 🏠 e checkboxes circulares brancos
+ * - Cards em estilo sanfona com linha divisória e seta central (CARD 01 - Nome)
+ * - Tag vertical lateral esquerda "CARD 01"
+ * - ESPAÇO DEDICADO PARA UPLOAD DA IMAGEM DO CARD (drag & drop, preview instantâneo e persistência)
+ * - Cortador de áudio integrado (Waveform inline montado via mountAudioTrimmer)
+ * - Gerador de fala por IA integrado (com roteiro e sintetizador da voz do FEFO)
+ * - Seta central de recolhimento no rodapé de cada pacote
  * - Sincronização direta com GitHub via REST API
  */
 
@@ -118,11 +120,9 @@ const CardPackManager = {
   state: {
     drafts: [],
     published: [],
-    expandedPackId: null,
+    expandedDraftId: null,
     expandedProductionId: null,
     expandedCardIds: new Set(),
-    activeTrimmerCardId: null,
-    activeAiCardId: null,
     debounceTimers: {},
     loading: false
   },
@@ -133,8 +133,9 @@ const CardPackManager = {
   },
 
   bindEvents() {
+    // Alternância global das abas
     document.querySelectorAll('.main-top-tabs .main-tab-pill').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', (e) => {
         const tabId = btn.dataset.tab;
         if (typeof window.switchMainTab === 'function') {
           window.switchMainTab(tabId);
@@ -153,6 +154,13 @@ const CardPackManager = {
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
+  },
+
+  resolveUrl(url) {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('blob:')) return url;
+    if (url.startsWith('/')) return `..${url}`;
+    return url;
   },
 
   async loadCardPacks() {
@@ -189,7 +197,7 @@ const CardPackManager = {
         if (catRes && catRes.ok) cData = await catRes.json();
       } catch (err) {}
 
-      // Fallback direto via GitHub REST API se configurado
+      // Fallback via GitHub REST API se configurado
       if ((!dData || !cData) && window.GitHubSync && window.GitHubSync.isConfigured()) {
         try {
           if (!dData) {
@@ -265,7 +273,7 @@ const CardPackManager = {
   },
 
   // ==========================================================
-  // RENDERIZAÇÃO: PACOTES DE CARDS EM RASCUNHO
+  // SEÇÃO 1: PACOTES DE CARDS EM RASCUNHO (DRAFTS)
   // ==========================================================
   renderDraftsGrid() {
     const grid = document.getElementById('draft-card-packs-grid');
@@ -273,100 +281,104 @@ const CardPackManager = {
 
     if (!this.state.drafts.length) {
       grid.innerHTML = `
-        <div class="empty" style="padding: 24px 16px; background: #faf9ff; border-radius: 14px; border: 1px dashed var(--line);">
-          <p style="font-size: 15px; font-weight: 800; color: #d97706; margin: 0 0 4px;">Nenhum pacote de cards em rascunho.</p>
-          <span style="color: var(--muted); font-size: 13px;">Clique em <strong>“＋ Criar Novo Pacote de Cards”</strong> acima para começar.</span>
+        <div class="empty">
+          <p>Nenhum rascunho de pacote de cards encontrado.</p>
+          <button class="btn primary" onclick="CardPackManager.createNewCardPack()">＋ Criar Novo Pacote de Cards</button>
         </div>
       `;
-      this.renderExpandedDraftPack();
+      this.renderDraftExpandedPanel();
       return;
     }
 
-    grid.innerHTML = this.state.drafts.map((pack, idx) => {
-      const isExpanded = this.state.expandedPackId === pack.id;
-      const count = (pack.cards || []).length;
-      const packNumStr = `PACOTE ${String(idx + 1).padStart(2, '0')}`;
+    grid.innerHTML = this.state.drafts.map((pkg, idx) => {
+      const isExpanded = this.state.expandedDraftId === pkg.id;
+      const numLabel = `PACOTE DE CARDS ${idx + 1}${pkg.titulo ? ` - ${this.escapeHtml(pkg.titulo)}` : ''}`;
 
       return `
-        <div class="pkg-collapsed-bar draft-bar ${isExpanded ? 'is-active' : ''}" 
-             onclick="CardPackManager.toggleCardPack('${pack.id}')">
-          <div class="pkg-bar-left">
-            <span class="pkg-bar-num">🃏 ${packNumStr}</span>
-            <span class="pkg-bar-title">${this.escapeHtml(pack.titulo || 'Sem título')}</span>
-            <span class="pkg-bar-tag">${count} CARDS</span>
-            <span class="pkg-badge draft" style="margin: 0;">🟡 RASCUNHO</span>
-          </div>
-          <div class="pkg-bar-right">
-            <span class="pkg-arrow">${isExpanded ? '▲' : '▼'}</span>
-          </div>
+        <div class="pkg-accordion-wrapper" id="pkg-acc-draft-${pkg.id}">
+          ${!isExpanded ? `
+            <div class="pkg-collapsed-bar draft-bar" onclick="CardPackManager.toggleDraftPackage('${pkg.id}')">
+              <span>${numLabel}</span>
+            </div>
+          ` : ''}
+          <div class="package-drawer-wrapper" id="drawer-wrap-draft-${pkg.id}" style="${isExpanded ? 'display:block;' : 'display:none;'}"></div>
         </div>
       `;
     }).join('');
 
-    this.renderExpandedDraftPack();
+    this.renderDraftExpandedPanel();
   },
 
-  toggleCardPack(packId) {
-    if (this.state.expandedPackId === packId) {
-      this.state.expandedPackId = null;
+  toggleDraftPackage(pkgId) {
+    if (this.state.expandedDraftId === pkgId) {
+      this.state.expandedDraftId = null;
     } else {
-      this.state.expandedPackId = packId;
+      this.state.expandedDraftId = pkgId;
     }
     this.renderDraftsGrid();
-
-    if (this.state.expandedPackId) {
+    if (this.state.expandedDraftId) {
       setTimeout(() => {
-        document.getElementById('card-pack-inline-drawer')?.scrollIntoView?.({ behavior: 'smooth', block: 'nearest' });
+        document.getElementById(`pkg-acc-draft-${pkgId}`)?.scrollIntoView?.({ behavior: 'smooth', block: 'nearest' });
       }, 50);
     }
   },
 
-  renderExpandedDraftPack() {
-    const drawer = document.getElementById('card-pack-inline-drawer');
-    if (!drawer) return;
-
-    if (!this.state.expandedPackId) {
-      drawer.innerHTML = '';
-      drawer.style.display = 'none';
-      return;
+  renderDraftExpandedPanel() {
+    const globalDrawer = document.getElementById('card-pack-inline-drawer');
+    if (globalDrawer) {
+      globalDrawer.innerHTML = '';
+      globalDrawer.style.display = 'none';
     }
 
-    const packIdx = (this.state.drafts || []).findIndex(p => p.id === this.state.expandedPackId);
-    const pack = (this.state.drafts || [])[packIdx];
-    if (!pack) {
+    (this.state.drafts || []).forEach(p => {
+      const el = document.getElementById(`drawer-wrap-draft-${p.id}`);
+      if (el && p.id !== this.state.expandedDraftId) {
+        el.innerHTML = '';
+        el.style.display = 'none';
+      }
+    });
+
+    if (!this.state.expandedDraftId) return;
+
+    const drawer = document.getElementById(`drawer-wrap-draft-${this.state.expandedDraftId}`);
+    if (!drawer) return;
+
+    const pkgIdx = (this.state.drafts || []).findIndex(p => p.id === this.state.expandedDraftId);
+    const pkg = (this.state.drafts || [])[pkgIdx];
+    if (!pkg) {
       drawer.style.display = 'none';
       return;
     }
 
     drawer.style.display = 'block';
-    const cards = pack.cards || [];
-    const hasHome = (pack.licencas || []).includes('home');
-    const hasClinical = (pack.licencas || []).includes('clinical');
-    const hasEscola = (pack.licencas || []).includes('escola');
+    const cards = pkg.cards || [];
+    const hasHome = (pkg.licencas || []).includes('home');
+    const hasClinical = (pkg.licencas || []).includes('clinical');
+    const hasEscola = (pkg.licencas || []).includes('escola');
 
     drawer.innerHTML = `
-      <div class="pkg-expanded-card draft-card" id="cardpack-card-${pack.id}">
-        <!-- Topo: Título, Ações e Licenças -->
+      <div class="pkg-expanded-card draft-card" id="pkg-card-${pkg.id}">
+        <!-- Linha Superior: Nome e Botões à esquerda e Licenças à direita -->
         <div class="pkg-expanded-top">
           <div class="pkg-expanded-left">
-            <div class="pkg-expanded-num" id="cardpack-expanded-title-${pack.id}">
-              🃏 PACOTE DE CARDS ${String(packIdx + 1).padStart(2, '0')} - ${this.escapeHtml(pack.titulo || 'Sem título')}
+            <div class="pkg-expanded-num" id="cardpack-expanded-title-${pkg.id}">
+              ${this.escapeHtml(pkg.titulo || `PACOTE DE CARDS ${pkgIdx + 1}`)}
             </div>
             <label class="pkg-expanded-label">Alterar nome do Pacote de Cards</label>
-            <input type="text" class="pkg-input-pill" id="cardpack-title-input-${pack.id}" 
-                   value="${this.escapeHtml(pack.titulo)}" 
-                   placeholder="Ex: Cards das Emoções"
-                   oninput="CardPackManager.updatePackTitle('${pack.id}', this.value)">
+            <input type="text" class="pkg-input-pill" id="draft-title-input-${pkg.id}" 
+                   value="${this.escapeHtml(pkg.titulo)}" 
+                   placeholder="Nome do pacote de cards..."
+                   oninput="CardPackManager.updateDraftPackageProperty('${pkg.id}', 'titulo', this.value)">
 
             <!-- 3 Botões de Ação diretamente abaixo do input -->
             <div class="pkg-action-pills-row">
-              <button type="button" class="btn-pkg-action blue" onclick="CardPackManager.publishCardPackOfficial('${pack.id}')">
+              <button type="button" class="btn-pkg-action blue" onclick="CardPackManager.publishCardPackOfficial('${pkg.id}')">
                 Publicar
               </button>
-              <button type="button" class="btn-pkg-action red" onclick="CardPackManager.deleteCardPack('${pack.id}')">
+              <button type="button" class="btn-pkg-action red" onclick="CardPackManager.deleteCardPack('${pkg.id}')">
                 Excluir
               </button>
-              <button type="button" class="btn-pkg-action green" onclick="CardPackManager.saveCardPackDetails('${pack.id}')">
+              <button type="button" class="btn-pkg-action green" onclick="CardPackManager.saveCardPackDetails('${pkg.id}')">
                 Salvar
               </button>
             </div>
@@ -376,46 +388,52 @@ const CardPackManager = {
             <div class="pkg-lic-title">Licenças</div>
             <div class="pkg-lic-box">
               <label class="pkg-lic-item">
-                <input type="checkbox" ${hasHome ? 'checked' : ''} onchange="CardPackManager.togglePackLicense('${pack.id}', 'home')">
+                <input type="checkbox" ${hasHome ? 'checked' : ''} onchange="CardPackManager.toggleDraftLicense('${pkg.id}', 'home')">
+                <span class="lic-icon">🏠</span>
                 <span class="lic-name">Home</span>
               </label>
               <label class="pkg-lic-item">
-                <input type="checkbox" ${hasClinical ? 'checked' : ''} onchange="CardPackManager.togglePackLicense('${pack.id}', 'clinical')">
-                <span class="lic-name">Clínica</span>
+                <input type="checkbox" ${hasClinical ? 'checked' : ''} onchange="CardPackManager.toggleDraftLicense('${pkg.id}', 'clinical')">
+                <span class="lic-icon">🏠</span>
+                <span class="lic-name">Clinica</span>
               </label>
               <label class="pkg-lic-item">
-                <input type="checkbox" ${hasEscola ? 'checked' : ''} onchange="CardPackManager.togglePackLicense('${pack.id}', 'escola')">
+                <input type="checkbox" ${hasEscola ? 'checked' : ''} onchange="CardPackManager.toggleDraftLicense('${pkg.id}', 'escola')">
+                <span class="lic-icon">🏠</span>
                 <span class="lic-name">Escola</span>
+              </label>
+              <label class="pkg-lic-item">
+                <input type="checkbox" ${pkg.is_premium ? 'checked' : ''} onchange="CardPackManager.toggleDraftPremium('${pkg.id}')">
+                <span class="lic-icon">🏠</span>
+                <span class="lic-name">Premium</span>
               </label>
             </div>
           </div>
         </div>
 
-        <!-- Lista de Cards em estilo Sanfona / Accordion -->
-        <div style="margin-top: 24px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-            <span style="font-size: 13px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">
-              Cards Interativos deste Pacote (${cards.length})
-            </span>
-          </div>
+        <!-- Lista de Cards do Pacote -->
+        <div class="pkg-tracks-section">
+          ${cards.length === 0 ? `
+            <div style="text-align:center; padding: 18px; color: #166534; font-size: 13px; font-weight: 700;">
+              Nenhum card cadastrado ainda. Clique no botão abaixo para adicionar.
+            </div>
+          ` : cards.map((c, cIdx) => this.renderCardItem(pkg.id, c, cIdx, false)).join('')}
+        </div>
 
-          <div class="faixas-accordion-list">
-            ${cards.length === 0 ? `
-              <div style="text-align: center; padding: 24px; color: var(--muted); background: #ffffff; border: 1px dashed var(--line); border-radius: 14px;">
-                Nenhum card cadastrado ainda. Clique no botão abaixo para adicionar seu primeiro card interativo!
-              </div>
-            ` : cards.map((c, idx) => this.renderCardAccordionItem(pack.id, c, idx, false)).join('')}
-          </div>
-
-          <!-- Botão Adicionar Card -->
-          <button type="button" class="btn-add-faixa" onclick="CardPackManager.addNewCardItem('${pack.id}')" style="margin-top: 14px;">
-            ＋ Adicionar Novo Card ao Pacote
+        <div style="display: flex; justify-content: flex-start; margin: 6px 0;">
+          <button type="button" class="btn-add-track-pill" onclick="CardPackManager.addNewEmptyCardItem('${pkg.id}')">
+            ＋ Adicionar Novo Card
           </button>
+        </div>
+
+        <!-- Seta central de recolhimento no fundo do card -->
+        <div class="pkg-collapse-arrow-btn gold" title="Recolher pacote" onclick="CardPackManager.toggleDraftPackage('${pkg.id}')">
+          ▲
         </div>
       </div>
     `;
 
-    // Hidrata imagens salvas no IndexedDB para pré-visualização instantânea
+    // Hidrata imagens salvas no IndexedDB
     cards.forEach(async (c) => {
       if (window.CardImageDB) {
         const imgBlob = await window.CardImageDB.getImage(c.id);
@@ -428,75 +446,74 @@ const CardPackManager = {
   },
 
   // ==========================================================
-  // RENDERIZAÇÃO DO ITEM INDIVIDUAL DE CARD (SANFONA + UPLOAD)
+  // RENDERIZAÇÃO DO ITEM DE CARD (SANFONA + UPLOAD DA IMAGEM)
   // ==========================================================
-  renderCardAccordionItem(packId, c, idx, isProduction = false) {
-    const isExpanded = this.state.expandedCardIds.has(c.id);
-    const cCode = c.codigo_acao || c.id || `c${String(idx + 1).padStart(4, '0')}`;
-    const cardTitle = c.titulo || `Card ${idx + 1}`;
+  renderCardItem(packId, c, cIdx, isProduction = false) {
+    const isCardOpen = this.state.expandedCardIds && this.state.expandedCardIds.has(c.id);
+    const audioUrl = this.resolveUrl(c.audio_url || '');
+    const cCode = c.codigo_acao || c.id || `c${String(cIdx + 1).padStart(4, '0')}`;
+    const cardTitle = c.titulo || '';
     const hasImage = Boolean(c.mini_card_img);
-    const hasAudio = Boolean(c.audio_url);
 
     return `
-      <div class="faixa-accordion-wrapper" id="card-wrapper-${c.id}">
-        <!-- Barra de Alternância do Card -->
-        <div class="faixa-toggle-bar" onclick="CardPackManager.toggleCardAccordion('${c.id}', ${isProduction})">
-          <div class="faixa-toggle-left" style="display: flex; align-items: center; gap: 10px;">
-            ${hasImage ? `
-              <img src="${this.escapeHtml(c.mini_card_img)}" id="thumb-${c.id}" style="width: 24px; height: 32px; object-fit: cover; border-radius: 4px; border: 1px solid #cbd5e1;">
-            ` : `
-              <span style="font-size: 16px;">🃏</span>
-            `}
-            <span class="faixa-toggle-num">CARD ${String(idx + 1).padStart(2, '0')}</span>
-            <span class="faixa-toggle-name" id="card-header-title-${c.id}">${this.escapeHtml(cardTitle)}</span>
-            <span style="font-size: 11px; color: #64748b; font-weight: 700;">(${cCode})</span>
+      <div class="pkg-track-collapsible-item" id="card-item-wrap-${c.id}">
+        <!-- Linha da Barra de Alternância do Card -->
+        <div class="pkg-track-toggle-row" onclick="CardPackManager.toggleCardItemOpen('${c.id}')">
+          <div class="pkg-track-name" id="card-header-title-${c.id}">
+            CARD ${String(cIdx + 1).padStart(2, '0')}${cardTitle ? ' - ' + this.escapeHtml(cardTitle) : ''}
           </div>
-
-          <div class="faixa-toggle-right">
-            ${hasImage ? `
-              <span class="pill green" style="font-size: 10px;">📷 Imagem OK</span>
-            ` : `
-              <span class="pill" style="font-size: 10px; background: #fef3c7; color: #92400e;">Sem Imagem</span>
-            `}
-
-            ${hasAudio ? `
-              <span class="pill green" style="font-size: 10px;">🎵 Áudio OK</span>
-            ` : `
-              <span class="pill" style="font-size: 10px; background: #fee2e2; color: #991b1b;">Sem Áudio</span>
-            `}
-
-            ${!isProduction ? `
-              <button type="button" class="btn-remove-track" title="Excluir este card" 
-                      onclick="event.stopPropagation(); CardPackManager.deleteCardItem('${packId}', '${c.id}')">✕</button>
-            ` : ''}
-
-            <span class="faixa-arrow" id="arrow-card-${c.id}">${isExpanded ? '▲' : '▼'}</span>
+          <div class="track-line-toggle ${isProduction ? 'green' : 'gold'}">
+            <hr />
+            <span class="track-arrow" id="card-arrow-${c.id}">${isCardOpen ? '▲' : '▼'}</span>
           </div>
         </div>
 
-        <!-- Painel Expandido com ESPAÇO PARA UPAR IMAGEM e Controles -->
-        <div class="track-accordion-panel" id="panel-card-${c.id}" style="display: ${isExpanded ? 'block' : 'none'};">
-          <div class="faixa-inner-box" style="padding: 20px;">
-            <div class="card-flex-row">
+        <!-- Conteúdo Interno Expandido do Card -->
+        <div class="track-mount-container" id="card-mount-${c.id}" style="${isCardOpen ? 'display:block;' : 'display:none;'}">
+          <div class="pkg-item-row track-card-box" data-item-id="${c.id}">
+            
+            <!-- LADO ESQUERDO: TAG VERTICAL CARD 01 -->
+            <div class="track-vertical-badge">
+              <span>CARD ${String(cIdx + 1).padStart(2, '0')}</span>
+            </div>
+
+            <!-- CONTEÚDO PRINCIPAL -->
+            <div class="track-card-body">
               
-              <!-- 1. ESPAÇO DEDICADO PARA UPLOAD DA IMAGEM DO CARD -->
-              <div>
-                <label style="display: block; font-size: 11px; font-weight: 800; color: #475569; text-transform: uppercase; margin-bottom: 6px;">
-                  Imagem do Card (App FEFO):
-                </label>
+              <!-- LINHA SUPERIOR: Nome no APP + Selecionar Áudio -->
+              <div class="track-row-top">
+                <div class="track-field-group">
+                  <label class="track-label">Nome do Card no APP</label>
+                  <input type="text" class="track-input-clean pkg-item-title-input" 
+                         value="${this.escapeHtml(cardTitle)}" 
+                         placeholder="Ex: Alegria & Sorriso" 
+                         oninput="CardPackManager.updateCardItemTitle('${packId}', '${c.id}', this.value, ${isProduction})">
+                </div>
+                <button type="button" class="btn-track-action"
+                        title="Carregar ou substituir áudio do seu computador"
+                        onclick="CardPackManager.promptChooseAudio('${packId}', '${c.id}', ${isProduction})">
+                  Selecionar Audio
+                </button>
+              </div>
+
+              <!-- ESPAÇO DEDICADO PARA UPLOAD DA IMAGEM DO CARD (SOLICITADO) -->
+              <div style="background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 14px; padding: 14px; margin: 6px 0 10px; display: flex; align-items: center; gap: 18px; flex-wrap: wrap;">
+                
+                <!-- Moldura da Imagem (Proporção 3:4) -->
                 <div class="card-upload-area ${hasImage ? 'has-image' : ''}" 
                      id="card-upload-area-${c.id}"
+                     style="width: 110px; height: 145px; border-radius: 12px; cursor: pointer; flex-shrink: 0;"
                      onclick="document.getElementById('card-file-input-${c.id}').click()"
                      ondragover="event.preventDefault(); this.classList.add('drag-over');"
                      ondragleave="this.classList.remove('drag-over');"
                      ondrop="CardPackManager.handleCardImageDrop(event, '${packId}', '${c.id}', ${isProduction})">
                   
-                  <img id="card-img-preview-${c.id}" src="${this.escapeHtml(c.mini_card_img || '')}" style="display: ${hasImage ? 'block' : 'none'};" alt="Imagem do Card">
+                  <img id="card-img-preview-${c.id}" src="${this.escapeHtml(c.mini_card_img || '')}" style="display: ${hasImage ? 'block' : 'none'}; width: 100%; height: 100%; object-fit: cover; border-radius: 10px;" alt="Card">
                   
                   <div class="card-upload-placeholder" id="card-placeholder-${c.id}" style="display: ${hasImage ? 'none' : 'flex'};">
-                    <span class="icon">🃏</span>
-                    <span class="text-main">Clique ou arraste a imagem do Card</span>
-                    <span class="text-sub">(JPG, PNG ou WEBP)</span>
+                    <span class="icon" style="font-size: 28px;">🃏</span>
+                    <span class="text-main" style="font-size: 10.5px;">Arraste ou clique</span>
+                    <span class="text-sub" style="font-size: 9.5px;">(JPG / PNG)</span>
                   </div>
 
                   <div class="card-upload-overlay">
@@ -511,86 +528,87 @@ const CardPackManager = {
                   <input type="file" id="card-file-input-${c.id}" accept="image/jpeg,image/png,image/webp,image/*" style="display:none;" 
                          onchange="CardPackManager.handleCardImageSelected('${packId}', '${c.id}', this.files[0], ${isProduction})">
                 </div>
+
+                <!-- Instruções e Botão de Envio de Imagem -->
+                <div style="flex: 1; min-width: 200px;">
+                  <div style="font-size: 13px; font-weight: 800; color: #1e293b; margin-bottom: 2px;">
+                    📷 Imagem do Card Interativo (App FEFO)
+                  </div>
+                  <div style="font-size: 11.5px; color: #64748b; line-height: 1.4; margin-bottom: 8px;">
+                    Esta é a miniatura ilustrada que as crianças e terapeutas veem na tela do celular ao selecionar este card.
+                  </div>
+                  <div style="display: flex; gap: 8px; align-items: center;">
+                    <button type="button" class="btn-track-action" onclick="document.getElementById('card-file-input-${c.id}').click()">
+                      ${hasImage ? '📷 Substituir Imagem' : '📷 Enviar Imagem do Card'}
+                    </button>
+                    ${hasImage ? `
+                      <span class="pill green" style="font-size: 11px;">✓ Imagem Carregada</span>
+                    ` : `
+                      <span class="pill" style="font-size: 11px; background: #fffbeb; color: #92400e;">Aguardando Imagem</span>
+                    `}
+                  </div>
+                </div>
+
               </div>
 
-              <!-- 2. METADADOS E CONTROLES DE ÁUDIO -->
-              <div class="card-fields-col">
-                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px;">
-                  <div>
-                    <label style="display: block; font-size: 11px; font-weight: 800; color: #475569; text-transform: uppercase; margin-bottom: 4px;">
-                      Título / Nome do Card:
-                    </label>
-                    <input type="text" class="pkg-input-pill" 
-                           value="${this.escapeHtml(c.titulo || '')}" 
-                           placeholder="Ex: Card Alegria & Sorriso"
-                           oninput="CardPackManager.updateCardTitle('${packId}', '${c.id}', this.value, ${isProduction})">
+              <!-- LINHA DO PLAYER DE ÁUDIO -->
+              <div class="track-row-player">
+                <audio id="audio-player-${c.id}" src="${this.escapeHtml(audioUrl)}" controls preload="metadata"></audio>
+              </div>
+
+              <!-- DIVISÓRIA ACORDEON 1: Gerar Audio com IA -->
+              <div class="track-accordion-toggle green" onclick="CardPackManager.toggleCardAccordion('${c.id}', 'ai')">
+                <span class="acc-text">Gerar Audio com IA <span class="acc-arrow" id="arrow-ai-${c.id}">▼</span></span>
+              </div>
+              <div class="track-accordion-panel" id="panel-ai-${c.id}">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <span style="font-size: 11.5px; font-weight: 800; color: #1b4332;">📜 Texto do Áudio (Roteiro falado pelo FEFO):</span>
+                  <div style="display: flex; gap: 8px; align-items: center;">
+                    <button type="button" class="btn-generate-ai-voice" id="btn-ai-${c.id}"
+                            title="Gerar áudio com a voz do FEFO a partir deste texto"
+                            onclick="CardPackManager.generateCardAiSpeech('${packId}', '${c.id}', ${isProduction})">
+                      🎙️ Gerar Voz do FEFO (IA)
+                    </button>
+                    <span class="save-status-badge" id="script-saved-${c.id}">✓ Salvo</span>
                   </div>
-                  <div>
-                    <label style="display: block; font-size: 11px; font-weight: 800; color: #475569; text-transform: uppercase; margin-bottom: 4px;">
-                      Código / Ação (App):
-                    </label>
-                    <input type="text" class="pkg-input-pill" 
-                           value="${this.escapeHtml(c.codigo_acao || cCode)}" 
-                           placeholder="c0001"
+                </div>
+                <textarea class="pkg-item-script-textarea" 
+                          placeholder="Digite ou edite aqui o roteiro falado pelo FEFO ao acionar este card..."
+                          oninput="CardPackManager.updateCardScript('${packId}', '${c.id}', this.value, ${isProduction})">${this.escapeHtml(c.descricao || '')}</textarea>
+              </div>
+
+              <!-- DIVISÓRIA ACORDEON 2: Ajustar / Cortar -->
+              <div class="track-accordion-toggle purple" onclick="CardPackManager.toggleCardAccordion('${c.id}', 'trim', ${isProduction})">
+                <span class="acc-text">Ajustar / Cortar <span class="acc-arrow" id="arrow-trim-${c.id}">▼</span></span>
+              </div>
+              <div class="track-accordion-panel" id="panel-trim-${c.id}">
+                <div id="trimmer-mount-${c.id}" class="inline-trimmer-mount"></div>
+              </div>
+
+              <!-- LINHA INFERIOR: Código no APP + Salvar + Excluir -->
+              <div class="track-row-bottom">
+                <div class="track-field-group">
+                  <label class="track-label">Código no APP (Trigger)</label>
+                  <div style="display: flex; gap: 6px; align-items: center;">
+                    <input type="text" class="track-input-clean pkg-item-fefo-input" 
+                           value="${this.escapeHtml(cCode)}" 
+                           placeholder="c0001" 
                            oninput="CardPackManager.updateCardAction('${packId}', '${c.id}', this.value, ${isProduction})">
                   </div>
                 </div>
-
-                <!-- Barra de Ações de Áudio (Harmonizada) -->
-                <div>
-                  <label style="display: block; font-size: 11px; font-weight: 800; color: #475569; text-transform: uppercase; margin-bottom: 6px;">
-                    Áudio Vinculado ao Card:
-                  </label>
-                  <div class="faixa-controls-row">
-                    <!-- Botão Play / Pause -->
-                    <button type="button" class="btn-faixa-pill blue btn-play-custom" id="btn-play-card-${c.id}" 
-                            onclick="CardPackManager.togglePlayCardAudio('${c.id}')">
-                      ▶ Ouvir Áudio
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <button type="button" class="btn-track-action btn-track-save"
+                          title="Salvar alterações deste card"
+                          onclick="CardPackManager.saveSingleCardItem('${packId}', '${c.id}', ${isProduction})">
+                    Salvar
+                  </button>
+                  ${!isProduction ? `
+                    <button type="button" class="pkg-item-delete" title="Remover card"
+                            onclick="CardPackManager.deleteCardItem('${packId}', '${c.id}')">
+                      🗑
                     </button>
-                    <button type="button" class="btn-faixa-pill" id="btn-pause-card-${c.id}" style="display:none;" 
-                            onclick="CardPackManager.pauseCardAudio('${c.id}')">
-                      ❚❚ Pausar
-                    </button>
-
-                    <!-- Botão Trocar Áudio -->
-                    <button type="button" class="btn-faixa-pill" onclick="CardPackManager.promptChooseCardAudio('${packId}', '${c.id}', ${isProduction})">
-                      📁 Trocar Áudio
-                    </button>
-
-                    <!-- Botão Ajustar / Cortar Áudio -->
-                    <button type="button" class="btn-faixa-pill orange" id="btn-trim-card-${c.id}" 
-                            onclick="CardPackManager.toggleCardAccordionTrimmer('${c.id}', '${packId}', ${isProduction})">
-                      ✂ Ajustar / Cortar Áudio
-                    </button>
-
-                    <!-- Botão Gerar Fala com IA -->
-                    <button type="button" class="btn-faixa-pill purple" id="btn-ai-card-${c.id}" 
-                            onclick="CardPackManager.toggleCardAccordionAiVoice('${c.id}', '${packId}', ${isProduction})">
-                      🎙 Gerar Fala com IA
-                    </button>
-
-                    <audio id="audio-player-card-${c.id}" src="${this.escapeHtml(c.audio_url || '')}" preload="none" style="display:none;" 
-                           onended="CardPackManager.onCardAudioEnded('${c.id}')"></audio>
-                  </div>
+                  ` : ''}
                 </div>
-
-                <!-- Gavetas Integradas: Cortador de Áudio & IA -->
-                <div class="trimmer-integrated-box" id="card-trimmer-box-${c.id}" style="display: none; margin-top: 10px;"></div>
-                <div class="ai-integrated-box" id="card-ai-box-${c.id}" style="display: none; margin-top: 10px;"></div>
-
-                <!-- Roteiro Falado / Descrição do Card -->
-                <div>
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                    <label style="font-size: 11px; font-weight: 800; color: #475569; text-transform: uppercase;">
-                      Roteiro Falado / Descrição do Card:
-                    </label>
-                    <span class="script-saved-badge" id="script-saved-card-${c.id}">✓ Salvo</span>
-                  </div>
-                  <textarea class="pkg-script-textarea" rows="2" 
-                            placeholder="Descreva o som ou a fala do FEFO ao acionar este card..."
-                            oninput="CardPackManager.updateCardScript('${packId}', '${c.id}', this.value, ${isProduction})">${this.escapeHtml(c.descricao || '')}</textarea>
-                </div>
-
               </div>
 
             </div>
@@ -601,28 +619,106 @@ const CardPackManager = {
   },
 
   // ==========================================================
-  // CONTROLE DE SANFONA / ACCORDION DOS CARDS
+  // CONTROLE DE ABERTURA E FECHAMENTO DO CARD
   // ==========================================================
-  toggleCardAccordion(cardId, isProduction = false) {
-    const panel = document.getElementById(`panel-card-${cardId}`);
-    const arrow = document.getElementById(`arrow-card-${cardId}`);
-    if (!panel) return;
+  toggleCardItemOpen(cardId) {
+    if (!this.state.expandedCardIds) this.state.expandedCardIds = new Set();
+    const mount = document.getElementById(`card-mount-${cardId}`);
+    const arrow = document.getElementById(`card-arrow-${cardId}`);
+    if (!mount) return;
 
-    if (panel.style.display === 'none' || !panel.style.display) {
-      panel.style.display = 'block';
-      if (arrow) arrow.textContent = '▲';
-      this.state.expandedCardIds.add(cardId);
-    } else {
-      panel.style.display = 'none';
-      if (arrow) arrow.textContent = '▼';
+    const isOpen = mount.style.display !== 'none';
+    if (isOpen) {
+      mount.style.display = 'none';
       this.state.expandedCardIds.delete(cardId);
-      this.closeCardTrimmer(cardId);
-      this.closeCardAiVoice(cardId);
+      if (arrow) arrow.textContent = '▼';
+    } else {
+      mount.style.display = 'block';
+      this.state.expandedCardIds.add(cardId);
+      if (arrow) arrow.textContent = '▲';
     }
   },
 
   // ==========================================================
-  // UPLOAD E MANIPULAÇÃO DE IMAGEM DO CARD (NOVO)
+  // ACORDEÕES INTERNOS: IA E FERRAMENTA DE CORTE (WAVEFORM)
+  // ==========================================================
+  async toggleCardAccordion(cardId, type, isProduction = false) {
+    const panel = document.getElementById(`panel-${type}-${cardId}`);
+    const arrow = document.getElementById(`arrow-${type}-${cardId}`);
+    if (!panel) return;
+
+    const isOpen = panel.classList.contains('is-open');
+
+    if (isOpen) {
+      panel.classList.remove('is-open');
+      if (arrow) arrow.textContent = '▼';
+    } else {
+      panel.classList.add('is-open');
+      if (arrow) arrow.textContent = '▲';
+
+      if (type === 'trim') {
+        const mount = document.getElementById(`trimmer-mount-${cardId}`);
+        if (mount && !mount.dataset.mounted) {
+          mount.dataset.mounted = 'true';
+          mount.innerHTML = '<div style="padding:14px; text-align:center; color:#856404; font-size:12.5px; font-weight:700;">Carregando ferramenta de corte...</div>';
+
+          let card = null;
+          const list = isProduction ? this.state.published : this.state.drafts;
+          list.some(p => {
+            const found = (p.cards || []).find(x => x.id === cardId);
+            if (found) { card = found; return true; }
+          });
+
+          let effectiveUrl = card ? this.resolveUrl(card.audio_url || '') : '';
+          if (!effectiveUrl && window.AudioBlobDB) {
+            const blob = await window.AudioBlobDB.getAudio(cardId);
+            if (blob) effectiveUrl = URL.createObjectURL(blob);
+          }
+
+          if (!effectiveUrl) {
+            mount.innerHTML = `
+              <div style="padding:14px; text-align:center; color:#c0392b; font-size:12.5px; font-weight:700;">
+                ⚠️ Nenhum áudio carregado neste card para cortar. Selecione um arquivo primeiro em “Selecionar Audio”.
+              </div>
+            `;
+            mount.dataset.mounted = '';
+            return;
+          }
+
+          if (window.mountAudioTrimmer) {
+            mount.innerHTML = '';
+            window.mountAudioTrimmer(mount, {
+              url: effectiveUrl,
+              title: card ? (card.titulo || '') : '',
+              description: card ? (card.descricao || '') : '',
+              showClose: false,
+              onSave: async (blob, info) => {
+                notice('Salvando corte do áudio do card...', 'ok');
+                if (window.AudioBlobDB) await window.AudioBlobDB.setAudio(cardId, blob);
+                if (card) {
+                  card.audio_url = URL.createObjectURL(blob);
+                  card.tamanho_audio = blob.size;
+                }
+                const player = document.getElementById(`audio-player-${cardId}`);
+                if (player) {
+                  player.src = card.audio_url;
+                  player.load();
+                }
+                if (isProduction) CardPackStorage.savePublishedCardPacks(this.state.published);
+                else CardPackStorage.saveCustomCardPacks(this.state.drafts);
+                notice('Áudio do card cortado com sucesso!', 'ok');
+              }
+            });
+          } else {
+            mount.innerHTML = '<div style="color:red; padding:10px;">Módulo de corte indisponível.</div>';
+          }
+        }
+      }
+    }
+  },
+
+  // ==========================================================
+  // MANIPULAÇÃO DA IMAGEM DO CARD (DRAG & DROP / UPLOAD / REMOÇÃO)
   // ==========================================================
   handleCardImageDrop(event, packId, cardId, isProduction = false) {
     event.preventDefault();
@@ -660,7 +756,6 @@ const CardPackManager = {
     const previewEl = document.getElementById(`card-img-preview-${cardId}`);
     const placeholderEl = document.getElementById(`card-placeholder-${cardId}`);
     const uploadArea = document.getElementById(`card-upload-area-${cardId}`);
-    const thumbEl = document.getElementById(`thumb-${cardId}`);
 
     if (previewEl) {
       previewEl.src = blobUrl;
@@ -668,9 +763,8 @@ const CardPackManager = {
     }
     if (placeholderEl) placeholderEl.style.display = 'none';
     if (uploadArea) uploadArea.classList.add('has-image');
-    if (thumbEl) thumbEl.src = blobUrl;
 
-    notice(`✓ Imagem do card "${file.name}" carregada com sucesso!`, 'ok');
+    notice(`✓ Imagem do card carregada com sucesso!`, 'ok');
   },
 
   async removeCardImage(packId, cardId, isProduction = false) {
@@ -706,9 +800,9 @@ const CardPackManager = {
   },
 
   // ==========================================================
-  // CONTROLES DE ÁUDIO & CORTADOR INTEGRADO (HARMONIZADO)
+  // SELEÇÃO E GERENCIAMENTO DE ÁUDIO DO CARD
   // ==========================================================
-  promptChooseCardAudio(packId, cardId, isProduction = false) {
+  promptChooseAudio(packId, cardId, isProduction = false) {
     let inp = document.getElementById('global-card-audio-input');
     if (!inp) {
       inp = document.createElement('input');
@@ -722,14 +816,14 @@ const CardPackManager = {
     inp.onchange = (e) => {
       const file = e.target.files && e.target.files[0];
       if (file) {
-        this.handleCardAudioSelected(packId, cardId, file, isProduction);
+        this.handleAudioFileSelected(packId, cardId, file, isProduction);
       }
       inp.value = '';
     };
     inp.click();
   },
 
-  async handleCardAudioSelected(packId, cardId, file, isProduction = false) {
+  async handleAudioFileSelected(packId, cardId, file, isProduction = false) {
     notice(`Carregando áudio "${file.name}"...`);
 
     if (window.AudioBlobDB) {
@@ -752,163 +846,28 @@ const CardPackManager = {
       CardPackStorage.saveCustomCardPacks(this.state.drafts);
     }
 
-    const player = document.getElementById(`audio-player-card-${cardId}`);
-    if (player) player.src = blobUrl;
+    const player = document.getElementById(`audio-player-${cardId}`);
+    if (player) {
+      player.src = blobUrl;
+      player.load();
+    }
+
+    // Se a ferramenta de corte estiver aberta, reseta para recarregar
+    const mount = document.getElementById(`trimmer-mount-${cardId}`);
+    if (mount) mount.dataset.mounted = '';
 
     notice(`✓ Áudio "${file.name}" vinculado ao card!`, 'ok');
-    if (isProduction) this.renderExpandedPublishedPack();
-    else this.renderExpandedDraftPack();
   },
 
-  togglePlayCardAudio(cardId) {
-    const player = document.getElementById(`audio-player-card-${cardId}`);
-    const btnPlay = document.getElementById(`btn-play-card-${cardId}`);
-    const btnPause = document.getElementById(`btn-pause-card-${cardId}`);
-    if (!player) return;
-
-    document.querySelectorAll('audio').forEach(a => {
-      if (a !== player && !a.paused) {
-        a.pause();
-        const otherId = a.id.replace('audio-player-card-', '');
-        document.getElementById(`btn-play-card-${otherId}`)?.classList.remove('active');
-        document.getElementById(`btn-pause-card-${otherId}`)?.classList.remove('active');
-      }
-    });
-
-    player.play().then(() => {
-      if (btnPlay) btnPlay.style.display = 'none';
-      if (btnPause) btnPause.style.display = 'inline-block';
-    }).catch(() => {
-      notice('Selecione um áudio para ouvir.', 'error');
-    });
-  },
-
-  pauseCardAudio(cardId) {
-    const player = document.getElementById(`audio-player-card-${cardId}`);
-    const btnPlay = document.getElementById(`btn-play-card-${cardId}`);
-    const btnPause = document.getElementById(`btn-pause-card-${cardId}`);
-    if (player) player.pause();
-    if (btnPlay) btnPlay.style.display = 'inline-block';
-    if (btnPause) btnPause.style.display = 'none';
-  },
-
-  onCardAudioEnded(cardId) {
-    const btnPlay = document.getElementById(`btn-play-card-${cardId}`);
-    const btnPause = document.getElementById(`btn-pause-card-${cardId}`);
-    if (btnPlay) btnPlay.style.display = 'inline-block';
-    if (btnPause) btnPause.style.display = 'none';
-  },
-
-  // Cortador Integrado do Card
-  toggleCardAccordionTrimmer(cardId, packId, isProduction = false) {
-    const box = document.getElementById(`card-trimmer-box-${cardId}`);
-    if (!box) return;
-
-    if (box.style.display === 'block') {
-      this.closeCardTrimmer(cardId);
-      return;
-    }
-
-    this.closeCardAiVoice(cardId);
-    box.style.display = 'block';
-
+  async generateCardAiSpeech(packId, cardId, isProduction = false) {
     const packsList = isProduction ? this.state.published : this.state.drafts;
     const pack = packsList.find(p => p.id === packId);
     const card = pack?.cards?.find(c => c.id === cardId);
-    const audioUrl = card?.audio_url || '';
+    const text = card?.descricao || card?.titulo || '';
 
-    if (!audioUrl) {
-      box.innerHTML = `
-        <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; padding: 14px; text-align: center; color: #92400e; font-size: 13px;">
-          Adicione um áudio a este card clicando em <strong>“📁 Trocar Áudio”</strong> antes de abrir o cortador.
-        </div>
-      `;
-      return;
-    }
+    if (!text.trim()) return notice('Digite o texto do roteiro antes de gerar a voz.', 'error');
 
-    if (window.mountAudioTrimmer) {
-      window.mountAudioTrimmer(box, {
-        audioUrl: audioUrl,
-        showClose: true,
-        onClose: () => this.closeCardTrimmer(cardId),
-        onSave: async (blob) => {
-          notice('Salvando corte do áudio do card...');
-          if (window.AudioBlobDB) {
-            await window.AudioBlobDB.setAudio(cardId, blob);
-          }
-          const cutUrl = URL.createObjectURL(blob);
-          if (card) {
-            card.audio_url = cutUrl;
-            card.tamanho_audio = blob.size;
-          }
-          if (isProduction) CardPackStorage.savePublishedCardPacks(this.state.published);
-          else CardPackStorage.saveCustomCardPacks(this.state.drafts);
-
-          const player = document.getElementById(`audio-player-card-${cardId}`);
-          if (player) player.src = cutUrl;
-
-          notice('✓ Corte aplicado ao áudio do card com sucesso!', 'ok');
-          this.closeCardTrimmer(cardId);
-        }
-      });
-    }
-  },
-
-  closeCardTrimmer(cardId) {
-    const box = document.getElementById(`card-trimmer-box-${cardId}`);
-    if (box) {
-      box.innerHTML = '';
-      box.style.display = 'none';
-    }
-  },
-
-  // Gerador de Fala com IA Integrado
-  toggleCardAccordionAiVoice(cardId, packId, isProduction = false) {
-    const box = document.getElementById(`card-ai-box-${cardId}`);
-    if (!box) return;
-
-    if (box.style.display === 'block') {
-      this.closeCardAiVoice(cardId);
-      return;
-    }
-
-    this.closeCardTrimmer(cardId);
-    box.style.display = 'block';
-
-    const packsList = isProduction ? this.state.published : this.state.drafts;
-    const pack = packsList.find(p => p.id === packId);
-    const card = pack?.cards?.find(c => c.id === cardId);
-    const defaultText = card?.descricao || card?.titulo || 'Olá amiguinho! Este é o som do card FEFO.';
-
-    box.innerHTML = `
-      <div style="background: #faf8ff; border: 1.5px solid var(--purple); border-radius: 14px; padding: 16px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-          <span style="font-size: 12px; font-weight: 800; color: var(--purple);">🎙️ GERAR ÁUDIO COM A VOZ CLONADA DO FEFO (IA)</span>
-          <button type="button" onclick="CardPackManager.closeCardAiVoice('${cardId}')" style="border:none; background:none; cursor:pointer; font-size:16px; font-weight:bold; color:var(--muted);">✕</button>
-        </div>
-        <p style="font-size: 12px; color: var(--muted); margin: 0 0 10px;">Digite o texto que a voz do FEFO irá pronunciar para este card:</p>
-        <textarea id="ai-text-input-card-${cardId}" rows="2" style="width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid var(--line); border-radius: 8px; font-size: 13px;">${this.escapeHtml(defaultText)}</textarea>
-        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px;">
-          <button type="button" class="btn secondary" style="font-size: 12px;" onclick="CardPackManager.closeCardAiVoice('${cardId}')">Cancelar</button>
-          <button type="button" class="btn primary" style="font-size: 12px;" onclick="CardPackManager.generateCardAiSpeech('${cardId}', '${packId}', ${isProduction})">⚡ Sintetizar e Aplicar ao Card</button>
-        </div>
-      </div>
-    `;
-  },
-
-  closeCardAiVoice(cardId) {
-    const box = document.getElementById(`card-ai-box-${cardId}`);
-    if (box) {
-      box.innerHTML = '';
-      box.style.display = 'none';
-    }
-  },
-
-  async generateCardAiSpeech(cardId, packId, isProduction = false) {
-    const text = document.getElementById(`ai-text-input-card-${cardId}`)?.value.trim();
-    if (!text) return notice('Digite o texto antes de gerar.', 'error');
-
-    notice('Gerando fala com a voz do FEFO... aguarde...');
+    notice('Gerando áudio com a voz clonada do FEFO (IA)...');
     try {
       const res = await fetch('/api/ai/tts', {
         method: 'POST',
@@ -926,66 +885,87 @@ const CardPackManager = {
       if (window.AudioBlobDB) await window.AudioBlobDB.setAudio(cardId, audioBlob);
       const blobUrl = URL.createObjectURL(audioBlob);
 
-      const packsList = isProduction ? this.state.published : this.state.drafts;
-      const pack = packsList.find(p => p.id === packId);
-      const card = pack?.cards?.find(c => c.id === cardId);
       if (card) {
         card.audio_url = blobUrl;
-        card.descricao = text;
         card.tamanho_audio = audioBlob.size;
       }
 
       if (isProduction) CardPackStorage.savePublishedCardPacks(this.state.published);
       else CardPackStorage.saveCustomCardPacks(this.state.drafts);
 
-      const player = document.getElementById(`audio-player-card-${cardId}`);
-      if (player) player.src = blobUrl;
+      const player = document.getElementById(`audio-player-${cardId}`);
+      if (player) {
+        player.src = blobUrl;
+        player.load();
+      }
+
+      const mount = document.getElementById(`trimmer-mount-${cardId}`);
+      if (mount) mount.dataset.mounted = '';
 
       notice('✓ Áudio gerado por IA com sucesso e aplicado ao card!', 'ok');
-      this.closeCardAiVoice(cardId);
     } catch (e) {
       notice(`Aviso IA: ${e.message}`, 'error');
     }
   },
 
   // ==========================================================
-  // OPERAÇÕES DO PACOTE DE CARDS (TÍTULO, LICENÇAS, METADADOS)
+  // OPERAÇÕES E METADADOS DO PACOTE DE CARDS
   // ==========================================================
-  updatePackTitle(packId, newTitle) {
-    const pack = this.state.drafts.find(p => p.id === packId);
-    if (!pack) return;
-    pack.titulo = newTitle.trim();
-    const packIdx = this.state.drafts.findIndex(p => p.id === packId);
-    const headerTitle = document.getElementById(`cardpack-expanded-title-${packId}`);
-    if (headerTitle) {
-      headerTitle.textContent = `🃏 PACOTE DE CARDS ${String(packIdx + 1).padStart(2, '0')} - ${pack.titulo || 'Sem título'}`;
-    }
+  updateDraftPackageProperty(pkgId, prop, val) {
+    const pkg = (this.state.drafts || []).find(p => p.id === pkgId);
+    if (!pkg) return;
+    pkg[prop] = val;
     CardPackStorage.saveCustomCardPacks(this.state.drafts);
+    if (prop === 'titulo') {
+      const titleEl = document.getElementById(`cardpack-expanded-title-${pkgId}`);
+      if (titleEl) titleEl.textContent = val.trim() || 'Sem título';
+    }
   },
 
-  togglePackLicense(packId, licType) {
-    const pack = this.state.drafts.find(p => p.id === packId);
-    if (!pack) return;
-    pack.licencas = pack.licencas || ['home', 'clinical', 'escola'];
-    if (pack.licencas.includes(licType)) {
-      pack.licencas = pack.licencas.filter(l => l !== licType);
+  updateProductionPackageProperty(packId, prop, val) {
+    const pkg = (this.state.published || []).find(p => p.id === packId);
+    if (!pkg) return;
+    pkg[prop] = val;
+    CardPackStorage.savePublishedCardPacks(this.state.published);
+    if (prop === 'titulo') {
+      const titleEl = document.getElementById(`cardpack-prod-expanded-title-${packId}`);
+      if (titleEl) titleEl.textContent = val.trim() || 'Sem título';
+    }
+  },
+
+  toggleDraftLicense(pkgId, licKey) {
+    const pkg = (this.state.drafts || []).find(p => p.id === pkgId);
+    if (!pkg) return;
+    pkg.licencas = pkg.licencas || ['home', 'clinical', 'escola'];
+    if (pkg.licencas.includes(licKey)) {
+      pkg.licencas = pkg.licencas.filter(l => l !== licKey);
     } else {
-      pack.licencas.push(licType);
+      pkg.licencas.push(licKey);
     }
     CardPackStorage.saveCustomCardPacks(this.state.drafts);
   },
 
-  updateCardTitle(packId, cardId, val, isProduction = false) {
+  toggleDraftPremium(pkgId) {
+    const pkg = (this.state.drafts || []).find(p => p.id === pkgId);
+    if (!pkg) return;
+    pkg.is_premium = !pkg.is_premium;
+    CardPackStorage.saveCustomCardPacks(this.state.drafts);
+  },
+
+  updateCardItemTitle(packId, cardId, newTitle, isProduction = false) {
     const packsList = isProduction ? this.state.published : this.state.drafts;
     const pack = packsList.find(p => p.id === packId);
     const card = pack?.cards?.find(c => c.id === cardId);
     if (!card) return;
-    card.titulo = val.trim();
-    const headerTitle = document.getElementById(`card-header-title-${cardId}`);
-    if (headerTitle) headerTitle.textContent = card.titulo || 'Sem título';
-
+    card.titulo = newTitle.trim();
     if (isProduction) CardPackStorage.savePublishedCardPacks(this.state.published);
     else CardPackStorage.saveCustomCardPacks(this.state.drafts);
+
+    const headerTitle = document.getElementById(`card-header-title-${cardId}`);
+    if (headerTitle) {
+      const cIdx = (pack.cards || []).indexOf(card);
+      headerTitle.textContent = `CARD ${String(cIdx + 1).padStart(2, '0')}${card.titulo ? ' - ' + card.titulo : ''}`;
+    }
   },
 
   updateCardAction(packId, cardId, val, isProduction = false) {
@@ -1009,7 +989,7 @@ const CardPackManager = {
     if (isProduction) CardPackStorage.savePublishedCardPacks(this.state.published);
     else CardPackStorage.saveCustomCardPacks(this.state.drafts);
 
-    const badge = document.getElementById(`script-saved-card-${cardId}`);
+    const badge = document.getElementById(`script-saved-${cardId}`);
     if (badge) {
       badge.classList.add('visible');
       clearTimeout(this.state.debounceTimers[`badge_${cardId}`]);
@@ -1017,7 +997,13 @@ const CardPackManager = {
     }
   },
 
-  addNewCardItem(packId) {
+  saveSingleCardItem(packId, cardId, isProduction = false) {
+    if (isProduction) CardPackStorage.savePublishedCardPacks(this.state.published);
+    else CardPackStorage.saveCustomCardPacks(this.state.drafts);
+    notice('✓ Alterações do card salvas!', 'ok');
+  },
+
+  addNewEmptyCardItem(packId) {
     const pack = this.state.drafts.find(p => p.id === packId);
     if (!pack) return;
     pack.cards = pack.cards || [];
@@ -1026,7 +1012,7 @@ const CardPackManager = {
 
     const newCard = {
       id: `card_${Date.now() % 1000000}_${nextNum}`,
-      titulo: `Card ${nextNum}`,
+      titulo: `Novo Card ${nextNum}`,
       codigo_acao: nextCode,
       mini_card_img: '',
       audio_url: '',
@@ -1037,8 +1023,7 @@ const CardPackManager = {
     pack.cards.push(newCard);
     this.state.expandedCardIds.add(newCard.id);
     CardPackStorage.saveCustomCardPacks(this.state.drafts);
-    this.renderExpandedDraftPack();
-    this.renderDraftsGrid();
+    this.renderDraftExpandedPanel();
     notice('Novo card adicionado ao pacote!', 'ok');
   },
 
@@ -1050,8 +1035,7 @@ const CardPackManager = {
     this.state.expandedCardIds.delete(cardId);
     CardPackStorage.addDeletedCardId(cardId);
     CardPackStorage.saveCustomCardPacks(this.state.drafts);
-    this.renderExpandedDraftPack();
-    this.renderDraftsGrid();
+    this.renderDraftExpandedPanel();
     notice('Card excluído.', 'ok');
   },
 
@@ -1070,14 +1054,14 @@ const CardPackManager = {
     };
 
     this.state.drafts.unshift(newPack);
-    this.state.expandedPackId = newPack.id;
+    this.state.expandedDraftId = newPack.id;
     CardPackStorage.saveCustomCardPacks(this.state.drafts);
     this.renderDraftsGrid();
 
     setTimeout(() => {
-      document.getElementById('card-pack-inline-drawer')?.scrollIntoView?.({ behavior: 'smooth', block: 'nearest' });
-      document.getElementById(`cardpack-title-input-${newPack.id}`)?.focus();
-      document.getElementById(`cardpack-title-input-${newPack.id}`)?.select();
+      document.getElementById(`pkg-acc-draft-${newPack.id}`)?.scrollIntoView?.({ behavior: 'smooth', block: 'nearest' });
+      document.getElementById(`draft-title-input-${newPack.id}`)?.focus();
+      document.getElementById(`draft-title-input-${newPack.id}`)?.select();
     }, 100);
   },
 
@@ -1088,7 +1072,7 @@ const CardPackManager = {
     const pack = this.state.drafts.find(p => p.id === packId);
     if (!pack) return;
 
-    const titleInput = document.getElementById(`cardpack-title-input-${packId}`);
+    const titleInput = document.getElementById(`draft-title-input-${packId}`);
     if (titleInput && titleInput.value.trim()) {
       pack.titulo = titleInput.value.trim();
     }
@@ -1096,7 +1080,7 @@ const CardPackManager = {
     CardPackStorage.saveCustomCardPacks(this.state.drafts);
     notice('Salvando pacote de cards...');
 
-    // 1. Tenta API do servidor Python local
+    // 1. Tenta API do servidor local
     let savedOnBackend = false;
     try {
       const res = await fetch('/api/card_packs/save', {
@@ -1135,8 +1119,8 @@ const CardPackManager = {
     if (!confirm('Tem certeza que deseja excluir este pacote de cards?')) return;
 
     this.state.drafts = this.state.drafts.filter(p => p.id !== packId);
-    if (this.state.expandedPackId === packId) {
-      this.state.expandedPackId = null;
+    if (this.state.expandedDraftId === packId) {
+      this.state.expandedDraftId = null;
     }
 
     CardPackStorage.addDeletedPackId(packId);
@@ -1181,21 +1165,21 @@ const CardPackManager = {
         if (data.ok) {
           publishedLocally = true;
           notice(data.message || 'Pacote de cards publicado!', 'ok');
-          this.state.expandedPackId = null;
+          this.state.expandedDraftId = null;
           await this.loadCardPacks();
           return;
         }
       }
     } catch (err) {}
 
-    // 2. Se a API local estiver offline, publica diretamente pelo GitHub REST API!
+    // 2. Se offline, publica via GitHub REST API!
     if (window.GitHubSync && window.GitHubSync.isConfigured()) {
       try {
         const ghRes = await window.GitHubSync.publishOfficialCardPack(pack, (msg) => {
           notice(msg, '');
         });
         notice(ghRes.message, 'ok');
-        this.state.expandedPackId = null;
+        this.state.expandedDraftId = null;
         await this.loadCardPacks();
       } catch (ghErr) {
         notice(`Erro na publicação via GitHub: ${ghErr.message}`, 'error');
@@ -1207,7 +1191,7 @@ const CardPackManager = {
   },
 
   // ==========================================================
-  // PACOTES DE CARDS PUBLICADOS (PRODUÇÃO)
+  // SEÇÃO 2: PACOTES DE CARDS PUBLICADOS (PRODUÇÃO)
   // ==========================================================
   renderPublishedGrid() {
     const grid = document.getElementById('published-card-packs-grid');
@@ -1215,35 +1199,30 @@ const CardPackManager = {
 
     if (!this.state.published.length) {
       grid.innerHTML = `<div class="empty">Nenhum pacote de cards oficial publicado ainda.</div>`;
-      this.renderExpandedPublishedPack();
+      this.renderProductionExpandedPanel();
       return;
     }
 
-    grid.innerHTML = this.state.published.map((pack, idx) => {
-      const isExpanded = this.state.expandedProductionId === pack.id;
-      const count = (pack.cards || []).length;
-      const packNumStr = `PACOTE ${String(idx + 1).padStart(2, '0')}`;
+    grid.innerHTML = this.state.published.map((pkg, idx) => {
+      const isExpanded = this.state.expandedProductionId === pkg.id;
+      const numLabel = `PACOTE DE CARDS ${idx + 1}${pkg.titulo ? ` - ${this.escapeHtml(pkg.titulo)}` : ''}`;
 
       return `
-        <div class="pkg-collapsed-bar published-bar ${isExpanded ? 'is-active' : ''}" 
-             onclick="CardPackManager.togglePublishedCardPack('${pack.id}')">
-          <div class="pkg-bar-left">
-            <span class="pkg-bar-num">🃏 ${packNumStr}</span>
-            <span class="pkg-bar-title">${this.escapeHtml(pack.titulo || 'Sem título')}</span>
-            <span class="pkg-bar-tag">${count} CARDS</span>
-            <span class="pkg-badge published" style="margin: 0;">🟢 OFICIAL</span>
-          </div>
-          <div class="pkg-bar-right">
-            <span class="pkg-arrow">${isExpanded ? '▲' : '▼'}</span>
-          </div>
+        <div class="pkg-accordion-wrapper" id="pkg-acc-prod-${pkg.id}">
+          ${!isExpanded ? `
+            <div class="pkg-collapsed-bar published-bar" onclick="CardPackManager.toggleProductionPackage('${pkg.id}')">
+              <span>${numLabel}</span>
+            </div>
+          ` : ''}
+          <div class="package-drawer-wrapper" id="drawer-wrap-prod-${pkg.id}" style="${isExpanded ? 'display:block;' : 'display:none;'}"></div>
         </div>
       `;
     }).join('');
 
-    this.renderExpandedPublishedPack();
+    this.renderProductionExpandedPanel();
   },
 
-  togglePublishedCardPack(packId) {
+  toggleProductionPackage(packId) {
     if (this.state.expandedProductionId === packId) {
       this.state.expandedProductionId = null;
     } else {
@@ -1253,49 +1232,101 @@ const CardPackManager = {
 
     if (this.state.expandedProductionId) {
       setTimeout(() => {
-        document.getElementById('published-card-pack-inline-drawer')?.scrollIntoView?.({ behavior: 'smooth', block: 'nearest' });
+        document.getElementById(`pkg-acc-prod-${packId}`)?.scrollIntoView?.({ behavior: 'smooth', block: 'nearest' });
       }, 50);
     }
   },
 
-  renderExpandedPublishedPack() {
-    const drawer = document.getElementById('published-card-pack-inline-drawer');
+  renderProductionExpandedPanel() {
+    (this.state.published || []).forEach(p => {
+      const el = document.getElementById(`drawer-wrap-prod-${p.id}`);
+      if (el && p.id !== this.state.expandedProductionId) {
+        el.innerHTML = '';
+        el.style.display = 'none';
+      }
+    });
+
+    if (!this.state.expandedProductionId) return;
+
+    const drawer = document.getElementById(`drawer-wrap-prod-${this.state.expandedProductionId}`);
     if (!drawer) return;
 
-    if (!this.state.expandedProductionId) {
-      drawer.innerHTML = '';
-      drawer.style.display = 'none';
-      return;
-    }
-
-    const pack = this.state.published.find(p => p.id === this.state.expandedProductionId);
-    if (!pack) {
+    const pkgIdx = (this.state.published || []).findIndex(p => p.id === this.state.expandedProductionId);
+    const pkg = (this.state.published || [])[pkgIdx];
+    if (!pkg) {
       drawer.style.display = 'none';
       return;
     }
 
     drawer.style.display = 'block';
-    const cards = pack.cards || [];
+    const cards = pkg.cards || [];
+    const hasHome = (pkg.licencas || ['home', 'clinical', 'escola']).includes('home');
+    const hasClinical = (pkg.licencas || ['home', 'clinical', 'escola']).includes('clinical');
+    const hasEscola = (pkg.licencas || ['home', 'clinical', 'escola']).includes('escola');
 
     drawer.innerHTML = `
-      <div class="pkg-expanded-card published-card" style="border: 2px solid #10b981;">
+      <div class="pkg-expanded-card published-card" id="pkg-card-prod-${pkg.id}">
+        <!-- Linha Superior -->
         <div class="pkg-expanded-top">
           <div class="pkg-expanded-left">
-            <div class="pkg-expanded-num" style="color: #065f46;">
-              🃏 PACOTE OFICIAL ATIVO - ${this.escapeHtml(pack.titulo)}
+            <div class="pkg-expanded-num" id="cardpack-prod-expanded-title-${pkg.id}">
+              ${this.escapeHtml(pkg.titulo || `PACOTE DE CARDS ${pkgIdx + 1}`)}
             </div>
-            <label class="pkg-expanded-label">Nome do Pacote Oficial</label>
-            <input type="text" class="pkg-input-pill" value="${this.escapeHtml(pack.titulo)}" readonly style="background: #f1f5f9;">
+            <label class="pkg-expanded-label">Alterar nome do Pacote de Cards</label>
+            <input type="text" class="pkg-input-pill" id="prod-title-input-${pkg.id}" 
+                   value="${this.escapeHtml(pkg.titulo)}" 
+                   placeholder="Nome exemplo..." 
+                   oninput="CardPackManager.updateProductionPackageProperty('${pkg.id}', 'titulo', this.value)">
+
+            <!-- 3 Botões de Ação -->
+            <div class="pkg-action-pills-row">
+              <button type="button" class="btn-pkg-action blue" onclick="notice('Pacote já publicado oficialmente no catálogo.', 'ok')">
+                Publicado
+              </button>
+              <button type="button" class="btn-pkg-action red" onclick="CardPackManager.deleteCardPack('${pkg.id}')">
+                Excluir
+              </button>
+              <button type="button" class="btn-pkg-action green" onclick="CardPackManager.saveCardPackDetails('${pkg.id}')">
+                Salvar
+              </button>
+            </div>
+          </div>
+
+          <div class="pkg-lic-section">
+            <div class="pkg-lic-title">Licenças</div>
+            <div class="pkg-lic-box">
+              <label class="pkg-lic-item">
+                <input type="checkbox" ${hasHome ? 'checked' : ''} disabled>
+                <span class="lic-icon">🏠</span>
+                <span class="lic-name">Home</span>
+              </label>
+              <label class="pkg-lic-item">
+                <input type="checkbox" ${hasClinical ? 'checked' : ''} disabled>
+                <span class="lic-icon">🏠</span>
+                <span class="lic-name">Clinica</span>
+              </label>
+              <label class="pkg-lic-item">
+                <input type="checkbox" ${hasEscola ? 'checked' : ''} disabled>
+                <span class="lic-icon">🏠</span>
+                <span class="lic-name">Escola</span>
+              </label>
+              <label class="pkg-lic-item">
+                <input type="checkbox" ${pkg.is_premium ? 'checked' : ''} disabled>
+                <span class="lic-icon">🏠</span>
+                <span class="lic-name">Premium</span>
+              </label>
+            </div>
           </div>
         </div>
 
-        <div style="margin-top: 20px;">
-          <h4 style="margin: 0 0 12px; font-size: 14px; font-weight: 800; color: #1e293b; text-transform: uppercase;">
-            Cards Ativos no Catálogo Oficial (${cards.length})
-          </h4>
-          <div class="faixas-accordion-list">
-            ${cards.map((c, idx) => this.renderCardAccordionItem(pack.id, c, idx, true)).join('')}
-          </div>
+        <!-- Lista de Cards Oficiais -->
+        <div class="pkg-tracks-section">
+          ${cards.map((c, cIdx) => this.renderCardItem(pkg.id, c, cIdx, true)).join('')}
+        </div>
+
+        <!-- Seta central de recolhimento no fundo do card -->
+        <div class="pkg-collapse-arrow-btn green" title="Recolher pacote" onclick="CardPackManager.toggleProductionPackage('${pkg.id}')">
+          ▲
         </div>
       </div>
     `;
