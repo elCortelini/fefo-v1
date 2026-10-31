@@ -400,8 +400,10 @@ const GitHubSync = {
     );
   },
 
-  async publishOfficialCardPack(pack) {
+  async publishOfficialCardPack(pack, onProgress = () => {}) {
     if (!this.isConfigured()) throw new Error('Token do GitHub não configurado.');
+    
+    onProgress('Lendo catálogo oficial do GitHub...');
     const catFile = await this.getFile('repository/catalog.json');
     if (!catFile.exists || !catFile.content) {
       throw new Error('Não foi possível ler o repository/catalog.json no GitHub.');
@@ -409,13 +411,60 @@ const GitHubSync = {
 
     let catalog = JSON.parse(catFile.content);
     catalog.card_packs = catalog.card_packs || [];
+    const cards = pack.cards || [];
+
+    for (let i = 0; i < cards.length; i++) {
+      const c = cards[i];
+      const cCode = c.codigo_acao || c.id || `c${String(i + 1).padStart(4, '0')}`;
+      onProgress(`Processando card ${i + 1}/${cards.length}: “${c.titulo || cCode}”...`);
+
+      // 1. Upload da imagem se houver blob no IndexedDB
+      if (window.CardImageDB) {
+        const imgBlob = await window.CardImageDB.getImage(c.id);
+        if (imgBlob) {
+          onProgress(`Enviando imagem do card ${cCode}...`);
+          const imgBytes = await imgBlob.arrayBuffer();
+          const base64Img = this.arrayBufferToBase64(imgBytes);
+          const imgFileName = `${cCode}.jpg`;
+          await this.commitFile(
+            `repository/cards/${imgFileName}`,
+            base64Img,
+            `feat(cards): upload imagem ${imgFileName} via Web Admin`,
+            true
+          );
+          c.mini_card_img = `/repository/cards/${imgFileName}`;
+        }
+      }
+
+      // 2. Upload do áudio se houver blob no IndexedDB
+      if (window.AudioBlobDB) {
+        const audioBlob = await window.AudioBlobDB.getAudio(c.id);
+        if (audioBlob) {
+          onProgress(`Enviando áudio do card ${cCode}...`);
+          const audBytes = await audioBlob.arrayBuffer();
+          const base64Aud = this.arrayBufferToBase64(audBytes);
+          const audFileName = c.arquivo_audio || `${cCode}.wav`;
+          await this.commitFile(
+            `repository/audio/${audFileName}`,
+            base64Aud,
+            `feat(audio): upload audio card ${audFileName} via Web Admin`,
+            true
+          );
+          c.arquivo_audio = audFileName;
+          c.audio_url = `/repository/audio/${audFileName}`;
+          c.tamanho_audio = audBytes.byteLength;
+        }
+      }
+    }
 
     const publishedPack = {
       id: pack.id,
       titulo: pack.titulo,
       descricao: pack.descricao || '',
+      licencas: pack.licencas || ['home', 'clinical', 'escola'],
+      is_premium: Boolean(pack.is_premium),
       status: 'published',
-      cards: pack.cards || []
+      cards: cards
     };
 
     const idx = catalog.card_packs.findIndex(p => p.id === pack.id);
@@ -429,6 +478,7 @@ const GitHubSync = {
     catalog.catalogVersion = newVersion;
     catalog.updated_at = new Date().toISOString();
 
+    onProgress(`Atualizando catalog.json para versão v${newVersion}...`);
     await this.commitFile(
       'repository/catalog.json',
       JSON.stringify(catalog, null, 2) + '\n',
@@ -436,6 +486,7 @@ const GitHubSync = {
     );
 
     // Atualiza draft_card_packs.json
+    onProgress('Atualizando rascunhos de cards...');
     try {
       const draftsFile = await this.getFile('repository/draft_card_packs.json');
       if (draftsFile.exists && draftsFile.content) {

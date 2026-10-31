@@ -183,3 +183,148 @@
 .main-tab-content.active {
   display: block;
 }
+
+
+/* ==========================================================
+   NOVO ESPAÇO PARA UPLOAD DA IMAGEM DO CARD (PROPORÇÃO 3:4)
+   ========================================================== */
+.card-flex-row {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+@media (max-width: 640px) {
+  .card-flex-row {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+.card-upload-area {
+  width: 130px;
+  height: 175px;
+  border-radius: 14px;
+  border: 2px dashed #cbd5e1;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.card-upload-area:hover {
+  border-color: #6366f1;
+  background: #f5f3ff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.15);
+}
+
+.card-upload-area.has-image {
+  border-style: solid;
+  border-color: #cbd5e1;
+  background: #ffffff;
+}
+
+.card-upload-area.drag-over {
+  border-color: #10b981;
+  background: #ecfdf5;
+  transform: scale(1.02);
+}
+
+.card-upload-area img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 12px;
+}
+
+.card-upload-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.72);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.card-upload-area:hover .card-upload-overlay {
+  opacity: 1;
+}
+
+.btn-card-img-action {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s ease, filter 0.15s ease;
+  width: 100%;
+  max-width: 105px;
+}
+
+.btn-card-img-action:hover {
+  transform: scale(1.04);
+  filter: brightness(1.05);
+}
+
+.btn-card-img-action.change {
+  background: #ffffff;
+  color: #1e293b;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.btn-card-img-action.remove {
+  background: #ef4444;
+  color: #ffffff;
+}
+
+.card-upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px;
+}
+
+.card-upload-placeholder .icon {
+  font-size: 34px;
+  line-height: 1;
+}
+
+.card-upload-placeholder .text-main {
+  font-size: 11px;
+  font-weight: 800;
+  color: #334155;
+  line-height: 1.2;
+}
+
+.card-upload-placeholder .text-sub {
+  font-size: 10px;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.card-fields-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}

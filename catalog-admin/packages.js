@@ -63,6 +63,7 @@ const AudioBlobDB = {
     } catch (e) {}
   }
 };
+window.AudioBlobDB = AudioBlobDB;
 
 // ==========================================================
 // 2. PERSISTÊNCIA LOCAL (LOCALSTORAGE)
@@ -131,6 +132,7 @@ const PkgStorage = {
     } catch (e) {}
   }
 };
+window.AudioBlobDB = AudioBlobDB;
 
 // ==========================================================
 // 3. GERENCIADOR PRINCIPAL (PKGMANAGER)
