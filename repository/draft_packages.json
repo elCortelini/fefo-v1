@@ -1,8 +1,36 @@
 {
   "schema": 1,
   "description": "FEFO Content Draft Packages - Grade Completa Pedagógica Unificada com Áudios Vinculados",
-  "updated_at": "2026-10-29T14:55:00Z",
+  "updated_at": "2026-10-31T17:51:43.818Z",
   "packages": [
+    {
+      "id": "pkg_59122",
+      "titulo": "teste de pacote",
+      "descricao": "",
+      "target_count": 10,
+      "categoria": "Contos",
+      "licencas": [
+        "home",
+        "clinical",
+        "escola"
+      ],
+      "is_premium": false,
+      "status": "draft",
+      "items": [
+        {
+          "id": "it_71965_1",
+          "titulo": "Nova Faixa 1",
+          "descricao": "",
+          "arquivo_fefo": "a0008.wav",
+          "arquivo_origem": "fefo fefo fefo.mp3",
+          "web_url": "blob:https://fefoplaneta.com.br/30d6f8f2-67c9-4cc8-b5c1-d3868d9b261d",
+          "status": "needs_trim",
+          "tamanho": 51885,
+          "arquivo": "/usr/a/a0008.wav"
+        }
+      ],
+      "updated_at": "2026-10-31T17:51:43.815Z"
+    },
     {
       "id": "pkg_desafio_e_brincadeiras_desafios",
       "titulo": "Desafio e Brincadeiras - desafios",
@@ -249,11 +277,12 @@
           "descricao": "\"Oi! você já parou para pensar no seu corpo? Ele é incrível né?! Voce Tem braços, pernas, uma cabeça e muito mais. Voce sabe se merxer ? pular? dar abraços ? O FÊFO quer saber como você se sente quando voce faz tudo isso!\"",
           "localizacao": "/cp/",
           "arquivo_origem": "meu corpo 1 a 12.mp3",
-          "web_url": "/repository/drafts/audio/pkg_meu_corpo/cp1_cortado.wav",
+          "web_url": "blob:https://fefoplaneta.com.br/8c54b399-8a67-44e8-8c44-cc3c0e36103e",
           "status": "ready",
           "arquivo_draft": "repository/drafts/audio/pkg_meu_corpo/cp1_cortado.wav",
           "tamanho": 1001114,
-          "arquivo_fefo": "a0053.wav"
+          "arquivo_fefo": "a0053.wav",
+          "has_custom_audio": true
         },
         {
           "id": "pkg_meu_corpo_a0054",
@@ -1949,9 +1978,10 @@
           "descricao": "\"Voce sabia?  Os gatos são especiais. Eles podem ver bem no escuro, o que os ajuda a enxergar no meio da noite! Eles são muito espertos!, eles tambem são bem independentes e adoram dormir. Eles também são caçadores super habilidosos, mesmo dentro de casa!\"",
           "localizacao": "/an/",
           "arquivo_origem": "a0023.wav",
-          "web_url": "/repository/audio/a0023.wav",
+          "web_url": "blob:https://fefoplaneta.com.br/a394dca1-4ab3-4aae-bc3b-558e994259ec",
           "status": "published",
-          "arquivo_fefo": "a0181.wav"
+          "arquivo_fefo": "a0181.wav",
+          "has_custom_audio": true
         },
         {
           "id": "pkg_conhecendo_os_animais_gato_a0182",
