@@ -1162,6 +1162,7 @@ const PkgManager = {
     const pkg = (this.state.drafts || []).find(p => p.id === pkgId);
     if (!pkg) return;
 
+    // 1. Captura títulos e valores atuais do DOM
     const titleInput = document.getElementById(`draft-title-input-${pkgId}`) || document.getElementById('draft-input-title');
     if (titleInput && titleInput.value.trim()) {
       pkg.titulo = titleInput.value.trim();
@@ -1171,7 +1172,6 @@ const PkgManager = {
     const targetInput = document.getElementById('draft-input-target');
     if (targetInput) pkg.target_count = parseInt(targetInput.value, 10) || 10;
 
-    // Captura valores dos campos de cada faixa deste pacote presentes no DOM
     const drawer = document.getElementById(`drawer-wrap-draft-${pkgId}`);
     if (drawer) {
       (pkg.items || []).forEach(it => {
@@ -1193,22 +1193,37 @@ const PkgManager = {
     }
 
     pkg.updated_at = new Date().toISOString();
-    PkgStorage.saveAllDrafts(this.state.drafts);
-    notice('Salvando alterações do pacote...');
 
+    // 2. Upload de áudios no GitHub com Barra de Carregamento
     if (window.GitHubSync && window.GitHubSync.isConfigured()) {
-      notice('☁️ Enviando alterações diretamente para o GitHub...');
+      window.GitHubSync.showProgressModal(
+        'Sincronizando com o Repositório',
+        `Enviando áudios do pacote “${pkg.titulo}” para o GitHub...`
+      );
+
       try {
+        const syncResult = await window.GitHubSync.syncPackageAudios(pkg, (pct, item, detail) => {
+          window.GitHubSync.updateProgress(pct, item, detail);
+        });
+
+        window.GitHubSync.updateProgress(90, 'Atualizando lista no GitHub...', 'Gravando draft_packages.json');
         await window.GitHubSync.saveDraftPackages(this.state.drafts);
-        notice('✓ Pacote salvo com sucesso no GitHub e localmente!', 'ok');
+
+        window.GitHubSync.updateProgress(100, '✓ Concluído com sucesso!', `${syncResult.uploaded} áudio(s) atualizados no repositório.`);
+        window.GitHubSync.hideProgressModal(1200);
+
+        notice(`✓ Pacote salvo! ${syncResult.uploaded} áudio(s) atualizados no repositório GitHub.`, 'ok');
       } catch (ghErr) {
-        console.warn('Erro ao salvar no GitHub:', ghErr);
+        console.warn('Erro ao enviar áudios ao GitHub:', ghErr);
+        window.GitHubSync.updateProgress(100, '⚠️ Salvo localmente', `Falha no GitHub: ${ghErr.message}`);
+        window.GitHubSync.hideProgressModal(2200);
         notice(`✓ Salvo localmente! Falha no GitHub (${ghErr.message})`, 'error');
       }
     } else {
-      notice('✓ Pacote salvo localmente no navegador! (Conecte o GitHub no topo para sincronizar entre PCs)', 'ok');
+      notice('✓ Pacote salvo localmente no navegador!', 'ok');
     }
 
+    PkgStorage.saveAllDrafts(this.state.drafts);
     this.renderDraftsGrid();
   },
 

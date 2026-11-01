@@ -158,7 +158,20 @@ const CardPackManager = {
 
   resolveUrl(url) {
     if (!url) return '';
-    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('blob:')) return url;
+    if (url.startsWith('blob:') || url.startsWith('data:')) return url;
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+
+    const repo = window.GitHubSync ? window.GitHubSync.getRepo() : 'elCortelini/fefo-v1';
+    const branch = window.GitHubSync ? window.GitHubSync.getBranch() : 'main';
+
+    if (location.hostname.includes('github.io') || (!['localhost', '127.0.0.1'].includes(location.hostname) && location.protocol.startsWith('http'))) {
+      const fileName = url.split('/').pop();
+      if (url.includes('repository/cards/') || url.includes('/cards/')) {
+        return `https://raw.githubusercontent.com/${repo}/${branch}/repository/cards/${fileName}`;
+      }
+      return `https://raw.githubusercontent.com/${repo}/${branch}/repository/audio/${fileName}`;
+    }
+
     if (url.startsWith('/')) return `..${url}`;
     return url;
   },
@@ -1085,7 +1098,6 @@ const CardPackManager = {
       pack.titulo = titleInput.value.trim();
     }
 
-    // Captura valores dos campos de cada card presentes no DOM
     const drawer = document.getElementById(`drawer-wrap-draft-${packId}`);
     if (drawer) {
       (pack.cards || []).forEach(c => {
@@ -1102,22 +1114,36 @@ const CardPackManager = {
     }
 
     pack.updated_at = new Date().toISOString();
-    CardPackStorage.saveCustomCardPacks(this.state.drafts);
-    notice('Salvando pacote de cards...');
 
     if (window.GitHubSync && window.GitHubSync.isConfigured()) {
-      notice('☁️ Salvando pacote de cards diretamente no GitHub...');
+      window.GitHubSync.showProgressModal(
+        'Sincronizando Pacote de Cards',
+        `Enviando imagens e áudios de “${pack.titulo}” para o repositório...`
+      );
+
       try {
+        const syncResult = await window.GitHubSync.syncCardPackAssets(pack, (pct, item, detail) => {
+          window.GitHubSync.updateProgress(pct, item, detail);
+        });
+
+        window.GitHubSync.updateProgress(90, 'Atualizando lista no GitHub...', 'Gravando draft_card_packs.json');
         await window.GitHubSync.saveDraftCardPacks(this.state.drafts);
-        notice('✓ Pacote de cards salvo com sucesso no GitHub e localmente!', 'ok');
+
+        window.GitHubSync.updateProgress(100, '✓ Concluído com sucesso!', `${syncResult.uploadedAudios} áudio(s) e ${syncResult.uploadedImages} imagem(ns) no repositório.`);
+        window.GitHubSync.hideProgressModal(1200);
+
+        notice(`✓ Pacote de cards salvo! ${syncResult.uploadedAudios} áudio(s) e ${syncResult.uploadedImages} imagem(ns) enviados ao repositório.`, 'ok');
       } catch (ghErr) {
-        console.warn('Erro ao salvar no GitHub:', ghErr);
+        console.warn('Erro ao sincronizar cards no GitHub:', ghErr);
+        window.GitHubSync.updateProgress(100, '⚠️ Salvo localmente', `Falha no GitHub: ${ghErr.message}`);
+        window.GitHubSync.hideProgressModal(2200);
         notice(`✓ Salvo localmente! Falha no GitHub (${ghErr.message})`, 'error');
       }
     } else {
-      notice('✓ Pacote de cards salvo localmente no navegador! (Conecte o GitHub no topo para sincronizar entre PCs)', 'ok');
+      notice('✓ Pacote de cards salvo localmente no navegador!', 'ok');
     }
 
+    CardPackStorage.saveCustomCardPacks(this.state.drafts);
     this.renderDraftsGrid();
   },
 

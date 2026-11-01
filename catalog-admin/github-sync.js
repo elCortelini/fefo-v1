@@ -269,6 +269,138 @@ const GitHubSync = {
    * 2. Atualiza repository/catalog.json (adiciona itens, incrementa versão, atualiza timestamp)
    * 3. Atualiza repository/draft_packages.json (marca como publicado)
    */
+  /**
+   * Sincroniza e envia todos os áudios locais (IndexedDB) deste pacote para repository/audio/ no GitHub.
+   * Atualiza web_url para o endereço definitivo do repositório.
+   */
+  async syncPackageAudios(pkg, onProgress = () => {}) {
+    if (!this.isConfigured()) return { uploaded: 0, total: 0 };
+    const items = pkg.items || [];
+    if (!items.length) return { uploaded: 0, total: 0 };
+
+    let uploadedCount = 0;
+    const totalItems = items.length;
+
+    for (let i = 0; i < totalItems; i++) {
+      const it = items[i];
+      const basePct = Math.round((i / totalItems) * 85);
+      onProgress(basePct, `Verificando áudio ${i + 1} de ${totalItems}...`, it.titulo || it.arquivo_fefo || `Faixa ${i + 1}`);
+
+      let blob = null;
+      if (window.AudioBlobDB) {
+        blob = await window.AudioBlobDB.getAudio(it.id);
+      }
+
+      if (!it.arquivo_fefo || !it.arquivo_fefo.endsWith('.wav')) {
+        it.arquivo_fefo = `a${String(i + 1).padStart(4, '0')}.wav`;
+      }
+      it.arquivo = `/usr/a/${it.arquivo_fefo}`;
+
+      if (blob) {
+        const audioBytes = await blob.arrayBuffer();
+        const fileSize = audioBytes.byteLength;
+        const checksum = await this.calculateSha256(audioBytes);
+
+        const needsUpload = !it.checksum || it.checksum !== checksum || (it.web_url && it.web_url.startsWith('blob:'));
+
+        if (needsUpload) {
+          const kb = Math.round(fileSize / 1024);
+          onProgress(
+            basePct + 5,
+            `Enviando áudio ao repositório (${i + 1}/${totalItems})`,
+            `Upload: ${it.arquivo_fefo} (${kb} KB) - ${it.titulo || ''}`
+          );
+
+          const base64Audio = this.arrayBufferToBase64(audioBytes);
+          await this.commitFile(
+            `repository/audio/${it.arquivo_fefo}`,
+            base64Audio,
+            `feat(audio): salvar ${it.arquivo_fefo} do pacote “${pkg.titulo}” no repositório`,
+            true
+          );
+
+          it.checksum = checksum;
+          it.tamanho = fileSize;
+          it.web_url = `../repository/audio/${it.arquivo_fefo}`;
+          delete it.has_custom_audio;
+          uploadedCount++;
+        }
+      } else {
+        if (!it.web_url || it.web_url.startsWith('blob:')) {
+          it.web_url = `../repository/audio/${it.arquivo_fefo}`;
+        }
+      }
+    }
+
+    return { uploaded: uploadedCount, total: totalItems };
+  },
+
+  /**
+   * Sincroniza e envia imagens e áudios locais deste pacote de cards para o GitHub.
+   */
+  async syncCardPackAssets(pack, onProgress = () => {}) {
+    if (!this.isConfigured()) return { uploadedAudios: 0, uploadedImages: 0, total: 0 };
+    const cards = pack.cards || [];
+    if (!cards.length) return { uploadedAudios: 0, uploadedImages: 0, total: 0 };
+
+    let uploadedAudios = 0;
+    let uploadedImages = 0;
+    const totalCards = cards.length;
+
+    for (let i = 0; i < totalCards; i++) {
+      const c = cards[i];
+      const cCode = c.codigo_acao || c.id || `c${String(i + 1).padStart(4, '0')}`;
+      const basePct = Math.round((i / totalCards) * 85);
+
+      // 1. Upload de Imagem do Card
+      if (window.CardImageDB) {
+        const imgBlob = await window.CardImageDB.getImage(c.id);
+        if (imgBlob && (!c.mini_card_img || c.mini_card_img.startsWith('blob:') || !c.mini_card_img.includes('/repository/cards/'))) {
+          onProgress(basePct, `Enviando imagem do card (${i + 1}/${totalCards})`, `Imagem: ${cCode}.jpg`);
+          const imgBytes = await imgBlob.arrayBuffer();
+          const base64Img = this.arrayBufferToBase64(imgBytes);
+          const imgFileName = `${cCode}.jpg`;
+          await this.commitFile(
+            `repository/cards/${imgFileName}`,
+            base64Img,
+            `feat(cards): salvar imagem ${imgFileName} via Web Admin`,
+            true
+          );
+          c.mini_card_img = `/repository/cards/${imgFileName}`;
+          uploadedImages++;
+        }
+      }
+
+      // 2. Upload de Áudio do Card
+      if (window.AudioBlobDB) {
+        const audioBlob = await window.AudioBlobDB.getAudio(c.id);
+        if (audioBlob && (!c.audio_url || c.audio_url.startsWith('blob:') || !c.audio_url.includes('/repository/audio/'))) {
+          onProgress(basePct + 4, `Enviando áudio do card (${i + 1}/${totalCards})`, `Áudio: ${cCode}.wav`);
+          const audBytes = await audioBlob.arrayBuffer();
+          const base64Aud = this.arrayBufferToBase64(audBytes);
+          const audFileName = c.arquivo_audio || `${cCode}.wav`;
+          await this.commitFile(
+            `repository/audio/${audFileName}`,
+            base64Aud,
+            `feat(audio): salvar áudio card ${audFileName} via Web Admin`,
+            true
+          );
+          c.arquivo_audio = audFileName;
+          c.audio_url = `../repository/audio/${audFileName}`;
+          c.tamanho_audio = audBytes.byteLength;
+          uploadedAudios++;
+        }
+      }
+
+      if (!c.audio_url || c.audio_url.startsWith('blob:')) {
+        const audFileName = c.arquivo_audio || `${cCode}.wav`;
+        c.audio_url = `../repository/audio/${audFileName}`;
+      }
+    }
+
+    return { uploadedAudios, uploadedImages, total: totalCards };
+  },
+
   async publishOfficialMenu(pkg, onProgress = () => {}) {
     if (!this.isConfigured()) throw new Error('Token do GitHub não configurado.');
 
@@ -597,6 +729,91 @@ const GitHubSync = {
     } catch (e) {
       if (window.notice) window.notice(`Erro ao sincronizar: ${e.message}`, 'error');
     }
+  },
+
+  // ==========================================================
+  // BARRA DE CARREGAMENTO / PROGRESSO NO REPOSITÓRIO
+  // ==========================================================
+  injectProgressModal() {
+    if (document.getElementById('modal-repo-progress')) return;
+
+    const modal = document.createElement('div');
+    modal.id = 'modal-repo-progress';
+    modal.className = 'audio-trimmer-backdrop';
+    modal.style.cssText = 'display: none; z-index: 99999; align-items: center; justify-content: center;';
+    modal.innerHTML = `
+      <div class="audio-trimmer-container" style="max-width: 500px; width: 90%; background: #ffffff; color: #0f172a; border: 2.5px solid #2563eb; border-radius: 20px; padding: 28px 24px; box-shadow: 0 25px 60px rgba(0,0,0,0.35); text-align: center;">
+        
+        <div style="display: inline-flex; align-items: center; justify-content: center; width: 60px; height: 60px; border-radius: 50%; background: #eff6ff; color: #2563eb; font-size: 28px; margin-bottom: 14px; box-shadow: 0 4px 12px rgba(37,99,235,0.18);">
+          ☁️
+        </div>
+
+        <h3 id="repo-progress-title" style="margin: 0 0 6px; font-size: 19px; font-weight: 900; color: #0f172a;">
+          Sincronizando com o Repositório
+        </h3>
+
+        <p id="repo-progress-sub" style="margin: 0 0 20px; font-size: 13px; color: #64748b; line-height: 1.4;">
+          Enviando arquivos e atualizando o repositório GitHub para acesso de todos os PCs...
+        </p>
+
+        <!-- Barra de Progresso Externa -->
+        <div style="background: #e2e8f0; border-radius: 999px; height: 16px; width: 100%; overflow: hidden; position: relative; margin-bottom: 12px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);">
+          <div id="repo-progress-bar" style="background: linear-gradient(90deg, #2563eb, #10b981); height: 100%; width: 0%; border-radius: 999px; transition: width 0.3s ease;"></div>
+        </div>
+
+        <!-- Porcentagem e Status Atual -->
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12.5px; font-weight: 700; color: #334155; margin-bottom: 8px;">
+          <span id="repo-progress-item">Iniciando envio...</span>
+          <span id="repo-progress-pct" style="color: #2563eb; font-weight: 900;">0%</span>
+        </div>
+
+        <div id="repo-progress-detail" style="font-size: 11.5px; color: #64748b; font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 18px;">
+          Aguardando...
+        </div>
+
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+  },
+
+  showProgressModal(title, subTitle) {
+    this.injectProgressModal();
+    const modal = document.getElementById('modal-repo-progress');
+    const titleEl = document.getElementById('repo-progress-title');
+    const subEl = document.getElementById('repo-progress-sub');
+    const bar = document.getElementById('repo-progress-bar');
+    const pct = document.getElementById('repo-progress-pct');
+    const item = document.getElementById('repo-progress-item');
+    const detail = document.getElementById('repo-progress-detail');
+
+    if (titleEl && title) titleEl.textContent = title;
+    if (subEl && subTitle) subEl.textContent = subTitle;
+    if (bar) bar.style.width = '0%';
+    if (pct) pct.textContent = '0%';
+    if (item) item.textContent = 'Preparando arquivos...';
+    if (detail) detail.textContent = 'Verificando gravações locais...';
+    if (modal) modal.style.display = 'flex';
+  },
+
+  updateProgress(percent, itemText, detailText) {
+    const bar = document.getElementById('repo-progress-bar');
+    const pct = document.getElementById('repo-progress-pct');
+    const item = document.getElementById('repo-progress-item');
+    const detail = document.getElementById('repo-progress-detail');
+
+    const clamped = Math.min(100, Math.max(0, Math.round(percent)));
+    if (bar) bar.style.width = `${clamped}%`;
+    if (pct) pct.textContent = `${clamped}%`;
+    if (item && itemText) item.textContent = itemText;
+    if (detail && detailText) detail.textContent = detailText;
+  },
+
+  hideProgressModal(delay = 900) {
+    setTimeout(() => {
+      const modal = document.getElementById('modal-repo-progress');
+      if (modal) modal.style.display = 'none';
+    }, delay);
   },
 
   injectBadge() {
