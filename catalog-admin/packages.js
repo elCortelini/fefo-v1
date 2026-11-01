@@ -1,3 +1,98 @@
+// ========================================================
+// FEFO AI VOICE PROGRESS CONTROLLER (BARRA DE PORCENTAGEM)
+// ========================================================
+window.AiVoiceProgress = {
+  create(containerEl, title = 'Sintetizando voz do FEFO (IA F5-TTS)...') {
+    if (!containerEl) {
+      return { update: () => {}, finish: () => {}, fail: () => {} };
+    }
+    containerEl.style.display = 'block';
+    containerEl.innerHTML = `
+      <div style="background: #fbf9fe; border: 1.5px solid #d4c9f1; border-radius: 10px; padding: 10px 14px; box-shadow: 0 2px 8px rgba(124, 77, 255, 0.08); margin-bottom: 8px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <span class="ai-p-label" style="font-size: 11.5px; font-weight: 800; color: #4a258a;">⚡ ${title}</span>
+          <span class="ai-p-pct" style="font-size: 13px; font-weight: 900; color: #7c4dff;">0%</span>
+        </div>
+        <div style="width: 100%; height: 9px; background: #e5def6; border-radius: 6px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.08);">
+          <div class="ai-p-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #7c4dff, #ff4081); border-radius: 6px; transition: width 0.3s ease;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 10px; color: #7a689b; margin-top: 5px;">
+          <span class="ai-p-stage">Iniciando motor neural F5-TTS...</span>
+          <span style="font-weight: 700; color: #6b3bbd;">Voz Neural F5-TTS</span>
+        </div>
+      </div>
+    `;
+
+    const labelEl = containerEl.querySelector('.ai-p-label');
+    const pctEl = containerEl.querySelector('.ai-p-pct');
+    const barEl = containerEl.querySelector('.ai-p-bar');
+    const stageEl = containerEl.querySelector('.ai-p-stage');
+
+    let currentPct = 0;
+    let startTime = Date.now();
+    let timer = setInterval(() => {
+      const elapsed = (Date.now() - startTime) / 1000;
+      if (elapsed < 3) {
+        currentPct = Math.min(22, Math.floor(elapsed * 7));
+        if (stageEl) stageEl.textContent = 'Carregando amostra de voz e preparando texto...';
+      } else if (elapsed < 14) {
+        currentPct = Math.min(60, 22 + Math.floor((elapsed - 3) * 3.5));
+        if (stageEl) stageEl.textContent = 'Processando difusão acústica do timbre do FEFO...';
+      } else if (elapsed < 30) {
+        currentPct = Math.min(88, 60 + Math.floor((elapsed - 14) * 1.75));
+        if (stageEl) stageEl.textContent = 'Renderizando ondas de áudio de alta fidelidade (Vocos)...';
+      } else {
+        currentPct = Math.min(97, 88 + Math.floor((elapsed - 30) * 0.3));
+        if (stageEl) stageEl.textContent = 'Finalizando compressão e montagem do áudio...';
+      }
+      if (pctEl) pctEl.textContent = `${currentPct}%`;
+      if (barEl) barEl.style.width = `${currentPct}%`;
+    }, 250);
+
+    return {
+      finish(msg = '✓ Áudio gerado com sucesso!') {
+        clearInterval(timer);
+        if (pctEl) pctEl.textContent = '100%';
+        if (barEl) {
+          barEl.style.width = '100%';
+          barEl.style.background = 'linear-gradient(90deg, #10b981, #059669)';
+        }
+        if (stageEl) {
+          stageEl.style.color = '#047857';
+          stageEl.style.fontWeight = '700';
+          stageEl.textContent = msg;
+        }
+        setTimeout(() => {
+          containerEl.style.transition = 'opacity 0.4s ease';
+          containerEl.style.opacity = '0';
+          setTimeout(() => {
+            containerEl.style.display = 'none';
+            containerEl.style.opacity = '1';
+            containerEl.innerHTML = '';
+          }, 400);
+        }, 1200);
+      },
+      fail(errMsg = 'Falha ao gerar áudio com F5-TTS.') {
+        clearInterval(timer);
+        if (barEl) {
+          barEl.style.width = '100%';
+          barEl.style.background = '#ef4444';
+        }
+        if (pctEl) pctEl.textContent = '!';
+        if (stageEl) {
+          stageEl.style.color = '#dc2626';
+          stageEl.style.fontWeight = '700';
+          stageEl.textContent = errMsg;
+        }
+        setTimeout(() => {
+          containerEl.style.display = 'none';
+          containerEl.innerHTML = '';
+        }, 4000);
+      }
+    };
+  }
+};
+
 /**
  * packages.js - Gerenciador Unificado de Pacotes & Menus do FEFO Pet
  * Visual idêntico e consistente para Rascunhos e Produção (com diferenciação por cores),
@@ -2052,7 +2147,7 @@ const PkgManager = {
     const f5Url = localStorage.getItem('fefo_f5_server_url') || 'http://localhost:9880';
     const f5RefText = localStorage.getItem('fefo_f5_ref_text') || '';
     const speed = localStorage.getItem('fefo_ai_speed') || '1.0';
-    const nfe = localStorage.getItem('fefo_ai_nfe') || '32';
+    const nfe = localStorage.getItem('fefo_ai_nfe') || '16';
     const cfg = localStorage.getItem('fefo_ai_cfg') || '2.0';
     const removeSilence = localStorage.getItem('fefo_ai_remove_silence') !== '0';
     const sampleName = localStorage.getItem('fefo_ai_sample_name') || '';
@@ -2226,19 +2321,23 @@ const PkgManager = {
     const btn = document.getElementById('btn-ai-test-submit');
     const origHtml = btn ? btn.innerHTML : '';
     if (btn) {
-      btn.innerHTML = '⏳ Gerando teste F5-TTS...';
+      btn.innerHTML = '⏳ Gerando...';
       btn.disabled = true;
     }
+
+    const testProgContainer = document.getElementById('ai-test-progress');
+    const testTracker = window.AiVoiceProgress ? window.AiVoiceProgress.create(testProgContainer, 'Testando síntese F5-TTS...') : null;
 
     notice('Sintetizando áudio de teste com IA F5-TTS...');
     try {
       const speed = parseFloat(document.getElementById('ai-speed-slider')?.value || '1.0');
-      const nfe = parseInt(document.getElementById('ai-nfe-slider')?.value || '32', 10);
+      const nfe = parseInt(document.getElementById('ai-nfe-slider')?.value || '16', 10);
       const cfg = parseFloat(document.getElementById('ai-cfg-slider')?.value || '2.0');
       const removeSilence = document.getElementById('ai-remove-silence')?.checked !== false;
 
       const blob = await this.synthesizeVoiceBlob(text, { speed, nfe_step: nfe, cfg_strength: cfg, remove_silence: removeSilence });
       if (blob) {
+        testTracker?.finish('✓ Teste concluído!');
         const audioUrl = URL.createObjectURL(blob);
         const player = document.getElementById('ai-test-player');
         if (player) {
@@ -2246,9 +2345,10 @@ const PkgManager = {
           player.style.display = 'block';
           player.play().catch(() => {});
         }
-        notice('✓ Áudio gerado com sucesso pelo F5-TTS!', 'ok');
+        notice('✓ Áudio de teste gerado com sucesso pelo F5-TTS!', 'ok');
       }
     } catch (e) {
+      testTracker?.fail(`Erro: ${e.message}`);
       notice(`Erro no teste F5-TTS: ${e.message}`, 'error');
     } finally {
       if (btn) {
@@ -2262,7 +2362,7 @@ const PkgManager = {
     const f5Url = (localStorage.getItem('fefo_f5_server_url') || 'http://localhost:9880').replace(/\/+$/, '');
     const refText = localStorage.getItem('fefo_f5_ref_text') || '';
     const speed = opts.speed ?? parseFloat(localStorage.getItem('fefo_ai_speed') || '1.0');
-    const nfe_step = opts.nfe_step ?? parseInt(localStorage.getItem('fefo_ai_nfe') || '32', 10);
+    const nfe_step = opts.nfe_step ?? parseInt(localStorage.getItem('fefo_ai_nfe') || '16', 10);
     const cfg_strength = opts.cfg_strength ?? parseFloat(localStorage.getItem('fefo_ai_cfg') || '2.0');
     const remove_silence = opts.remove_silence ?? (localStorage.getItem('fefo_ai_remove_silence') !== '0');
 
@@ -2357,10 +2457,22 @@ const PkgManager = {
       btn.disabled = true;
     }
 
+    // Criar ou obter caixa da barra de progresso visual
+    let progBox = document.getElementById(isProduction ? `ai-prog-prod-${itemId}` : `ai-prog-${itemId}`);
+    if (!progBox && btn) {
+      progBox = document.createElement('div');
+      progBox.id = isProduction ? `ai-prog-prod-${itemId}` : `ai-prog-${itemId}`;
+      const panel = btn.closest('.track-accordion-panel');
+      const textarea = panel ? panel.querySelector('textarea') : null;
+      if (panel && textarea) panel.insertBefore(progBox, textarea);
+    }
+    const tracker = window.AiVoiceProgress ? window.AiVoiceProgress.create(progBox, `Sintetizando voz do FEFO para "${it.titulo || 'faixa'}"...`) : null;
+
     notice(`Sintetizando voz do FEFO (F5-TTS) para a faixa "${it.titulo}"...`);
 
     try {
       const blob = await this.synthesizeVoiceBlob(currentScript);
+      tracker?.finish('✓ Voz do FEFO gerada com sucesso!');
 
       if (!blob || blob.size === 0) {
         throw new Error('Não foi possível obter o áudio sintetizado pelo F5-TTS.');
@@ -2391,6 +2503,7 @@ const PkgManager = {
         this.playTrack(itemId);
       }, 300);
     } catch (err) {
+      tracker?.fail(`Erro F5-TTS: ${err.message}`);
       notice(`Atenção F5-TTS: ${err.message}`, 'error');
     } finally {
       if (btn) {

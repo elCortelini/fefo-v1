@@ -893,6 +893,17 @@ const CardPackManager = {
       btn.disabled = true;
     }
 
+    // Criar ou obter caixa da barra de progresso visual do card
+    let progBox = document.getElementById(`ai-prog-card-${cardId}`);
+    if (!progBox && btn) {
+      progBox = document.createElement('div');
+      progBox.id = `ai-prog-card-${cardId}`;
+      const panel = btn.closest('.track-accordion-panel');
+      const textarea = panel ? panel.querySelector('textarea') : null;
+      if (panel && textarea) panel.insertBefore(progBox, textarea);
+    }
+    const tracker = window.AiVoiceProgress ? window.AiVoiceProgress.create(progBox, 'Sintetizando voz do FEFO para o Card...') : null;
+
     notice('Gerando áudio com a voz clonada do FEFO (IA F5-TTS)...');
     try {
       let audioBlob = null;
@@ -916,31 +927,35 @@ const CardPackManager = {
         throw new Error('Não foi possível obter o áudio da voz.');
       }
 
+      tracker?.finish('✓ Áudio do card gerado com sucesso!');
+
       if (window.AudioBlobDB) await window.AudioBlobDB.setAudio(cardId, audioBlob);
       const blobUrl = URL.createObjectURL(audioBlob);
 
       if (card) {
         card.audio_url = blobUrl;
         card.tamanho_audio = audioBlob.size;
-        card.arquivo_origem = Voz FEFO IA ();
+        const sampleName = localStorage.getItem('fefo_ai_sample_name') || 'fefo_voice_sample.wav';
+        card.arquivo_origem = `Voz FEFO IA (${card.arquivo_fefo || sampleName})`;
       }
 
       if (isProduction) CardPackStorage.savePublishedCardPacks(this.state.published);
       else CardPackStorage.saveCustomCardPacks(this.state.drafts);
 
-      const player = document.getElementById(udio-player-);
+      const player = document.getElementById(`audio-player-${cardId}`);
       if (player) {
         player.src = blobUrl;
         player.load();
         player.play().catch(() => {});
       }
 
-      const mount = document.getElementById(	rimmer-mount-);
+      const mount = document.getElementById(`trimmer-mount-${cardId}`);
       if (mount) mount.dataset.mounted = '';
 
       notice('✓ Áudio gerado por IA com sucesso e aplicado ao card!', 'ok');
     } catch (e) {
-      notice(Aviso IA: , 'error');
+      tracker?.fail(`Erro IA: ${e.message}`);
+      notice(`Aviso IA: ${e.message}`, 'error');
     } finally {
       if (btn) {
         btn.innerHTML = origHtml;

@@ -439,9 +439,9 @@
 
   <script src="image-editor.js?v=unified-22"></script>
 
-  <script src="github-sync.js?v=sync-25-f5only"></script>
-  <script src="packages.js?v=sync-25-f5only"></script>
-  <script src="cards-packs.js?v=sync-25-f5only"></script>
+  <script src="github-sync.js?v=sync-26-progress"></script>
+  <script src="packages.js?v=sync-26-progress"></script>
+  <script src="cards-packs.js?v=sync-26-progress"></script>
 
 
     <!-- Modal de Configuração da Voz do FEFO (IA) -->
@@ -493,25 +493,9 @@
             </div>
           </div>
 
-          <!-- Conexão do Servidor F5-TTS -->
-          <div style="background: #ffffff; border: 1.5px solid var(--line); border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px;">
-            <div class="pkg-field-box">
-              <label>Endereço do Servidor F5-TTS (Local / Rede)</label>
-              <div style="display: flex; gap: 8px;">
-                <input type="text" id="ai-f5-server-url" value="http://localhost:9880" placeholder="http://localhost:9880 ou http://127.0.0.1:8765" style="flex: 1;">
-                <button type="button" class="btn secondary" style="font-size: 11.5px; padding: 6px 14px;" onclick="PkgManager.testF5Server()">🔌 Testar Conexão</button>
-              </div>
-              <span class="hint" style="font-size: 11px;">
-                Conexões automáticas habilitadas: Porta <strong>9880</strong> (via <code>tools\iniciar_f5_tts.bat</code>) ou porta <strong>8765</strong> (servidor embutido do catálogo).
-              </span>
-            </div>
-
-            <div class="pkg-field-box">
-              <label>Transcrição do Áudio de Referência (Opcional - Ajuda na Fidelidade)</label>
-              <input type="text" id="ai-f5-ref-text" placeholder="Ex: Olá amiguinho, eu sou o Fefo!">
-              <span class="hint" style="font-size: 11px;">Transcrição do que o FEFO fala no arquivo de áudio acima. Ajuda a mapear perfeitamente a articulação.</span>
-            </div>
-          </div>
+          <!-- Conexão Automática do F5-TTS (Sem campos técnicos visíveis) -->
+          <input type="hidden" id="ai-f5-server-url" value="http://localhost:9880">
+          <input type="hidden" id="ai-f5-ref-text" value="">
 
           <!-- Configurações Próprias do F5-TTS -->
           <div style="background: #fdfdfe; border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
@@ -527,10 +511,10 @@
             <div class="pkg-field-box">
               <div style="display: flex; justify-content: space-between;">
                 <label>Passos de Inferência NFE (Qualidade)</label>
-                <span id="ai-nfe-val" style="font-size: 11px; font-weight: 900; color: var(--purple);">32 Passos</span>
+                <span id="ai-nfe-val" style="font-size: 11px; font-weight: 900; color: var(--purple);">16 Passos</span>
               </div>
-              <input type="range" id="ai-nfe-slider" min="16" max="64" step="8" value="32" oninput="document.getElementById('ai-nfe-val').textContent = this.value + ' Passos'">
-              <span class="hint" style="font-size: 10.5px;">16 = Rápido | 32 = Equilibrado | 48-64 = Alta Fidelidade</span>
+              <input type="range" id="ai-nfe-slider" min="16" max="64" step="8" value="16" oninput="document.getElementById('ai-nfe-val').textContent = this.value + ' Passos'">
+              <span class="hint" style="font-size: 10.5px;">8-16 = Rápido (Recomendado para CPU) | 24-32 = Alta Fidelidade</span>
             </div>
 
             <div class="pkg-field-box">
@@ -557,6 +541,16 @@
             <div style="display: flex; gap: 8px; margin-top: 6px;">
               <input type="text" id="ai-test-text" value="Olá amiguinho! Eu sou o Fefo, vamos brincar juntos hoje?" style="flex: 1; font-size: 13px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px;">
               <button class="btn primary" id="btn-ai-test-submit" type="button" style="padding: 8px 16px; font-size: 13px;" onclick="PkgManager.testAiVoice()">▶ Ouvir Teste</button>
+            </div>
+            <!-- Barra de Progresso com Porcentagem do Teste -->
+            <div id="ai-test-progress" style="display:none; margin-top: 10px; background: #ffffff; border: 1.5px solid #d4c9f1; border-radius: 10px; padding: 10px 14px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <span id="ai-test-progress-label" style="font-size: 12px; font-weight: 800; color: var(--purple);">⚡ Sintetizando voz do FEFO...</span>
+                <span id="ai-test-progress-percent" style="font-size: 13px; font-weight: 900; color: var(--purple);">0%</span>
+              </div>
+              <div style="width: 100%; height: 10px; background: #e5def6; border-radius: 6px; overflow: hidden;">
+                <div id="ai-test-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #7c4dff, #ff4081); border-radius: 6px; transition: width 0.25s ease;"></div>
+              </div>
             </div>
             <audio id="ai-test-player" style="display:none; width: 100%; margin-top: 10px;" controls></audio>
           </div>
