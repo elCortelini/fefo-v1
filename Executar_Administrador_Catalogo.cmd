@@ -25,6 +25,9 @@ if %ERRORLEVEL% EQU 0 (
 echo Executando com: %PY%
 echo Servidor disponivel em: http://127.0.0.1:8765/catalog-admin/index.html
 echo.
+echo Iniciando servidor de voz IA F5-TTS (porta 9880)...
+start "FEFO F5-TTS Voice Server" /min %PY% tools\f5_tts_api.py
+echo.
 echo Pressione Ctrl+C nesta janela para parar o servidor.
 echo.
 

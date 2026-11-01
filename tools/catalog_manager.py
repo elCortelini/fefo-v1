@@ -406,6 +406,16 @@ class Handler(SimpleHTTPRequestHandler):
 
                     # 1. Tenta F5-TTS direto via biblioteca Python
                     try:
+                        # Patch torchaudio.load com soundfile para compatibilidade Windows
+                        import soundfile as _sf, torch as _torch, torchaudio as _ta
+                        def _sf_load(uri, *args, **kwargs):
+                            d, sr = _sf.read(str(uri), dtype='float32')
+                            t = _torch.from_numpy(d).unsqueeze(0) if d.ndim == 1 else _torch.from_numpy(d.T)
+                            return t, sr
+                        _ta.load = _sf_load
+                    except Exception:
+                        pass
+                    try:
                         from f5_tts.api import F5TTS
                         global _catalog_f5_tts
                         if '_catalog_f5_tts' not in globals() or _catalog_f5_tts is None:

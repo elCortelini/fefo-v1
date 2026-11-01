@@ -22,6 +22,24 @@ from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
 import uvicorn
 
+# Patch torchaudio.load para usar soundfile no Windows (evita erro de torchcodec/FFmpeg DLLs ausentes)
+try:
+    import soundfile as sf
+    import torch
+    import torchaudio
+
+    def _soundfile_load(uri, *args, **kwargs):
+        data, sr = sf.read(str(uri), dtype='float32')
+        if data.ndim == 1:
+            tensor = torch.from_numpy(data).unsqueeze(0)
+        else:
+            tensor = torch.from_numpy(data.T)
+        return tensor, sr
+
+    torchaudio.load = _soundfile_load
+except Exception as _patch_err:
+    print(f'[Aviso] Falha ao aplicar patch soundfile no torchaudio: {_patch_err}')
+
 # Inicializacao do FastAPI
 app = FastAPI(
     title="FEFO F5-TTS AI Voice Server",
