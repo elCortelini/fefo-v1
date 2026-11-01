@@ -885,7 +885,7 @@ const CardPackManager = {
 
     if (!text) return notice('Por favor, digite o texto do roteiro antes de gerar a voz.', 'error');
 
-    const btn = document.getElementById(tn-ai-);
+    const btn = document.getElementById(`btn-ai-${cardId}`);
     const origHtml = btn ? btn.innerHTML : '';
     if (btn) {
       btn.innerHTML = '⏳ Gerando voz IA...';

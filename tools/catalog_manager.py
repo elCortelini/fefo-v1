@@ -372,111 +372,81 @@ class Handler(SimpleHTTPRequestHandler):
             elif self.path in ('/api/tts/generate', '/api/f5-tts/generate', '/api/ai/tts'):
                 payload = json.loads(body.decode('utf-8'))
                 text = payload.get('text', '').strip()
-                voice_id = payload.get('voice_id') or os.environ.get('ELEVENLABS_VOICE_ID', '')
-                api_key = payload.get('api_key') or os.environ.get('ELEVENLABS_API_KEY', '')
-                provider = payload.get('provider') or ('f5_tts' if self.path in ('/api/f5-tts/generate', '/api/ai/tts') else 'f5_tts')
                 pkg_id = payload.get('package_id')
                 item_id = payload.get('item_id')
                 speed = float(payload.get('speed', 1.0))
-                pitch = int(payload.get('pitch', 10))
-                stability = float(payload.get('stability', 0.5))
-                similarity = float(payload.get('similarity', 0.8))
+                nfe_step = int(payload.get('nfe_step', 32))
+                cfg_strength = float(payload.get('cfg_strength', 2.0))
+                remove_silence = bool(payload.get('remove_silence', True))
 
                 if not text: raise ValueError('Texto ausente para geração de áudio.')
 
                 audio_bytes = None
+                ref_audio_b64 = payload.get('ref_audio')
+                ref_text = payload.get('ref_text', '')
+                temp_ref = None
 
-                # 1. Geração via F5-TTS (Zero-Shot Clone nativo SWivid/F5-TTS)
-                if provider == 'f5_tts':
-                    ref_audio_b64 = payload.get('ref_audio')
-                    ref_text = payload.get('ref_text', '')
-                    temp_ref = None
+                try:
+                    ref_file = None
+                    if ref_audio_b64:
+                        import base64, tempfile
+                        if ',' in ref_audio_b64 and 'base64' in ref_audio_b64:
+                            ref_audio_b64 = ref_audio_b64.split(',', 1)[1]
+                        b = base64.b64decode(ref_audio_b64)
+                        temp_ref = tempfile.NamedTemporaryFile(suffix='.wav', delete=False)
+                        temp_ref.write(b)
+                        temp_ref.flush()
+                        temp_ref.close()
+                        ref_file = temp_ref.name
+                    else:
+                        for candidate in [ROOT / 'repository' / 'fefo_voice_sample.wav', ROOT / 'repository' / 'audio' / 'a0032.wav', ROOT / 'repository' / 'audio' / 'a0001.wav']:
+                            if candidate.exists():
+                                ref_file = str(candidate)
+                                break
+
+                    # 1. Tenta F5-TTS direto via biblioteca Python
                     try:
-                        ref_file = None
-                        if ref_audio_b64:
-                            import base64, tempfile
-                            if ',' in ref_audio_b64 and 'base64' in ref_audio_b64:
-                                ref_audio_b64 = ref_audio_b64.split(',', 1)[1]
-                            b = base64.b64decode(ref_audio_b64)
-                            temp_ref = tempfile.NamedTemporaryFile(suffix='.wav', delete=False)
-                            temp_ref.write(b)
-                            temp_ref.flush()
-                            temp_ref.close()
-                            ref_file = temp_ref.name
-                        else:
-                            for candidate in [ROOT / 'repository' / 'fefo_voice_sample.wav', ROOT / 'repository' / 'audio' / 'a0032.wav', ROOT / 'repository' / 'audio' / 'a0001.wav']:
-                                if candidate.exists():
-                                    ref_file = str(candidate)
-                                    break
+                        from f5_tts.api import F5TTS
+                        global _catalog_f5_tts
+                        if '_catalog_f5_tts' not in globals() or _catalog_f5_tts is None:
+                            _catalog_f5_tts = F5TTS(model="F5TTS_v1_Base")
+                        tmp_out = ROOT / f"temp_f5_{int(time.time()*1000)%100000}.wav"
+                        _catalog_f5_tts.infer(
+                            ref_file=ref_file,
+                            ref_text=ref_text,
+                            gen_text=text,
+                            speed=speed,
+                            nfe_step=nfe_step,
+                            cfg_strength=cfg_strength,
+                            remove_silence=remove_silence,
+                            file_wave=str(tmp_out)
+                        )
+                        if tmp_out.exists():
+                            audio_bytes = tmp_out.read_bytes()
+                            tmp_out.unlink()
+                    except Exception as f5_err:
+                        # 2. Tenta conectar ao servidor F5-TTS na porta 9880
+                        import urllib.request, base64
+                        req_data = json.dumps({
+                            'text': text,
+                            'ref_audio': ref_audio_b64,
+                            'ref_text': ref_text,
+                            'speed': speed,
+                            'nfe_step': nfe_step,
+                            'cfg_strength': cfg_strength,
+                            'remove_silence': remove_silence
+                        }).encode('utf-8')
+                        req = urllib.request.Request('http://127.0.0.1:9880/api/f5-tts/generate', data=req_data, headers={'Content-Type': 'application/json'})
+                        with urllib.request.urlopen(req, timeout=120) as resp:
+                            resp_data = json.loads(resp.read().decode('utf-8'))
+                            audio_bytes = base64.b64decode(resp_data['audio_base64'])
+                finally:
+                    if temp_ref and os.path.exists(temp_ref.name):
+                        try: os.unlink(temp_ref.name)
+                        except Exception: pass
 
-                        # Tenta f5_tts direto
-                        try:
-                            from f5_tts.api import F5TTS
-                            global _catalog_f5_tts
-                            if '_catalog_f5_tts' not in globals() or _catalog_f5_tts is None:
-                                _catalog_f5_tts = F5TTS(model="F5TTS_v1_Base")
-                            tmp_out = ROOT / f"temp_f5_{int(time.time()*1000)%100000}.wav"
-                            _catalog_f5_tts.infer(
-                                ref_file=ref_file,
-                                ref_text=ref_text,
-                                gen_text=text,
-                                speed=speed,
-                                file_wave=str(tmp_out)
-                            )
-                            if tmp_out.exists():
-                                audio_bytes = tmp_out.read_bytes()
-                                tmp_out.unlink()
-                        except Exception as f5_inner:
-                            import urllib.request, base64
-                            req_data = json.dumps({
-                                'text': text,
-                                'ref_audio': ref_audio_b64,
-                                'ref_text': ref_text,
-                                'speed': speed
-                            }).encode('utf-8')
-                            req = urllib.request.Request('http://127.0.0.1:9880/api/f5-tts/generate', data=req_data, headers={'Content-Type': 'application/json'})
-                            with urllib.request.urlopen(req, timeout=120) as resp:
-                                resp_data = json.loads(resp.read().decode('utf-8'))
-                                audio_bytes = base64.b64decode(resp_data['audio_base64'])
-                    finally:
-                        if temp_ref and os.path.exists(temp_ref.name):
-                            try: os.unlink(temp_ref.name)
-                            except Exception: pass
-
-                # 2. Geração via ElevenLabs se explicitamente escolhido
-                elif api_key and (provider == 'elevenlabs'):
-                    import urllib.request
-                    vid = voice_id or '21m00Tcm4TlvDq8ikWAM'
-                    url = f"https://api.elevenlabs.io/v1/text-to-speech/{vid}"
-                    req_data = json.dumps({
-                        "text": text,
-                        "model_id": "eleven_multilingual_v2",
-                        "voice_settings": {
-                            "stability": stability,
-                            "similarity_boost": similarity,
-                            "use_speaker_boost": True
-                        }
-                    }).encode('utf-8')
-                    req = urllib.request.Request(url, data=req_data, headers={
-                        "Content-Type": "application/json",
-                        "xi-api-key": api_key
-                    })
-                    with urllib.request.urlopen(req) as resp:
-                        audio_bytes = resp.read()
-
-                # 3. Fallback com edge-tts de alta velocidade
                 if not audio_bytes:
-                    import asyncio, edge_tts
-                    tmp_mp3 = ROOT / f"temp_tts_{int(time.time()*1000)%100000}.mp3"
-                    pitch_str = f"+{pitch}Hz" if pitch >= 0 else f"{pitch}Hz"
-                    rate_pct = int((speed - 1.0) * 100)
-                    rate_str = f"+{rate_pct}%" if rate_pct >= 0 else f"{rate_pct}%"
-                    async def run_edge():
-                        communicate = edge_tts.Communicate(text, 'pt-BR-ThalitaNeural', pitch=pitch_str, rate=rate_str)
-                        await communicate.save(str(tmp_mp3))
-                    asyncio.run(run_edge())
-                    audio_bytes = tmp_mp3.read_bytes()
-                    if tmp_mp3.exists(): tmp_mp3.unlink()
+                    raise RuntimeError("Não foi possível sintetizar a voz com o F5-TTS.")
 
                 # Salva arquivo WAV convertido na pasta de rascunhos
                 out_dir = DRAFTS_AUDIO_DIR / (pkg_id or 'tts')
