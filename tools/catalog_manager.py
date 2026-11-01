@@ -199,6 +199,21 @@ class Handler(SimpleHTTPRequestHandler):
             self.send_response(200); self.send_header('Content-Type', 'application/json; charset=utf-8'); self.send_header('Content-Length', str(len(data))); self.end_headers(); self.wfile.write(data)
             return
 
+        if parsed.path in ('/api/f5-tts/status', '/health'):
+            try:
+                import torch
+                dev = 'cuda' if torch.cuda.is_available() else 'cpu'
+            except Exception:
+                dev = 'cpu'
+            data = json.dumps({
+                'ok': True,
+                'status': 'online',
+                'engine': 'F5-TTS',
+                'device': dev
+            }, ensure_ascii=False).encode('utf-8')
+            self.send_response(200); self.send_header('Content-Type', 'application/json; charset=utf-8'); self.send_header('Access-Control-Allow-Origin', '*'); self.send_header('Content-Length', str(len(data))); self.end_headers(); self.wfile.write(data)
+            return
+
         # 1. ABA ÁUDIOS & MENUS
         if parsed.path == '/api/packages':
             drafts = load_json_file(DRAFT_PACKAGES_FILE, {"packages": []})
@@ -354,12 +369,12 @@ class Handler(SimpleHTTPRequestHandler):
                 else:
                     result = {'ok': False, 'message': 'Pacote não encontrado.'}
 
-            elif self.path == '/api/tts/generate':
+            elif self.path in ('/api/tts/generate', '/api/f5-tts/generate', '/api/ai/tts'):
                 payload = json.loads(body.decode('utf-8'))
                 text = payload.get('text', '').strip()
                 voice_id = payload.get('voice_id') or os.environ.get('ELEVENLABS_VOICE_ID', '')
                 api_key = payload.get('api_key') or os.environ.get('ELEVENLABS_API_KEY', '')
-                provider = payload.get('provider', 'auto')
+                provider = payload.get('provider') or ('f5_tts' if self.path in ('/api/f5-tts/generate', '/api/ai/tts') else 'f5_tts')
                 pkg_id = payload.get('package_id')
                 item_id = payload.get('item_id')
                 speed = float(payload.get('speed', 1.0))
@@ -369,8 +384,67 @@ class Handler(SimpleHTTPRequestHandler):
 
                 if not text: raise ValueError('Texto ausente para geração de áudio.')
 
-                # 1. Geração via ElevenLabs se configurado
-                if api_key and (provider == 'elevenlabs' or provider == 'auto'):
+                audio_bytes = None
+
+                # 1. Geração via F5-TTS (Zero-Shot Clone nativo SWivid/F5-TTS)
+                if provider == 'f5_tts':
+                    ref_audio_b64 = payload.get('ref_audio')
+                    ref_text = payload.get('ref_text', '')
+                    temp_ref = None
+                    try:
+                        ref_file = None
+                        if ref_audio_b64:
+                            import base64, tempfile
+                            if ',' in ref_audio_b64 and 'base64' in ref_audio_b64:
+                                ref_audio_b64 = ref_audio_b64.split(',', 1)[1]
+                            b = base64.b64decode(ref_audio_b64)
+                            temp_ref = tempfile.NamedTemporaryFile(suffix='.wav', delete=False)
+                            temp_ref.write(b)
+                            temp_ref.flush()
+                            temp_ref.close()
+                            ref_file = temp_ref.name
+                        else:
+                            for candidate in [ROOT / 'repository' / 'fefo_voice_sample.wav', ROOT / 'repository' / 'audio' / 'a0032.wav', ROOT / 'repository' / 'audio' / 'a0001.wav']:
+                                if candidate.exists():
+                                    ref_file = str(candidate)
+                                    break
+
+                        # Tenta f5_tts direto
+                        try:
+                            from f5_tts.api import F5TTS
+                            global _catalog_f5_tts
+                            if '_catalog_f5_tts' not in globals() or _catalog_f5_tts is None:
+                                _catalog_f5_tts = F5TTS(model="F5TTS_v1_Base")
+                            tmp_out = ROOT / f"temp_f5_{int(time.time()*1000)%100000}.wav"
+                            _catalog_f5_tts.infer(
+                                ref_file=ref_file,
+                                ref_text=ref_text,
+                                gen_text=text,
+                                speed=speed,
+                                file_wave=str(tmp_out)
+                            )
+                            if tmp_out.exists():
+                                audio_bytes = tmp_out.read_bytes()
+                                tmp_out.unlink()
+                        except Exception as f5_inner:
+                            import urllib.request, base64
+                            req_data = json.dumps({
+                                'text': text,
+                                'ref_audio': ref_audio_b64,
+                                'ref_text': ref_text,
+                                'speed': speed
+                            }).encode('utf-8')
+                            req = urllib.request.Request('http://127.0.0.1:9880/api/f5-tts/generate', data=req_data, headers={'Content-Type': 'application/json'})
+                            with urllib.request.urlopen(req, timeout=120) as resp:
+                                resp_data = json.loads(resp.read().decode('utf-8'))
+                                audio_bytes = base64.b64decode(resp_data['audio_base64'])
+                    finally:
+                        if temp_ref and os.path.exists(temp_ref.name):
+                            try: os.unlink(temp_ref.name)
+                            except Exception: pass
+
+                # 2. Geração via ElevenLabs se explicitamente escolhido
+                elif api_key and (provider == 'elevenlabs'):
                     import urllib.request
                     vid = voice_id or '21m00Tcm4TlvDq8ikWAM'
                     url = f"https://api.elevenlabs.io/v1/text-to-speech/{vid}"
@@ -389,8 +463,9 @@ class Handler(SimpleHTTPRequestHandler):
                     })
                     with urllib.request.urlopen(req) as resp:
                         audio_bytes = resp.read()
-                else:
-                    # 2. Fallback com edge-tts de alta velocidade
+
+                # 3. Fallback com edge-tts de alta velocidade
+                if not audio_bytes:
                     import asyncio, edge_tts
                     tmp_mp3 = ROOT / f"temp_tts_{int(time.time()*1000)%100000}.mp3"
                     pitch_str = f"+{pitch}Hz" if pitch >= 0 else f"{pitch}Hz"
@@ -428,8 +503,11 @@ class Handler(SimpleHTTPRequestHandler):
                             it['status'] = 'ready'
                             save_json_file(DRAFT_PACKAGES_FILE, drafts_data)
 
+                import base64
+                b64_str = base64.b64encode(audio_bytes).decode('ascii') if audio_bytes else ''
                 result = {
                     'ok': True,
+                    'audio_base64': b64_str,
                     'web_url': f"/repository/drafts/audio/{pkg_id or 'tts'}/{out_name}",
                     'message': '✓ Áudio gerado com a voz do FEFO com sucesso!'
                 }

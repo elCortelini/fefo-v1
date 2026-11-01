@@ -2044,9 +2044,11 @@ const PkgManager = {
   async openAiVoiceSettings() {
     const modal = document.getElementById('modal-ai-voice');
     if (!modal) return;
-    const provider = localStorage.getItem('fefo_ai_provider') || 'custom_sample';
+    const provider = localStorage.getItem('fefo_ai_provider') || 'f5_tts';
     const key = localStorage.getItem('fefo_eleven_key') || '';
     const voice = localStorage.getItem('fefo_eleven_voice') || '21m00Tcm4TlvDq8ikWAM';
+    const f5Url = localStorage.getItem('fefo_f5_server_url') || 'http://localhost:9880';
+    const f5RefText = localStorage.getItem('fefo_f5_ref_text') || '';
     const speed = localStorage.getItem('fefo_ai_speed') || '1.0';
     const pitch = localStorage.getItem('fefo_ai_pitch') || '10';
     const stability = localStorage.getItem('fefo_ai_stability') || '0.5';
@@ -2059,6 +2061,11 @@ const PkgManager = {
     if (inpKey) inpKey.value = key;
     const inpVoice = document.getElementById('ai-eleven-voice');
     if (inpVoice) inpVoice.value = voice;
+    const inpF5Url = document.getElementById('ai-f5-server-url');
+    if (inpF5Url) inpF5Url.value = f5Url;
+    const inpF5Ref = document.getElementById('ai-f5-ref-text');
+    if (inpF5Ref) inpF5Ref.value = f5RefText;
+    this.testF5Server();
 
     const inpSpeed = document.getElementById('ai-speed-slider');
     if (inpSpeed) {
@@ -2107,12 +2114,20 @@ const PkgManager = {
   },
 
   onAiProviderChange() {
-    const prov = document.getElementById('ai-voice-provider')?.value || 'elevenlabs';
-    const box = document.getElementById('ai-eleven-box');
+    const prov = document.getElementById('ai-voice-provider')?.value || 'f5_tts';
+    const elevenBox = document.getElementById('ai-eleven-box');
+    const f5Box = document.getElementById('ai-f5tts-box');
     const help = document.getElementById('ai-provider-help');
-    if (box) box.style.display = (prov === 'elevenlabs') ? 'flex' : 'none';
+
+    if (elevenBox) elevenBox.style.display = (prov === 'elevenlabs') ? 'flex' : 'none';
+    if (f5Box) f5Box.style.display = (prov === 'f5_tts') ? 'flex' : 'none';
+
     if (help) {
-      if (prov === 'elevenlabs') {
+      if (prov === 'f5_tts') {
+        help.innerHTML = '🔥 <strong>F5-TTS (Zero-Shot Clone):</strong> Clona o timbre da voz do FEFO usando IA com o modelo F5-TTS (repositório GitHub SWivid/F5-TTS) sem limites de uso ou custos. Sintetiza qualquer roteiro em português!';
+        help.style.color = 'var(--purple)';
+        help.style.background = '#faf9ff';
+      } else if (prov === 'elevenlabs') {
         help.innerHTML = '⭐ <strong>ElevenLabs IA:</strong> Analisa o áudio do FEFO enviado acima, clona seu timbre único e sintetiza <em>qualquer texto digitado</em> com a voz clonada do FEFO.';
         help.style.color = 'var(--purple)';
         help.style.background = '#faf9ff';
@@ -2125,6 +2140,40 @@ const PkgManager = {
         help.style.color = '#856404';
         help.style.background = '#fff3cd';
       }
+    }
+  },
+
+  async testF5Server() {
+    const statusEl = document.getElementById('f5-server-status');
+    const f5Url = (document.getElementById('ai-f5-server-url')?.value || localStorage.getItem('fefo_f5_server_url') || 'http://localhost:9880').replace(/\/+$/, '');
+    if (statusEl) {
+      statusEl.textContent = '⏳ Verificando...';
+      statusEl.style.background = '#eee';
+      statusEl.style.color = '#555';
+    }
+    try {
+      let res = await fetch(`${f5Url}/health`, { method: 'GET', signal: AbortSignal.timeout(3000) }).catch(() => null);
+      if (!res || !res.ok) {
+        res = await fetch('/api/f5-tts/status', { method: 'GET', signal: AbortSignal.timeout(3000) }).catch(() => null);
+      }
+      if (res && res.ok) {
+        const data = await res.json();
+        if (statusEl) {
+          statusEl.textContent = `● Online (${data.engine || 'F5-TTS'} - ${data.device || 'OK'})`;
+          statusEl.style.background = '#e8f8f0';
+          statusEl.style.color = '#127547';
+        }
+        return true;
+      } else {
+        throw new Error('Servidor offline');
+      }
+    } catch (e) {
+      if (statusEl) {
+        statusEl.textContent = '✕ Offline (Inicie tools/iniciar_f5_tts.bat)';
+        statusEl.style.background = '#fde8e8';
+        statusEl.style.color = '#c0392b';
+      }
+      return false;
     }
   },
 
@@ -2292,9 +2341,11 @@ const PkgManager = {
   },
 
   saveAiVoiceSettings() {
-    const prov = document.getElementById('ai-voice-provider')?.value || 'elevenlabs';
+    const prov = document.getElementById('ai-voice-provider')?.value || 'f5_tts';
     const key = document.getElementById('ai-eleven-key')?.value.trim() || '';
     const voice = document.getElementById('ai-eleven-voice')?.value.trim() || '';
+    const f5Url = document.getElementById('ai-f5-server-url')?.value.trim() || 'http://localhost:9880';
+    const f5Ref = document.getElementById('ai-f5-ref-text')?.value.trim() || '';
     const speed = document.getElementById('ai-speed-slider')?.value || '1.0';
     const pitch = document.getElementById('ai-pitch-slider')?.value || '10';
     const stability = document.getElementById('ai-stability-slider')?.value || '0.5';
@@ -2303,6 +2354,8 @@ const PkgManager = {
     localStorage.setItem('fefo_ai_provider', prov);
     localStorage.setItem('fefo_eleven_key', key);
     localStorage.setItem('fefo_eleven_voice', voice);
+    localStorage.setItem('fefo_f5_server_url', f5Url);
+    localStorage.setItem('fefo_f5_ref_text', f5Ref);
     localStorage.setItem('fefo_ai_speed', speed);
     localStorage.setItem('fefo_ai_pitch', pitch);
     localStorage.setItem('fefo_ai_stability', stability);
@@ -2314,7 +2367,32 @@ const PkgManager = {
 
   async testAiVoice() {
     const text = document.getElementById('ai-test-text')?.value.trim() || 'Olá amiguinho!';
-    const prov = document.getElementById('ai-voice-provider')?.value || 'custom_sample';
+    const prov = document.getElementById('ai-voice-provider')?.value || 'f5_tts';
+
+    // 0. Se for F5-TTS
+    if (prov === 'f5_tts') {
+      notice('Sintetizando áudio de teste com F5-TTS...');
+      try {
+        const speed = parseFloat(document.getElementById('ai-speed-slider')?.value || '1.0');
+        const pitch = parseInt(document.getElementById('ai-pitch-slider')?.value || '10', 10);
+        const stability = parseFloat(document.getElementById('ai-stability-slider')?.value || '0.5');
+        const similarity = parseFloat(document.getElementById('ai-similarity-slider')?.value || '0.8');
+        const blob = await this.synthesizeVoiceBlob(text, 'f5_tts', '', '', speed, pitch, stability, similarity);
+        if (blob) {
+          const audioUrl = URL.createObjectURL(blob);
+          const player = document.getElementById('ai-test-player');
+          if (player) {
+            player.src = audioUrl;
+            player.style.display = 'block';
+            player.play().catch(() => {});
+          }
+          notice('✓ Áudio de teste gerado com sucesso via F5-TTS!', 'ok');
+        }
+      } catch (e) {
+        notice(`Erro no teste F5-TTS: ${e.message}`, 'error');
+      }
+      return;
+    }
     const key = document.getElementById('ai-eleven-key')?.value.trim() || localStorage.getItem('fefo_eleven_key') || '';
     const voice = document.getElementById('ai-eleven-voice')?.value.trim() || localStorage.getItem('fefo_eleven_voice') || '21m00Tcm4TlvDq8ikWAM';
     const speed = parseFloat(document.getElementById('ai-speed-slider')?.value || '1.0');
@@ -2382,11 +2460,80 @@ const PkgManager = {
   },
 
   async synthesizeVoiceBlob(text, provider, apiKey, voiceId, speed = 1.0, pitch = 10, stability = 0.5, similarity = 0.8) {
+    if (!provider) provider = localStorage.getItem('fefo_ai_provider') || 'f5_tts';
     if (!apiKey) apiKey = localStorage.getItem('fefo_eleven_key') || '';
     if (!voiceId) voiceId = localStorage.getItem('fefo_eleven_voice') || '21m00Tcm4TlvDq8ikWAM';
 
-    // 1. Tenta API do ElevenLabs diretamente se chave estiver presente
-    if (apiKey && (provider === 'elevenlabs' || !provider)) {
+    // 1. F5-TTS (Zero-Shot Clone do GitHub SWivid/F5-TTS)
+    if (provider === 'f5_tts') {
+      const f5Url = (localStorage.getItem('fefo_f5_server_url') || 'http://localhost:9880').replace(/\/+$/, '');
+      const refText = localStorage.getItem('fefo_f5_ref_text') || '';
+
+      // Obter amostra de voz
+      let sampleBlob = await AudioBlobDB.getAudio('fefo_voice_sample');
+      if (!sampleBlob) {
+        try {
+          const r = await fetch('../repository/fefo_voice_sample.wav');
+          if (r.ok) sampleBlob = await r.blob();
+        } catch (e) {}
+      }
+
+      let refAudioBase64 = null;
+      if (sampleBlob) {
+        refAudioBase64 = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(sampleBlob);
+        });
+      }
+
+      const payload = {
+        text: text,
+        ref_audio: refAudioBase64,
+        ref_text: refText,
+        speed: speed,
+        provider: 'f5_tts'
+      };
+
+      // Tenta 1: Servidor dedicado F5-TTS (port 9880)
+      let res = await fetch(`${f5Url}/api/f5-tts/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).catch(() => null);
+
+      // Tenta 2: Servidor embutido do catalogo
+      if (!res || !res.ok) {
+        res = await fetch('/api/f5-tts/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }).catch(() => null);
+      }
+      if (!res || !res.ok) {
+        res = await fetch('/api/tts/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }).catch(() => null);
+      }
+
+      if (res && res.ok) {
+        const data = await res.json();
+        if (data && data.audio_base64) {
+          const binary = atob(data.audio_base64);
+          const bytes = new Uint8Array(binary.length);
+          for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+          return new Blob([bytes], { type: 'audio/wav' });
+        }
+      }
+
+      throw new Error(`Servidor F5-TTS offline em ${f5Url}. Execute tools\\iniciar_f5_tts.bat para iniciar a IA de voz.`);
+    }
+
+    // 2. Tenta API do ElevenLabs diretamente se chave estiver presente
+    if (apiKey && (provider === 'elevenlabs')) {
       const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
         method: 'POST',
         headers: {
@@ -2410,7 +2557,7 @@ const PkgManager = {
       return await res.blob();
     }
 
-    // 2. Tenta backend local Python (/api/tts/generate) com edge-tts se backend estiver rodando
+    // 3. Tenta backend local Python (/api/tts/generate) com edge-tts se backend estiver rodando
     try {
       const res = await fetch('/api/tts/generate', {
         method: 'POST',
@@ -2428,20 +2575,24 @@ const PkgManager = {
       });
       if (res.ok) {
         const data = await res.json();
+        if (data.audio_base64) {
+          const binary = atob(data.audio_base64);
+          const bytes = new Uint8Array(binary.length);
+          for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+          return new Blob([bytes], { type: 'audio/wav' });
+        }
         if (data.ok && data.web_url) {
           const audioRes = await fetch(data.web_url);
           if (audioRes.ok) return await audioRes.blob();
         }
       }
-    } catch (e) {
-      // Backend offline
-    }
+    } catch (e) {}
 
-    // 3. Se houver áudio base enviado, usa o áudio base
+    // 4. Se houver áudio base enviado, usa o áudio base
     const sample = await AudioBlobDB.getAudio('fefo_voice_sample');
     if (sample) return sample;
 
-    throw new Error('Nenhum áudio base do FEFO foi carregado ainda. Suba um áudio na janela "⚙️ Configurar Voz IA".');
+    throw new Error('Nenhum provedor de voz disponível ou configurado.');
   },
 
   async generateFefoAudio(containerId, itemId, isProduction = false) {
@@ -2474,7 +2625,7 @@ const PkgManager = {
 
     notice(`Vinculando voz do FEFO para a faixa "${it.titulo}"...`);
 
-    const provider = localStorage.getItem('fefo_ai_provider') || 'custom_sample';
+    const provider = localStorage.getItem('fefo_ai_provider') || 'f5_tts';
     const apiKey = localStorage.getItem('fefo_eleven_key') || '';
     const voiceId = localStorage.getItem('fefo_eleven_voice') || '21m00Tcm4TlvDq8ikWAM';
     const speed = parseFloat(localStorage.getItem('fefo_ai_speed') || '1.0');
@@ -2485,20 +2636,26 @@ const PkgManager = {
     try {
       let blob = null;
 
-      // 1. Se estiver no modo Voz Personalizada (Áudio Base) ou sem chave ElevenLabs
-      if (provider === 'custom_sample' || !apiKey) {
+      // 1. Modo F5-TTS (Zero-Shot Clone do GitHub SWivid/F5-TTS)
+      if (provider === 'f5_tts') {
+        notice('Sintetizando voz do FEFO com IA F5-TTS...');
+        blob = await this.synthesizeVoiceBlob(currentScript, 'f5_tts', apiKey, voiceId, speed, pitch, stability, similarity);
+      }
+
+      // 2. Se estiver no modo Voz Personalizada (Áudio Base Direto)
+      else if (provider === 'custom_sample') {
         const sampleBlob = await AudioBlobDB.getAudio('fefo_voice_sample');
         if (sampleBlob) {
           blob = sampleBlob;
           notice(`✓ Áudio base do FEFO vinculado à faixa! Abra a ferramenta de corte para selecionar o trecho desejado.`, 'ok');
-        } else if (!apiKey) {
+        } else {
           this.openAiVoiceSettings();
           throw new Error('Nenhum áudio de referência do FEFO foi enviado ainda. Envie um áudio na janela que se abriu.');
         }
       }
 
-      // 2. Se estiver configurado com ElevenLabs
-      if (!blob && provider === 'elevenlabs' && apiKey) {
+      // 3. Se estiver configurado com ElevenLabs
+      else if (provider === 'elevenlabs' && apiKey) {
         blob = await this.synthesizeVoiceBlob(currentScript, provider, apiKey, voiceId, speed, pitch, stability, similarity);
       }
 

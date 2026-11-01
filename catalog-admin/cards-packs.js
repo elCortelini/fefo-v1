@@ -881,24 +881,40 @@ const CardPackManager = {
     const packsList = isProduction ? this.state.published : this.state.drafts;
     const pack = packsList.find(p => p.id === packId);
     const card = pack?.cards?.find(c => c.id === cardId);
-    const text = card?.descricao || card?.titulo || '';
+    const text = (card?.descricao || card?.titulo || '').trim();
 
-    if (!text.trim()) return notice('Digite o texto do roteiro antes de gerar a voz.', 'error');
+    if (!text) return notice('Por favor, digite o texto do roteiro antes de gerar a voz.', 'error');
 
-    notice('Gerando áudio com a voz clonada do FEFO (IA)...');
+    const btn = document.getElementById(tn-ai-);
+    const origHtml = btn ? btn.innerHTML : '';
+    if (btn) {
+      btn.innerHTML = '⏳ Gerando voz IA...';
+      btn.classList.add('loading');
+      btn.disabled = true;
+    }
+
+    notice('Gerando áudio com a voz clonada do FEFO (IA F5-TTS)...');
     try {
-      const res = await fetch('/api/ai/tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: text })
-      });
-      const data = await res.json();
-      if (!data.ok || !data.audio_base64) throw new Error(data.message || 'Falha ao sintetizar.');
+      let audioBlob = null;
+      if (window.PkgManager && typeof window.PkgManager.synthesizeVoiceBlob === 'function') {
+        audioBlob = await window.PkgManager.synthesizeVoiceBlob(text);
+      } else {
+        const res = await fetch('/api/f5-tts/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: text })
+        });
+        const data = await res.json();
+        if (!data.ok || !data.audio_base64) throw new Error(data.message || data.detail || 'Falha ao sintetizar.');
+        const binary = atob(data.audio_base64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        audioBlob = new Blob([bytes], { type: 'audio/wav' });
+      }
 
-      const binary = atob(data.audio_base64);
-      const bytes = new Uint8Array(binary.length);
-      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-      const audioBlob = new Blob([bytes], { type: 'audio/wav' });
+      if (!audioBlob || audioBlob.size === 0) {
+        throw new Error('Não foi possível obter o áudio da voz.');
+      }
 
       if (window.AudioBlobDB) await window.AudioBlobDB.setAudio(cardId, audioBlob);
       const blobUrl = URL.createObjectURL(audioBlob);
@@ -906,23 +922,31 @@ const CardPackManager = {
       if (card) {
         card.audio_url = blobUrl;
         card.tamanho_audio = audioBlob.size;
+        card.arquivo_origem = Voz FEFO IA ();
       }
 
       if (isProduction) CardPackStorage.savePublishedCardPacks(this.state.published);
       else CardPackStorage.saveCustomCardPacks(this.state.drafts);
 
-      const player = document.getElementById(`audio-player-${cardId}`);
+      const player = document.getElementById(udio-player-);
       if (player) {
         player.src = blobUrl;
         player.load();
+        player.play().catch(() => {});
       }
 
-      const mount = document.getElementById(`trimmer-mount-${cardId}`);
+      const mount = document.getElementById(	rimmer-mount-);
       if (mount) mount.dataset.mounted = '';
 
       notice('✓ Áudio gerado por IA com sucesso e aplicado ao card!', 'ok');
     } catch (e) {
-      notice(`Aviso IA: ${e.message}`, 'error');
+      notice(Aviso IA: , 'error');
+    } finally {
+      if (btn) {
+        btn.innerHTML = origHtml;
+        btn.classList.remove('loading');
+        btn.disabled = false;
+      }
     }
   },
 
