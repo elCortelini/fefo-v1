@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "FEFO Content Draft Packages - Grade Completa Pedagógica Unificada com Áudios Vinculados",
-  "updated_at": "2026-10-31T17:52:45.392Z",
+  "updated_at": "2026-11-01T14:09:36.679Z",
   "packages": [
     {
       "id": "pkg_59122",
@@ -23,13 +23,14 @@
           "descricao": "",
           "arquivo_fefo": "a0008.wav",
           "arquivo_origem": "fefo fefo fefo.mp3",
-          "web_url": "blob:https://fefoplaneta.com.br/30d6f8f2-67c9-4cc8-b5c1-d3868d9b261d",
-          "status": "needs_trim",
-          "tamanho": 51885,
-          "arquivo": "/usr/a/a0008.wav"
+          "web_url": "blob:https://fefoplaneta.com.br/e964e4a1-c4c2-471b-8c36-ee5454653284",
+          "status": "ready",
+          "tamanho": 108530,
+          "arquivo": "/usr/a/a0008.wav",
+          "is_custom_blob": true
         }
       ],
-      "updated_at": "2026-10-31T17:52:45.390Z"
+      "updated_at": "2026-11-01T14:09:36.678Z"
     },
     {
       "id": "pkg_desafio_e_brincadeiras_desafios",
