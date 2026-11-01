@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "FEFO Content Draft Packages - Grade Completa Pedagógica Unificada com Áudios Vinculados",
-  "updated_at": "2026-11-01T14:10:05.318Z",
+  "updated_at": "2026-11-01T14:32:03.333Z",
   "packages": [
     {
       "id": "pkg_59122",
@@ -23,14 +23,15 @@
           "descricao": "",
           "arquivo_fefo": "a0008.wav",
           "arquivo_origem": "fefo fefo fefo.mp3",
-          "web_url": "blob:https://fefoplaneta.com.br/e964e4a1-c4c2-471b-8c36-ee5454653284",
+          "web_url": "../repository/audio/a0008.wav",
           "status": "ready",
-          "tamanho": 108530,
+          "tamanho": 51885,
           "arquivo": "/usr/a/a0008.wav",
-          "is_custom_blob": true
+          "is_custom_blob": true,
+          "checksum": "e4a1788ab3467f5ddecec79d0da1d83aa0a1a85204e46a6248b4fdb7b60471d4"
         }
       ],
-      "updated_at": "2026-11-01T14:10:05.317Z"
+      "updated_at": "2026-11-01T14:32:01.455Z"
     },
     {
       "id": "pkg_desafio_e_brincadeiras_desafios",
@@ -278,7 +279,7 @@
           "descricao": "\"Oi! você já parou para pensar no seu corpo? Ele é incrível né?! Voce Tem braços, pernas, uma cabeça e muito mais. Voce sabe se merxer ? pular? dar abraços ? O FÊFO quer saber como você se sente quando voce faz tudo isso!\"",
           "localizacao": "/cp/",
           "arquivo_origem": "meu corpo 1 a 12.mp3",
-          "web_url": "blob:https://fefoplaneta.com.br/8c54b399-8a67-44e8-8c44-cc3c0e36103e",
+          "web_url": "blob:https://fefoplaneta.com.br/cd4d77c7-7958-4633-b6e0-b829415096dc",
           "status": "ready",
           "arquivo_draft": "repository/drafts/audio/pkg_meu_corpo/cp1_cortado.wav",
           "tamanho": 1001114,
@@ -1979,7 +1980,7 @@
           "descricao": "\"Voce sabia?  Os gatos são especiais. Eles podem ver bem no escuro, o que os ajuda a enxergar no meio da noite! Eles são muito espertos!, eles tambem são bem independentes e adoram dormir. Eles também são caçadores super habilidosos, mesmo dentro de casa!\"",
           "localizacao": "/an/",
           "arquivo_origem": "a0023.wav",
-          "web_url": "blob:https://fefoplaneta.com.br/a394dca1-4ab3-4aae-bc3b-558e994259ec",
+          "web_url": "blob:https://fefoplaneta.com.br/b6f127fb-1103-4293-b0ca-a499ad789d95",
           "status": "published",
           "arquivo_fefo": "a0181.wav",
           "has_custom_audio": true
