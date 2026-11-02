@@ -1,6 +1,6 @@
 # ==============================================================================
 # SERVIDOR DA API LOCAL DE SÍNTESE DE VOZ IA DO FEFO - MOTOR EXCLUSIVO F5-TTS
-# (Suporte a F5-TTS Base Oficial para fidelidade do mascote + PT-BR + Reconhecimento)
+# (Padrão: Português do Brasil Nativo PT-BR firstpixel/F5-TTS-pt-br)
 # ==============================================================================
 import os
 import sys
@@ -37,8 +37,8 @@ except Exception as _patch_err:
 # Inicializacao do FastAPI
 app = FastAPI(
     title="FEFO F5-TTS AI Voice Server",
-    description="Motor de clonagem de voz Zero-Shot com F5-TTS Base Oficial e PT-BR para o FEFO",
-    version="2.1.0"
+    description="Motor de clonagem de voz Zero-Shot com F5-TTS Nativo PT-BR para o FEFO",
+    version="2.2.0"
 )
 
 # CORS irrestrito para comunicacao com o painel admin (localhost:8765 ou arquivo local)
@@ -67,9 +67,9 @@ def get_device() -> str:
         pass
     return "cpu"
 
-def get_f5_model(model_name: str = "base"):
+def get_f5_model(model_name: str = "pt-br"):
     global _f5_instances, _model_loading
-    m_key = "pt-br" if (model_name and "pt" in model_name.lower()) else "base"
+    m_key = "base" if (model_name and "base" in model_name.lower()) else "pt-br"
     if m_key in _f5_instances:
         return _f5_instances[m_key]
     _model_loading = True
@@ -77,13 +77,13 @@ def get_f5_model(model_name: str = "base"):
         from f5_tts.api import F5TTS
         device = get_device()
         if m_key == "pt-br":
-            print(f"[F5-TTS] Carregando modelo PT-BR (firstpixel/F5-TTS-pt-br) no {device}...")
+            print(f"[F5-TTS] Carregando modelo PT-BR nativo (firstpixel/F5-TTS-pt-br) no {device}...")
             from huggingface_hub import hf_hub_download
             ptbr_ckpt = hf_hub_download(repo_id="firstpixel/F5-TTS-pt-br", filename="pt-br/model_last.safetensors")
             inst = F5TTS(model="F5TTS_v1_Base", ckpt_file=ptbr_ckpt, device=device)
-            print("[F5-TTS] Modelo PT-BR carregado!")
+            print("[F5-TTS] Modelo PT-BR nativo pronto para síntese sem sotaque inglês!")
         else:
-            print(f"[F5-TTS] Carregando modelo Base Oficial F5-TTS (fidelidade máxima ao timbre e agudos do mascote) no {device}...")
+            print(f"[F5-TTS] Carregando modelo Base Oficial F5-TTS no {device}...")
             inst = F5TTS(model="F5TTS_v1_Base", device=device)
             print("[F5-TTS] Modelo Base Oficial carregado!")
         _f5_instances[m_key] = inst
@@ -97,7 +97,7 @@ class GenerateRequest(BaseModel):
     text: str
     ref_audio: Optional[str] = None          # Base64 string, data URI ou caminho de arquivo
     ref_text: Optional[str] = ""             # Transcricao do audio de referencia (opcional)
-    model: Optional[str] = "base"            # 'base' (fiel ao timbre caricato/agudo) ou 'pt-br'
+    model: Optional[str] = "pt-br"           # 'pt-br' (nativo sem sotaque) ou 'base'
     speed: Optional[float] = 1.0             # Velocidade da fala (0.5 a 2.0)
     remove_silence: Optional[bool] = False   # Remover silencio excessivo
     nfe_step: Optional[int] = 16            # Passos de inferencia ODE (16 a 32 para audio limpo sem som metalico)
@@ -112,11 +112,13 @@ class TranscribeRequest(BaseModel):
 @app.get("/api/f5-tts/status")
 def health():
     device = get_device()
-    active_model = "base" if "base" in _f5_instances else ("pt-br" if "pt-br" in _f5_instances else "none")
+    active_model = "pt-br" if "pt-br" in _f5_instances else ("base" if "base" in _f5_instances else "none")
     return {
         "ok": True,
         "status": "online",
-        "engine": "F5-TTS (Base Oficial Fiel / PT-BR)",
+        "engine": "F5-TTS (Português do Brasil PT-BR)",
+        "language": "pt-br",
+        "checkpoint": "firstpixel/F5-TTS-pt-br",
         "active_model": active_model,
         "github": "https://github.com/SWivid/F5-TTS",
         "device": device,
@@ -125,9 +127,9 @@ def health():
     }
 
 @app.post("/api/f5-tts/preload")
-def preload(model: Optional[str] = "base"):
-    get_f5_model(model or "base")
-    return {"ok": True, "message": f"Modelo F5-TTS ({model}) carregado na memoria com sucesso."}
+def preload(model: Optional[str] = "pt-br"):
+    get_f5_model(model or "pt-br")
+    return {"ok": True, "message": f"Modelo F5-TTS ({model or 'pt-br'}) carregado na memoria com sucesso."}
 
 @app.post("/api/f5-tts/transcribe")
 def transcribe_audio(req: TranscribeRequest):
@@ -171,7 +173,7 @@ def generate(req: GenerateRequest):
     if not text:
         raise HTTPException(status_code=400, detail="Texto para sintese ausente.")
 
-    chosen_model = req.model or "base"
+    chosen_model = req.model or "pt-br"
     f5 = get_f5_model(chosen_model)
 
     temp_ref_path = None
@@ -192,6 +194,14 @@ def generate(req: GenerateRequest):
         if req.ref_audio:
             temp_ref_path = _save_ref_audio_to_temp(req.ref_audio)
             ref_file = temp_ref_path
+            # Salvar como ultimo audio de referencia usado
+            try:
+                import shutil
+                shutil.copy(temp_ref_path, str(repo_root / "repository" / "last_used_ref.wav"))
+                with open(str(repo_root / "repository" / "last_used_ref.txt"), "w", encoding="utf-8") as f_ref_txt:
+                    f_ref_txt.write(ref_text)
+            except Exception:
+                pass
         else:
             # Tentar encontrar audio de referencia padrao do FEFO no repositorio
             candidates = [
@@ -240,6 +250,7 @@ def generate(req: GenerateRequest):
             "ok": True,
             "engine": "F5-TTS",
             "model": chosen_model,
+            "language": "pt-br",
             "audio_base64": b64_audio,
             "data_uri": f"data:audio/wav;base64,{b64_audio}",
             "elapsed_seconds": round(elapsed, 2),
@@ -263,7 +274,7 @@ def main():
     host = "0.0.0.0"
     port = 9880
     print("=" * 60)
-    print("   INICIANDO SERVIDOR F5-TTS - CLONAGEM DE VOZ IA DO FEFO")
+    print("   INICIANDO SERVIDOR F5-TTS (PT-BR) - CLONAGEM DE VOZ IA")
     print("=" * 60)
     print(f"Dispositivo detectado: {get_device()}")
     print(f"Servidor disponivel em: http://127.0.0.1:{port}")

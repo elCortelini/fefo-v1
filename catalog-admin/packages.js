@@ -2185,6 +2185,9 @@ const PkgManager = {
     if (!modal) return;
 
     const f5Url = localStorage.getItem('fefo_f5_server_url') || 'http://localhost:9880';
+    const f5Model = localStorage.getItem('fefo_f5_model') || 'pt-br';
+    const selModel = document.getElementById('ai-f5-model-select');
+    if (selModel) selModel.value = f5Model;
     let f5RefText = localStorage.getItem('fefo_f5_ref_text') || '';
     if (!f5RefText || f5RefText.includes('Olá amiguinho') || f5RefText.length < 50) {
       f5RefText = 'Bom dia, hora de acordar. Hora do lanche! Parabéns, você completou sua missão.';
@@ -2402,6 +2405,8 @@ const PkgManager = {
 
   saveAiVoiceSettings() {
     const f5Url = document.getElementById('ai-f5-server-url')?.value.trim() || 'http://localhost:9880';
+    const f5Model = document.getElementById('ai-f5-model-select')?.value || 'pt-br';
+    localStorage.setItem('fefo_f5_model', f5Model);
     let f5Ref = document.getElementById('ai-f5-ref-text')?.value.trim() || '';
     if (!f5Ref || f5Ref.includes('Olá amiguinho')) {
       f5Ref = 'Bom dia, hora de acordar. Hora do lanche! Parabéns, você completou sua missão.';
@@ -2503,10 +2508,12 @@ const PkgManager = {
       });
     }
 
+    const chosenModel = opts.model || localStorage.getItem('fefo_f5_model') || 'pt-br';
     const payload = {
       text: text,
       ref_audio: refAudioBase64,
       ref_text: refText,
+      model: chosenModel,
       speed: speed,
       nfe_step: nfe_step,
       cfg_strength: cfg_strength,
