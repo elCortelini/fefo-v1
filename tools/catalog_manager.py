@@ -163,6 +163,27 @@ def sign_catalog_locally():
     except Exception as e:
         print(f"[Aviso] Erro em sign_catalog.ps1: {e}")
 
+def ensure_f5_server():
+    """Garante que o servidor F5-TTS esteja em execucao na porta 9880"""
+    try:
+        import urllib.request
+        with urllib.request.urlopen("http://127.0.0.1:9880/health", timeout=1.0) as r:
+            if r.status == 200:
+                return True
+    except Exception:
+        pass
+    try:
+        f5_script = ROOT / "tools" / "f5_tts_api.py"
+        if f5_script.exists():
+            import subprocess
+            subprocess.Popen([sys.executable, str(f5_script)], cwd=str(ROOT))
+            print("[catalog_manager] Servidor F5-TTS iniciado automaticamente na porta 9880!")
+            time.sleep(1.5)
+            return True
+    except Exception as e:
+        print(f"[catalog_manager] Falha ao auto-iniciar F5-TTS: {e}")
+    return False
+
 class Handler(SimpleHTTPRequestHandler):
     def copyfile(self, source, outputfile):
         try:
