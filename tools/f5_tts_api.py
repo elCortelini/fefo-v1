@@ -80,10 +80,16 @@ def get_f5_model():
     _model_loading = True
     try:
         from f5_tts.api import F5TTS
+        from huggingface_hub import hf_hub_download
         device = get_device()
-        print(f"[F5-TTS] Carregando modelo F5-TTS (dispositivo: {device})...")
-        _f5_instance = F5TTS(model="F5TTS_v1_Base", device=device)
-        print("[F5-TTS] Modelo carregado e pronto para sintese!")
+        print(f"[F5-TTS] Carregando modelo F5-TTS Português do Brasil (PT-BR) no dispositivo {device}...")
+        try:
+            ptbr_ckpt = hf_hub_download(repo_id="firstpixel/F5-TTS-pt-br", filename="pt-br/model_last.safetensors")
+            _f5_instance = F5TTS(model="F5TTS_v1_Base", ckpt_file=ptbr_ckpt, device=device)
+            print("[F5-TTS] Modelo nativo PT-BR (firstpixel/F5-TTS-pt-br) carregado e pronto para síntese sem sotaque!")
+        except Exception as ptbr_err:
+            print(f"[F5-TTS] Aviso ao carregar checkpoint PT-BR ({ptbr_err}), usando modelo base padrão...")
+            _f5_instance = F5TTS(model="F5TTS_v1_Base", device=device)
         return _f5_instance
     finally:
         _model_loading = False
@@ -108,7 +114,9 @@ def health():
     return {
         "ok": True,
         "status": "online",
-        "engine": "F5-TTS",
+        "engine": "F5-TTS (PT-BR)",
+        "language": "pt-br",
+        "checkpoint": "firstpixel/F5-TTS-pt-br",
         "github": "https://github.com/SWivid/F5-TTS",
         "device": device,
         "model_loaded": _f5_instance is not None,

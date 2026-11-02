@@ -443,9 +443,14 @@ class Handler(SimpleHTTPRequestHandler):
                         pass
                     try:
                         from f5_tts.api import F5TTS
+                        from huggingface_hub import hf_hub_download
                         global _catalog_f5_tts
                         if '_catalog_f5_tts' not in globals() or _catalog_f5_tts is None:
-                            _catalog_f5_tts = F5TTS(model="F5TTS_v1_Base")
+                            try:
+                                ptbr_ckpt = hf_hub_download(repo_id="firstpixel/F5-TTS-pt-br", filename="pt-br/model_last.safetensors")
+                                _catalog_f5_tts = F5TTS(model="F5TTS_v1_Base", ckpt_file=ptbr_ckpt)
+                            except Exception:
+                                _catalog_f5_tts = F5TTS(model="F5TTS_v1_Base")
                         tmp_out = ROOT / f"temp_f5_{int(time.time()*1000)%100000}.wav"
                         _catalog_f5_tts.infer(
                             ref_file=ref_file,
