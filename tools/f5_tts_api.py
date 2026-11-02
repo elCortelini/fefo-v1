@@ -88,7 +88,7 @@ def get_f5_model():
     finally:
         _model_loading = False
 
-DEFAULT_REF_TEXT = "Você sabia? Os ratos são super inteligentes."
+DEFAULT_REF_TEXT = "Você sabia? Os ratos são super inteligentes. Eles podem aprender a seguir caminhos e lembrar deles."
 
 class GenerateRequest(BaseModel):
     text: str
@@ -97,7 +97,7 @@ class GenerateRequest(BaseModel):
     speed: Optional[float] = 1.0             # Velocidade da fala (0.5 a 2.0)
     remove_silence: Optional[bool] = False   # Remover silencio excessivo
     nfe_step: Optional[int] = 16            # Passos de inferencia ODE (16 a 32 para audio limpo sem som metalico)
-    cfg_strength: Optional[float] = 2.0      # Intensidade CFG
+    cfg_strength: Optional[float] = 3.0      # Intensidade CFG (3.0 para fidelidade maxima ao timbre do FEFO)
     sway_sampling_coef: Optional[float] = -1 # Coeficiente sway
 
 @app.get("/")
@@ -150,7 +150,8 @@ def generate(req: GenerateRequest):
     temp_ref_path = None
     ref_file = None
     ref_text = (req.ref_text or "").strip()
-    if not ref_text or len(ref_text) < 10 or "Olá amiguinho" in ref_text:
+    # Se o texto for curto demais (1 frase antiga de 43 chars) ou generico, usa o texto completo exato de 2 frases
+    if not ref_text or len(ref_text) < 55 or "Olá amiguinho" in ref_text:
         ref_text = DEFAULT_REF_TEXT
 
     # No CPU, 16 passos eliminam o som metalico mantendo alta velocidade com audio de 3.9s
@@ -159,9 +160,19 @@ def generate(req: GenerateRequest):
         nfe = min(max(nfe, 12), 20)
 
     try:
+        clean_candidate = repo_root / "repository" / "fefo_ref_clean.wav"
         if req.ref_audio:
             temp_ref_path = _save_ref_audio_to_temp(req.ref_audio)
-            ref_file = temp_ref_path
+            # Se for a amostra antiga longa do FEFO (>10s), usa a versao tratada em 24kHz (7.8s) para fidelidade total
+            try:
+                import soundfile as _sf_chk
+                info = _sf_chk.info(temp_ref_path)
+                if info.duration > 10.0 and clean_candidate.exists():
+                    ref_file = str(clean_candidate)
+                else:
+                    ref_file = temp_ref_path
+            except Exception:
+                ref_file = temp_ref_path
         else:
             # Tentar encontrar audio de referencia padrao do FEFO no repositorio
             repo_root = Path(__file__).resolve().parent.parent
@@ -194,7 +205,7 @@ def generate(req: GenerateRequest):
             gen_text=text,
             speed=float(req.speed or 1.0),
             nfe_step=nfe,
-            cfg_strength=float(req.cfg_strength or 2.0),
+            cfg_strength=float(req.cfg_strength or 3.0),
             sway_sampling_coef=float(req.sway_sampling_coef or -1),
             remove_silence=bool(req.remove_silence),
             file_wave=out_wav_path

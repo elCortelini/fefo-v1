@@ -398,7 +398,7 @@ class Handler(SimpleHTTPRequestHandler):
                 item_id = payload.get('item_id')
                 speed = float(payload.get('speed', 1.0))
                 nfe_step = int(payload.get('nfe_step', 8))
-                cfg_strength = float(payload.get('cfg_strength', 2.0))
+                cfg_strength = float(payload.get('cfg_strength', 3.0))
                 remove_silence = bool(payload.get('remove_silence', True))
 
                 if not text: raise ValueError('Texto ausente para geração de áudio.')
@@ -407,7 +407,7 @@ class Handler(SimpleHTTPRequestHandler):
                 ref_audio_b64 = payload.get('ref_audio')
                 ref_text = (payload.get('ref_text') or '').strip()
                 if not ref_text or len(ref_text) < 10 or 'Olá amiguinho' in ref_text:
-                    ref_text = 'Você sabia? Os ratos são super inteligentes.'
+                    ref_text = 'Você sabia? Os ratos são super inteligentes. Eles podem aprender a seguir caminhos e lembrar deles.'
                 nfe_step = int(payload.get('nfe_step') or 16)
                 if nfe_step < 12: nfe_step = 16
                 temp_ref = None

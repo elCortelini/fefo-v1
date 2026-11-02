@@ -2186,8 +2186,8 @@ const PkgManager = {
 
     const f5Url = localStorage.getItem('fefo_f5_server_url') || 'http://localhost:9880';
     let f5RefText = localStorage.getItem('fefo_f5_ref_text') || '';
-    if (!f5RefText || f5RefText.includes('Olá amiguinho')) {
-      f5RefText = 'Você sabia? Os ratos são super inteligentes.';
+    if (!f5RefText || f5RefText.includes('Olá amiguinho') || f5RefText.length < 50) {
+      f5RefText = 'Você sabia? Os ratos são super inteligentes. Eles podem aprender a seguir caminhos e lembrar deles.';
       localStorage.setItem('fefo_f5_ref_text', f5RefText);
     }
     const speed = localStorage.getItem('fefo_ai_speed') || '1.0';
@@ -2196,7 +2196,11 @@ const PkgManager = {
       nfe = '16';
       localStorage.setItem('fefo_ai_nfe', '16');
     }
-    const cfg = localStorage.getItem('fefo_ai_cfg') || '2.0';
+    let cfg = localStorage.getItem('fefo_ai_cfg') || '3.0';
+    if (parseFloat(cfg) < 2.5) {
+      cfg = '3.0';
+      localStorage.setItem('fefo_ai_cfg', '3.0');
+    }
     const removeSilence = localStorage.getItem('fefo_ai_remove_silence') !== '0';
     const sampleName = localStorage.getItem('fefo_ai_sample_name') || '';
 
@@ -2235,13 +2239,14 @@ const PkgManager = {
     try {
       let sampleName = localStorage.getItem('fefo_ai_sample_name') || '';
       let sampleBlob = await AudioBlobDB.getAudio('fefo_voice_sample');
-      if (!sampleBlob || sampleName === 'fefo_voice_sample.wav' || !sampleName) {
+      // Força uso da referência limpa de 7.8s a 24kHz
+      if (!sampleBlob || sampleName !== 'fefo_ref_clean_v2.wav') {
         try {
           const r = await fetch('../repository/fefo_ref_clean.wav');
           if (r.ok) {
             sampleBlob = await r.blob();
             await AudioBlobDB.setAudio('fefo_voice_sample', sampleBlob);
-            localStorage.setItem('fefo_ai_sample_name', 'fefo_ref_clean.wav');
+            localStorage.setItem('fefo_ai_sample_name', 'fefo_ref_clean_v2.wav');
           }
         } catch (e) {}
       }
@@ -2348,13 +2353,13 @@ const PkgManager = {
   saveAiVoiceSettings() {
     const f5Url = document.getElementById('ai-f5-server-url')?.value.trim() || 'http://localhost:9880';
     let f5Ref = document.getElementById('ai-f5-ref-text')?.value.trim() || '';
-    if (!f5Ref || f5Ref.includes('Olá amiguinho')) {
-      f5Ref = 'Você sabia? Os ratos são super inteligentes.';
+    if (!f5Ref || f5Ref.includes('Olá amiguinho') || f5Ref.length < 50) {
+      f5Ref = 'Você sabia? Os ratos são super inteligentes. Eles podem aprender a seguir caminhos e lembrar deles.';
     }
     const speed = document.getElementById('ai-speed-slider')?.value || '1.0';
     let nfe = document.getElementById('ai-nfe-slider')?.value || '16';
     if (parseInt(nfe, 10) < 12) nfe = '16';
-    const cfg = document.getElementById('ai-cfg-slider')?.value || '2.0';
+    const cfg = document.getElementById('ai-cfg-slider')?.value || '3.0';
     const removeSilence = document.getElementById('ai-remove-silence')?.checked !== false;
 
     localStorage.setItem('fefo_ai_provider', 'f5_tts');
@@ -2413,15 +2418,16 @@ const PkgManager = {
 
   async synthesizeVoiceBlob(text, opts = {}) {
     const f5Url = (localStorage.getItem('fefo_f5_server_url') || 'http://localhost:9880').replace(/\/+$/, '');
-    let refText = localStorage.getItem('fefo_f5_ref_text') || 'Você sabia? Os ratos são super inteligentes.';
-    if (!refText || refText.includes('Olá amiguinho')) {
-      refText = 'Você sabia? Os ratos são super inteligentes.';
+    let refText = localStorage.getItem('fefo_f5_ref_text') || '';
+    if (!refText || refText.includes('Olá amiguinho') || refText.length < 50) {
+      refText = 'Você sabia? Os ratos são super inteligentes. Eles podem aprender a seguir caminhos e lembrar deles.';
       localStorage.setItem('fefo_f5_ref_text', refText);
     }
     const speed = opts.speed ?? parseFloat(localStorage.getItem('fefo_ai_speed') || '1.0');
     let nfe_step = opts.nfe_step ?? parseInt(localStorage.getItem('fefo_ai_nfe') || '16', 10);
     if (nfe_step < 12) nfe_step = 16;
-    const cfg_strength = opts.cfg_strength ?? parseFloat(localStorage.getItem('fefo_ai_cfg') || '2.0');
+    let cfg_strength = opts.cfg_strength ?? parseFloat(localStorage.getItem('fefo_ai_cfg') || '3.0');
+    if (cfg_strength < 2.5) cfg_strength = 3.0;
     const remove_silence = opts.remove_silence ?? (localStorage.getItem('fefo_ai_remove_silence') !== '0');
 
     // 1. Obter áudio de referência do FEFO (amostra limpa de 3.9s)
@@ -2433,7 +2439,7 @@ const PkgManager = {
         if (r.ok) {
           sampleBlob = await r.blob();
           await AudioBlobDB.setAudio('fefo_voice_sample', sampleBlob);
-          localStorage.setItem('fefo_ai_sample_name', 'fefo_ref_clean.wav');
+          localStorage.setItem('fefo_ai_sample_name', 'fefo_ref_clean_v2.wav');
         }
       } catch (e) {}
     }

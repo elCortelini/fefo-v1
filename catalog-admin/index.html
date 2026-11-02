@@ -495,7 +495,7 @@
 
           <!-- Conexão Automática do F5-TTS (Sem campos técnicos visíveis) -->
           <input type="hidden" id="ai-f5-server-url" value="http://localhost:9880">
-          <input type="hidden" id="ai-f5-ref-text" value="Você sabia? Os ratos são super inteligentes.">
+          <input type="hidden" id="ai-f5-ref-text" value="Você sabia? Os ratos são super inteligentes. Eles podem aprender a seguir caminhos e lembrar deles.">
 
           <!-- Configurações Próprias do F5-TTS -->
           <div style="background: #fdfdfe; border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
@@ -520,10 +520,10 @@
             <div class="pkg-field-box">
               <div style="display: flex; justify-content: space-between;">
                 <label>Força do Timbre (CFG Strength)</label>
-                <span id="ai-cfg-val" style="font-size: 11px; font-weight: 900; color: var(--purple);">2.0</span>
+                <span id="ai-cfg-val" style="font-size: 11px; font-weight: 900; color: var(--purple);">3.0</span>
               </div>
-              <input type="range" id="ai-cfg-slider" min="1.0" max="3.5" step="0.2" value="2.0" oninput="document.getElementById('ai-cfg-val').textContent = parseFloat(this.value).toFixed(1)">
-              <span class="hint" style="font-size: 10.5px;">Aproximação com a referência (Padrão: 2.0)</span>
+              <input type="range" id="ai-cfg-slider" min="1.5" max="4.0" step="0.2" value="3.0" oninput="document.getElementById('ai-cfg-val').textContent = parseFloat(this.value).toFixed(1)">
+              <span class="hint" style="font-size: 10.5px;">Fidelidade da voz clonada (3.0 = Voz idêntica ao FEFO)</span>
             </div>
 
             <div class="pkg-field-box" style="justify-content: center;">
