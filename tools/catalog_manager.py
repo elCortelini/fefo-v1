@@ -391,29 +391,23 @@ class Handler(SimpleHTTPRequestHandler):
                     result = {'ok': False, 'message': 'Pacote não encontrado.'}
 
             elif self.path in ('/api/tts/generate', '/api/f5-tts/generate', '/api/ai/tts'):
-                ensure_f5_server()
                 payload = json.loads(body.decode('utf-8'))
                 text = payload.get('text', '').strip()
                 pkg_id = payload.get('package_id')
                 item_id = payload.get('item_id')
                 speed = float(payload.get('speed', 1.0))
-                nfe_step = int(payload.get('nfe_step', 8))
-                cfg_strength = float(payload.get('cfg_strength', 3.0))
-                remove_silence = bool(payload.get('remove_silence', True))
+                pitch = float(payload.get('pitch', 7.0))
+                voice = payload.get('voice', 'pt-BR-ThalitaMultilingualNeural')
 
-                if not text: raise ValueError('Texto ausente para geração de áudio.')
+                if not text:
+                    raise ValueError('Texto ausente para geração de áudio.')
 
-                audio_bytes = None
                 ref_audio_b64 = payload.get('ref_audio')
-                ref_text = (payload.get('ref_text') or '').strip()
-                if not ref_text or len(ref_text) < 10 or 'Olá amiguinho' in ref_text:
-                    ref_text = 'Bom dia, hora de acordar. Hora do lanche! Parabéns, você completou sua missão.'
-                nfe_step = int(payload.get('nfe_step') or 16)
-                if nfe_step < 12: nfe_step = 16
                 temp_ref = None
+                ref_file = None
+                audio_bytes = None
 
                 try:
-                    ref_file = None
                     if ref_audio_b64:
                         import base64, tempfile
                         if ',' in ref_audio_b64 and 'base64' in ref_audio_b64:
@@ -425,62 +419,21 @@ class Handler(SimpleHTTPRequestHandler):
                         temp_ref.close()
                         ref_file = temp_ref.name
                     else:
-                        for candidate in [ROOT / 'repository' / 'fefo_ref_clean.wav', ROOT / 'repository' / 'fefo_voice_sample.wav', ROOT / 'repository' / 'audio' / 'a0032.wav', ROOT / 'repository' / 'audio' / 'a0001.wav']:
+                        for candidate in [ROOT / 'repository' / 'fefo_ref_clean.wav', ROOT / 'repository' / 'fefo_voice_sample.wav', ROOT / 'repository' / 'last_used_ref.wav']:
                             if candidate.exists():
                                 ref_file = str(candidate)
                                 break
 
-                    # 1. Tenta F5-TTS direto via biblioteca Python
-                    try:
-                        # Patch torchaudio.load com soundfile para compatibilidade Windows
-                        import soundfile as _sf, torch as _torch, torchaudio as _ta
-                        def _sf_load(uri, *args, **kwargs):
-                            d, sr = _sf.read(str(uri), dtype='float32')
-                            t = _torch.from_numpy(d).unsqueeze(0) if d.ndim == 1 else _torch.from_numpy(d.T)
-                            return t, sr
-                        _ta.load = _sf_load
-                    except Exception:
-                        pass
-                    try:
-                        from f5_tts.api import F5TTS
-                        from huggingface_hub import hf_hub_download
-                        global _catalog_f5_tts
-                        if '_catalog_f5_tts' not in globals() or _catalog_f5_tts is None:
-                            try:
-                                ptbr_ckpt = hf_hub_download(repo_id="SWivid/F5-TTS", filename="pt-br/model_last.safetensors")
-                                _catalog_f5_tts = F5TTS(model="F5TTS_v1_Base", ckpt_file=ptbr_ckpt)
-                            except Exception:
-                                _catalog_f5_tts = F5TTS(model="F5TTS_v1_Base")
-                        tmp_out = ROOT / f"temp_f5_{int(time.time()*1000)%100000}.wav"
-                        _catalog_f5_tts.infer(
-                            ref_file=ref_file,
-                            ref_text=ref_text,
-                            gen_text=text,
-                            speed=speed,
-                            nfe_step=nfe_step,
-                            cfg_strength=cfg_strength,
-                            remove_silence=remove_silence,
-                            file_wave=str(tmp_out)
-                        )
-                        if tmp_out.exists():
-                            audio_bytes = tmp_out.read_bytes()
-                            tmp_out.unlink()
-                    except Exception as f5_err:
-                        # 2. Tenta conectar ao servidor F5-TTS na porta 9880
-                        import urllib.request, base64
-                        req_data = json.dumps({
-                            'text': text,
-                            'ref_audio': ref_audio_b64,
-                            'ref_text': ref_text,
-                            'speed': speed,
-                            'nfe_step': nfe_step,
-                            'cfg_strength': cfg_strength,
-                            'remove_silence': remove_silence
-                        }).encode('utf-8')
-                        req = urllib.request.Request('http://127.0.0.1:9880/api/f5-tts/generate', data=req_data, headers={'Content-Type': 'application/json'})
-                        with urllib.request.urlopen(req, timeout=120) as resp:
-                            resp_data = json.loads(resp.read().decode('utf-8'))
-                            audio_bytes = base64.b64decode(resp_data['audio_base64'])
+                    # Pipeline Opção 1: Fala Nativa PT-BR (0% Sotaque) + Timbre Mascote FEFO
+                    sys.path.insert(0, str(ROOT))
+                    from tools.fefo_voice_pipeline import generate_fefo_sync
+                    audio_bytes, elapsed = generate_fefo_sync(
+                        text=text,
+                        ref_audio_path=ref_file,
+                        voice=voice,
+                        pitch_semitones=pitch,
+                        speed=speed
+                    )
                 finally:
                     if temp_ref and os.path.exists(temp_ref.name):
                         try: os.unlink(temp_ref.name)

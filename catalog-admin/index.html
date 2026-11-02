@@ -446,25 +446,90 @@
 
     <!-- Modal de Configuração da Voz do FEFO (IA) -->
     <div id="modal-ai-voice" class="audio-trimmer-backdrop" style="display: none;">
-      <div class="audio-trimmer-container" style="max-width: 640px; background: #ffffff; color: var(--ink); border: 2px solid var(--purple); max-height: 90vh; overflow-y: auto;">
+      <div class="audio-trimmer-container" style="max-width: 620px;">
         <div class="trimmer-header" style="border-bottom: 1px solid var(--line); padding-bottom: 12px;">
           <div>
             <span class="trimmer-badge" style="background: var(--purple); color: #fff;">🎙️ INTELIGÊNCIA ARTIFICIAL</span>
-            <h3 style="margin: 4px 0 0; color: var(--ink); font-size: 20px;">Configurar Voz Clonada do FEFO</h3>
+            <h3 style="margin: 4px 0 0; color: var(--ink); font-size: 20px;">Voz IA do Mascote FEFO</h3>
           </div>
           <button type="button" class="editor-close" style="color: var(--muted);" onclick="PkgManager.closeAiVoiceSettings()">✕</button>
         </div>
 
-        <div style="display: flex; flex-direction: column; gap: 16px; padding: 14px 0;">
-          <!-- Banner Exclusivo: F5-TTS -->
-          <div style="background: linear-gradient(135deg, #f6f3ff 0%, #ede8fa 100%); border: 1.5px solid #c7b8ea; border-radius: 14px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <span style="font-size: 28px;">🔥</span>
-              <div>
-                <div style="font-size: 15px; font-weight: 900; color: var(--purple); letter-spacing: -0.3px;">MOTOR EXCLUSIVO: F5-TTS (Português do Brasil - PT-BR)</div>
-                <div style="font-size: 11.5px; color: var(--muted); font-weight: 700; margin-top: 2px;">Clonagem de Voz Zero-Shot por IA nativa em Português do Brasil (firstpixel/F5-TTS-pt-br) • Sem sotaque inglês</div>
+        <div style="display: flex; flex-direction: column; gap: 14px; padding: 14px 0;">
+          <!-- Banner: Pipeline Nativo PT-BR -->
+          <div style="background: linear-gradient(135deg, #f6f3ff 0%, #ede8fa 100%); border: 1.5px solid #c7b8ea; border-radius: 14px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+            <div>
+              <div style="font-size: 14px; font-weight: 900; color: var(--purple);">🇧🇷 Motor Ativo: Pipeline Nativo PT-BR + Mascote FEFO</div>
+              <div style="font-size: 11px; color: var(--muted); font-weight: 700; margin-top: 2px;">Pronúncia 100% natural do Brasil (Zero Sotaque) • Geração rápida em ~3 segundos</div>
+            </div>
+            <span id="f5-server-status" style="font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 8px; background: #e8f8f0; color: #127547;">● Motor Ativo</span>
+          </div>
+
+          <!-- Áudio de Referência do Mascote -->
+          <div style="background: #fbf9ff; border: 1.5px solid #e1d9f4; border-radius: 14px; padding: 12px 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label style="font-size: 11px; font-weight: 900; color: var(--purple); text-transform: uppercase;">📁 Áudio de Referência do Mascote:</label>
+              <span id="ai-sample-status" style="font-size: 11px; font-weight: 800; color: #27ae60;"></span>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+              <input type="file" id="ai-voice-sample-input" accept="audio/*,.wav,.mp3,.m4a" style="display: none;" onchange="PkgManager.handleVoiceSampleUpload(this.files)">
+              <button type="button" class="btn secondary" style="font-size: 12px; padding: 6px 12px;" onclick="document.getElementById('ai-voice-sample-input').click()">
+                📂 Trocar Áudio de Referência (.wav / .mp3)
+              </button>
+              <span id="ai-sample-name" style="font-size: 12px; font-weight: 800; color: var(--ink);">fefo_ref_clean.wav</span>
+            </div>
+            <div id="ai-sample-player-container" style="margin-top: 8px; padding: 8px; background: #ffffff; border: 1px solid #e1d9f4; border-radius: 8px; display: none;">
+              <audio id="ai-sample-player" controls style="width: 100%; height: 32px;"></audio>
+            </div>
+          </div>
+
+          <!-- Ajustes Simples: Tom do Mascote e Velocidade -->
+          <div style="background: #fdfdfe; border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+            <div class="pkg-field-box">
+              <div style="display: flex; justify-content: space-between;">
+                <label>Tom do Mascote (Pitch)</label>
+                <span id="ai-pitch-val" style="font-size: 11px; font-weight: 900; color: var(--purple);">+7 Semitons</span>
+              </div>
+              <input type="range" id="ai-pitch-slider" min="3" max="11" step="0.5" value="7" oninput="document.getElementById('ai-pitch-val').textContent = '+' + this.value + ' Semitons'">
+              <span class="hint" style="font-size: 10px;">Padrão: +7 (Voz aguda e alegre do FEFO)</span>
+            </div>
+
+            <div class="pkg-field-box">
+              <div style="display: flex; justify-content: space-between;">
+                <label>Velocidade da Fala</label>
+                <span id="ai-speed-val" style="font-size: 11px; font-weight: 900; color: var(--purple);">1.0x</span>
+              </div>
+              <input type="range" id="ai-speed-slider" min="0.8" max="1.3" step="0.05" value="1.0" oninput="document.getElementById('ai-speed-val').textContent = this.value + 'x'">
+              <span class="hint" style="font-size: 10px;">Padrão: 1.0x</span>
+            </div>
+          </div>
+
+          <!-- Teste Rápido da Voz -->
+          <div style="background: #faf8ff; border: 1.5px dashed #c7b8ea; border-radius: 12px; padding: 12px 14px;">
+            <label style="font-size: 11px; font-weight: 900; color: var(--purple); text-transform: uppercase;">Ouvir Prévia da Voz:</label>
+            <div style="display: flex; gap: 8px; margin-top: 6px;">
+              <input type="text" id="ai-test-text" value="Olá amiguinho! Eu sou o Fefo, vamos brincar juntos hoje?" style="flex: 1; font-size: 13px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px;">
+              <button class="btn primary" id="btn-ai-test-submit" type="button" style="padding: 8px 16px; font-size: 13px;" onclick="PkgManager.testAiVoice()">▶ Ouvir Teste</button>
+            </div>
+            <div id="ai-test-progress" style="display:none; margin-top: 10px; background: #ffffff; border: 1.5px solid #d4c9f1; border-radius: 10px; padding: 10px 14px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <span id="ai-test-progress-label" style="font-size: 12px; font-weight: 800; color: var(--purple);">⚡ Gerando voz do FEFO...</span>
+                <span id="ai-test-progress-percent" style="font-size: 13px; font-weight: 900; color: var(--purple);">0%</span>
+              </div>
+              <div style="width: 100%; height: 8px; background: #ede8fa; border-radius: 6px; overflow: hidden;">
+                <div id="ai-test-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #7c3aed, #a855f7); border-radius: 6px; transition: width 0.25s ease;"></div>
               </div>
             </div>
+            <audio id="ai-test-player" style="display:none; width: 100%; margin-top: 10px;" controls></audio>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--line); padding-top: 12px;">
+          <button class="btn secondary" type="button" onclick="PkgManager.closeAiVoiceSettings()">Fechar</button>
+          <button class="btn primary" type="button" onclick="PkgManager.saveAiVoiceSettings()">💾 Salvar Configurações</button>
+        </div>
+      </div>
+    </div>
             <span id="f5-server-status" style="font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 8px; background: #e8f8f0; color: #127547;">● Verificando conexão...</span>
           </div>
 

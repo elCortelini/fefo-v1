@@ -1,11 +1,10 @@
 # ==============================================================================
-# SERVIDOR DA API LOCAL DE SÍNTESE DE VOZ IA DO FEFO - MOTOR EXCLUSIVO F5-TTS
-# (Padrão: Português do Brasil Nativo PT-BR firstpixel/F5-TTS-pt-br)
+# SERVIDOR DA API LOCAL DE SÍNTESE DE VOZ DO MASCOTE FEFO - PIPELINE OPÇÃO 1
+# Fala Nativa em Português do Brasil (0% Sotaque) + Modelagem de Timbre do Mascote
 # ==============================================================================
 import os
 import sys
 import time
-import uuid
 import base64
 import tempfile
 from pathlib import Path
@@ -16,32 +15,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
 
-# Patch torchaudio.load para usar soundfile no Windows (evita erro de torchcodec/FFmpeg DLLs ausentes)
-try:
-    import soundfile as sf
-    import torch
-    import torchaudio
+repo_root = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(repo_root))
 
-    def _soundfile_load(uri, *args, **kwargs):
-        data, sr = sf.read(str(uri), dtype='float32')
-        if data.ndim == 1:
-            tensor = torch.from_numpy(data).unsqueeze(0)
-        else:
-            tensor = torch.from_numpy(data.T)
-        return tensor, sr
+from tools.fefo_voice_pipeline import generate_fefo_sync
 
-    torchaudio.load = _soundfile_load
-except Exception as _patch_err:
-    print(f'[Aviso] Falha ao aplicar patch soundfile no torchaudio: {_patch_err}')
-
-# Inicializacao do FastAPI
 app = FastAPI(
-    title="FEFO F5-TTS AI Voice Server",
-    description="Motor de clonagem de voz Zero-Shot com F5-TTS Nativo PT-BR para o FEFO",
-    version="2.2.0"
+    title="FEFO Voice AI Server",
+    description="Motor Oficial de Voz do FEFO: PT-BR Nativo + Modelagem de Timbre Mascote",
+    version="3.0.0"
 )
 
-# CORS irrestrito para comunicacao com o painel admin (localhost:8765 ou arquivo local)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -50,93 +34,54 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Singleton dos modelos F5-TTS
-_f5_instances = {}
-_model_loading = False
-
-def get_device() -> str:
-    try:
-        import torch
-        if torch.cuda.is_available():
-            return "cuda"
-        if hasattr(torch, "xpu") and torch.xpu.is_available():
-            return "xpu"
-        if hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
-            return "mps"
-    except Exception:
-        pass
-    return "cpu"
-
-def get_f5_model(model_name: str = "pt-br"):
-    global _f5_instances, _model_loading
-    m_key = "base" if (model_name and "base" in model_name.lower()) else "pt-br"
-    if m_key in _f5_instances:
-        return _f5_instances[m_key]
-    _model_loading = True
-    try:
-        from f5_tts.api import F5TTS
-        device = get_device()
-        if m_key == "pt-br":
-            print(f"[F5-TTS] Carregando modelo PT-BR nativo (firstpixel/F5-TTS-pt-br) no {device}...")
-            from huggingface_hub import hf_hub_download
-            ptbr_ckpt = hf_hub_download(repo_id="firstpixel/F5-TTS-pt-br", filename="pt-br/model_last.safetensors")
-            inst = F5TTS(model="F5TTS_v1_Base", ckpt_file=ptbr_ckpt, device=device)
-            print("[F5-TTS] Modelo PT-BR nativo pronto para síntese sem sotaque inglês!")
-        else:
-            print(f"[F5-TTS] Carregando modelo Base Oficial F5-TTS no {device}...")
-            inst = F5TTS(model="F5TTS_v1_Base", device=device)
-            print("[F5-TTS] Modelo Base Oficial carregado!")
-        _f5_instances[m_key] = inst
-        return inst
-    finally:
-        _model_loading = False
-
-DEFAULT_REF_TEXT = "Bom dia, hora de acordar. Hora do lanche! Parabéns, você completou sua missão."
-
 class GenerateRequest(BaseModel):
     text: str
-    ref_audio: Optional[str] = None          # Base64 string, data URI ou caminho de arquivo
-    ref_text: Optional[str] = ""             # Transcricao do audio de referencia (opcional)
-    model: Optional[str] = "pt-br"           # 'pt-br' (nativo sem sotaque) ou 'base'
-    speed: Optional[float] = 1.0             # Velocidade da fala (0.5 a 2.0)
-    remove_silence: Optional[bool] = False   # Remover silencio excessivo
-    nfe_step: Optional[int] = 16            # Passos de inferencia ODE (16 a 32 para audio limpo sem som metalico)
-    cfg_strength: Optional[float] = 3.0      # Intensidade CFG (3.0 para fidelidade maxima ao timbre do FEFO)
-    sway_sampling_coef: Optional[float] = -1 # Coeficiente sway
+    ref_audio: Optional[str] = None
+    ref_text: Optional[str] = ""
+    voice: Optional[str] = "pt-BR-ThalitaMultilingualNeural"
+    pitch: Optional[float] = 7.0             # Semitons (+7 = registro perfeito do FEFO)
+    speed: Optional[float] = 1.0
 
 class TranscribeRequest(BaseModel):
-    audio: str                               # Base64 ou data URI
+    audio: str
 
 @app.get("/")
 @app.get("/health")
 @app.get("/api/f5-tts/status")
+@app.get("/api/tts/status")
 def health():
-    device = get_device()
-    active_model = "pt-br" if "pt-br" in _f5_instances else ("base" if "base" in _f5_instances else "none")
     return {
         "ok": True,
         "status": "online",
-        "engine": "F5-TTS (Português do Brasil PT-BR)",
+        "engine": "Voz IA do FEFO (Pipeline Nativo PT-BR + Mascote)",
         "language": "pt-br",
-        "checkpoint": "firstpixel/F5-TTS-pt-br",
-        "active_model": active_model,
-        "github": "https://github.com/SWivid/F5-TTS",
-        "device": device,
-        "model_loaded": len(_f5_instances) > 0,
-        "loading": _model_loading
+        "voice": "pt-BR-ThalitaMultilingualNeural",
+        "accent": "0% Sotaque (Nativo Brasil)",
+        "device": "cpu",
+        "model_loaded": True,
+        "loading": False
     }
 
 @app.post("/api/f5-tts/preload")
-def preload(model: Optional[str] = "pt-br"):
-    get_f5_model(model or "pt-br")
-    return {"ok": True, "message": f"Modelo F5-TTS ({model or 'pt-br'}) carregado na memoria com sucesso."}
+@app.post("/api/tts/preload")
+def preload():
+    return {"ok": True, "message": "Motor de Voz do FEFO pronto e ativo."}
 
 @app.post("/api/f5-tts/transcribe")
 def transcribe_audio(req: TranscribeRequest):
     temp_path = None
     try:
         import speech_recognition as sr_mod
-        temp_path = _save_ref_audio_to_temp(req.audio)
+        audio_str = req.audio
+        if "," in audio_str and "base64" in audio_str:
+            audio_str = audio_str.split(",", 1)[1]
+        raw_b = base64.b64decode(audio_str)
+        temp_f = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
+        temp_f.write(raw_b)
+        temp_f.flush()
+        temp_f.close()
+        temp_path = temp_f.name
+
         r = sr_mod.Recognizer()
         with sr_mod.AudioFile(temp_path) as src:
             a = r.record(src)
@@ -149,135 +94,79 @@ def transcribe_audio(req: TranscribeRequest):
             try: os.unlink(temp_path)
             except Exception: pass
 
-def _save_ref_audio_to_temp(ref_audio_str: str) -> str:
-    """Extrai audio de base64 ou data URI e salva em arquivo temporario .wav"""
-    if os.path.exists(ref_audio_str):
-        return ref_audio_str
-    
-    # Remove prefixo data URI se houver
-    if "," in ref_audio_str and "base64" in ref_audio_str:
-        ref_audio_str = ref_audio_str.split(",", 1)[1]
-    
-    audio_bytes = base64.b64decode(ref_audio_str)
-    
-    # Criar arquivo temporario
-    temp_ref = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
-    temp_ref.write(audio_bytes)
-    temp_ref.flush()
-    temp_ref.close()
-    return temp_ref.name
-
 @app.post("/api/f5-tts/generate")
+@app.post("/api/tts/generate")
 def generate(req: GenerateRequest):
     text = (req.text or "").strip()
     if not text:
-        raise HTTPException(status_code=400, detail="Texto para sintese ausente.")
-
-    chosen_model = req.model or "pt-br"
-    f5 = get_f5_model(chosen_model)
+        raise HTTPException(status_code=400, detail="Texto para síntese ausente.")
 
     temp_ref_path = None
     ref_file = None
-    ref_text = (req.ref_text or "").strip()
-    if not ref_text or "Olá amiguinho" in ref_text:
-        ref_text = DEFAULT_REF_TEXT
-
-    # No CPU, 16 passos eliminam o som metalico mantendo alta velocidade com audio de 3.9s a 7.5s
-    nfe = int(req.nfe_step or 16)
-    if get_device() == "cpu":
-        nfe = min(max(nfe, 12), 20)
-
-    repo_root = Path(__file__).resolve().parent.parent
-    clean_candidate = repo_root / "repository" / "fefo_ref_clean.wav"
 
     try:
         if req.ref_audio:
-            temp_ref_path = _save_ref_audio_to_temp(req.ref_audio)
+            audio_str = req.ref_audio
+            if "," in audio_str and "base64" in audio_str:
+                audio_str = audio_str.split(",", 1)[1]
+            raw_b = base64.b64decode(audio_str)
+            temp_f = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
+            temp_f.write(raw_b)
+            temp_f.flush()
+            temp_f.close()
+            temp_ref_path = temp_f.name
             ref_file = temp_ref_path
-            # Salvar como ultimo audio de referencia usado
-            try:
-                import shutil
-                shutil.copy(temp_ref_path, str(repo_root / "repository" / "last_used_ref.wav"))
-                with open(str(repo_root / "repository" / "last_used_ref.txt"), "w", encoding="utf-8") as f_ref_txt:
-                    f_ref_txt.write(ref_text)
-            except Exception:
-                pass
         else:
-            # Tentar encontrar audio de referencia padrao do FEFO no repositorio
-            candidates = [
-                clean_candidate,
+            for cand in [
+                repo_root / "repository" / "fefo_ref_clean.wav",
                 repo_root / "repository" / "fefo_voice_sample.wav",
-                repo_root / "repository" / "audio" / "a0001.wav",
-            ]
-            for c in candidates:
-                if c.exists():
-                    ref_file = str(c)
+                repo_root / "repository" / "last_used_ref.wav"
+            ]:
+                if cand.exists():
+                    ref_file = str(cand)
                     break
 
-        if not ref_file or not os.path.exists(ref_file):
-            raise HTTPException(
-                status_code=400,
-                detail="Nenhum audio de referencia fornecido ou encontrado no repositorio."
-            )
+        pitch_val = float(req.pitch if req.pitch is not None else 7.0)
+        speed_val = float(req.speed or 1.0)
+        voice_val = req.voice or "pt-BR-ThalitaMultilingualNeural"
 
-        # Arquivo temporario para a saida
-        temp_out = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
-        temp_out.close()
-        out_wav_path = temp_out.name
-
-        t0 = time.time()
-        print(f"[F5-TTS ({chosen_model})] Sintetizando '{text[:40]}...' (ref: {ref_file}, speed: {req.speed})...")
-        f5.infer(
-            ref_file=ref_file,
-            ref_text=ref_text,
-            gen_text=text,
-            speed=float(req.speed or 1.0),
-            nfe_step=nfe,
-            cfg_strength=float(req.cfg_strength or 3.0),
-            sway_sampling_coef=float(req.sway_sampling_coef or -1),
-            remove_silence=bool(req.remove_silence),
-            file_wave=out_wav_path
+        print(f"[FEFO Voice] Sintetizando '{text[:40]}...' (Tom: +{pitch_val} st, Velocidade: {speed_val}x)...")
+        wav_bytes, elapsed = generate_fefo_sync(
+            text=text,
+            ref_audio_path=ref_file,
+            voice=voice_val,
+            pitch_semitones=pitch_val,
+            speed=speed_val
         )
-        elapsed = time.time() - t0
-        print(f"[F5-TTS ({chosen_model})] Sintese concluida em {elapsed:.2f}s!")
-
-        with open(out_wav_path, "rb") as f:
-            wav_bytes = f.read()
+        print(f"[FEFO Voice] Síntese concluída em {elapsed:.2f}s!")
 
         b64_audio = base64.b64encode(wav_bytes).decode("ascii")
 
         return {
             "ok": True,
-            "engine": "F5-TTS",
-            "model": chosen_model,
-            "language": "pt-br",
+            "engine": "FEFO Voice Pipeline PT-BR",
             "audio_base64": b64_audio,
             "data_uri": f"data:audio/wav;base64,{b64_audio}",
-            "elapsed_seconds": round(elapsed, 2),
+            "elapsed_seconds": elapsed,
             "size_bytes": len(wav_bytes)
         }
-
     except Exception as e:
         import traceback
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Erro na sintese F5-TTS: {str(e)}")
-
+        raise HTTPException(status_code=500, detail=f"Erro na síntese de voz do FEFO: {str(e)}")
     finally:
         if temp_ref_path and os.path.exists(temp_ref_path):
             try: os.unlink(temp_ref_path)
-            except Exception: pass
-        if 'out_wav_path' in locals() and os.path.exists(out_wav_path):
-            try: os.unlink(out_wav_path)
             except Exception: pass
 
 def main():
     host = "0.0.0.0"
     port = 9880
     print("=" * 60)
-    print("   INICIANDO SERVIDOR F5-TTS (PT-BR) - CLONAGEM DE VOZ IA")
+    print("   INICIANDO MOTOR OFICIAL DE VOZ DO FEFO (OPÇÃO 1)")
+    print("   PT-BR Nativo (0% Sotaque) + Modelagem de Timbre do Mascote")
     print("=" * 60)
-    print(f"Dispositivo detectado: {get_device()}")
-    print(f"Servidor disponivel em: http://127.0.0.1:{port}")
+    print(f"Servidor disponível em: http://127.0.0.1:{port}")
     print("Pressione Ctrl+C para encerrar.")
     print("=" * 60)
     uvicorn.run(app, host=host, port=port, log_level="info")
