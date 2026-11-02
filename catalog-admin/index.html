@@ -493,9 +493,24 @@
             </div>
           </div>
 
-          <!-- Conexão Automática do F5-TTS (Sem campos técnicos visíveis) -->
+          <!-- Conexão Automática do F5-TTS -->
           <input type="hidden" id="ai-f5-server-url" value="http://localhost:9880">
-          <input type="hidden" id="ai-f5-ref-text" value="Você sabia? Os ratos são super inteligentes. Eles podem aprender a seguir caminhos e lembrar deles.">
+
+          <!-- Transcrição do Áudio de Referência (Obrigatório para fidelidade do clone) -->
+          <div style="background: #fbf9ff; border: 1.5px solid #d4c9f1; border-radius: 14px; padding: 14px 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
+              <label style="font-size: 11px; font-weight: 900; color: var(--purple); text-transform: uppercase;">
+                📝 Transcrição do Áudio de Referência (O que o FEFO fala no áudio acima):
+              </label>
+              <button type="button" class="btn secondary" style="font-size: 11px; padding: 4px 10px; font-weight: 800;" onclick="PkgManager.autoTranscribeSample()">
+                ✨ Reconhecer Texto Automaticamente
+              </button>
+            </div>
+            <textarea id="ai-f5-ref-text" rows="2" style="width: 100%; border-radius: 8px; border: 1px solid #c7b8ea; padding: 8px 10px; font-size: 13px; resize: vertical; box-sizing: border-box;" placeholder="Digite ou reconheça o que é dito no áudio de referência...">Bom dia, hora de acordar. Hora do lanche! Parabéns, você completou sua missão.</textarea>
+            <span class="hint" style="font-size: 10.5px; color: var(--muted); display: block; margin-top: 4px;">
+              💡 <strong>Regra de Ouro do F5-TTS:</strong> Para a voz clonada sair idêntica ao original, o texto acima precisa ser <em>exatamente</em> o que foi gravado na amostra de voz.
+            </span>
+          </div>
 
           <!-- Configurações Próprias do F5-TTS -->
           <div style="background: #fdfdfe; border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">

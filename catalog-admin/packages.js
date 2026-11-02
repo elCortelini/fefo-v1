@@ -2187,7 +2187,7 @@ const PkgManager = {
     const f5Url = localStorage.getItem('fefo_f5_server_url') || 'http://localhost:9880';
     let f5RefText = localStorage.getItem('fefo_f5_ref_text') || '';
     if (!f5RefText || f5RefText.includes('Olá amiguinho') || f5RefText.length < 50) {
-      f5RefText = 'Você sabia? Os ratos são super inteligentes. Eles podem aprender a seguir caminhos e lembrar deles.';
+      f5RefText = 'Bom dia, hora de acordar. Hora do lanche! Parabéns, você completou sua missão.';
       localStorage.setItem('fefo_f5_ref_text', f5RefText);
     }
     const speed = localStorage.getItem('fefo_ai_speed') || '1.0';
@@ -2239,14 +2239,14 @@ const PkgManager = {
     try {
       let sampleName = localStorage.getItem('fefo_ai_sample_name') || '';
       let sampleBlob = await AudioBlobDB.getAudio('fefo_voice_sample');
-      // Força uso da referência limpa de 7.8s a 24kHz
-      if (!sampleBlob || sampleName !== 'fefo_ref_clean_v2.wav') {
+      // Apenas carrega padrão do repositório se o usuário ainda NÃO tiver nenhuma amostra configurada
+      if (!sampleBlob) {
         try {
           const r = await fetch('../repository/fefo_ref_clean.wav');
           if (r.ok) {
             sampleBlob = await r.blob();
             await AudioBlobDB.setAudio('fefo_voice_sample', sampleBlob);
-            localStorage.setItem('fefo_ai_sample_name', 'fefo_ref_clean_v2.wav');
+            localStorage.setItem('fefo_ai_sample_name', 'fefo_ref_clean.wav');
           }
         } catch (e) {}
       }
@@ -2344,17 +2344,67 @@ const PkgManager = {
         statusEl.style.color = '#27ae60';
       }
       notice(`✓ Áudio de referência "${file.name}" salvo com sucesso para o F5-TTS!`, 'ok');
+      // Transcreve automaticamente o áudio para manter sincronia 100% perfeita
+      this.autoTranscribeSample();
     } catch (e) {
       console.error('Erro ao salvar amostra:', e);
       notice(`Erro ao salvar amostra: ${e.message}`, 'error');
     }
   },
 
+  async autoTranscribeSample() {
+    const statusEl = document.getElementById('ai-sample-status');
+    const refTextEl = document.getElementById('ai-f5-ref-text');
+    let sampleBlob = await AudioBlobDB.getAudio('fefo_voice_sample');
+    if (!sampleBlob) {
+      notice('Nenhum áudio de referência carregado para transcrever.', 'error');
+      return;
+    }
+    notice('Transcrevendo áudio de referência automaticamente com IA...');
+    if (statusEl) {
+      statusEl.textContent = '⏳ Reconhecendo texto...';
+      statusEl.style.color = 'var(--purple)';
+    }
+
+    try {
+      const b64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(sampleBlob);
+      });
+
+      const res = await fetch('http://localhost:9880/api/f5-tts/transcribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ audio: b64 })
+      });
+      const data = await res.json();
+      if (data.ok && data.text) {
+        if (refTextEl) refTextEl.value = data.text;
+        localStorage.setItem('fefo_f5_ref_text', data.text);
+        if (statusEl) {
+          statusEl.textContent = '✓ Transcrição Reconhecida!';
+          statusEl.style.color = '#27ae60';
+        }
+        notice('✓ Texto do áudio reconhecido: "' + data.text + '"', 'ok');
+      } else {
+        throw new Error(data.error || 'Falha na transcrição');
+      }
+    } catch (err) {
+      console.warn('Aviso transcrição:', err);
+      if (statusEl) {
+        statusEl.textContent = '● Pronto (Texto manual)';
+        statusEl.style.color = '#27ae60';
+      }
+    }
+  },
+
   saveAiVoiceSettings() {
     const f5Url = document.getElementById('ai-f5-server-url')?.value.trim() || 'http://localhost:9880';
     let f5Ref = document.getElementById('ai-f5-ref-text')?.value.trim() || '';
-    if (!f5Ref || f5Ref.includes('Olá amiguinho') || f5Ref.length < 50) {
-      f5Ref = 'Você sabia? Os ratos são super inteligentes. Eles podem aprender a seguir caminhos e lembrar deles.';
+    if (!f5Ref || f5Ref.includes('Olá amiguinho')) {
+      f5Ref = 'Bom dia, hora de acordar. Hora do lanche! Parabéns, você completou sua missão.';
     }
     const speed = document.getElementById('ai-speed-slider')?.value || '1.0';
     let nfe = document.getElementById('ai-nfe-slider')?.value || '16';
@@ -2420,7 +2470,7 @@ const PkgManager = {
     const f5Url = (localStorage.getItem('fefo_f5_server_url') || 'http://localhost:9880').replace(/\/+$/, '');
     let refText = localStorage.getItem('fefo_f5_ref_text') || '';
     if (!refText || refText.includes('Olá amiguinho') || refText.length < 50) {
-      refText = 'Você sabia? Os ratos são super inteligentes. Eles podem aprender a seguir caminhos e lembrar deles.';
+      refText = 'Bom dia, hora de acordar. Hora do lanche! Parabéns, você completou sua missão.';
       localStorage.setItem('fefo_f5_ref_text', refText);
     }
     const speed = opts.speed ?? parseFloat(localStorage.getItem('fefo_ai_speed') || '1.0');
@@ -2432,14 +2482,13 @@ const PkgManager = {
 
     // 1. Obter áudio de referência do FEFO (amostra limpa de 3.9s)
     let sampleBlob = await AudioBlobDB.getAudio('fefo_voice_sample');
-    const sampleName = localStorage.getItem('fefo_ai_sample_name') || '';
-    if (!sampleBlob || sampleName === 'fefo_voice_sample.wav' || !sampleName) {
+    if (!sampleBlob) {
       try {
         const r = await fetch('../repository/fefo_ref_clean.wav');
         if (r.ok) {
           sampleBlob = await r.blob();
           await AudioBlobDB.setAudio('fefo_voice_sample', sampleBlob);
-          localStorage.setItem('fefo_ai_sample_name', 'fefo_ref_clean_v2.wav');
+          localStorage.setItem('fefo_ai_sample_name', 'fefo_ref_clean.wav');
         }
       } catch (e) {}
     }

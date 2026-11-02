@@ -407,7 +407,7 @@ class Handler(SimpleHTTPRequestHandler):
                 ref_audio_b64 = payload.get('ref_audio')
                 ref_text = (payload.get('ref_text') or '').strip()
                 if not ref_text or len(ref_text) < 10 or 'Olá amiguinho' in ref_text:
-                    ref_text = 'Você sabia? Os ratos são super inteligentes. Eles podem aprender a seguir caminhos e lembrar deles.'
+                    ref_text = 'Bom dia, hora de acordar. Hora do lanche! Parabéns, você completou sua missão.'
                 nfe_step = int(payload.get('nfe_step') or 16)
                 if nfe_step < 12: nfe_step = 16
                 temp_ref = None
@@ -447,7 +447,7 @@ class Handler(SimpleHTTPRequestHandler):
                         global _catalog_f5_tts
                         if '_catalog_f5_tts' not in globals() or _catalog_f5_tts is None:
                             try:
-                                ptbr_ckpt = hf_hub_download(repo_id="firstpixel/F5-TTS-pt-br", filename="pt-br/model_last.safetensors")
+                                ptbr_ckpt = hf_hub_download(repo_id="SWivid/F5-TTS", filename="pt-br/model_last.safetensors")
                                 _catalog_f5_tts = F5TTS(model="F5TTS_v1_Base", ckpt_file=ptbr_ckpt)
                             except Exception:
                                 _catalog_f5_tts = F5TTS(model="F5TTS_v1_Base")
