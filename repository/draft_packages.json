@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "FEFO Content Draft Packages - Grade Completa Pedagógica Unificada com Áudios Vinculados",
-  "updated_at": "2026-11-02T18:07:49.284Z",
+  "updated_at": "2026-11-02T18:41:29.121Z",
   "packages": [
     {
       "id": "pkg_59122",
@@ -23,15 +23,16 @@
           "descricao": "olá eu sou o fefo, seu super amiguinho para melhorar a sua vida",
           "arquivo_fefo": "a0008.wav",
           "arquivo_origem": "Voz FEFO IA (a0008.wav)",
-          "web_url": "../repository/audio/a0008.wav",
+          "web_url": "../repository/audio/a0008.wav?_t=1793644889120",
           "status": "needs_trim",
-          "tamanho": 529724,
+          "tamanho": 213548,
           "arquivo": "/usr/a/a0008.wav",
           "is_custom_blob": true,
-          "checksum": "ab61c0c92f8a31af99ebec117aea36aef76857d92ad58292abdb2ff1497a6c97"
+          "checksum": "b555eadb6c5f0dc4208e7e95201975cd0aac8b36157876e3073ac314513f3ed7",
+          "has_custom_audio": true
         }
       ],
-      "updated_at": "2026-11-02T18:07:49.273Z"
+      "updated_at": "2026-11-02T18:41:26.773Z"
     },
     {
       "id": "pkg_desafio_e_brincadeiras_desafios",
@@ -279,7 +280,7 @@
           "descricao": "\"Oi! você já parou para pensar no seu corpo? Ele é incrível né?! Voce Tem braços, pernas, uma cabeça e muito mais. Voce sabe se merxer ? pular? dar abraços ? O FÊFO quer saber como você se sente quando voce faz tudo isso!\"",
           "localizacao": "/cp/",
           "arquivo_origem": "meu corpo 1 a 12.mp3",
-          "web_url": "blob:https://fefoplaneta.com.br/20f30a6c-d0ba-41bf-9bf4-e8155d006079",
+          "web_url": "blob:https://fefoplaneta.com.br/74444737-dd3c-4ee7-860f-03ff2c54f19b",
           "status": "ready",
           "arquivo_draft": "repository/drafts/audio/pkg_meu_corpo/cp1_cortado.wav",
           "tamanho": 1001114,
@@ -1980,7 +1981,7 @@
           "descricao": "\"Voce sabia?  Os gatos são especiais. Eles podem ver bem no escuro, o que os ajuda a enxergar no meio da noite! Eles são muito espertos!, eles tambem são bem independentes e adoram dormir. Eles também são caçadores super habilidosos, mesmo dentro de casa!\"",
           "localizacao": "/an/",
           "arquivo_origem": "a0023.wav",
-          "web_url": "blob:https://fefoplaneta.com.br/26bfac66-0df2-46cf-b2fc-af9fe06a5588",
+          "web_url": "blob:https://fefoplaneta.com.br/da76bd64-52d5-40b4-89d9-ccb2dc234204",
           "status": "published",
           "arquivo_fefo": "a0181.wav",
           "has_custom_audio": true
