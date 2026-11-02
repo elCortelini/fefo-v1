@@ -370,12 +370,13 @@ class Handler(SimpleHTTPRequestHandler):
                     result = {'ok': False, 'message': 'Pacote não encontrado.'}
 
             elif self.path in ('/api/tts/generate', '/api/f5-tts/generate', '/api/ai/tts'):
+                ensure_f5_server()
                 payload = json.loads(body.decode('utf-8'))
                 text = payload.get('text', '').strip()
                 pkg_id = payload.get('package_id')
                 item_id = payload.get('item_id')
                 speed = float(payload.get('speed', 1.0))
-                nfe_step = int(payload.get('nfe_step', 32))
+                nfe_step = int(payload.get('nfe_step', 8))
                 cfg_strength = float(payload.get('cfg_strength', 2.0))
                 remove_silence = bool(payload.get('remove_silence', True))
 
@@ -383,7 +384,7 @@ class Handler(SimpleHTTPRequestHandler):
 
                 audio_bytes = None
                 ref_audio_b64 = payload.get('ref_audio')
-                ref_text = payload.get('ref_text', '')
+                ref_text = (payload.get('ref_text') or '').strip() or 'Olá amiguinho.'
                 temp_ref = None
 
                 try:
@@ -1095,6 +1096,7 @@ class Handler(SimpleHTTPRequestHandler):
         sys.stderr.write(f"[catalog_manager] {args[0]} - {args[1]}\n")
 
 if __name__ == '__main__':
+    ensure_f5_server()
     os.chdir(ROOT)
     url = 'http://127.0.0.1:8765/catalog-admin/index.html'
     try:

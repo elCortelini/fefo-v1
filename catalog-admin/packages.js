@@ -2360,9 +2360,9 @@ const PkgManager = {
 
   async synthesizeVoiceBlob(text, opts = {}) {
     const f5Url = (localStorage.getItem('fefo_f5_server_url') || 'http://localhost:9880').replace(/\/+$/, '');
-    const refText = localStorage.getItem('fefo_f5_ref_text') || '';
+    const refText = localStorage.getItem('fefo_f5_ref_text') || 'Olá amiguinho.';
     const speed = opts.speed ?? parseFloat(localStorage.getItem('fefo_ai_speed') || '1.0');
-    const nfe_step = opts.nfe_step ?? parseInt(localStorage.getItem('fefo_ai_nfe') || '16', 10);
+    const nfe_step = opts.nfe_step ?? parseInt(localStorage.getItem('fefo_ai_nfe') || '8', 10);
     const cfg_strength = opts.cfg_strength ?? parseFloat(localStorage.getItem('fefo_ai_cfg') || '2.0');
     const remove_silence = opts.remove_silence ?? (localStorage.getItem('fefo_ai_remove_silence') !== '0');
 
@@ -2399,12 +2399,13 @@ const PkgManager = {
       provider: 'f5_tts'
     };
 
+    const host = window.location.hostname || 'localhost';
     const endpoints = [
-      `${f5Url}/api/f5-tts/generate`,
-      'http://localhost:9880/api/f5-tts/generate',
-      'http://127.0.0.1:9880/api/f5-tts/generate',
+      `http://${host}:9880/api/f5-tts/generate`,
       '/api/f5-tts/generate',
-      '/api/tts/generate'
+      `${f5Url}/api/f5-tts/generate`,
+      'http://127.0.0.1:9880/api/f5-tts/generate',
+      'http://localhost:9880/api/f5-tts/generate'
     ];
 
     for (const ep of endpoints) {
@@ -2412,7 +2413,8 @@ const PkgManager = {
         const res = await fetch(ep, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payload),
+          signal: AbortSignal.timeout(300000)
         });
         if (res.ok) {
           const data = await res.json();

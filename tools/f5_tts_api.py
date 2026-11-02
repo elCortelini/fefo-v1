@@ -94,7 +94,7 @@ class GenerateRequest(BaseModel):
     ref_text: Optional[str] = ""             # Transcricao do audio de referencia (opcional)
     speed: Optional[float] = 1.0             # Velocidade da fala (0.5 a 2.0)
     remove_silence: Optional[bool] = False   # Remover silencio excessivo
-    nfe_step: Optional[int] = 16             # Passos de inferencia ODE (32 padrao, 16 mais rapido)
+    nfe_step: Optional[int] = 8             # Passos de inferencia ODE (32 padrao, 16 mais rapido)
     cfg_strength: Optional[float] = 2.0      # Intensidade CFG
     sway_sampling_coef: Optional[float] = -1 # Coeficiente sway
 
@@ -147,7 +147,7 @@ def generate(req: GenerateRequest):
 
     temp_ref_path = None
     ref_file = None
-    ref_text = (req.ref_text or "").strip()
+    ref_text = (req.ref_text or "").strip() or "Olá amiguinho."
 
     try:
         if req.ref_audio:
@@ -183,7 +183,7 @@ def generate(req: GenerateRequest):
             ref_text=ref_text,
             gen_text=text,
             speed=float(req.speed or 1.0),
-            nfe_step=int(req.nfe_step or 16),
+            nfe_step=int(req.nfe_step or 8),
             cfg_strength=float(req.cfg_strength or 2.0),
             sway_sampling_coef=float(req.sway_sampling_coef or -1),
             remove_silence=bool(req.remove_silence),
