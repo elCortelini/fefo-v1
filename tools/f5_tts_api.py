@@ -88,6 +88,8 @@ def get_f5_model():
     finally:
         _model_loading = False
 
+DEFAULT_REF_TEXT = "Olá amiguinho, eu sou o Fefo, vamos brincar e aprender juntos hoje."
+
 class GenerateRequest(BaseModel):
     text: str
     ref_audio: Optional[str] = None          # Base64 string, data URI ou caminho de arquivo
@@ -147,7 +149,14 @@ def generate(req: GenerateRequest):
 
     temp_ref_path = None
     ref_file = None
-    ref_text = (req.ref_text or "").strip() or "Olá amiguinho."
+    ref_text = (req.ref_text or "").strip()
+    if not ref_text or len(ref_text) < 15:
+        ref_text = DEFAULT_REF_TEXT
+
+    # No CPU, limita passos a 8 para garantir velocidade
+    nfe = int(req.nfe_step or 8)
+    if get_device() == "cpu":
+        nfe = min(max(nfe, 6), 8)
 
     try:
         if req.ref_audio:
@@ -183,7 +192,7 @@ def generate(req: GenerateRequest):
             ref_text=ref_text,
             gen_text=text,
             speed=float(req.speed or 1.0),
-            nfe_step=int(req.nfe_step or 8),
+            nfe_step=nfe,
             cfg_strength=float(req.cfg_strength or 2.0),
             sway_sampling_coef=float(req.sway_sampling_coef or -1),
             remove_silence=bool(req.remove_silence),

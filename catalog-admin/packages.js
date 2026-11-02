@@ -8,17 +8,20 @@ window.AiVoiceProgress = {
     }
     containerEl.style.display = 'block';
     containerEl.innerHTML = `
-      <div style="background: #fbf9fe; border: 1.5px solid #d4c9f1; border-radius: 10px; padding: 10px 14px; box-shadow: 0 2px 8px rgba(124, 77, 255, 0.08); margin-bottom: 8px;">
+      <div style="background: #fbf9fe; border: 1.5px solid #d4c9f1; border-radius: 10px; padding: 12px 14px; box-shadow: 0 2px 12px rgba(124, 77, 255, 0.1); margin-bottom: 8px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-          <span class="ai-p-label" style="font-size: 11.5px; font-weight: 800; color: #4a258a;">⚡ ${title}</span>
-          <span class="ai-p-pct" style="font-size: 13px; font-weight: 900; color: #7c4dff;">0%</span>
+          <span class="ai-p-label" style="font-size: 12px; font-weight: 800; color: #4a258a;">⚡ ${title}</span>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="ai-p-time" style="font-size: 11px; font-weight: 700; color: #7a689b; background: #ede7f6; padding: 2px 8px; border-radius: 6px;">⏱️ 0s</span>
+            <span class="ai-p-pct" style="font-size: 13.5px; font-weight: 900; color: #7c4dff;">0%</span>
+          </div>
         </div>
-        <div style="width: 100%; height: 9px; background: #e5def6; border-radius: 6px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.08);">
-          <div class="ai-p-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #7c4dff, #ff4081); border-radius: 6px; transition: width 0.3s ease;"></div>
+        <div style="width: 100%; height: 10px; background: #e5def6; border-radius: 6px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.08); position: relative;">
+          <div class="ai-p-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #7c4dff, #ff4081, #7c4dff); background-size: 200% 100%; border-radius: 6px; transition: width 0.3s ease;"></div>
         </div>
-        <div style="display: flex; justify-content: space-between; font-size: 10px; color: #7a689b; margin-top: 5px;">
-          <span class="ai-p-stage">Iniciando motor neural F5-TTS...</span>
-          <span style="font-weight: 700; color: #6b3bbd;">Voz Neural F5-TTS</span>
+        <div style="display: flex; justify-content: space-between; font-size: 10.5px; color: #7a689b; margin-top: 6px;">
+          <span class="ai-p-stage" style="font-weight: 700;">Iniciando motor neural F5-TTS...</span>
+          <span style="font-weight: 700; color: #6b3bbd;">Processamento Local (CPU)</span>
         </div>
       </div>
     `;
@@ -27,24 +30,33 @@ window.AiVoiceProgress = {
     const pctEl = containerEl.querySelector('.ai-p-pct');
     const barEl = containerEl.querySelector('.ai-p-bar');
     const stageEl = containerEl.querySelector('.ai-p-stage');
+    const timeEl = containerEl.querySelector('.ai-p-time');
 
     let currentPct = 0;
     let startTime = Date.now();
     let timer = setInterval(() => {
       const elapsed = (Date.now() - startTime) / 1000;
-      if (elapsed < 3) {
-        currentPct = Math.min(22, Math.floor(elapsed * 7));
-        if (stageEl) stageEl.textContent = 'Carregando amostra de voz e preparando texto...';
-      } else if (elapsed < 14) {
-        currentPct = Math.min(60, 22 + Math.floor((elapsed - 3) * 3.5));
-        if (stageEl) stageEl.textContent = 'Processando difusão acústica do timbre do FEFO...';
-      } else if (elapsed < 30) {
-        currentPct = Math.min(88, 60 + Math.floor((elapsed - 14) * 1.75));
-        if (stageEl) stageEl.textContent = 'Renderizando ondas de áudio de alta fidelidade (Vocos)...';
+      if (timeEl) timeEl.textContent = `⏱️ ${Math.floor(elapsed)}s`;
+
+      // Progressao suave calibrada para CPU (~60 a 90 segundos)
+      if (elapsed < 5) {
+        currentPct = Math.min(18, Math.floor(elapsed * 3.6));
+        if (stageEl) stageEl.textContent = 'Carregando voz de referência e preparando texto...';
+      } else if (elapsed < 25) {
+        currentPct = Math.min(48, 18 + Math.floor((elapsed - 5) * 1.5));
+        if (stageEl) stageEl.textContent = 'Executando difusão acústica neural (timbre do FEFO)...';
+      } else if (elapsed < 60) {
+        currentPct = Math.min(78, 48 + Math.floor((elapsed - 25) * 0.85));
+        if (stageEl) stageEl.textContent = 'Calculando ondas sonoras de voz e entonação...';
+      } else if (elapsed < 90) {
+        currentPct = Math.min(92, 78 + Math.floor((elapsed - 60) * 0.46));
+        if (stageEl) stageEl.textContent = 'Decodificando áudio de alta fidelidade (Vocos)...';
       } else {
-        currentPct = Math.min(97, 88 + Math.floor((elapsed - 30) * 0.3));
-        if (stageEl) stageEl.textContent = 'Finalizando compressão e montagem do áudio...';
+        // Acima de 90s continua avançando suavemente sem congelar
+        currentPct = Math.min(99, 92 + Math.floor((elapsed - 90) * 0.15));
+        if (stageEl) stageEl.textContent = 'Finalizando gravação do áudio no processador... Quase pronto!';
       }
+
       if (pctEl) pctEl.textContent = `${currentPct}%`;
       if (barEl) barEl.style.width = `${currentPct}%`;
     }, 250);
@@ -52,6 +64,8 @@ window.AiVoiceProgress = {
     return {
       finish(msg = '✓ Áudio gerado com sucesso!') {
         clearInterval(timer);
+        const totalSec = Math.round((Date.now() - startTime) / 1000);
+        if (timeEl) timeEl.textContent = `✓ ${totalSec}s`;
         if (pctEl) pctEl.textContent = '100%';
         if (barEl) {
           barEl.style.width = '100%';
@@ -59,18 +73,18 @@ window.AiVoiceProgress = {
         }
         if (stageEl) {
           stageEl.style.color = '#047857';
-          stageEl.style.fontWeight = '700';
-          stageEl.textContent = msg;
+          stageEl.style.fontWeight = '800';
+          stageEl.textContent = `${msg} (Concluído em ${totalSec}s)`;
         }
         setTimeout(() => {
-          containerEl.style.transition = 'opacity 0.4s ease';
+          containerEl.style.transition = 'opacity 0.5s ease';
           containerEl.style.opacity = '0';
           setTimeout(() => {
             containerEl.style.display = 'none';
             containerEl.style.opacity = '1';
             containerEl.innerHTML = '';
-          }, 400);
-        }, 1200);
+          }, 500);
+        }, 1500);
       },
       fail(errMsg = 'Falha ao gerar áudio com F5-TTS.') {
         clearInterval(timer);
@@ -2147,7 +2161,7 @@ const PkgManager = {
     const f5Url = localStorage.getItem('fefo_f5_server_url') || 'http://localhost:9880';
     const f5RefText = localStorage.getItem('fefo_f5_ref_text') || '';
     const speed = localStorage.getItem('fefo_ai_speed') || '1.0';
-    const nfe = localStorage.getItem('fefo_ai_nfe') || '16';
+    const nfe = '8';
     const cfg = localStorage.getItem('fefo_ai_cfg') || '2.0';
     const removeSilence = localStorage.getItem('fefo_ai_remove_silence') !== '0';
     const sampleName = localStorage.getItem('fefo_ai_sample_name') || '';
@@ -2362,7 +2376,7 @@ const PkgManager = {
     const f5Url = (localStorage.getItem('fefo_f5_server_url') || 'http://localhost:9880').replace(/\/+$/, '');
     const refText = localStorage.getItem('fefo_f5_ref_text') || 'Olá amiguinho.';
     const speed = opts.speed ?? parseFloat(localStorage.getItem('fefo_ai_speed') || '1.0');
-    const nfe_step = opts.nfe_step ?? parseInt(localStorage.getItem('fefo_ai_nfe') || '8', 10);
+    const nfe_step = opts.nfe_step ?? parseInt('8', 10);
     const cfg_strength = opts.cfg_strength ?? parseFloat(localStorage.getItem('fefo_ai_cfg') || '2.0');
     const remove_silence = opts.remove_silence ?? (localStorage.getItem('fefo_ai_remove_silence') !== '0');
 

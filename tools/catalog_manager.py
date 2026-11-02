@@ -405,7 +405,9 @@ class Handler(SimpleHTTPRequestHandler):
 
                 audio_bytes = None
                 ref_audio_b64 = payload.get('ref_audio')
-                ref_text = (payload.get('ref_text') or '').strip() or 'Olá amiguinho.'
+                ref_text = (payload.get('ref_text') or '').strip()
+                if not ref_text or len(ref_text) < 15: ref_text = 'Olá amiguinho, eu sou o Fefo, vamos brincar e aprender juntos hoje.'
+                nfe_step = 8
                 temp_ref = None
 
                 try:
