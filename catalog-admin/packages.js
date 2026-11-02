@@ -2180,197 +2180,14 @@ const PkgManager = {
   // INTELIGÊNCIA ARTIFICIAL: MOTOR EXCLUSIVO F5-TTS
   // (Zero-Shot Voice Cloning - GitHub SWivid/F5-TTS)
   // ==========================================================
-  playVoiceDemo(url) {
-    let player = document.getElementById('ai-sample-player');
-    if (!player) player = document.getElementById('ai-test-player');
-    if (player) {
-      player.src = url + '?_t=' + Date.now();
-      player.style.display = 'block';
-      player.play().catch(() => {});
-    }
-  },
-
   async openAiVoiceSettings() {
     const modal = document.getElementById('modal-ai-voice');
-    if (!modal) return;
-
-    const voice = localStorage.getItem('fefo_ai_voice') || 'pt-BR-ThalitaMultilingualNeural';
-    const speed = localStorage.getItem('fefo_ai_speed') || '1.0';
-    const pitch = localStorage.getItem('fefo_ai_pitch') || '18';
-
-    const selVoice = document.getElementById('ai-voice-select');
-    if (selVoice) selVoice.value = voice;
-
-    const inpSpeed = document.getElementById('ai-speed-slider');
-    if (inpSpeed) {
-      inpSpeed.value = speed;
-      const lbl = document.getElementById('ai-speed-val');
-      if (lbl) lbl.textContent = speed + 'x';
-    }
-
-    const inpPitch = document.getElementById('ai-pitch-slider');
-    if (inpPitch) {
-      inpPitch.value = pitch;
-      const lbl = document.getElementById('ai-pitch-val');
-      if (lbl) lbl.textContent = (parseInt(pitch) >= 0 ? '+' : '') + pitch + ' Hz';
-    }
-
-    const playerBox = document.getElementById('ai-sample-player-container');
-    const player = document.getElementById('ai-sample-player');
-    if (player && playerBox) {
-      player.src = '../repository/ficofelizporvc.wav?_t=' + Date.now();
-      playerBox.style.display = 'block';
-    }
-
-    this.testF5Server();
-    modal.style.display = 'flex';
+    if (modal) modal.style.display = 'flex';
   },
 
   closeAiVoiceSettings() {
     const modal = document.getElementById('modal-ai-voice');
     if (modal) modal.style.display = 'none';
-  },
-
-  onAiProviderChange() {
-    // F5-TTS é o motor exclusivo
-  },
-
-  async testF5Server() {
-    const statusEl = document.getElementById('f5-server-status');
-    const f5Url = (document.getElementById('ai-f5-server-url')?.value || localStorage.getItem('fefo_f5_server_url') || 'http://localhost:9880').replace(/\/+$/, '');
-    if (statusEl) {
-      statusEl.textContent = '⏳ Verificando conexão...';
-      statusEl.style.background = '#eee';
-      statusEl.style.color = '#555';
-    }
-
-    const testUrls = [
-      `${f5Url}/health`,
-      `${f5Url}/api/f5-tts/status`,
-      'http://localhost:9880/health',
-      'http://127.0.0.1:9880/health',
-      '/api/f5-tts/status',
-      '/health'
-    ];
-
-    for (const u of testUrls) {
-      try {
-        const res = await fetch(u, { method: 'GET', signal: AbortSignal.timeout(2000) });
-        if (res.ok) {
-          const data = await res.json().catch(() => ({}));
-          if (statusEl) {
-            statusEl.textContent = `● Online (${data.engine || 'F5-TTS'} • ${data.device ? data.device.toUpperCase() : 'OK'})`;
-            statusEl.style.background = '#e8f8f0';
-            statusEl.style.color = '#127547';
-          }
-          return true;
-        }
-      } catch (e) {}
-    }
-
-    if (statusEl) {
-      statusEl.textContent = '✕ Offline (Inicie tools/iniciar_f5_tts.bat)';
-      statusEl.style.background = '#fde8e8';
-      statusEl.style.color = '#c0392b';
-    }
-    return false;
-  },
-
-  async handleVoiceSampleUpload(files) {
-    if (!files || !files[0]) return;
-    const file = files[0];
-    const statusEl = document.getElementById('ai-sample-status');
-    const nameEl = document.getElementById('ai-sample-name');
-    const playerBox = document.getElementById('ai-sample-player-container');
-    const player = document.getElementById('ai-sample-player');
-
-    if (nameEl) nameEl.textContent = file.name;
-    if (statusEl) {
-      statusEl.textContent = 'Carregando amostra...';
-      statusEl.style.color = 'var(--purple)';
-    }
-
-    try {
-      await AudioBlobDB.setAudio('fefo_voice_sample', file);
-      localStorage.setItem('fefo_ai_sample_name', file.name);
-
-      if (player && playerBox) {
-        player.src = URL.createObjectURL(file);
-        playerBox.style.display = 'block';
-      }
-
-      if (statusEl) {
-        statusEl.textContent = '✓ Amostra do FEFO Carregada!';
-        statusEl.style.color = '#27ae60';
-      }
-      notice(`✓ Áudio de referência "${file.name}" salvo com sucesso para o F5-TTS!`, 'ok');
-      // Transcreve automaticamente o áudio para manter sincronia 100% perfeita
-      this.autoTranscribeSample();
-    } catch (e) {
-      console.error('Erro ao salvar amostra:', e);
-      notice(`Erro ao salvar amostra: ${e.message}`, 'error');
-    }
-  },
-
-  async autoTranscribeSample() {
-    const statusEl = document.getElementById('ai-sample-status');
-    const refTextEl = document.getElementById('ai-f5-ref-text');
-    let sampleBlob = await AudioBlobDB.getAudio('fefo_voice_sample');
-    if (!sampleBlob) {
-      notice('Nenhum áudio de referência carregado para transcrever.', 'error');
-      return;
-    }
-    notice('Transcrevendo áudio de referência automaticamente com IA...');
-    if (statusEl) {
-      statusEl.textContent = '⏳ Reconhecendo texto...';
-      statusEl.style.color = 'var(--purple)';
-    }
-
-    try {
-      const b64 = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(sampleBlob);
-      });
-
-      const res = await fetch('http://localhost:9880/api/f5-tts/transcribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ audio: b64 })
-      });
-      const data = await res.json();
-      if (data.ok && data.text) {
-        if (refTextEl) refTextEl.value = data.text;
-        localStorage.setItem('fefo_f5_ref_text', data.text);
-        if (statusEl) {
-          statusEl.textContent = '✓ Transcrição Reconhecida!';
-          statusEl.style.color = '#27ae60';
-        }
-        notice('✓ Texto do áudio reconhecido: "' + data.text + '"', 'ok');
-      } else {
-        throw new Error(data.error || 'Falha na transcrição');
-      }
-    } catch (err) {
-      console.warn('Aviso transcrição:', err);
-      if (statusEl) {
-        statusEl.textContent = '● Pronto (Texto manual)';
-        statusEl.style.color = '#27ae60';
-      }
-    }
-  },
-
-  saveAiVoiceSettings() {
-    const voice = document.getElementById('ai-voice-select')?.value || 'pt-BR-ThalitaMultilingualNeural';
-    const speed = document.getElementById('ai-speed-slider')?.value || '1.0';
-    const pitch = document.getElementById('ai-pitch-slider')?.value || '18';
-
-    localStorage.setItem('fefo_ai_voice', voice);
-    localStorage.setItem('fefo_ai_speed', speed);
-    localStorage.setItem('fefo_ai_pitch', pitch);
-
-    notice('Configurações da voz do FEFO salvas com sucesso!', 'ok');
-    this.closeAiVoiceSettings();
   },
 
   async testAiVoice() {
@@ -2385,13 +2202,9 @@ const PkgManager = {
     const testProgContainer = document.getElementById('ai-test-progress');
     const testTracker = window.AiVoiceProgress ? window.AiVoiceProgress.create(testProgContainer, 'Gerando voz do FEFO...') : null;
 
-    notice('Gerando voz do FEFO com dicção brasileira nativa...');
+    notice('Sintetizando voz original do FEFO...');
     try {
-      const voice = document.getElementById('ai-voice-select')?.value || localStorage.getItem('fefo_ai_voice') || 'pt-BR-ThalitaMultilingualNeural';
-      const speed = parseFloat(document.getElementById('ai-speed-slider')?.value || '1.0');
-      const pitch = parseFloat(document.getElementById('ai-pitch-slider')?.value || '18');
-
-      const blob = await this.synthesizeVoiceBlob(text, { voice, speed, pitch });
+      const blob = await this.synthesizeVoiceBlob(text);
       if (blob) {
         testTracker?.finish('✓ Concluído!');
         const audioUrl = URL.createObjectURL(blob);
@@ -2401,7 +2214,7 @@ const PkgManager = {
           player.style.display = 'block';
           player.play().catch(() => {});
         }
-        notice('✓ Áudio do FEFO gerado com sucesso (zero sotaque, zero efeito esquilo)!', 'ok');
+        notice('✓ Áudio do FEFO gerado com sucesso!', 'ok');
       }
     } catch (e) {
       testTracker?.fail(`Erro: ${e.message}`);
