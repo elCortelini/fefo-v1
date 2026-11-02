@@ -2412,7 +2412,6 @@ const PkgManager = {
         btn.disabled = false;
       }
     }
-  }
   },
 
   async synthesizeVoiceBlob(text, opts = {}) {

@@ -433,15 +433,15 @@
 
 
 
-  <script src="admin.js?v=unified-22"></script>
+  <script src="admin.js?v=opt1-clean-31"></script>
 
-  <script src="audio-editor.js?v=unified-22"></script>
+  <script src="audio-editor.js?v=opt1-clean-31"></script>
 
-  <script src="image-editor.js?v=unified-22"></script>
+  <script src="image-editor.js?v=opt1-clean-31"></script>
 
-  <script src="github-sync.js?v=sync-28-no97freeze"></script>
-  <script src="packages.js?v=sync-28-no97freeze"></script>
-  <script src="cards-packs.js?v=sync-28-no97freeze"></script>
+  <script src="github-sync.js?v=opt1-clean-31"></script>
+  <script src="packages.js?v=opt1-clean-31"></script>
+  <script src="cards-packs.js?v=opt1-clean-31"></script>
 
 
     <!-- Modal de Configuração da Voz do FEFO (IA) -->
@@ -530,136 +530,7 @@
         </div>
       </div>
     </div>
-            <span id="f5-server-status" style="font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 8px; background: #e8f8f0; color: #127547;">● Verificando conexão...</span>
-          </div>
-
-          <!-- Áudio de Referência do FEFO -->
-          <div style="background: #fbf9ff; border: 1.5px solid #e1d9f4; border-radius: 14px; padding: 14px 16px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <label style="font-size: 11px; font-weight: 900; color: var(--purple); text-transform: uppercase;">📁 Áudio de Referência (Amostra da Voz do FEFO):</label>
-              <span id="ai-sample-status" style="font-size: 11px; font-weight: 800; color: #27ae60;"></span>
-            </div>
-            <p style="margin: 0 0 10px; font-size: 12px; color: var(--muted); line-height: 1.4;">
-              O F5-TTS clona o timbre do FEFO a partir deste áudio de referência (10 a 60 segundos com voz limpa em português).
-            </p>
-            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-              <input type="file" id="ai-voice-sample-input" accept="audio/*,.wav,.mp3,.m4a" style="display: none;" onchange="PkgManager.handleVoiceSampleUpload(this.files)">
-              <button type="button" class="btn secondary" style="font-size: 12px; padding: 8px 14px;" onclick="document.getElementById('ai-voice-sample-input').click()">
-                📂 Selecionar / Trocar Áudio de Amostra (.wav / .mp3)
-              </button>
-              <span id="ai-sample-name" style="font-size: 12px; font-weight: 800; color: var(--ink);">Carregando amostra padrão...</span>
-            </div>
-            <!-- Player para ouvir o áudio de referência -->
-            <div id="ai-sample-player-container" style="margin-top: 12px; padding: 10px; background: #ffffff; border: 1px solid #e1d9f4; border-radius: 10px; display: none;">
-              <div style="margin-bottom: 6px; font-size: 11.5px; font-weight: 800; color: var(--purple);">
-                ▶ Amostra de Voz Ativa do FEFO:
-              </div>
-              <audio id="ai-sample-player" controls style="width: 100%; height: 36px;"></audio>
-            </div>
-          </div>
-
-          <!-- Conexão Automática do F5-TTS -->
-          <input type="hidden" id="ai-f5-server-url" value="http://localhost:9880">
-
-          <!-- Transcrição do Áudio de Referência (Obrigatório para fidelidade do clone) -->
-          <div style="background: #fbf9ff; border: 1.5px solid #d4c9f1; border-radius: 14px; padding: 14px 16px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
-              <label style="font-size: 11px; font-weight: 900; color: var(--purple); text-transform: uppercase;">
-                📝 Transcrição do Áudio de Referência (O que o FEFO fala no áudio acima):
-              </label>
-              <button type="button" class="btn secondary" style="font-size: 11px; padding: 4px 10px; font-weight: 800;" onclick="PkgManager.autoTranscribeSample()">
-                ✨ Reconhecer Texto Automaticamente
-              </button>
-            </div>
-            <textarea id="ai-f5-ref-text" rows="2" style="width: 100%; border-radius: 8px; border: 1px solid #c7b8ea; padding: 8px 10px; font-size: 13px; resize: vertical; box-sizing: border-box;" placeholder="Digite ou reconheça o que é dito no áudio de referência...">Bom dia, hora de acordar. Hora do lanche! Parabéns, você completou sua missão.</textarea>
-            <span class="hint" style="font-size: 10.5px; color: var(--muted); display: block; margin-top: 4px;">
-              💡 <strong>Regra de Ouro do F5-TTS:</strong> Para a voz clonada sair idêntica ao original, o texto acima precisa ser <em>exatamente</em> o que foi gravado na amostra de voz.
-            </span>
-          </div>
-
-          <!-- Modelo F5-TTS (Português PT-BR Nativo sem Sotaque) -->
-          <div style="background: #fdfdfe; border: 1.5px solid var(--line); border-radius: 14px; padding: 14px 16px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <label style="font-size: 11px; font-weight: 900; color: var(--purple); text-transform: uppercase;">
-                🇧🇷 Pacote de Idioma / Modelo IA:
-              </label>
-            </div>
-            <select id="ai-f5-model-select" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1.5px solid #d4c9f1; font-size: 13px; font-weight: 800; color: var(--ink); background: #ffffff;">
-              <option value="pt-br" selected>🇧🇷 F5-TTS Português do Brasil Nativo (firstpixel/F5-TTS-pt-br) - Sem Sotaque</option>
-              <option value="base">🇺🇸 F5-TTS Base Genérico (SWivid/F5-TTS)</option>
-            </select>
-            <span class="hint" style="font-size: 10.5px; display: block; margin-top: 4px;">
-              Garante pronúncia 100% natural brasileira nos fonemas e palavras em português.
-            </span>
-          </div>
-
-          <!-- Configurações Próprias do F5-TTS -->
-          <div style="background: #fdfdfe; border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
-            <div class="pkg-field-box">
-              <div style="display: flex; justify-content: space-between;">
-                <label>Velocidade da Fala (Speed)</label>
-                <span id="ai-speed-val" style="font-size: 11px; font-weight: 900; color: var(--purple);">1.0x</span>
-              </div>
-              <input type="range" id="ai-speed-slider" min="0.7" max="1.4" step="0.05" value="1.0" oninput="document.getElementById('ai-speed-val').textContent = this.value + 'x'">
-              <span class="hint" style="font-size: 10.5px;">Padrão: 1.0x</span>
-            </div>
-
-            <div class="pkg-field-box">
-              <div style="display: flex; justify-content: space-between;">
-                <label>Passos de Inferência NFE (Qualidade)</label>
-                <span id="ai-nfe-val" style="font-size: 11px; font-weight: 900; color: var(--purple);">16 Passos</span>
-              </div>
-              <input type="range" id="ai-nfe-slider" min="12" max="32" step="4" value="16" oninput="document.getElementById('ai-nfe-val').textContent = this.value + ' Passos'">
-              <span class="hint" style="font-size: 10.5px;">16 = Equilibrado (Sem som metálico) | 24-32 = Máxima Fidelidade</span>
-            </div>
-
-            <div class="pkg-field-box">
-              <div style="display: flex; justify-content: space-between;">
-                <label>Força do Timbre (CFG Strength)</label>
-                <span id="ai-cfg-val" style="font-size: 11px; font-weight: 900; color: var(--purple);">3.0</span>
-              </div>
-              <input type="range" id="ai-cfg-slider" min="1.5" max="4.0" step="0.2" value="3.0" oninput="document.getElementById('ai-cfg-val').textContent = parseFloat(this.value).toFixed(1)">
-              <span class="hint" style="font-size: 10.5px;">Fidelidade da voz clonada (3.0 = Voz idêntica ao FEFO)</span>
-            </div>
-
-            <div class="pkg-field-box" style="justify-content: center;">
-              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-top: 14px;">
-                <input type="checkbox" id="ai-remove-silence" checked style="width: 18px; height: 18px; accent-color: var(--purple); cursor: pointer;">
-                <span style="font-size: 12px; font-weight: 800; color: var(--ink);">Remover Silêncios Excessivos</span>
-              </label>
-              <span class="hint" style="font-size: 10.5px;">Remove pausas longas no início e fim do áudio.</span>
-            </div>
-          </div>
-
-          <!-- Teste da Voz F5-TTS -->
-          <div style="background: #faf8ff; border: 1.5px dashed #c7b8ea; border-radius: 12px; padding: 12px 14px;">
-            <label style="font-size: 11px; font-weight: 900; color: var(--purple); text-transform: uppercase;">Ouvir Prévia da Voz Clonada:</label>
-            <div style="display: flex; gap: 8px; margin-top: 6px;">
-              <input type="text" id="ai-test-text" value="Olá amiguinho! Eu sou o Fefo, vamos brincar juntos hoje?" style="flex: 1; font-size: 13px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px;">
-              <button class="btn primary" id="btn-ai-test-submit" type="button" style="padding: 8px 16px; font-size: 13px;" onclick="PkgManager.testAiVoice()">▶ Ouvir Teste</button>
-            </div>
-            <!-- Barra de Progresso com Porcentagem do Teste -->
-            <div id="ai-test-progress" style="display:none; margin-top: 10px; background: #ffffff; border: 1.5px solid #d4c9f1; border-radius: 10px; padding: 10px 14px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                <span id="ai-test-progress-label" style="font-size: 12px; font-weight: 800; color: var(--purple);">⚡ Sintetizando voz do FEFO...</span>
-                <span id="ai-test-progress-percent" style="font-size: 13px; font-weight: 900; color: var(--purple);">0%</span>
-              </div>
-              <div style="width: 100%; height: 10px; background: #e5def6; border-radius: 6px; overflow: hidden;">
-                <div id="ai-test-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #7c4dff, #ff4081); border-radius: 6px; transition: width 0.25s ease;"></div>
-              </div>
-            </div>
-            <audio id="ai-test-player" style="display:none; width: 100%; margin-top: 10px;" controls></audio>
-          </div>
-        </div>
-
-        <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--line); padding-top: 14px;">
-          <button class="btn secondary" type="button" onclick="PkgManager.closeAiVoiceSettings()">Cancelar</button>
-          <button class="btn primary" type="button" onclick="PkgManager.saveAiVoiceSettings()">💾 Salvar Configurações</button>
-        </div>
-      </div>
-    </div>
 
 </body>
 
 </html>
-
