@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "FEFO Content Draft Packages - Grade Completa Pedagógica Unificada com Áudios Vinculados",
-  "updated_at": "2026-11-02T18:44:10.395Z",
+  "updated_at": "2026-11-02T18:44:18.682Z",
   "packages": [
     {
       "id": "pkg_59122",
@@ -32,7 +32,7 @@
           "has_custom_audio": true
         }
       ],
-      "updated_at": "2026-11-02T18:44:07.699Z"
+      "updated_at": "2026-11-02T18:44:18.678Z"
     },
     {
       "id": "pkg_desafio_e_brincadeiras_desafios",
