@@ -396,7 +396,7 @@ class Handler(SimpleHTTPRequestHandler):
                 pkg_id = payload.get('package_id')
                 item_id = payload.get('item_id')
                 speed = float(payload.get('speed', 1.0))
-                pitch = float(payload.get('pitch', 7.0))
+                pitch = float(payload.get('pitch_hz') or payload.get('pitch') or 18)
                 voice = payload.get('voice', 'pt-BR-ThalitaMultilingualNeural')
 
                 if not text:
@@ -419,7 +419,7 @@ class Handler(SimpleHTTPRequestHandler):
                         temp_ref.close()
                         ref_file = temp_ref.name
                     else:
-                        for candidate in [ROOT / 'repository' / 'fefo_ref_clean.wav', ROOT / 'repository' / 'fefo_voice_sample.wav', ROOT / 'repository' / 'last_used_ref.wav']:
+                        for candidate in [ROOT / 'repository' / 'ficofelizporvc.wav', ROOT / 'repository' / 'fefo_ref_clean.wav', ROOT / 'repository' / 'fefo_voice_sample.wav', ROOT / 'repository' / 'last_used_ref.wav']:
                             if candidate.exists():
                                 ref_file = str(candidate)
                                 break
@@ -431,7 +431,7 @@ class Handler(SimpleHTTPRequestHandler):
                         text=text,
                         ref_audio_path=ref_file,
                         voice=voice,
-                        pitch_semitones=pitch,
+                        pitch_hz=int(pitch),
                         speed=speed
                     )
                 finally:

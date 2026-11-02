@@ -1,8 +1,8 @@
 # ==============================================================================
-# PIPELINE OFICIAL DE SÍNTESE E CLONAGEM DE VOZ DO MASCOTE FEFO (OPÇÃO 1)
-# 1. Fala Nativa PT-BR (0% Sotaque) via Edge-TTS Neural Brasileiro
-# 2. Conversão de Voz / Pitch & Formant Shift para Registro do Mascote (~440 Hz)
-# 3. Spectral Matching EQ baseado no Áudio de Referência do FEFO
+# PIPELINE OFICIAL DE SÍNTESE DE VOZ DO MASCOTE FEFO (OPÇÃO 1 - V2 NATURAL)
+# 1. Fala Nativa PT-BR (0% Sotaque) via Edge-TTS Neural Studio
+# 2. Modulação Neural Nativa de Pitch e Velocidade (Zero Som Metalizado, Zero Efeito Esquilo)
+# 3. Normalização de Pico e Saída WAV 24kHz 16-bit Mono (Padrão FEFO)
 # ==============================================================================
 import asyncio
 import io
@@ -12,39 +12,64 @@ from pathlib import Path
 from typing import Optional, Tuple
 
 import edge_tts
-import librosa
 import numpy as np
 import pydub
-from scipy import signal
-from scipy.ndimage import gaussian_filter1d
 import soundfile as sf
+
+DEFAULT_VOICE = "pt-BR-ThalitaMultilingualNeural"
 
 async def synthesize_fefo_voice(
     text: str,
     ref_audio_path: Optional[str] = None,
-    voice: str = "pt-BR-ThalitaMultilingualNeural",
-    pitch_semitones: float = 7.0,
+    voice: str = DEFAULT_VOICE,
+    pitch_semitones: float = 0.0,
+    pitch_hz: int = 18,
     speed: float = 1.0,
     target_sr: int = 24000
 ) -> Tuple[bytes, float]:
     """
-    Executa a sintese neural com fala nativa brasileira (0% sotaque)
-    e converte para o timbre alegre e agudo do mascote FEFO.
+    Sintetiza a voz do mascote FEFO com dicção 100% brasileira e natural.
+    A modulação tonal é feita de forma nativa pelo vocoder neural, eliminando
+    completamente qualquer som metalizado (phase vocoder) ou efeito de esquilo.
     """
     t0 = time.time()
     clean_text = (text or "").strip()
     if not clean_text:
         raise ValueError("Texto vazio para síntese de voz.")
 
-    # 1. Ajuste de velocidade SSML
+    # 1. Mapeamento de velocidade e pitch para SSML Neural
     rate_pct = int(round((speed - 1.0) * 100))
     rate_str = f"{rate_pct:+d}%" if rate_pct != 0 else "+0%"
 
-    # 2. Sintese Neural Nativa PT-BR via Edge-TTS
+    # Se pitch_semitones vier de configurações legadas (ex: 7.0), converte para modulação suave em Hz
+    if pitch_semitones > 0 and pitch_hz == 18:
+        # 1 semitone ~= 3-4 Hz de elevação vocal natural
+        effective_hz = int(np.clip(pitch_semitones * 2.5, 5, 30))
+    else:
+        effective_hz = int(np.clip(pitch_hz, -20, 40))
+
+    pitch_str = f"{effective_hz:+d}Hz"
+
+    # Seleção de voz suportada
+    supported_voices = {
+        "thalita": "pt-BR-ThalitaMultilingualNeural",
+        "francisca": "pt-BR-FranciscaNeural",
+        "antonio": "pt-BR-AntonioNeural"
+    }
+    voice_key = (voice or "").lower()
+    selected_voice = DEFAULT_VOICE
+    for k, v in supported_voices.items():
+        if k in voice_key:
+            selected_voice = v
+            break
+    if "neural" in voice_key:
+        selected_voice = voice
+
+    # 2. Síntese Neural Nativa de Alta Fidelidade (Microsoft Azure Speech Vocoder)
     comm = edge_tts.Communicate(
         text=clean_text,
-        voice=voice,
-        pitch="+20Hz",
+        voice=selected_voice,
+        pitch=pitch_str,
         rate=rate_str
     )
     mp3_buf = io.BytesIO()
@@ -53,46 +78,19 @@ async def synthesize_fefo_voice(
             mp3_buf.write(chunk["data"])
     mp3_buf.seek(0)
 
-    # 3. Decodificacao para PCM float32 24kHz mono
+    # 3. Decodificação para PCM float32 mono no sample rate desejado
     seg = pydub.AudioSegment.from_file(mp3_buf, format="mp3")
     seg = seg.set_frame_rate(target_sr).set_channels(1)
     samples = np.array(seg.get_array_of_samples(), dtype=np.float32) / 32768.0
 
-    # 4. Modelagem de Timbre do Mascote (Pitch Shift para faixa de 430-450 Hz)
-    if pitch_semitones != 0:
-        y_mascot = librosa.effects.pitch_shift(samples, sr=target_sr, n_steps=pitch_semitones)
-    else:
-        y_mascot = samples
-
-    # 5. Spectral Matching EQ: Mapeia o envelope espectral para a assinatura do FEFO
-    if ref_audio_path and os.path.exists(ref_audio_path):
-        try:
-            ref_y, _ = librosa.load(ref_audio_path, sr=target_sr)
-            n_fft = 2048
-            f_ref, pxx_ref = signal.welch(ref_y, fs=target_sr, nperseg=n_fft)
-            f_src, pxx_src = signal.welch(y_mascot, fs=target_sr, nperseg=n_fft)
-
-            filter_mag = np.sqrt((pxx_ref + 1e-6) / (pxx_src + 1e-6))
-            filter_mag_smooth = gaussian_filter1d(filter_mag, sigma=3)
-            filter_mag_smooth = np.clip(filter_mag_smooth, 0.5, 2.0)
-
-            D = librosa.stft(y_mascot, n_fft=n_fft)
-            freqs = librosa.fft_frequencies(sr=target_sr, n_fft=n_fft)
-            filter_interp = np.interp(freqs, f_ref, filter_mag_smooth)
-
-            D_matched = D * filter_interp[:, np.newaxis]
-            y_mascot = librosa.istft(D_matched, length=len(y_mascot))
-        except Exception as e:
-            print(f"[FEFO Voice Pipeline] Aviso Spectral Matching: {e}")
-
-    # 6. Normalizacao de Pico (-0.7 dBFS)
-    max_amp = np.max(np.abs(y_mascot))
+    # 4. Normalização de Pico Suave (-0.5 dBFS)
+    max_amp = np.max(np.abs(samples))
     if max_amp > 0:
-        y_mascot = y_mascot / max_amp * 0.92
+        samples = (samples / max_amp) * 0.94
 
-    # 7. Exportacao WAV 24kHz 16-bit PCM (padrao do FEFO)
+    # 5. Exportação WAV 24kHz 16-bit PCM (formato nativo do reprodutor FEFO)
     out_buf = io.BytesIO()
-    sf.write(out_buf, y_mascot, target_sr, format="WAV", subtype="PCM_16")
+    sf.write(out_buf, samples, target_sr, format="WAV", subtype="PCM_16")
     wav_bytes = out_buf.getvalue()
     elapsed = time.time() - t0
 
@@ -101,15 +99,17 @@ async def synthesize_fefo_voice(
 def generate_fefo_sync(
     text: str,
     ref_audio_path: Optional[str] = None,
-    voice: str = "pt-BR-ThalitaMultilingualNeural",
-    pitch_semitones: float = 7.0,
+    voice: str = DEFAULT_VOICE,
+    pitch_semitones: float = 0.0,
+    pitch_hz: int = 18,
     speed: float = 1.0
 ) -> Tuple[bytes, float]:
-    """Wrapper sincrono para integracao rapida nos servidores HTTP"""
+    """Wrapper síncrono para os servidores HTTP"""
     return asyncio.run(synthesize_fefo_voice(
         text=text,
         ref_audio_path=ref_audio_path,
         voice=voice,
         pitch_semitones=pitch_semitones,
+        pitch_hz=pitch_hz,
         speed=speed
     ))

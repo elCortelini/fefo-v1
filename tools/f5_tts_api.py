@@ -118,6 +118,7 @@ def generate(req: GenerateRequest):
             ref_file = temp_ref_path
         else:
             for cand in [
+                repo_root / "repository" / "ficofelizporvc.wav",
                 repo_root / "repository" / "fefo_ref_clean.wav",
                 repo_root / "repository" / "fefo_voice_sample.wav",
                 repo_root / "repository" / "last_used_ref.wav"
@@ -126,7 +127,7 @@ def generate(req: GenerateRequest):
                     ref_file = str(cand)
                     break
 
-        pitch_val = float(req.pitch if req.pitch is not None else 7.0)
+        pitch_val = int(getattr(req, "pitch_hz", None) or req.pitch or 18)
         speed_val = float(req.speed or 1.0)
         voice_val = req.voice or "pt-BR-ThalitaMultilingualNeural"
 
@@ -135,7 +136,7 @@ def generate(req: GenerateRequest):
             text=text,
             ref_audio_path=ref_file,
             voice=voice_val,
-            pitch_semitones=pitch_val,
+            pitch_hz=pitch_val,
             speed=speed_val
         )
         print(f"[FEFO Voice] Síntese concluída em {elapsed:.2f}s!")

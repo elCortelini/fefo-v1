@@ -433,15 +433,15 @@
 
 
 
-  <script src="admin.js?v=opt1-clean-31"></script>
+  <script src="admin.js?v=fefobase-v32"></script>
 
-  <script src="audio-editor.js?v=opt1-clean-31"></script>
+  <script src="audio-editor.js?v=fefobase-v32"></script>
 
-  <script src="image-editor.js?v=opt1-clean-31"></script>
+  <script src="image-editor.js?v=fefobase-v32"></script>
 
-  <script src="github-sync.js?v=opt1-clean-31"></script>
-  <script src="packages.js?v=opt1-clean-31"></script>
-  <script src="cards-packs.js?v=opt1-clean-31"></script>
+  <script src="github-sync.js?v=fefobase-v32"></script>
+  <script src="packages.js?v=fefobase-v32"></script>
+  <script src="cards-packs.js?v=fefobase-v32"></script>
 
 
     <!-- Modal de Configuração da Voz do FEFO (IA) -->
@@ -465,21 +465,40 @@
             <span id="f5-server-status" style="font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 8px; background: #e8f8f0; color: #127547;">● Motor Ativo</span>
           </div>
 
-          <!-- Áudio de Referência do Mascote -->
+          <!-- Áudio de Referência Oficial do Mascote FEFO -->
           <div style="background: #fbf9ff; border: 1.5px solid #e1d9f4; border-radius: 14px; padding: 12px 14px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <label style="font-size: 11px; font-weight: 900; color: var(--purple); text-transform: uppercase;">📁 Áudio de Referência do Mascote:</label>
-              <span id="ai-sample-status" style="font-size: 11px; font-weight: 800; color: #27ae60;"></span>
+              <label style="font-size: 11px; font-weight: 900; color: var(--purple); text-transform: uppercase;">⭐ Voz Base Oficial de Referência:</label>
+              <span id="ai-sample-status" style="font-size: 11px; font-weight: 800; color: #27ae60;">● Base Ativa</span>
             </div>
             <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-              <input type="file" id="ai-voice-sample-input" accept="audio/*,.wav,.mp3,.m4a" style="display: none;" onchange="PkgManager.handleVoiceSampleUpload(this.files)">
-              <button type="button" class="btn secondary" style="font-size: 12px; padding: 6px 12px;" onclick="document.getElementById('ai-voice-sample-input').click()">
-                📂 Trocar Áudio de Referência (.wav / .mp3)
+              <span id="ai-sample-name" style="font-size: 13px; font-weight: 800; color: var(--ink);">🎙️ ficofelizporvc.wav</span>
+              <button type="button" class="btn secondary" style="font-size: 11px; padding: 5px 10px;" onclick="PkgManager.playVoiceDemo('../repository/ficofelizporvc.wav')">
+                ▶ Ouvir Áudio Base Original
               </button>
-              <span id="ai-sample-name" style="font-size: 12px; font-weight: 800; color: var(--ink);">fefo_ref_clean.wav</span>
             </div>
-            <div id="ai-sample-player-container" style="margin-top: 8px; padding: 8px; background: #ffffff; border: 1px solid #e1d9f4; border-radius: 8px; display: none;">
-              <audio id="ai-sample-player" controls style="width: 100%; height: 32px;"></audio>
+            <div id="ai-sample-player-container" style="margin-top: 8px; padding: 8px; background: #ffffff; border: 1px solid #e1d9f4; border-radius: 8px;">
+              <audio id="ai-sample-player" src="../repository/ficofelizporvc.wav" controls style="width: 100%; height: 32px;"></audio>
+            </div>
+          </div>
+
+          <!-- Seleção da Personalidade Vocal do Mascote -->
+          <div style="background: #fbf9ff; border: 1.5px solid #dcd3f5; border-radius: 14px; padding: 12px 14px;">
+            <label style="font-size: 11px; font-weight: 900; color: var(--purple); text-transform: uppercase; display: block; margin-bottom: 6px;">
+              🎭 Personalidade e Timbre do Mascote FEFO:
+            </label>
+            <select id="ai-voice-select" style="width: 100%; font-size: 13px; font-weight: 700; padding: 8px 12px; border-radius: 8px; border: 1px solid #c7b8ea; background: #fff; color: var(--ink);">
+              <option value="pt-BR-ThalitaMultilingualNeural">✨ Mascote FEFO Alegre (Recomendado - Clara, amigável e sem efeito esquilo)</option>
+              <option value="pt-BR-FranciscaNeural">🌸 Mascote FEFO Doce e Calmo (Voz suave e acolhedora)</option>
+              <option value="pt-BR-AntonioNeural">👦 Mascote FEFO Menino (Timbre jovem e carismático)</option>
+            </select>
+            <!-- Demos Rápidas -->
+            <div style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+              <span style="font-size: 10.5px; font-weight: 800; color: var(--muted);">Demos Sintetizadas:</span>
+              <button type="button" class="btn secondary" style="font-size: 11px; padding: 4px 10px;" onclick="PkgManager.playVoiceDemo('../repository/audio/fefo_alegre.wav')">▶ Demo Alegre</button>
+              <button type="button" class="btn secondary" style="font-size: 11px; padding: 4px 10px;" onclick="PkgManager.playVoiceDemo('../repository/audio/fefo_suave.wav')">▶ Demo Suave</button>
+              <button type="button" class="btn secondary" style="font-size: 11px; padding: 4px 10px;" onclick="PkgManager.playVoiceDemo('../repository/audio/fefo_amigo.wav')">▶ Demo Acolhedor</button>
+              <button type="button" class="btn secondary" style="font-size: 11px; padding: 4px 10px;" onclick="PkgManager.playVoiceDemo('../repository/audio/fefo_rapaz.wav')">▶ Demo Menino</button>
             </div>
           </div>
 
@@ -487,11 +506,11 @@
           <div style="background: #fdfdfe; border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
             <div class="pkg-field-box">
               <div style="display: flex; justify-content: space-between;">
-                <label>Tom do Mascote (Pitch)</label>
-                <span id="ai-pitch-val" style="font-size: 11px; font-weight: 900; color: var(--purple);">+7 Semitons</span>
+                <label>Tom Vocal (Pitch Neural)</label>
+                <span id="ai-pitch-val" style="font-size: 11px; font-weight: 900; color: var(--purple);">+18 Hz</span>
               </div>
-              <input type="range" id="ai-pitch-slider" min="3" max="11" step="0.5" value="7" oninput="document.getElementById('ai-pitch-val').textContent = '+' + this.value + ' Semitons'">
-              <span class="hint" style="font-size: 10px;">Padrão: +7 (Voz aguda e alegre do FEFO)</span>
+              <input type="range" id="ai-pitch-slider" min="-10" max="35" step="1" value="18" oninput="document.getElementById('ai-pitch-val').textContent = (this.value >= 0 ? '+' : '') + this.value + ' Hz'">
+              <span class="hint" style="font-size: 10px;">Elevação neural suave (Zero efeito esquilo, zero metalizado)</span>
             </div>
 
             <div class="pkg-field-box">
@@ -499,7 +518,7 @@
                 <label>Velocidade da Fala</label>
                 <span id="ai-speed-val" style="font-size: 11px; font-weight: 900; color: var(--purple);">1.0x</span>
               </div>
-              <input type="range" id="ai-speed-slider" min="0.8" max="1.3" step="0.05" value="1.0" oninput="document.getElementById('ai-speed-val').textContent = this.value + 'x'">
+              <input type="range" id="ai-speed-slider" min="0.85" max="1.25" step="0.05" value="1.0" oninput="document.getElementById('ai-speed-val').textContent = this.value + 'x'">
               <span class="hint" style="font-size: 10px;">Padrão: 1.0x</span>
             </div>
           </div>
