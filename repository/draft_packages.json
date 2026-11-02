@@ -1,4 +1,7 @@
 {
+  "schema": 1,
+  "description": "FEFO Content Draft Packages - Grade Completa Pedagógica Unificada com Áudios Vinculados",
+  "updated_at": "2026-11-02T21:11:46.817Z",
   "packages": [
     {
       "id": "pkg_59122",
@@ -20,16 +23,16 @@
           "descricao": "olá eu sou o fefo, seu super amiguinho para melhorar a sua vida",
           "arquivo_fefo": "a0008.wav",
           "arquivo_origem": "Voz FEFO IA (a0008.wav)",
-          "web_url": "../repository/audio/a0008.wav?_t=1793648286366",
+          "web_url": "../repository/audio/a0008.wav?_t=1793653906817",
           "status": "needs_trim",
-          "tamanho": 179228,
+          "tamanho": 212012,
           "arquivo": "/usr/a/a0008.wav",
           "is_custom_blob": true,
-          "checksum": "eb3f43617911d18dcc46418e9857e1182d89b70d680c4e752595d3c3d207ccc7",
+          "checksum": "71643060e69b4b9b92c206fe884e6e70fe9a1d6dbf3025d729cc4e67b95239ef",
           "has_custom_audio": true
         }
       ],
-      "updated_at": "2026-11-02T19:38:12.066Z"
+      "updated_at": "2026-11-02T21:11:43.203Z"
     },
     {
       "id": "pkg_desafio_e_brincadeiras_desafios",
