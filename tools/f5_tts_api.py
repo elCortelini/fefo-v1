@@ -88,7 +88,7 @@ def get_f5_model():
     finally:
         _model_loading = False
 
-DEFAULT_REF_TEXT = "Olá amiguinho, eu sou o Fefo, vamos brincar e aprender juntos hoje."
+DEFAULT_REF_TEXT = "Você sabia? Os ratos são super inteligentes."
 
 class GenerateRequest(BaseModel):
     text: str
@@ -96,7 +96,7 @@ class GenerateRequest(BaseModel):
     ref_text: Optional[str] = ""             # Transcricao do audio de referencia (opcional)
     speed: Optional[float] = 1.0             # Velocidade da fala (0.5 a 2.0)
     remove_silence: Optional[bool] = False   # Remover silencio excessivo
-    nfe_step: Optional[int] = 8             # Passos de inferencia ODE (32 padrao, 16 mais rapido)
+    nfe_step: Optional[int] = 16            # Passos de inferencia ODE (16 a 32 para audio limpo sem som metalico)
     cfg_strength: Optional[float] = 2.0      # Intensidade CFG
     sway_sampling_coef: Optional[float] = -1 # Coeficiente sway
 
@@ -150,13 +150,13 @@ def generate(req: GenerateRequest):
     temp_ref_path = None
     ref_file = None
     ref_text = (req.ref_text or "").strip()
-    if not ref_text or len(ref_text) < 15:
+    if not ref_text or len(ref_text) < 10 or "Olá amiguinho" in ref_text:
         ref_text = DEFAULT_REF_TEXT
 
-    # No CPU, limita passos a 8 para garantir velocidade
-    nfe = int(req.nfe_step or 8)
+    # No CPU, 16 passos eliminam o som metalico mantendo alta velocidade com audio de 3.9s
+    nfe = int(req.nfe_step or 16)
     if get_device() == "cpu":
-        nfe = min(max(nfe, 6), 8)
+        nfe = min(max(nfe, 12), 20)
 
     try:
         if req.ref_audio:
@@ -166,6 +166,7 @@ def generate(req: GenerateRequest):
             # Tentar encontrar audio de referencia padrao do FEFO no repositorio
             repo_root = Path(__file__).resolve().parent.parent
             candidates = [
+                repo_root / "repository" / "fefo_ref_clean.wav",
                 repo_root / "repository" / "fefo_voice_sample.wav",
                 repo_root / "repository" / "audio" / "a0001.wav",
             ]

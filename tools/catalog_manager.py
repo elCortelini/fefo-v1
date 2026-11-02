@@ -406,8 +406,10 @@ class Handler(SimpleHTTPRequestHandler):
                 audio_bytes = None
                 ref_audio_b64 = payload.get('ref_audio')
                 ref_text = (payload.get('ref_text') or '').strip()
-                if not ref_text or len(ref_text) < 15: ref_text = 'Olá amiguinho, eu sou o Fefo, vamos brincar e aprender juntos hoje.'
-                nfe_step = 8
+                if not ref_text or len(ref_text) < 10 or 'Olá amiguinho' in ref_text:
+                    ref_text = 'Você sabia? Os ratos são super inteligentes.'
+                nfe_step = int(payload.get('nfe_step') or 16)
+                if nfe_step < 12: nfe_step = 16
                 temp_ref = None
 
                 try:
@@ -423,7 +425,7 @@ class Handler(SimpleHTTPRequestHandler):
                         temp_ref.close()
                         ref_file = temp_ref.name
                     else:
-                        for candidate in [ROOT / 'repository' / 'fefo_voice_sample.wav', ROOT / 'repository' / 'audio' / 'a0032.wav', ROOT / 'repository' / 'audio' / 'a0001.wav']:
+                        for candidate in [ROOT / 'repository' / 'fefo_ref_clean.wav', ROOT / 'repository' / 'fefo_voice_sample.wav', ROOT / 'repository' / 'audio' / 'a0032.wav', ROOT / 'repository' / 'audio' / 'a0001.wav']:
                             if candidate.exists():
                                 ref_file = str(candidate)
                                 break
@@ -657,6 +659,31 @@ class Handler(SimpleHTTPRequestHandler):
                     })
                 save_json_file(DRAFT_PACKAGES_FILE, drafts_data)
                 result = {'ok': True, 'package': pkg, 'message': f'{len(uploaded_items)} áudio(s) adicionado(s)!'}
+
+            elif self.path == '/api/packages/save_audio_file':
+                msg = BytesParser(policy=default).parsebytes(b'Content-Type: ' + content_type.encode() + b'\r\n\r\n' + body)
+                filename = None; file_bytes = None
+                for part in msg.walk():
+                    if part.get_content_disposition() != 'form-data': continue
+                    name = part.get_param('name', header='content-disposition')
+                    if name == 'filename': filename = part.get_content().strip()
+                    elif name == 'file': file_bytes = part.get_payload(decode=True)
+                if not filename or not file_bytes: raise ValueError('filename e file são obrigatórios.')
+                clean_name = Path(filename).name
+                dest_file = REPO_AUDIO_DIR / clean_name
+                tmp_wav = ROOT / f'temp_save_{clean_name}'
+                tmp_wav.write_bytes(file_bytes)
+                convert_audio_to_fefo_standard(tmp_wav, dest_file)
+                if SD_AUDIO_DIR.exists(): shutil.copy2(dest_file, SD_AUDIO_DIR / clean_name)
+                if tmp_wav.exists(): tmp_wav.unlink()
+                result = {'ok': True, 'filename': clean_name, 'size': dest_file.stat().st_size, 'message': f'✓ Áudio {clean_name} salvo no disco local com sucesso!'}
+
+            elif self.path == '/api/packages/save_drafts':
+                payload = json.loads(body.decode('utf-8'))
+                packages = payload.get('packages', [])
+                drafts_data = {'packages': packages}
+                save_json_file(DRAFT_PACKAGES_FILE, drafts_data)
+                result = {'ok': True, 'count': len(packages), 'message': '✓ Lista de rascunhos salva no disco com sucesso!'}
 
             elif self.path == '/api/packages/replace_audio':
                 msg = BytesParser(policy=default).parsebytes(b'Content-Type: ' + content_type.encode() + b'\r\n\r\n' + body)

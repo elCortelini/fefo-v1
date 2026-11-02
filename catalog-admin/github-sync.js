@@ -274,9 +274,33 @@ const GitHubSync = {
    * Atualiza web_url para o endereço definitivo do repositório.
    */
   async syncPackageAudios(pkg, onProgress = () => {}) {
-    if (!this.isConfigured()) return { uploaded: 0, total: 0 };
     const items = pkg.items || [];
     if (!items.length) return { uploaded: 0, total: 0 };
+
+    if (!this.isConfigured()) {
+      // Modo local offline: salva os áudios diretamente no disco local via servidor Python
+      let localUploaded = 0;
+      for (let i = 0; i < items.length; i++) {
+        const it = items[i];
+        if (window.AudioBlobDB) {
+          const b = await window.AudioBlobDB.getAudio(it.id);
+          if (b) {
+            try {
+              const fname = it.arquivo_fefo || `a${String(i + 1).padStart(4, '0')}.wav`;
+              const formData = new FormData();
+              formData.append('filename', fname);
+              formData.append('file', b, fname);
+              await fetch('/api/packages/save_audio_file', { method: 'POST', body: formData });
+              it.arquivo_fefo = fname;
+              it.arquivo = `/usr/a/${fname}`;
+              it.web_url = `../repository/audio/${fname}?_t=${Date.now()}`;
+              localUploaded++;
+            } catch (e) {}
+          }
+        }
+      }
+      return { uploaded: localUploaded, total: items.length };
+    }
 
     let uploadedCount = 0;
     const totalItems = items.length;
@@ -311,6 +335,17 @@ const GitHubSync = {
             `Upload: ${it.arquivo_fefo} (${kb} KB) - ${it.titulo || ''}`
           );
 
+          // 1. Grava no disco rígido local do servidor Python imediatamente
+          try {
+            const formData = new FormData();
+            formData.append('filename', it.arquivo_fefo);
+            formData.append('file', blob, it.arquivo_fefo);
+            await fetch('/api/packages/save_audio_file', { method: 'POST', body: formData });
+          } catch (diskErr) {
+            console.warn('[syncPackageAudios] Aviso ao salvar áudio no disco local:', diskErr);
+          }
+
+          // 2. Commit no repositório GitHub
           const base64Audio = this.arrayBufferToBase64(audioBytes);
           await this.commitFile(
             `repository/audio/${it.arquivo_fefo}`,
@@ -319,10 +354,10 @@ const GitHubSync = {
             true
           );
 
+          // 3. Atualiza referências com cache-buster para evitar recarregamento de áudio anterior
           it.checksum = checksum;
           it.tamanho = fileSize;
-          it.web_url = `../repository/audio/${it.arquivo_fefo}`;
-          delete it.has_custom_audio;
+          it.web_url = `../repository/audio/${it.arquivo_fefo}?_t=${Date.now()}`;
           uploadedCount++;
         }
       } else {

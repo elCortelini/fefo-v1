@@ -495,7 +495,7 @@
 
           <!-- Conexão Automática do F5-TTS (Sem campos técnicos visíveis) -->
           <input type="hidden" id="ai-f5-server-url" value="http://localhost:9880">
-          <input type="hidden" id="ai-f5-ref-text" value="Olá amiguinho.">
+          <input type="hidden" id="ai-f5-ref-text" value="Você sabia? Os ratos são super inteligentes.">
 
           <!-- Configurações Próprias do F5-TTS -->
           <div style="background: #fdfdfe; border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
@@ -511,10 +511,10 @@
             <div class="pkg-field-box">
               <div style="display: flex; justify-content: space-between;">
                 <label>Passos de Inferência NFE (Qualidade)</label>
-                <span id="ai-nfe-val" style="font-size: 11px; font-weight: 900; color: var(--purple);">8 Passos</span>
+                <span id="ai-nfe-val" style="font-size: 11px; font-weight: 900; color: var(--purple);">16 Passos</span>
               </div>
-              <input type="range" id="ai-nfe-slider" min="8" max="32" step="4" value="8" oninput="document.getElementById('ai-nfe-val').textContent = this.value + ' Passos'">
-              <span class="hint" style="font-size: 10.5px;">8-16 = Rápido (Recomendado para CPU) | 24-32 = Alta Fidelidade</span>
+              <input type="range" id="ai-nfe-slider" min="12" max="32" step="4" value="16" oninput="document.getElementById('ai-nfe-val').textContent = this.value + ' Passos'">
+              <span class="hint" style="font-size: 10.5px;">16 = Equilibrado (Sem som metálico) | 24-32 = Máxima Fidelidade</span>
             </div>
 
             <div class="pkg-field-box">

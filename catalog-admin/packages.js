@@ -1333,7 +1333,18 @@ const PkgManager = {
     }
 
     PkgStorage.saveAllDrafts(this.state.drafts);
+
+    // Salva rascunhos também no disco rígido local via servidor Python
+    try {
+      await fetch('/api/packages/save_drafts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ packages: this.state.drafts })
+      });
+    } catch (e) {}
+
     this.renderDraftsGrid();
+    this.renderDraftExpandedPanel();
   },
 
   async saveProductionPackageDetails(menuTitle) {
@@ -1391,6 +1402,21 @@ const PkgManager = {
       }
       const descInput = document.querySelector(`#panel-ai-${itemId} .pkg-item-script-textarea`);
       if (descInput) it.descricao = descInput.value;
+
+      // Se houver áudio gerado/modificado no IndexedDB, salva no disco local imediatamente
+      if (window.AudioBlobDB) {
+        try {
+          const b = await window.AudioBlobDB.getAudio(itemId);
+          if (b) {
+            const fname = it.arquivo_fefo || 'a0001.wav';
+            const form = new FormData();
+            form.append('filename', fname);
+            form.append('file', b, fname);
+            await fetch('/api/packages/save_audio_file', { method: 'POST', body: form });
+            it.web_url = `../repository/audio/${fname}?_t=${Date.now()}`;
+          }
+        } catch (e) {}
+      }
     }
     await this.saveDraftPackageDetails(pkgOrMenuTitle);
   },
@@ -2159,9 +2185,17 @@ const PkgManager = {
     if (!modal) return;
 
     const f5Url = localStorage.getItem('fefo_f5_server_url') || 'http://localhost:9880';
-    const f5RefText = localStorage.getItem('fefo_f5_ref_text') || '';
+    let f5RefText = localStorage.getItem('fefo_f5_ref_text') || '';
+    if (!f5RefText || f5RefText.includes('Olá amiguinho')) {
+      f5RefText = 'Você sabia? Os ratos são super inteligentes.';
+      localStorage.setItem('fefo_f5_ref_text', f5RefText);
+    }
     const speed = localStorage.getItem('fefo_ai_speed') || '1.0';
-    const nfe = '8';
+    let nfe = localStorage.getItem('fefo_ai_nfe') || '16';
+    if (parseInt(nfe, 10) < 12) {
+      nfe = '16';
+      localStorage.setItem('fefo_ai_nfe', '16');
+    }
     const cfg = localStorage.getItem('fefo_ai_cfg') || '2.0';
     const removeSilence = localStorage.getItem('fefo_ai_remove_silence') !== '0';
     const sampleName = localStorage.getItem('fefo_ai_sample_name') || '';
@@ -2197,16 +2231,17 @@ const PkgManager = {
 
     const lblSample = document.getElementById('ai-sample-name');
 
-    // Carrega a amostra de referência da voz do FEFO salva no IndexedDB ou padrão do repositório
+    // Carrega a amostra de referência da voz do FEFO salva no IndexedDB ou padrão do repositório (3.9s limpa)
     try {
+      let sampleName = localStorage.getItem('fefo_ai_sample_name') || '';
       let sampleBlob = await AudioBlobDB.getAudio('fefo_voice_sample');
-      if (!sampleBlob) {
+      if (!sampleBlob || sampleName === 'fefo_voice_sample.wav' || !sampleName) {
         try {
-          const r = await fetch('../repository/fefo_voice_sample.wav');
+          const r = await fetch('../repository/fefo_ref_clean.wav');
           if (r.ok) {
             sampleBlob = await r.blob();
             await AudioBlobDB.setAudio('fefo_voice_sample', sampleBlob);
-            localStorage.setItem('fefo_ai_sample_name', 'fefo_voice_sample.wav');
+            localStorage.setItem('fefo_ai_sample_name', 'fefo_ref_clean.wav');
           }
         } catch (e) {}
       }
@@ -2312,9 +2347,13 @@ const PkgManager = {
 
   saveAiVoiceSettings() {
     const f5Url = document.getElementById('ai-f5-server-url')?.value.trim() || 'http://localhost:9880';
-    const f5Ref = document.getElementById('ai-f5-ref-text')?.value.trim() || '';
+    let f5Ref = document.getElementById('ai-f5-ref-text')?.value.trim() || '';
+    if (!f5Ref || f5Ref.includes('Olá amiguinho')) {
+      f5Ref = 'Você sabia? Os ratos são super inteligentes.';
+    }
     const speed = document.getElementById('ai-speed-slider')?.value || '1.0';
-    const nfe = document.getElementById('ai-nfe-slider')?.value || '32';
+    let nfe = document.getElementById('ai-nfe-slider')?.value || '16';
+    if (parseInt(nfe, 10) < 12) nfe = '16';
     const cfg = document.getElementById('ai-cfg-slider')?.value || '2.0';
     const removeSilence = document.getElementById('ai-remove-silence')?.checked !== false;
 
@@ -2374,20 +2413,27 @@ const PkgManager = {
 
   async synthesizeVoiceBlob(text, opts = {}) {
     const f5Url = (localStorage.getItem('fefo_f5_server_url') || 'http://localhost:9880').replace(/\/+$/, '');
-    const refText = localStorage.getItem('fefo_f5_ref_text') || 'Olá amiguinho.';
+    let refText = localStorage.getItem('fefo_f5_ref_text') || 'Você sabia? Os ratos são super inteligentes.';
+    if (!refText || refText.includes('Olá amiguinho')) {
+      refText = 'Você sabia? Os ratos são super inteligentes.';
+      localStorage.setItem('fefo_f5_ref_text', refText);
+    }
     const speed = opts.speed ?? parseFloat(localStorage.getItem('fefo_ai_speed') || '1.0');
-    const nfe_step = opts.nfe_step ?? parseInt('8', 10);
+    let nfe_step = opts.nfe_step ?? parseInt(localStorage.getItem('fefo_ai_nfe') || '16', 10);
+    if (nfe_step < 12) nfe_step = 16;
     const cfg_strength = opts.cfg_strength ?? parseFloat(localStorage.getItem('fefo_ai_cfg') || '2.0');
     const remove_silence = opts.remove_silence ?? (localStorage.getItem('fefo_ai_remove_silence') !== '0');
 
-    // 1. Obter áudio de referência do FEFO
+    // 1. Obter áudio de referência do FEFO (amostra limpa de 3.9s)
     let sampleBlob = await AudioBlobDB.getAudio('fefo_voice_sample');
-    if (!sampleBlob) {
+    const sampleName = localStorage.getItem('fefo_ai_sample_name') || '';
+    if (!sampleBlob || sampleName === 'fefo_voice_sample.wav' || !sampleName) {
       try {
-        const r = await fetch('../repository/fefo_voice_sample.wav');
+        const r = await fetch('../repository/fefo_ref_clean.wav');
         if (r.ok) {
           sampleBlob = await r.blob();
           await AudioBlobDB.setAudio('fefo_voice_sample', sampleBlob);
+          localStorage.setItem('fefo_ai_sample_name', 'fefo_ref_clean.wav');
         }
       } catch (e) {}
     }
