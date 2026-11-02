@@ -159,8 +159,10 @@ def generate(req: GenerateRequest):
     if get_device() == "cpu":
         nfe = min(max(nfe, 12), 20)
 
+    repo_root = Path(__file__).resolve().parent.parent
+    clean_candidate = repo_root / "repository" / "fefo_ref_clean.wav"
+
     try:
-        clean_candidate = repo_root / "repository" / "fefo_ref_clean.wav"
         if req.ref_audio:
             temp_ref_path = _save_ref_audio_to_temp(req.ref_audio)
             # Se for a amostra antiga longa do FEFO (>10s), usa a versao tratada em 24kHz (7.8s) para fidelidade total
@@ -175,9 +177,8 @@ def generate(req: GenerateRequest):
                 ref_file = temp_ref_path
         else:
             # Tentar encontrar audio de referencia padrao do FEFO no repositorio
-            repo_root = Path(__file__).resolve().parent.parent
             candidates = [
-                repo_root / "repository" / "fefo_ref_clean.wav",
+                clean_candidate,
                 repo_root / "repository" / "fefo_voice_sample.wav",
                 repo_root / "repository" / "audio" / "a0001.wav",
             ]
