@@ -23,6 +23,7 @@ FEFO_novos_conteudos/faces/*
 *.elf
 *.apk
 *.zip
+!fefo_training_dataset.zip
 *.tar.gz
 *.pdf
 !PortFolio FEFO.pdf
