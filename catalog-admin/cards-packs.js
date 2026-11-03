@@ -904,7 +904,7 @@ const CardPackManager = {
     }
     const tracker = window.AiVoiceProgress ? window.AiVoiceProgress.create(progBox, 'Sintetizando voz do FEFO para o Card...') : null;
 
-    notice('Gerando áudio com a voz clonada do FEFO (IA F5-TTS)...');
+    notice('Gerando áudio com a voz do FEFO (IA XTTS-v2)...');
     try {
       let audioBlob = null;
       if (window.PkgManager && typeof window.PkgManager.synthesizeVoiceBlob === 'function') {

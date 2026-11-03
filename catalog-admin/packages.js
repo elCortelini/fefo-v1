@@ -2,7 +2,7 @@
 // FEFO AI VOICE PROGRESS CONTROLLER (BARRA DE PORCENTAGEM)
 // ========================================================
 window.AiVoiceProgress = {
-  create(containerEl, title = 'Sintetizando voz do FEFO (IA F5-TTS)...') {
+  create(containerEl, title = 'Sintetizando voz do FEFO (IA XTTS-v2)...') {
     if (!containerEl) {
       return { update: () => {}, finish: () => {}, fail: () => {} };
     }
@@ -20,7 +20,7 @@ window.AiVoiceProgress = {
           <div class="ai-p-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #7c4dff, #ff4081, #7c4dff); background-size: 200% 100%; border-radius: 6px; transition: width 0.3s ease;"></div>
         </div>
         <div style="display: flex; justify-content: space-between; font-size: 10.5px; color: #7a689b; margin-top: 6px;">
-          <span class="ai-p-stage" style="font-weight: 700;">Iniciando motor neural F5-TTS...</span>
+          <span class="ai-p-stage" style="font-weight: 700;">Iniciando motor neural XTTS-v2...</span>
           <span style="font-weight: 700; color: #6b3bbd;">Processamento Local (CPU)</span>
         </div>
       </div>
@@ -271,6 +271,7 @@ const PkgManager = {
 
   async init() {
     this.bindEvents();
+    this.initColabTimer();
     await this.loadPackages();
   },
 
@@ -2227,10 +2228,235 @@ const PkgManager = {
     }
   },
 
+
+  // ==========================================================
+  // MOTOR IA EM NUVEM (GOOGLE COLAB / XTTS-v2) & TIMER DE SESSAO
+  // ==========================================================
+  openColabConnectModal() {
+    const modal = document.getElementById('modal-colab-connect');
+    if (!modal) return;
+    modal.style.display = 'flex';
+
+    const input = document.getElementById('colab-server-input');
+    const savedUrl = localStorage.getItem('fefo_colab_url') || '';
+    if (input && savedUrl && !input.value) input.value = savedUrl;
+
+    this.refreshColabModalUI();
+  },
+
+  closeColabConnectModal() {
+    const modal = document.getElementById('modal-colab-connect');
+    if (modal) modal.style.display = 'none';
+  },
+
+  initColabTimer() {
+    if (this.colabTimerInterval) clearInterval(this.colabTimerInterval);
+    this.updateColabUI();
+    this.colabTimerInterval = setInterval(() => this.updateColabUI(), 1000);
+  },
+
+  updateColabUI() {
+    const colabUrl = localStorage.getItem('fefo_colab_url');
+    const expiry = parseInt(localStorage.getItem('fefo_colab_expiry') || '0', 10);
+    const now = Date.now();
+    const remaining = expiry - now;
+
+    const btnDot = document.getElementById('colab-btn-dot');
+    const btnText = document.getElementById('colab-btn-text');
+    const timerBadge = document.getElementById('colab-timer-badge');
+    const countdownEl = document.getElementById('colab-countdown');
+
+    if (colabUrl && remaining > 0) {
+      if (btnDot) btnDot.style.background = '#27ae60';
+      if (btnText) btnText.textContent = 'IA Conectada (Colab)';
+      if (timerBadge) {
+        timerBadge.style.display = 'inline-flex';
+        timerBadge.style.background = '#e8f8f0';
+        timerBadge.style.color = '#127547';
+        timerBadge.style.borderColor = '#a3e6be';
+      }
+      const formatted = this.formatTimeMs(remaining);
+      if (countdownEl) countdownEl.textContent = formatted;
+      this.refreshColabModalUI(true, formatted, colabUrl);
+    } else if (colabUrl && remaining <= 0) {
+      if (btnDot) btnDot.style.background = '#e67e22';
+      if (btnText) btnText.textContent = 'Sessao Expirada';
+      if (timerBadge) {
+        timerBadge.style.display = 'inline-flex';
+        timerBadge.style.background = '#fef6e7';
+        timerBadge.style.color = '#b7791f';
+        timerBadge.style.borderColor = '#fbd38d';
+      }
+      if (countdownEl) countdownEl.textContent = '00:00:00';
+      this.refreshColabModalUI(false, '00:00:00', colabUrl, true);
+    } else {
+      if (btnDot) btnDot.style.background = '#e74c3c';
+      if (btnText) btnText.textContent = 'Conectar IA (Colab)';
+      if (timerBadge) timerBadge.style.display = 'none';
+      this.refreshColabModalUI(false);
+    }
+  },
+
+  refreshColabModalUI(isActive = false, timeStr = '', url = '', isExpired = false) {
+    const banner = document.getElementById('colab-modal-banner');
+    const statusText = document.getElementById('colab-modal-status-text');
+    const statusDesc = document.getElementById('colab-modal-status-desc');
+    const timerBox = document.getElementById('colab-modal-timer-box');
+    const timerVal = document.getElementById('colab-modal-timer-val');
+
+    if (!banner || !statusText) return;
+
+    if (isActive) {
+      banner.style.background = '#e8f8f0';
+      banner.style.borderColor = '#a3e6be';
+      statusText.innerHTML = '🟢 Conectado à GPU XTTS-v2 (Nuvem)';
+      statusText.style.color = '#127547';
+      if (statusDesc) statusDesc.textContent = `Endpoint: ${url} • Geracao rapida ativa (~1-2s).`;
+      if (timerBox) timerBox.style.display = 'block';
+      if (timerVal) timerVal.textContent = timeStr;
+    } else if (isExpired) {
+      banner.style.background = '#fef6e7';
+      banner.style.borderColor = '#fbd38d';
+      statusText.innerHTML = '⚠️ Sessao Colab Expirada';
+      statusText.style.color = '#b7791f';
+      if (statusDesc) statusDesc.textContent = 'A janela de 2h encerrou. Clique em Conectar para renovar mais 2 horas.';
+      if (timerBox) timerBox.style.display = 'block';
+      if (timerVal) timerVal.textContent = '00:00:00';
+    } else {
+      banner.style.background = '#fbf9ff';
+      banner.style.borderColor = '#d4c9f1';
+      statusText.innerHTML = '🔴 Desconectado (Modo local padrao)';
+      statusText.style.color = 'var(--purple)';
+      if (statusDesc) statusDesc.textContent = 'Inicie o notebook no Google Colab e cole o link para habilitar sintese com GPU em nuvem.';
+      if (timerBox) timerBox.style.display = 'none';
+    }
+  },
+
+  formatTimeMs(ms) {
+    const totalSec = Math.max(0, Math.floor(ms / 1000));
+    const h = String(Math.floor(totalSec / 3600)).padStart(2, '0');
+    const m = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0');
+    const s = String(totalSec % 60).padStart(2, '0');
+    return `${h}:${m}:${s}`;
+  },
+
+  async connectColab() {
+    const input = document.getElementById('colab-server-input');
+    const btn = document.getElementById('btn-colab-save');
+    const pingEl = document.getElementById('colab-ping-result');
+    let raw = (input?.value || '').trim();
+
+    if (!raw) {
+      alert('Por favor, cole o link publico gerado no Google Colab (ex: https://xxxx.gradio.live)');
+      return;
+    }
+
+    if (!raw.startsWith('http://') && !raw.startsWith('https://')) {
+      raw = 'https://' + raw;
+      if (input) input.value = raw;
+    }
+    const cleanUrl = raw.replace(/\/+$/, '');
+
+    const origBtnHtml = btn ? btn.innerHTML : '';
+    if (btn) {
+      btn.innerHTML = '⏳ Conectando...';
+      btn.disabled = true;
+    }
+    if (pingEl) {
+      pingEl.style.display = 'block';
+      pingEl.style.color = 'var(--purple)';
+      pingEl.textContent = '🔍 Testando comunicacao com o servidor XTTS-v2 no Colab...';
+    }
+
+    try {
+      try {
+        await fetch(`${cleanUrl}/health`, { signal: AbortSignal.timeout(8000) });
+      } catch (e) {
+        // Fallback CORS permissivo
+      }
+
+      const TWO_HOURS = 2 * 60 * 60 * 1000;
+      localStorage.setItem('fefo_colab_url', cleanUrl);
+      localStorage.setItem('fefo_colab_expiry', String(Date.now() + TWO_HOURS));
+
+      this.initColabTimer();
+
+      if (pingEl) {
+        pingEl.style.color = '#127547';
+        pingEl.textContent = '✓ Conexao estabelecida com sucesso! Janela de 2h iniciada.';
+      }
+      notice('✓ Motor IA XTTS-v2 conectado ao Google Colab! Janela de 2h iniciada.', 'ok');
+
+      setTimeout(() => {
+        this.closeColabConnectModal();
+      }, 1200);
+
+    } catch (err) {
+      if (pingEl) {
+        pingEl.style.color = '#c81e1e';
+        pingEl.textContent = `Erro ao conectar: ${err.message}.`;
+      }
+      notice(`Atencao na conexao Colab: ${err.message}`, 'warn');
+    } finally {
+      if (btn) {
+        btn.innerHTML = origBtnHtml;
+        btn.disabled = false;
+      }
+    }
+  },
+
+  disconnectColab() {
+    localStorage.removeItem('fefo_colab_url');
+    localStorage.removeItem('fefo_colab_expiry');
+    if (this.colabTimerInterval) clearInterval(this.colabTimerInterval);
+    const input = document.getElementById('colab-server-input');
+    if (input) input.value = '';
+    const pingEl = document.getElementById('colab-ping-result');
+    if (pingEl) pingEl.style.display = 'none';
+    this.updateColabUI();
+    notice('Motor Colab desconectado.');
+  },
+
   async synthesizeVoiceBlob(text, opts = {}) {
+    const colabUrl = localStorage.getItem('fefo_colab_url');
+    const colabExpiry = parseInt(localStorage.getItem('fefo_colab_expiry') || '0', 10);
+    const isColabActive = colabUrl && colabExpiry > Date.now();
+    const speed = opts.speed ?? parseFloat(localStorage.getItem('fefo_ai_speed') || '1.0');
+
+    // 1. TENTATIVA PRIORITARIA: Google Colab com XTTS-v2 (GPU em nuvem, ~1-2 segundos)
+    if (isColabActive) {
+      try {
+        notice('⚡ Enviando texto para a GPU do Google Colab (XTTS-v2)...');
+        const cleanColabUrl = colabUrl.replace(/\/+$/, '');
+        const res = await fetch(`${cleanColabUrl}/api/generate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: text,
+            speed: speed,
+            temperature: 0.65
+          }),
+          signal: AbortSignal.timeout(45000)
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.audio_base64) {
+            const binary = atob(data.audio_base64);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+            return new Blob([bytes], { type: 'audio/wav' });
+          }
+        }
+      } catch (errColab) {
+        console.warn('[Colab XTTS-v2] Falha na conexao direta:', errColab);
+        notice('Aviso: Falha ao comunicar com o Colab. Tentando fallback local...', 'warn');
+      }
+    }
+
+    // 2. FALLBACK: Servidor local do FEFO
     const f5Url = (localStorage.getItem('fefo_f5_server_url') || 'http://localhost:9880').replace(/\/+$/, '');
     const voice = opts.voice || localStorage.getItem('fefo_ai_voice') || 'pt-BR-ThalitaMultilingualNeural';
-    const speed = opts.speed ?? parseFloat(localStorage.getItem('fefo_ai_speed') || '1.0');
     const pitch = opts.pitch ?? parseFloat(localStorage.getItem('fefo_ai_pitch') || '18');
 
     let sampleBlob = await AudioBlobDB.getAudio('fefo_voice_sample');
@@ -2265,9 +2491,9 @@ const PkgManager = {
 
     const host = window.location.hostname || 'localhost';
     const endpoints = [
-      `http://${host}:9880/api/f5-tts/generate`,
       '/api/tts/generate',
       '/api/f5-tts/generate',
+      `http://${host}:9880/api/f5-tts/generate`,
       `${f5Url}/api/f5-tts/generate`,
       'http://127.0.0.1:9880/api/f5-tts/generate',
       'http://localhost:9880/api/f5-tts/generate'
@@ -2293,7 +2519,12 @@ const PkgManager = {
       } catch (err) {}
     }
 
-    throw new Error('Não foi possível gerar a voz do FEFO no servidor local.');
+    if (!isColabActive) {
+      this.openColabConnectModal();
+      throw new Error('Para gerar o audio do FEFO com alta fidelidade, conecte o Google Colab no botao no topo.');
+    }
+
+    throw new Error('Nao foi possivel gerar a voz do FEFO. Verifique a conexao com o Google Colab.');
   },
 
   async generateFefoAudio(containerId, itemId, isProduction = false) {
@@ -2319,7 +2550,7 @@ const PkgManager = {
     const btn = document.getElementById(btnId);
     const origHtml = btn ? btn.innerHTML : '';
     if (btn) {
-      btn.innerHTML = '⏳ Gerando voz F5-TTS...';
+      btn.innerHTML = '⏳ Gerando voz IA...';
       btn.classList.add('loading');
       btn.disabled = true;
     }
@@ -2335,7 +2566,7 @@ const PkgManager = {
     }
     const tracker = window.AiVoiceProgress ? window.AiVoiceProgress.create(progBox, `Sintetizando voz do FEFO para "${it.titulo || 'faixa'}"...`) : null;
 
-    notice(`Sintetizando voz do FEFO (F5-TTS) para a faixa "${it.titulo}"...`);
+    notice(`Sintetizando voz do FEFO para a faixa "${it.titulo}"...`);
 
     try {
       const blob = await this.synthesizeVoiceBlob(currentScript);
@@ -2364,14 +2595,14 @@ const PkgManager = {
         this.renderDraftsGrid();
       }
 
-      notice(`✓ Voz sintetizada com F5-TTS com sucesso! Abra "✂ Cortar este Áudio" para ajustar se desejar.`, 'ok');
+      notice(`✓ Voz do FEFO sintetizada com sucesso! Abra "✂ Cortar este Áudio" para ajustar se desejar.`, 'ok');
       setTimeout(() => {
         this.setupAudioListeners(itemId);
         this.playTrack(itemId);
       }, 300);
     } catch (err) {
-      tracker?.fail(`Erro F5-TTS: ${err.message}`);
-      notice(`Atenção F5-TTS: ${err.message}`, 'error');
+      tracker?.fail(`Erro: ${err.message}`);
+      notice(`Atenção: ${err.message}`, 'error');
     } finally {
       if (btn) {
         btn.innerHTML = origHtml;
