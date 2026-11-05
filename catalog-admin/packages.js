@@ -470,6 +470,7 @@ const PkgManager = {
       searchInput.addEventListener('input', (e) => {
         this.state.filterSearch = e.target.value.toLowerCase().trim();
         this.renderDraftsGrid();
+        this.renderPublishedGrid();
       });
     }
 
@@ -478,6 +479,7 @@ const PkgManager = {
       licSelect.addEventListener('change', (e) => {
         this.state.filterLicense = e.target.value;
         this.renderDraftsGrid();
+        this.renderPublishedGrid();
       });
     }
 
@@ -486,6 +488,7 @@ const PkgManager = {
       catSelect.addEventListener('change', (e) => {
         this.state.filterCategory = e.target.value;
         this.renderDraftsGrid();
+        this.renderPublishedGrid();
       });
     }
 
@@ -494,6 +497,7 @@ const PkgManager = {
       statusSelect.addEventListener('change', (e) => {
         this.state.filterStatus = e.target.value;
         this.renderDraftsGrid();
+        this.renderPublishedGrid();
       });
     }
   },
@@ -675,7 +679,7 @@ const PkgManager = {
     const cats = new Set();
 
     (this.state.drafts || []).forEach(p => {
-      if (p.categoria) cats.add(p.categoria);
+      if (p.categoria && p.categoria.trim()) cats.add(p.categoria.trim());
       (p.items || []).forEach(it => {
         totalItems++;
         if (it.descricao && it.descricao.trim()) totalScripts++;
@@ -684,6 +688,7 @@ const PkgManager = {
 
     let totalPub = 0;
     (this.state.publishedMenus || []).forEach(m => {
+      if (m.categoria && m.categoria.trim()) cats.add(m.categoria.trim());
       totalPub += (m.items || []).length;
     });
 
@@ -700,12 +705,15 @@ const PkgManager = {
     if (elPub) elPub.textContent = totalPub;
 
     const catSelect = document.getElementById('pkg-filter-category');
-    if (catSelect && catSelect.options && catSelect.options.length <= 1) {
-      const sortedCats = Array.from(cats).sort();
+    if (catSelect) {
+      const currentVal = this.state.filterCategory || 'all';
+      catSelect.innerHTML = '<option value="all">Todas as Categorias</option>';
+      const sortedCats = Array.from(cats).filter(Boolean).sort((a, b) => a.localeCompare(b, 'pt-BR'));
       sortedCats.forEach(cat => {
         const opt = document.createElement('option');
         opt.value = cat;
         opt.textContent = cat;
+        if (cat.toLowerCase() === currentVal.toLowerCase()) opt.selected = true;
         catSelect.appendChild(opt);
       });
     }
@@ -724,16 +732,75 @@ const PkgManager = {
   // ==========================================================
   // SEÇÃO 1: PACOTES EM RASCUNHO (DRAFTS)
   // ==========================================================
+
+  matchesFilter(pkg) {
+    if (!pkg) return false;
+    const norm = (s) => (s || '').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+    // 1. Filtro de Texto (Pesquisa)
+    const q = norm(this.state.filterSearch);
+    if (q) {
+      const matchTitle = norm(pkg.titulo).includes(q);
+      const matchDesc = norm(pkg.descricao).includes(q);
+      const matchMenu = norm(pkg.menu_principal).includes(q);
+      const matchSubmenu = norm(pkg.submenu).includes(q);
+      const matchCat = norm(pkg.categoria).includes(q);
+      const matchId = norm(pkg.id).includes(q);
+      const matchItems = (pkg.items || []).some(it => {
+        return norm(it.titulo).includes(q) ||
+               norm(it.descricao).includes(q) ||
+               norm(it.arquivo_fefo).includes(q) ||
+               norm(it.arquivo_origem).includes(q) ||
+               norm(it.codigo_item).includes(q) ||
+               norm(it.id).includes(q);
+      });
+      if (!matchTitle && !matchDesc && !matchMenu && !matchSubmenu && !matchCat && !matchId && !matchItems) {
+        return false;
+      }
+    }
+
+    // 2. Filtro de Licenca ('all', 'home', 'clinical', 'escola')
+    const lic = (this.state.filterLicense || 'all').toLowerCase();
+    if (lic !== 'all') {
+      const pkgLics = (Array.isArray(pkg.licencas) ? pkg.licencas : []).map(l => (l || '').toLowerCase());
+      if (pkgLics.length > 0 && !pkgLics.includes(lic)) {
+        return false;
+      }
+    }
+
+    // 3. Filtro de Categoria ('all' ou nome da categoria)
+    const cat = (this.state.filterCategory || 'all').trim();
+    if (cat !== 'all') {
+      const pkgCat = (pkg.categoria || '').trim();
+      if (pkgCat.toLowerCase() !== cat.toLowerCase()) {
+        return false;
+      }
+    }
+
+    // 4. Filtro de Status ('all', 'needs_trim', 'ready', 'pending')
+    const status = this.state.filterStatus || 'all';
+    if (status !== 'all') {
+      const items = pkg.items || [];
+      if (status === 'needs_trim') {
+        const hasTrim = items.some(it => it.status === 'needs_trim' || it.status === 'raw');
+        if (!hasTrim) return false;
+      } else if (status === 'ready') {
+        const isReady = items.length > 0 && items.every(it => it.status === 'ready' || (it.web_url && it.status !== 'needs_trim' && it.status !== 'pending'));
+        if (!isReady) return false;
+      } else if (status === 'pending') {
+        const hasPending = items.some(it => it.status === 'pending' || (!it.web_url && !it.has_custom_audio));
+        if (!hasPending) return false;
+      }
+    }
+
+    return true;
+  },
+
   renderDraftsGrid() {
     const grid = document.getElementById('draft-packages-grid');
     if (!grid) return;
 
-    let filteredDrafts = this.state.drafts || [];
-    if (this.state.searchQuery) {
-      filteredDrafts = filteredDrafts.filter(p => 
-        (p.titulo || '').toLowerCase().includes(this.state.searchQuery)
-      );
-    }
+    const filteredDrafts = (this.state.drafts || []).filter(p => this.matchesFilter(p));
 
     if (!filteredDrafts.length) {
       grid.innerHTML = `
@@ -1056,13 +1123,15 @@ const PkgManager = {
     const grid = document.getElementById('published-menus-grid');
     if (!grid) return;
 
-    if (!this.state.publishedMenus.length) {
-      grid.innerHTML = `<div class="empty">Nenhum menu oficial identificado no catálogo.</div>`;
+    const filteredPublished = (this.state.publishedMenus || []).filter(p => this.matchesFilter(p));
+
+    if (!filteredPublished.length) {
+      grid.innerHTML = `<div class="empty">Nenhum menu oficial encontrado com os filtros atuais.</div>`;
       this.renderProductionExpandedPanel();
       return;
     }
 
-    grid.innerHTML = this.state.publishedMenus.map((pkg, idx) => {
+    grid.innerHTML = filteredPublished.map((pkg, idx) => {
       const isExpanded = this.state.expandedProductionTitle === pkg.titulo;
       const numLabel = `MENU/Pacote ${idx + 1}${pkg.titulo ? ` - ${this.escapeHtml(pkg.titulo)}` : ''}`;
       const encTitle = encodeURIComponent(pkg.titulo);
