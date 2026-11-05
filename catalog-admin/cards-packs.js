@@ -572,6 +572,7 @@ const CardPackManager = {
               <!-- LINHA DO PLAYER DE ÁUDIO -->
               <div class="track-row-player">
                 <audio id="audio-player-${c.id}" src="${this.escapeHtml(audioUrl)}" controls preload="metadata"></audio>
+                <button type="button" class="btn-mp3-download" id="btn-mp3-card-${c.id}" title="Baixar este áudio convertido em MP3" onclick="CardPackManager.downloadCardMp3('${c.id}', '${this.escapeHtml(c.titulo || c.item_id || 'card_audio')}')">⬇️ Baixar MP3</button>
               </div>
 
               <!-- DIVISÓRIA ACORDEON 1: Gerar Audio com IA -->
@@ -1401,7 +1402,22 @@ const CardPackManager = {
         </div>
       </div>
     `;
-  }
+  },
+
+  downloadCardMp3(cardId, title) {
+    const audioEl = document.getElementById(`audio-player-${cardId}`);
+    const btnEl = document.getElementById(`btn-mp3-card-${cardId}`);
+    if (window.FefoAudioExporter) {
+      window.FefoAudioExporter.downloadAudioAsMp3({
+        itemId: cardId,
+        title: title || 'audio_carta_fefo',
+        audioElement: audioEl,
+        btnElement: btnEl
+      });
+    } else {
+      alert('Módulo de conversão MP3 indisponível.');
+    }
+  },
 };
 
 window.CardPackManager = CardPackManager;

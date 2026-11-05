@@ -476,6 +476,70 @@ class Handler(SimpleHTTPRequestHandler):
                     'message': '✓ Áudio gerado com a voz do FEFO com sucesso!'
                 }
 
+            elif self.path == '/api/audio/to_mp3':
+                payload = json.loads(body.decode('utf-8'))
+                audio_b64 = payload.get('audio_base64')
+                audio_url = payload.get('url')
+                filename = payload.get('filename', 'audio')
+                
+                base_name = Path(filename).stem
+                mp3_name = f"{base_name}.mp3"
+                
+                raw_bytes = None
+                if audio_b64:
+                    import base64
+                    if ',' in audio_b64 and 'base64' in audio_b64:
+                        audio_b64 = audio_b64.split(',', 1)[1]
+                    raw_bytes = base64.b64decode(audio_b64)
+                elif audio_url:
+                    clean_url = audio_url.split('?')[0].lstrip('/')
+                    local_path = ROOT / clean_url
+                    if local_path.exists():
+                        raw_bytes = local_path.read_bytes()
+                    else:
+                        for prefix in ['repository', 'repository/audio', 'repository/drafts/audio']:
+                            candidate = ROOT / prefix / Path(clean_url).name
+                            if candidate.exists():
+                                raw_bytes = candidate.read_bytes()
+                                break
+                
+                if not raw_bytes:
+                    raise ValueError("Nenhum dado de áudio fornecido para conversão em MP3.")
+                
+                import tempfile
+                with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as f_in:
+                    f_in.write(raw_bytes)
+                    tmp_in_path = f_in.name
+                
+                tmp_out_path = tmp_in_path.replace('.wav', '.mp3')
+                try:
+                    cmd = [
+                        'ffmpeg', '-hide_banner', '-loglevel', 'error', '-y',
+                        '-i', tmp_in_path, '-vn', '-codec:a', 'libmp3lame', '-b:a', '192k', tmp_out_path
+                    ]
+                    r = subprocess.run(cmd, capture_output=True, text=True)
+                    if r.returncode != 0 or not os.path.exists(tmp_out_path):
+                        raise RuntimeError(f"Erro ffmpeg na conversão MP3: {r.stderr}")
+                    
+                    with open(tmp_out_path, 'rb') as f_out:
+                        mp3_bytes = f_out.read()
+                    
+                    import base64
+                    mp3_b64 = base64.b64encode(mp3_bytes).decode('ascii')
+                    result = {
+                        'ok': True,
+                        'filename': mp3_name,
+                        'mp3_base64': mp3_b64,
+                        'size': len(mp3_bytes)
+                    }
+                finally:
+                    if os.path.exists(tmp_in_path):
+                        try: os.unlink(tmp_in_path)
+                        except Exception: pass
+                    if os.path.exists(tmp_out_path):
+                        try: os.unlink(tmp_out_path)
+                        except Exception: pass
+
             elif self.path == '/api/tts/clone_sample':
                 msg = BytesParser(policy=default).parsebytes(b'Content-Type: ' + content_type.encode() + b'\r\n\r\n' + body)
                 api_key = None; voice_name = 'Voz do FEFO'; audio_data = None; filename = 'sample.mp3'

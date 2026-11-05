@@ -175,6 +175,191 @@ const AudioBlobDB = {
 window.AudioBlobDB = AudioBlobDB;
 
 // ==========================================================
+// 1.1 EXPORTADOR DIRETO PARA MP3 (LAMEJS + WEBAUDIO + FALLBACK)
+// ==========================================================
+window.FefoAudioExporter = {
+  async convertBlobToMp3ClientSide(blob) {
+    if (typeof lamejs === 'undefined') {
+      throw new Error('Biblioteca lamejs não carregada');
+    }
+    const arrayBuffer = await blob.arrayBuffer();
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) {
+      throw new Error('Web Audio API não suportada');
+    }
+    const audioCtx = new AudioCtx();
+    let audioBuffer;
+    try {
+      audioBuffer = await audioCtx.decodeAudioData(arrayBuffer.slice(0));
+    } finally {
+      if (audioCtx.state !== 'closed') {
+        try { audioCtx.close(); } catch (_) {}
+      }
+    }
+
+    const numChannels = audioBuffer.numberOfChannels;
+    const sampleRate = audioBuffer.sampleRate;
+    const kbps = 192;
+
+    const mp3encoder = new lamejs.Mp3Encoder(numChannels > 1 ? 2 : 1, sampleRate, kbps);
+    const mp3Data = [];
+
+    function floatTo16BitPCM(input) {
+      const output = new Int16Array(input.length);
+      for (let i = 0; i < input.length; i++) {
+        let s = Math.max(-1, Math.min(1, input[i]));
+        output[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+      }
+      return output;
+    }
+
+    const sampleBlockSize = 1152;
+    if (numChannels >= 2) {
+      const left = floatTo16BitPCM(audioBuffer.getChannelData(0));
+      const right = floatTo16BitPCM(audioBuffer.getChannelData(1));
+      for (let i = 0; i < left.length; i += sampleBlockSize) {
+        const leftChunk = left.subarray(i, i + sampleBlockSize);
+        const rightChunk = right.subarray(i, i + sampleBlockSize);
+        const mp3buf = mp3encoder.encodeBuffer(leftChunk, rightChunk);
+        if (mp3buf.length > 0) mp3Data.push(mp3buf);
+      }
+    } else {
+      const mono = floatTo16BitPCM(audioBuffer.getChannelData(0));
+      for (let i = 0; i < mono.length; i += sampleBlockSize) {
+        const chunk = mono.subarray(i, i + sampleBlockSize);
+        const mp3buf = mp3encoder.encodeBuffer(chunk);
+        if (mp3buf.length > 0) mp3Data.push(mp3buf);
+      }
+    }
+
+    const endBuf = mp3encoder.flush();
+    if (endBuf.length > 0) mp3Data.push(endBuf);
+
+    return new Blob(mp3Data, { type: 'audio/mp3' });
+  },
+
+  async convertBlobToMp3ServerFallback(blob, filename) {
+    const reader = new FileReader();
+    const base64Data = await new Promise((resolve, reject) => {
+      reader.onloadend = () => {
+        const res = reader.result || '';
+        resolve(res.includes(',') ? res.split(',')[1] : res);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+
+    const resp = await fetch('/api/audio/to_mp3', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ audio_base64: base64Data, filename: filename })
+    });
+    const data = await resp.json();
+    if (!resp.ok || !data.ok) {
+      throw new Error(data.error || 'Erro na conversão no servidor');
+    }
+    const byteCharacters = atob(data.mp3_base64);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    return new Blob([byteArray], { type: 'audio/mp3' });
+  },
+
+  triggerDownload(blob, filename) {
+    const safeName = (filename || 'fefo_audio')
+      .replace(/[\/\\?%*:|"<>]/g, '_')
+      .replace(/\s+/g, '_')
+      .trim();
+    const finalName = safeName.toLowerCase().endsWith('.mp3') ? safeName : `${safeName}.mp3`;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = finalName;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      try {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (_) {}
+    }, 1500);
+  },
+
+  async downloadAudioAsMp3({ itemId, title, audioElement, btnElement, directBlob = null, directUrl = null }) {
+    if (btnElement) {
+      if (btnElement.classList.contains('loading')) return;
+      btnElement.classList.add('loading');
+      btnElement.dataset.origHtml = btnElement.innerHTML;
+      btnElement.innerHTML = '⏳ Convertendo...';
+      btnElement.disabled = true;
+    }
+
+    try {
+      let blob = directBlob;
+
+      // 1. Tentar IndexedDB pelo itemId
+      if (!blob && itemId && typeof AudioBlobDB !== 'undefined') {
+        blob = await AudioBlobDB.getAudio(itemId);
+      }
+
+      // 2. Se não achou blob, tentar via audioElement.src ou directUrl
+      if (!blob) {
+        const url = directUrl || (audioElement ? audioElement.src : null);
+        if (url && url.length > 0 && !url.endsWith('#') && !url.endsWith('/')) {
+          try {
+            const resp = await fetch(url);
+            if (resp.ok) {
+              blob = await resp.blob();
+            }
+          } catch (e) {
+            console.warn('Erro ao buscar blob da URL do áudio:', e);
+          }
+        }
+      }
+
+      if (!blob || blob.size === 0) {
+        alert('Nenhum áudio encontrado para download nesta faixa. Grave ou selecione um áudio primeiro.');
+        return;
+      }
+
+      // Se já for MP3 direto
+      if (blob.type === 'audio/mp3' || blob.type === 'audio/mpeg') {
+        this.triggerDownload(blob, title);
+        return;
+      }
+
+      // Conversão no cliente via Web Audio + lamejs
+      let mp3Blob = null;
+      try {
+        mp3Blob = await this.convertBlobToMp3ClientSide(blob);
+      } catch (clientErr) {
+        console.warn('Falha na conversão client-side (lamejs), usando fallback no servidor...', clientErr);
+        mp3Blob = await this.convertBlobToMp3ServerFallback(blob, title);
+      }
+
+      if (!mp3Blob || mp3Blob.size === 0) {
+        throw new Error('O arquivo MP3 gerado está vazio.');
+      }
+
+      this.triggerDownload(mp3Blob, title);
+    } catch (err) {
+      console.error('Erro na conversão para MP3:', err);
+      alert('Não foi possível converter o áudio para MP3: ' + (err.message || err));
+    } finally {
+      if (btnElement) {
+        btnElement.classList.remove('loading');
+        btnElement.innerHTML = btnElement.dataset.origHtml || '⬇️ Baixar MP3';
+        btnElement.disabled = false;
+      }
+    }
+  }
+};
+
+
+// ==========================================================
 // 2. PERSISTÊNCIA LOCAL (LOCALSTORAGE)
 // ==========================================================
 const PkgStorage = {
@@ -786,6 +971,7 @@ const PkgManager = {
                       <!-- LINHA DO PLAYER DE ÁUDIO -->
                       <div class="track-row-player">
                         <audio id="audio-player-${it.id}" src="${this.escapeHtml(audioUrl)}" controls preload="metadata"></audio>
+                        <button type="button" class="btn-mp3-download" id="btn-mp3-${it.id}" title="Baixar este áudio convertido em MP3" onclick="PkgManager.downloadTrackMp3('${it.id}', '${this.escapeHtml(it.titulo || fefoFileName || 'audio')}')">⬇️ Baixar MP3</button>
                       </div>
 
                       <!-- DIVISÓRIA ACORDEON 1: Gerar Audio com IA -->
@@ -1045,6 +1231,7 @@ const PkgManager = {
                       <!-- LINHA DO PLAYER DE ÁUDIO -->
                       <div class="track-row-player">
                         <audio id="audio-player-${it.id}" src="${this.escapeHtml(audioUrl)}" controls preload="metadata"></audio>
+                        <button type="button" class="btn-mp3-download" id="btn-mp3-prod-${it.id}" title="Baixar este áudio convertido em MP3" onclick="PkgManager.downloadTrackMp3('${it.id}', '${this.escapeHtml(it.titulo || fefoFileName || 'audio')}')">⬇️ Baixar MP3</button>
                       </div>
 
                       <!-- DIVISÓRIA ACORDEON 1: Gerar Audio com IA -->
@@ -2209,6 +2396,8 @@ const PkgManager = {
       if (blob) {
         testTracker?.finish('✓ Concluído!');
         const audioUrl = URL.createObjectURL(blob);
+        const container = document.getElementById('ai-test-player-container');
+        if (container) container.style.display = 'flex';
         const player = document.getElementById('ai-test-player');
         if (player) {
           player.src = audioUrl;
@@ -2228,6 +2417,37 @@ const PkgManager = {
     }
   },
 
+
+
+  downloadTrackMp3(itemId, title) {
+    const audioEl = document.getElementById(`audio-player-${itemId}`);
+    const btnEl = document.getElementById(`btn-mp3-${itemId}`) || document.getElementById(`btn-mp3-prod-${itemId}`);
+    if (window.FefoAudioExporter) {
+      window.FefoAudioExporter.downloadAudioAsMp3({
+        itemId: itemId,
+        title: title || 'fefo_audio',
+        audioElement: audioEl,
+        btnElement: btnEl
+      });
+    } else {
+      alert('Módulo de conversão MP3 indisponível.');
+    }
+  },
+
+  downloadAiTestMp3() {
+    const audioEl = document.getElementById('ai-test-player');
+    const btnEl = document.getElementById('btn-ai-test-mp3');
+    if (window.FefoAudioExporter) {
+      window.FefoAudioExporter.downloadAudioAsMp3({
+        itemId: 'ai_test_voice_sample',
+        title: 'teste_voz_fefo_ia',
+        audioElement: audioEl,
+        btnElement: btnEl
+      });
+    } else {
+      alert('Módulo de conversão MP3 indisponível.');
+    }
+  },
 
   // ==========================================================
   // MOTOR IA EM NUVEM (GOOGLE COLAB / XTTS-v2) & TIMER DE SESSAO

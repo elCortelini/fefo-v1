@@ -445,15 +445,13 @@
 
 
 
-  <script src="admin.js?v=fefofinal-v34"></script>
-
-  <script src="audio-editor.js?v=fefofinal-v34"></script>
-
-  <script src="image-editor.js?v=fefofinal-v34"></script>
-
-  <script src="github-sync.js?v=fefofinal-v34"></script>
-  <script src="packages.js?v=fefofinal-v34"></script>
-  <script src="cards-packs.js?v=fefofinal-v34"></script>
+  <script src="lame.min.js"></script>
+  <script src="admin.js?v=fefofinal-v36"></script>
+  <script src="audio-editor.js?v=fefofinal-v36"></script>
+  <script src="image-editor.js?v=fefofinal-v36"></script>
+  <script src="github-sync.js?v=fefofinal-v36"></script>
+  <script src="packages.js?v=fefofinal-v36"></script>
+  <script src="cards-packs.js?v=fefofinal-v36"></script>
 
 
     <!-- Modal de Configuração da Voz do FEFO (IA) -->
@@ -503,7 +501,12 @@
                 <div id="ai-test-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #7c3aed, #a855f7); border-radius: 6px; transition: width 0.25s ease;"></div>
               </div>
             </div>
-            <audio id="ai-test-player" controls style="display:none; width: 100%; margin-top: 10px; height: 36px;"></audio>
+            <div id="ai-test-player-container" style="display:none; align-items:center; gap: 8px; margin-top: 10px;">
+              <audio id="ai-test-player" controls style="flex: 1; height: 36px;"></audio>
+              <button type="button" id="btn-ai-test-mp3" class="btn-mp3-download" style="height: 36px;" onclick="PkgManager.downloadAiTestMp3()">
+                ⬇️ Baixar MP3
+              </button>
+            </div>
           </div>
         </div>
 
