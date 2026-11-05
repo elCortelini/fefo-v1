@@ -1,4 +1,7 @@
 {
+  "schema": 1,
+  "description": "FEFO Content Draft Packages - Grade Completa Pedagógica Unificada com Áudios Vinculados",
+  "updated_at": "2026-11-05T13:59:21.947Z",
   "packages": [
     {
       "id": "pkg_59122",
@@ -20,7 +23,7 @@
           "descricao": "olá eu sou o fefo, seu super amiguinho para melhorar a sua vida",
           "arquivo_fefo": "a0008.wav",
           "arquivo_origem": "Voz FEFO IA (a0008.wav)",
-          "web_url": "../repository/audio/a0008.wav?_t=1793653906817",
+          "web_url": "blob:https://fefoplaneta.com.br/9b16fa79-008b-4f7f-b491-9c4547ed64fe",
           "status": "needs_trim",
           "tamanho": 212012,
           "arquivo": "/usr/a/a0008.wav",
@@ -277,7 +280,7 @@
           "descricao": "\"Oi! você já parou para pensar no seu corpo? Ele é incrível né?! Voce Tem braços, pernas, uma cabeça e muito mais. Voce sabe se merxer ? pular? dar abraços ? O FÊFO quer saber como você se sente quando voce faz tudo isso!\"",
           "localizacao": "/cp/",
           "arquivo_origem": "meu corpo 1 a 12.mp3",
-          "web_url": "blob:https://fefoplaneta.com.br/74444737-dd3c-4ee7-860f-03ff2c54f19b",
+          "web_url": "blob:https://fefoplaneta.com.br/c8b31d5f-062a-4adc-86d1-d4812e04e83e",
           "status": "ready",
           "arquivo_draft": "repository/drafts/audio/pkg_meu_corpo/cp1_cortado.wav",
           "tamanho": 1001114,
@@ -1978,7 +1981,7 @@
           "descricao": "\"Voce sabia?  Os gatos são especiais. Eles podem ver bem no escuro, o que os ajuda a enxergar no meio da noite! Eles são muito espertos!, eles tambem são bem independentes e adoram dormir. Eles também são caçadores super habilidosos, mesmo dentro de casa!\"",
           "localizacao": "/an/",
           "arquivo_origem": "a0023.wav",
-          "web_url": "blob:https://fefoplaneta.com.br/da76bd64-52d5-40b4-89d9-ccb2dc234204",
+          "web_url": "blob:https://fefoplaneta.com.br/a018fb2d-4eee-4b28-97b0-3488a23d66eb",
           "status": "published",
           "arquivo_fefo": "a0181.wav",
           "has_custom_audio": true
@@ -4542,14 +4545,15 @@
         {
           "id": "pkg_relaxamento_a0347",
           "numero": "1",
-          "titulo": "Item 1",
+          "titulo": "MindFullness da Respiração",
           "texto_rotulo": "relaxamento 01",
           "descricao": "",
           "localizacao": "/re/",
           "arquivo_origem": "",
-          "web_url": "",
+          "web_url": "../repository/audio/a0347.wav",
           "status": "pending_audio",
-          "arquivo_fefo": "a0347.wav"
+          "arquivo_fefo": "a0347.wav",
+          "arquivo": "/usr/a/a0347.wav"
         },
         {
           "id": "pkg_relaxamento_a0348",
@@ -4559,9 +4563,10 @@
           "descricao": "",
           "localizacao": "/re/",
           "arquivo_origem": "",
-          "web_url": "",
+          "web_url": "../repository/audio/a0348.wav",
           "status": "pending_audio",
-          "arquivo_fefo": "a0348.wav"
+          "arquivo_fefo": "a0348.wav",
+          "arquivo": "/usr/a/a0348.wav"
         },
         {
           "id": "pkg_relaxamento_a0349",
@@ -4571,9 +4576,10 @@
           "descricao": "",
           "localizacao": "/re/",
           "arquivo_origem": "",
-          "web_url": "",
+          "web_url": "../repository/audio/a0349.wav",
           "status": "pending_audio",
-          "arquivo_fefo": "a0349.wav"
+          "arquivo_fefo": "a0349.wav",
+          "arquivo": "/usr/a/a0349.wav"
         },
         {
           "id": "pkg_relaxamento_a0350",
@@ -4583,9 +4589,10 @@
           "descricao": "",
           "localizacao": "/re/",
           "arquivo_origem": "",
-          "web_url": "",
+          "web_url": "../repository/audio/a0350.wav",
           "status": "pending_audio",
-          "arquivo_fefo": "a0350.wav"
+          "arquivo_fefo": "a0350.wav",
+          "arquivo": "/usr/a/a0350.wav"
         },
         {
           "id": "pkg_relaxamento_a0351",
@@ -4595,9 +4602,10 @@
           "descricao": "",
           "localizacao": "/re/",
           "arquivo_origem": "",
-          "web_url": "",
+          "web_url": "../repository/audio/a0351.wav",
           "status": "pending_audio",
-          "arquivo_fefo": "a0351.wav"
+          "arquivo_fefo": "a0351.wav",
+          "arquivo": "/usr/a/a0351.wav"
         },
         {
           "id": "pkg_relaxamento_a0352",
@@ -4607,9 +4615,10 @@
           "descricao": "",
           "localizacao": "/re/",
           "arquivo_origem": "",
-          "web_url": "",
+          "web_url": "../repository/audio/a0352.wav",
           "status": "pending_audio",
-          "arquivo_fefo": "a0352.wav"
+          "arquivo_fefo": "a0352.wav",
+          "arquivo": "/usr/a/a0352.wav"
         },
         {
           "id": "pkg_relaxamento_a0353",
@@ -4619,9 +4628,10 @@
           "descricao": "",
           "localizacao": "/re/",
           "arquivo_origem": "",
-          "web_url": "",
+          "web_url": "../repository/audio/a0353.wav",
           "status": "pending_audio",
-          "arquivo_fefo": "a0353.wav"
+          "arquivo_fefo": "a0353.wav",
+          "arquivo": "/usr/a/a0353.wav"
         },
         {
           "id": "pkg_relaxamento_a0354",
@@ -4631,9 +4641,10 @@
           "descricao": "",
           "localizacao": "/re/",
           "arquivo_origem": "",
-          "web_url": "",
+          "web_url": "../repository/audio/a0354.wav",
           "status": "pending_audio",
-          "arquivo_fefo": "a0354.wav"
+          "arquivo_fefo": "a0354.wav",
+          "arquivo": "/usr/a/a0354.wav"
         },
         {
           "id": "pkg_relaxamento_a0355",
@@ -4643,9 +4654,10 @@
           "descricao": "",
           "localizacao": "/re/",
           "arquivo_origem": "",
-          "web_url": "",
+          "web_url": "../repository/audio/a0355.wav",
           "status": "pending_audio",
-          "arquivo_fefo": "a0355.wav"
+          "arquivo_fefo": "a0355.wav",
+          "arquivo": "/usr/a/a0355.wav"
         },
         {
           "id": "pkg_relaxamento_a0356",
@@ -4655,11 +4667,13 @@
           "descricao": "",
           "localizacao": "/re/",
           "arquivo_origem": "",
-          "web_url": "",
+          "web_url": "../repository/audio/a0356.wav",
           "status": "pending_audio",
-          "arquivo_fefo": "a0356.wav"
+          "arquivo_fefo": "a0356.wav",
+          "arquivo": "/usr/a/a0356.wav"
         }
-      ]
+      ],
+      "updated_at": "2026-11-05T13:59:21.943Z"
     }
   ]
 }
