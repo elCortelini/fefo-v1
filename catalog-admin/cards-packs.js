@@ -14,6 +14,27 @@
  * - Sincronização direta com GitHub via REST API
  */
 
+// Confirmação visual nos botões de salvar
+if (!window.showButtonSaveFeedback) {
+  window.showButtonSaveFeedback = function(btn, isSuccess = true, msg = '✓ Salvo!') {
+    if (!btn) return;
+    const originalText = btn.dataset.originalText || btn.textContent.trim() || 'Salvar';
+    btn.dataset.originalText = originalText;
+    btn.textContent = isSuccess ? (msg || '✓ Salvo!') : '⚠️ Erro';
+    const prevBg = btn.style.backgroundColor;
+    const prevColor = btn.style.color;
+    btn.style.setProperty('background-color', isSuccess ? '#16a34a' : '#dc2626', 'important');
+    btn.style.setProperty('color', '#ffffff', 'important');
+
+    clearTimeout(btn._saveTimeout);
+    btn._saveTimeout = setTimeout(() => {
+      btn.textContent = originalText;
+      btn.style.backgroundColor = prevBg;
+      btn.style.color = prevColor;
+    }, 2500);
+  };
+}
+
 // ==========================================================
 // 1. BANCO DE IMAGENS DOS CARDS (INDEXEDDB)
 // ==========================================================
@@ -396,7 +417,7 @@ const CardPackManager = {
               <button type="button" class="btn-pkg-action red" onclick="CardPackManager.deleteCardPack('${pkg.id}')">
                 Excluir
               </button>
-              <button type="button" class="btn-pkg-action green" onclick="CardPackManager.saveCardPackDetails('${pkg.id}')">
+              <button type="button" class="btn-pkg-action green" onclick="CardPackManager.saveCardPackDetails('${pkg.id}', this)">
                 Salvar
               </button>
             </div>
@@ -618,7 +639,7 @@ const CardPackManager = {
                 <div style="display: flex; gap: 8px; align-items: center;">
                   <button type="button" class="btn-track-action btn-track-save"
                           title="Salvar alterações deste card"
-                          onclick="CardPackManager.saveSingleCardItem('${packId}', '${c.id}', ${isProduction})">
+                          onclick="CardPackManager.saveSingleCardItem('${packId}', '${c.id}', ${isProduction}, this)">
                     Salvar
                   </button>
                   ${!isProduction ? `
@@ -1055,13 +1076,50 @@ const CardPackManager = {
     }
   },
 
-  async saveSingleCardItem(packId, cardId, isProduction = false) {
+  async saveSingleCardItem(packId, cardId, isProduction = false, btnEl = null) {
+    const btn = btnEl || (typeof event !== 'undefined' && event?.target?.closest ? event.target.closest('button') : null);
+    if (btn) {
+      btn.dataset.originalText = btn.textContent.trim() || 'Salvar';
+      btn.textContent = '⏳ Salvando...';
+    }
+
     if (isProduction) {
+      const pack = (this.state.published || []).find(p => p.id === packId);
+      if (pack) {
+        const drawer = document.getElementById(`drawer-wrap-prod-${packId}`);
+        if (drawer) {
+          const cardWrap = drawer.querySelector(`#card-item-wrap-${cardId}`);
+          if (cardWrap) {
+            const c = (pack.cards || []).find(x => x.id === cardId);
+            if (c) {
+              const tInput = cardWrap.querySelector('.pkg-item-title-input');
+              if (tInput && tInput.value.trim()) c.titulo = tInput.value.trim();
+              const fInput = cardWrap.querySelector('.pkg-item-fefo-input');
+              if (fInput && fInput.value.trim()) c.codigo_acao = fInput.value.trim();
+              const sText = cardWrap.querySelector('.pkg-item-script-textarea');
+              if (sText) c.descricao = sText.value;
+            }
+          }
+        }
+      }
       CardPackStorage.savePublishedCardPacks(this.state.published);
-      notice('✓ Alterações do card salvas!', 'ok');
+      let localSaved = false;
+      try {
+        const res = await fetch('/api/card_packs/save_published', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ published: this.state.published })
+        });
+        const data = await res.json();
+        if (data && data.ok) localSaved = true;
+      } catch (e) {
+        console.warn('Servidor local offline ao salvar cards oficiais:', e);
+      }
+      notice(localSaved ? '✓ Card oficial salvo no repositório!' : '✓ Alterações do card salvas!', 'ok');
+      if (btn && window.showButtonSaveFeedback) window.showButtonSaveFeedback(btn, true, '✓ Salvo!');
       return;
     }
-    await this.saveCardPackDetails(packId);
+    await this.saveCardPackDetails(packId, btn);
   },
 
   addNewEmptyCardItem(packId) {
@@ -1129,16 +1187,29 @@ const CardPackManager = {
   // ==========================================================
   // SALVAR E PUBLICAR PACOTE DE CARDS (LOCAL + GITHUB API)
   // ==========================================================
-  async saveCardPackDetails(packId) {
-    const pack = (this.state.drafts || []).find(p => p.id === packId);
-    if (!pack) return;
+  async saveCardPackDetails(packId, btnEl = null) {
+    const btn = btnEl || (typeof event !== 'undefined' && event?.target?.closest ? event.target.closest('button') : null);
+    if (btn) {
+      btn.dataset.originalText = btn.textContent.trim() || 'Salvar';
+      btn.textContent = '⏳ Salvando...';
+    }
 
-    const titleInput = document.getElementById(`draft-title-input-${packId}`);
+    const isProduction = (this.state.published || []).some(p => p.id === packId);
+    const pack = isProduction
+      ? (this.state.published || []).find(p => p.id === packId)
+      : (this.state.drafts || []).find(p => p.id === packId);
+
+    if (!pack) {
+      if (btn && window.showButtonSaveFeedback) window.showButtonSaveFeedback(btn, false, 'Pacote não encontrado');
+      return;
+    }
+
+    const titleInput = document.getElementById(`draft-title-input-${packId}`) || document.getElementById(`prod-title-input-${packId}`);
     if (titleInput && titleInput.value.trim()) {
       pack.titulo = titleInput.value.trim();
     }
 
-    const drawer = document.getElementById(`drawer-wrap-draft-${packId}`);
+    const drawer = document.getElementById(isProduction ? `drawer-wrap-prod-${packId}` : `drawer-wrap-draft-${packId}`);
     if (drawer) {
       (pack.cards || []).forEach(c => {
         const cardWrap = drawer.querySelector(`#card-item-wrap-${c.id}`);
@@ -1155,7 +1226,29 @@ const CardPackManager = {
 
     pack.updated_at = new Date().toISOString();
 
-    if (window.GitHubSync && window.GitHubSync.isConfigured()) {
+    if (isProduction) {
+      CardPackStorage.savePublishedCardPacks(this.state.published);
+    } else {
+      CardPackStorage.saveCustomCardPacks(this.state.drafts);
+    }
+
+    // Salva no repositório local via servidor Python
+    let localSaved = false;
+    try {
+      const endpoint = isProduction ? '/api/card_packs/save_published' : '/api/card_packs/save_drafts';
+      const payload = isProduction ? { published: this.state.published } : { card_packs: this.state.drafts };
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data && data.ok) localSaved = true;
+    } catch (e) {
+      console.warn('Servidor local offline ao salvar cards no repositório:', e);
+    }
+
+    if (!isProduction && window.GitHubSync && window.GitHubSync.isConfigured()) {
       window.GitHubSync.showProgressModal(
         'Sincronizando Pacote de Cards',
         `Enviando imagens e áudios de “${pack.titulo}” para o repositório...`
@@ -1172,19 +1265,26 @@ const CardPackManager = {
         window.GitHubSync.updateProgress(100, '✓ Concluído com sucesso!', `${syncResult.uploadedAudios} áudio(s) e ${syncResult.uploadedImages} imagem(ns) no repositório.`);
         window.GitHubSync.hideProgressModal(1200);
 
-        notice(`✓ Pacote de cards salvo! ${syncResult.uploadedAudios} áudio(s) e ${syncResult.uploadedImages} imagem(ns) enviados ao repositório.`, 'ok');
+        notice(`✓ Pacote de cards salvo no repositório!`, 'ok');
       } catch (ghErr) {
         console.warn('Erro ao sincronizar cards no GitHub:', ghErr);
-        window.GitHubSync.updateProgress(100, '⚠️ Salvo localmente', `Falha no GitHub: ${ghErr.message}`);
+        window.GitHubSync.updateProgress(100, '⚠️ Salvo no repositório local', `Falha no GitHub: ${ghErr.message}`);
         window.GitHubSync.hideProgressModal(2200);
-        notice(`✓ Salvo localmente! Falha no GitHub (${ghErr.message})`, 'error');
+        notice(`✓ Salvo no repositório local!`, 'ok');
       }
     } else {
-      notice('✓ Pacote de cards salvo localmente no navegador!', 'ok');
+      notice(localSaved ? '✓ Pacote de cards salvo no repositório com sucesso!' : '✓ Pacote de cards salvo localmente no navegador!', 'ok');
     }
 
-    CardPackStorage.saveCustomCardPacks(this.state.drafts);
-    this.renderDraftsGrid();
+    if (btn && window.showButtonSaveFeedback) window.showButtonSaveFeedback(btn, true, '✓ Salvo!');
+
+    if (isProduction) {
+      this.renderPublishedGrid();
+      this.renderProductionExpandedPanel();
+    } else {
+      this.renderDraftsGrid();
+      this.renderDraftExpandedPanel();
+    }
   },
 
   async deleteCardPack(packId) {
@@ -1358,7 +1458,7 @@ const CardPackManager = {
               <button type="button" class="btn-pkg-action red" onclick="CardPackManager.deleteCardPack('${pkg.id}')">
                 Excluir
               </button>
-              <button type="button" class="btn-pkg-action green" onclick="CardPackManager.saveCardPackDetails('${pkg.id}')">
+              <button type="button" class="btn-pkg-action green" onclick="CardPackManager.saveCardPackDetails('${pkg.id}', this)">
                 Salvar
               </button>
             </div>

@@ -50,7 +50,7 @@ renderNew();loadPublished();
 
 $('#save-folder')?.addEventListener('click',async()=>{if(!state.items.length)return notice('Adicione arquivos novos antes de salvar.','error');if(!window.showDirectoryPicker)return notice('Use “Baixar revisão”.','error');try{const root=await showDirectoryPicker(),inbox=await root.getDirectoryHandle('FEFO_novos_conteudos',{create:true}),folders={audio:'audio',face:'faces',video:'video',system_audio:'system'},handles={};for(const k of new Set(Object.values(folders)))handles[k]=await inbox.getDirectoryHandle(k,{create:true});for(const x of state.items){const d=handles[folders[x.tipo]||'audio'],f=await d.getFileHandle(x.arquivo_origem,{create:true}),w=await f.createWritable();await w.write(x._file);await w.close();if(x.tipo==='system_audio'){const ad=await inbox.getDirectoryHandle('audio',{create:true}),af=await ad.getFileHandle(x.arquivo_origem,{create:true}),aw=await af.createWritable();await aw.write(x._file);await aw.close()}}const cf=await inbox.getFileHandle('Catalogo_Online_Planilha.csv',{create:true}),w=await cf.createWritable();await w.write(csv());await w.close();notice('Arquivos salvos no projeto.','ok')}catch(e){notice('Salvamento cancelado ou pasta inválida.','error')}});
 row=(x,i)=>{const active=state.selectedId===x.id,name=(x.arquivo||'').split('/').pop(),folder=(x.arquivo||'').replace(name,'');return`<article class="item published-item audio-style ${active?'selected':''} ${x.publicar==='Não'?'removed':''}" data-id="${esc(x.id)}"><div class="row-head"><span class="row-number">${i+1}</span><span class="type-dot">${esc(x.tipo)}</span><b>${esc(x.titulo||x.id)}</b><label class="head-field">arquivo <input data-pk="arquivo" value="${esc(name)}"></label><label class="head-field">pasta <select data-pk="pasta"><option>/usr/a/</option><option>/usr/f/</option><option>/usr/v/</option></select></label><label class="head-active"><input type="checkbox" data-pk="publicar" ${x.publicar!=='Não'?'checked':''}> Ativo</label></div><div class="media">${preview(x,active)}</div><div class="row-fields"><div class="field"><label>Título</label><input data-pk="titulo" value="${esc(x.titulo||'')}"></div><div class="field"><label>Menu</label><input data-pk="menu" value="${esc(x.menu||'')}"></div><div class="field"><label>SubMenu</label><input data-pk="submenu" value="${esc(x.submenu||'')}"></div></div><div class="row-actions"><button class="remove-btn" data-toggle type="button">${x.publicar==='Não'?'Reativar':'Retirar'}</button><button class="delete-btn" data-delete type="button">🗑 Excluir</button><button class="save-btn" type="button" data-save>▣ Salvar</button><span class="row-save-status" data-save-status aria-live="polite"></span></div></article>`};
-document.addEventListener('click',e=>{
+document.addEventListener('click',async e=>{
   const b=e.target.closest('[data-save]');
   if(!b)return;
   const card=b.closest('.published-item');
@@ -58,13 +58,45 @@ document.addEventListener('click',e=>{
   if(!x)return;
   persist();
   const confirmation=card.querySelector('[data-save-status]');
-  if(confirmation){
-    confirmation.textContent='✓ Salvo no rascunho local';
-    confirmation.className='row-save-status ok';
+  try{
+    const res=await fetch('/api/catalog/update_item',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({item:x})
+    });
+    const d=await res.json();
+    if(d.ok){
+      if(confirmation){
+        confirmation.textContent='✓ Salvo no repositório';
+        confirmation.className='row-save-status ok';
+      }
+      notice(d.message||`Alterações de “${x.titulo||x.id}” salvas no repositório.`,'ok');
+    }else{
+      if(confirmation){
+        confirmation.textContent='✓ Salvo no rascunho local';
+        confirmation.className='row-save-status ok';
+      }
+    }
+  }catch(err){
+    console.warn('Servidor local offline ao salvar item:', err);
+    if(confirmation){
+      confirmation.textContent='✓ Salvo no rascunho local';
+      confirmation.className='row-save-status ok';
+    }
   }
-  b.textContent='✓ Salvo';
-  notice(`Alterações de “${x.titulo||x.id}” salvas no rascunho local.`, 'ok');
-  window.setTimeout(()=>{b.textContent='▣ Salvar'},2200);
+  if(window.showButtonSaveFeedback){
+    window.showButtonSaveFeedback(b, true, '✓ Salvo!');
+  }else{
+    const prevText = b.textContent;
+    b.textContent='✓ Salvo!';
+    b.style.backgroundColor='#10b981';
+    b.style.color='#ffffff';
+    window.setTimeout(()=>{
+      b.textContent=prevText||'▣ Salvar';
+      b.style.backgroundColor='';
+      b.style.color='';
+    },2200);
+  }
 });
 preview=(x,active=false)=>{const src=x._file?URL.createObjectURL(x._file):repoUrl(x);if(x.tipo==='face'&&src&&!/\.raw$/i.test(x.arquivo||''))return`<img class="preview-image" src="${esc(src)}" alt="Miniatura de ${esc(x.titulo)}">`;if(x.tipo==='video'&&src)return`<video class="preview-video" controls preload="metadata" src="${esc(src)}"></video>`;if(x.tipo==='audio'&&src&&active)return`<audio controls preload="metadata"><source src="${esc(src)}"><source src="${esc(x.url||'')}"></audio>`;if(x.tipo==='audio'&&src)return'<button class="play-preview" data-play type="button">▶ Play</button>';return'<span class="media-missing">Prévia indisponível</span>'};
 document.addEventListener('click',e=>{const b=e.target.closest('[data-play]');if(b){const r=b.closest('.published-item');state.selectedId=r.dataset.id;renderPublished()}});

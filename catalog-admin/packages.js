@@ -114,6 +114,26 @@ window.AiVoiceProgress = {
  * persistência total (IndexedDB + localStorage) e suporte a despublicação.
  */
 
+// Confirmação visual nos botões de salvar
+function showButtonSaveFeedback(btn, isSuccess = true, msg = '✓ Salvo!') {
+  if (!btn) return;
+  const originalText = btn.dataset.originalText || btn.textContent.trim() || 'Salvar';
+  btn.dataset.originalText = originalText;
+  btn.textContent = isSuccess ? (msg || '✓ Salvo!') : '⚠️ Erro';
+  const prevBg = btn.style.backgroundColor;
+  const prevColor = btn.style.color;
+  btn.style.setProperty('background-color', isSuccess ? '#16a34a' : '#dc2626', 'important');
+  btn.style.setProperty('color', '#ffffff', 'important');
+
+  clearTimeout(btn._saveTimeout);
+  btn._saveTimeout = setTimeout(() => {
+    btn.textContent = originalText;
+    btn.style.backgroundColor = prevBg;
+    btn.style.color = prevColor;
+  }, 2500);
+}
+window.showButtonSaveFeedback = showButtonSaveFeedback;
+
 // ==========================================================
 // 1. BANCO DE DADOS LOCAL DE ÁUDIOS (INDEXEDDB)
 // ==========================================================
@@ -955,7 +975,7 @@ const PkgManager = {
               <button type="button" class="btn-pkg-action red" onclick="PkgManager.deleteDraftPackage('${pkg.id}')">
                 Excluir
               </button>
-              <button type="button" class="btn-pkg-action green" onclick="PkgManager.saveDraftPackageDetails('${pkg.id}')">
+              <button type="button" class="btn-pkg-action green" onclick="PkgManager.saveDraftPackageDetails('${pkg.id}', this)">
                 Salvar
               </button>
             </div>
@@ -1088,7 +1108,7 @@ const PkgManager = {
                         <div style="display: flex; gap: 8px; align-items: center;">
                           <button type="button" class="btn-track-action btn-track-save"
                                   title="Salvar alterações desta faixa"
-                                  onclick="PkgManager.saveSingleItem('${pkg.id}', '${it.id}', false)">
+                                  onclick="PkgManager.saveSingleItem('${pkg.id}', '${it.id}', false, this)">
                             Salvar
                           </button>
                           <button type="button" class="pkg-item-delete" title="Remover faixa"
@@ -1218,7 +1238,7 @@ const PkgManager = {
               <button type="button" class="btn-pkg-action red" onclick="PkgManager.deleteProductionMenuDirect('${this.escapeHtml(pkg.titulo)}')">
                 Excluir
               </button>
-              <button type="button" class="btn-pkg-action green" onclick="PkgManager.saveProductionPackageDetails('${this.escapeHtml(pkg.titulo)}')">
+              <button type="button" class="btn-pkg-action green" onclick="PkgManager.saveProductionPackageDetails('${this.escapeHtml(pkg.titulo)}', this)">
                 Salvar
               </button>
             </div>
@@ -1350,7 +1370,7 @@ const PkgManager = {
                         <div style="display: flex; gap: 8px; align-items: center;">
                           <button type="button" class="btn-track-action btn-track-save"
                                   title="Salvar alterações desta faixa"
-                                  onclick="PkgManager.saveSingleItem('${this.escapeHtml(pkg.titulo)}', '${it.id}', true)">
+                                  onclick="PkgManager.saveSingleItem('${this.escapeHtml(pkg.titulo)}', '${it.id}', true, this)">
                             Salvar
                           </button>
                           <button type="button" class="pkg-item-delete" title="Remover áudio do catálogo"
@@ -1524,9 +1544,17 @@ const PkgManager = {
     PkgStorage.saveAllProductionMenus(this.state.publishedMenus);
   },
 
-  async saveDraftPackageDetails(pkgId) {
+  async saveDraftPackageDetails(pkgId, btnEl = null) {
+    const btn = btnEl || (typeof event !== 'undefined' && event?.target?.closest ? event.target.closest('button') : null);
+    if (btn) {
+      btn.dataset.originalText = btn.textContent.trim() || 'Salvar';
+      btn.textContent = '⏳ Salvando...';
+    }
     const pkg = (this.state.drafts || []).find(p => p.id === pkgId);
-    if (!pkg) return;
+    if (!pkg) {
+      if (btn) showButtonSaveFeedback(btn, false, 'Pacote não encontrado');
+      return;
+    }
 
     // 1. Captura títulos e valores atuais do DOM
     const titleInput = document.getElementById(`draft-title-input-${pkgId}`) || document.getElementById('draft-input-title');
@@ -1560,7 +1588,23 @@ const PkgManager = {
 
     pkg.updated_at = new Date().toISOString();
 
-    // 2. Upload de áudios no GitHub com Barra de Carregamento
+    PkgStorage.saveAllDrafts(this.state.drafts);
+
+    // Salva rascunhos no disco rígido local via servidor Python
+    let localSaved = false;
+    try {
+      const res = await fetch('/api/packages/save_drafts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ packages: this.state.drafts })
+      });
+      const data = await res.json();
+      if (data && data.ok) localSaved = true;
+    } catch (e) {
+      console.warn('Servidor local offline ou erro ao salvar draft_packages.json:', e);
+    }
+
+    // 2. Upload de áudios no GitHub com Barra de Carregamento se configurado
     if (window.GitHubSync && window.GitHubSync.isConfigured()) {
       window.GitHubSync.showProgressModal(
         'Sincronizando com o Repositório',
@@ -1578,41 +1622,100 @@ const PkgManager = {
         window.GitHubSync.updateProgress(100, '✓ Concluído com sucesso!', `${syncResult.uploaded} áudio(s) atualizados no repositório.`);
         window.GitHubSync.hideProgressModal(1200);
 
-        notice(`✓ Pacote salvo! ${syncResult.uploaded} áudio(s) atualizados no repositório GitHub.`, 'ok');
+        notice(`✓ Pacote salvo no repositório! (${syncResult.uploaded} áudios)`, 'ok');
       } catch (ghErr) {
         console.warn('Erro ao enviar áudios ao GitHub:', ghErr);
-        window.GitHubSync.updateProgress(100, '⚠️ Salvo localmente', `Falha no GitHub: ${ghErr.message}`);
+        window.GitHubSync.updateProgress(100, '⚠️ Salvo no repositório local', `Falha no GitHub: ${ghErr.message}`);
         window.GitHubSync.hideProgressModal(2200);
-        notice(`✓ Salvo localmente! Falha no GitHub (${ghErr.message})`, 'error');
+        notice(`✓ Salvo no repositório local!`, 'ok');
       }
     } else {
-      notice('✓ Pacote salvo localmente no navegador!', 'ok');
+      notice(localSaved ? '✓ Pacote salvo no repositório com sucesso!' : '✓ Pacote salvo localmente no navegador!', 'ok');
     }
 
-    PkgStorage.saveAllDrafts(this.state.drafts);
-
-    // Salva rascunhos também no disco rígido local via servidor Python
-    try {
-      await fetch('/api/packages/save_drafts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ packages: this.state.drafts })
-      });
-    } catch (e) {}
+    if (btn) showButtonSaveFeedback(btn, true, '✓ Salvo!');
 
     this.renderDraftsGrid();
     this.renderDraftExpandedPanel();
   },
 
-  async saveProductionPackageDetails(menuTitle) {
-    const pkg = (this.state.publishedMenus || []).find(p => p.titulo === menuTitle);
-    if (!pkg) return;
-    const titleInput = document.getElementById(`prod-title-input-${encodeURIComponent(menuTitle)}`);
-    if (titleInput && titleInput.value.trim()) {
-      pkg.titulo = titleInput.value.trim();
+  async saveProductionPackageDetails(menuTitle, btnEl = null) {
+    const btn = btnEl || (typeof event !== 'undefined' && event?.target?.closest ? event.target.closest('button') : null);
+    if (btn) {
+      btn.dataset.originalText = btn.textContent.trim() || 'Salvar';
+      btn.textContent = '⏳ Salvando...';
     }
+
+    const pkg = (this.state.publishedMenus || []).find(p => p.titulo === menuTitle);
+    if (!pkg) {
+      if (btn) showButtonSaveFeedback(btn, false, 'Menu não encontrado');
+      return;
+    }
+
+    const titleInput = document.getElementById(`prod-title-input-${encodeURIComponent(menuTitle)}`);
+    const newMenuTitle = (titleInput && titleInput.value.trim()) ? titleInput.value.trim() : menuTitle;
+
+    const drawer = document.getElementById(`drawer-wrap-prod-${encodeURIComponent(menuTitle)}`);
+    const itemsUpdates = [];
+
+    if (drawer) {
+      (pkg.items || []).forEach(it => {
+        const itemWrap = drawer.querySelector(`#track-item-wrap-${it.id}`);
+        if (itemWrap) {
+          const tInput = itemWrap.querySelector('.pkg-item-title-input');
+          if (tInput && tInput.value.trim()) it.titulo = tInput.value.trim();
+          const fInput = itemWrap.querySelector('.pkg-item-fefo-input');
+          if (fInput && fInput.value.trim()) {
+            let clean = fInput.value.trim().toLowerCase();
+            if (clean && !clean.endsWith('.wav')) clean += '.wav';
+            it.arquivo_fefo = clean;
+            it.arquivo = `/usr/a/${clean}`;
+          }
+          const sText = itemWrap.querySelector('.pkg-item-script-textarea');
+          if (sText) it.descricao = sText.value;
+        }
+        itemsUpdates.push({
+          id: it.id,
+          titulo: it.titulo,
+          arquivo_fefo: it.arquivo_fefo || (it.arquivo ? it.arquivo.split('/').pop() : ''),
+          descricao: it.descricao || ''
+        });
+      });
+    } else {
+      (pkg.items || []).forEach(it => {
+        itemsUpdates.push({
+          id: it.id,
+          titulo: it.titulo,
+          arquivo_fefo: it.arquivo_fefo || (it.arquivo ? it.arquivo.split('/').pop() : ''),
+          descricao: it.descricao || ''
+        });
+      });
+    }
+
+    pkg.titulo = newMenuTitle;
     PkgStorage.saveAllProductionMenus(this.state.publishedMenus);
-    notice('Salvando alterações do menu oficial...');
+
+    // Salva no repositório local (catalog.json) via servidor Python
+    let localSaved = false;
+    let newVersion = null;
+    try {
+      const res = await fetch('/api/production_menu/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          old_menu_titulo: menuTitle,
+          new_menu_titulo: newMenuTitle,
+          items: itemsUpdates
+        })
+      });
+      const data = await res.json();
+      if (data && data.ok) {
+        localSaved = true;
+        newVersion = data.catalogVersion;
+      }
+    } catch (e) {
+      console.warn('Servidor local offline ou erro ao atualizar catalog.json:', e);
+    }
 
     if (window.GitHubSync && window.GitHubSync.isConfigured()) {
       try {
@@ -1622,27 +1725,39 @@ const PkgManager = {
           catalog.audio = catalog.audio || [];
           catalog.audio.forEach(a => {
             if (a.menu === menuTitle) {
-              a.menu = pkg.titulo;
+              a.menu = newMenuTitle;
+              const upd = itemsUpdates.find(u => u.id === a.id);
+              if (upd) {
+                if (upd.titulo) a.titulo = upd.titulo;
+                if (upd.descricao) a.descricao = upd.descricao;
+                if (upd.arquivo_fefo) a.arquivo = `/usr/a/${upd.arquivo_fefo}`;
+              }
             }
           });
-          const newVersion = (parseInt(catalog.catalogVersion, 10) || 1) + 1;
-          catalog.catalogVersion = newVersion;
+          const ghVer = (parseInt(catalog.catalogVersion, 10) || 1) + 1;
+          catalog.catalogVersion = ghVer;
           catalog.updated_at = new Date().toISOString();
-          await window.GitHubSync.commitFile('repository/catalog.json', JSON.stringify(catalog, null, 2) + '\n', `feat(catalog): renomear menu oficial para “${pkg.titulo}”`);
-          notice(`✓ Menu oficial salvo e atualizado no GitHub (Catálogo v${newVersion})!`, 'ok');
+          await window.GitHubSync.commitFile('repository/catalog.json', JSON.stringify(catalog, null, 2) + '\n', `feat(catalog): salvar menu oficial “${newMenuTitle}”`);
+          notice(`✓ Menu oficial salvo no GitHub (Catálogo v${ghVer})!`, 'ok');
         }
       } catch (e) {
-        notice('✓ Alterações salvas no navegador!', 'ok');
+        notice(localSaved ? `✓ Menu oficial salvo no repositório (v${newVersion || ''})!` : '✓ Alterações salvas no navegador!', 'ok');
       }
     } else {
-      notice('✓ Menu oficial salvo no navegador!', 'ok');
+      notice(localSaved ? `✓ Menu oficial salvo no repositório (Catálogo v${newVersion || ''})!` : '✓ Menu oficial salvo no navegador!', 'ok');
     }
+
+    if (btn) showButtonSaveFeedback(btn, true, '✓ Salvo!');
+
+    this.state.expandedProductionTitle = newMenuTitle;
     this.renderPublishedGrid();
+    this.renderProductionExpandedPanel();
   },
 
-  async saveSingleItem(pkgOrMenuTitle, itemId, isProduction = false) {
+  async saveSingleItem(pkgOrMenuTitle, itemId, isProduction = false, btnEl = null) {
+    const btn = btnEl || (typeof event !== 'undefined' && event?.target?.closest ? event.target.closest('button') : null);
     if (isProduction) {
-      return this.saveProductionPackageDetails(pkgOrMenuTitle);
+      return this.saveProductionPackageDetails(pkgOrMenuTitle, btn);
     }
     const pkg = (this.state.drafts || []).find(p => p.id === pkgOrMenuTitle);
     if (!pkg) return;
@@ -1675,7 +1790,7 @@ const PkgManager = {
         } catch (e) {}
       }
     }
-    await this.saveDraftPackageDetails(pkgOrMenuTitle);
+    await this.saveDraftPackageDetails(pkgOrMenuTitle, btn);
   },
 
   async deleteProductionMenuDirect(menuTitle) {

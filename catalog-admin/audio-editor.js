@@ -376,6 +376,13 @@
           start: Number(start.value),
           end: Number(end.value)
         });
+        saveBtn.disabled = false;
+        if (window.showButtonSaveFeedback) {
+          window.showButtonSaveFeedback(saveBtn, true, '✓ Corte Aplicado!');
+        } else {
+          saveBtn.textContent = '✓ Corte Aplicado!';
+          setTimeout(() => { saveBtn.textContent = '✓ Aplicar Corte'; }, 2000);
+        }
       } catch (err) {
         setStatus(`Erro ao cortar áudio: ${err.message}`, 'error');
         saveBtn.disabled = false;

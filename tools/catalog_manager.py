@@ -758,14 +758,52 @@ class Handler(SimpleHTTPRequestHandler):
                     if a.get('menu') == old_menu:
                         if old_menu != new_menu: a['menu'] = new_menu; changed = True
                         upd = next((x for x in items_updates if x.get('id') == a.get('id')), None)
-                        if upd and upd.get('titulo') and upd.get('titulo') != a.get('titulo'):
-                            a['titulo'] = upd.get('titulo').strip(); changed = True
+                        if upd:
+                            if upd.get('titulo') and upd.get('titulo').strip() != a.get('titulo'):
+                                a['titulo'] = upd.get('titulo').strip(); changed = True
+                            if 'descricao' in upd and upd.get('descricao') != a.get('descricao'):
+                                a['descricao'] = upd.get('descricao'); changed = True
+                            if upd.get('arquivo_fefo'):
+                                clean_f = upd.get('arquivo_fefo').strip().lower()
+                                if not clean_f.endswith('.wav'): clean_f += '.wav'
+                                if a.get('arquivo') != f"/usr/a/{clean_f}":
+                                    a['arquivo'] = f"/usr/a/{clean_f}"; changed = True
                 if changed:
                     new_ver = int(cat.get('catalogVersion', 1)) + 1
                     cat['catalogVersion'] = new_ver
                     CATALOG.write_text(json.dumps(cat, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
                     sign_catalog_locally()
-                    result = {'ok': True, 'message': f'✓ Menu oficial “{new_menu}” atualizado (v{new_ver})!'}
+                    result = {'ok': True, 'catalogVersion': new_ver, 'message': f'✓ Menu oficial “{new_menu}” salvo no repositório (v{new_ver})!'}
+                else: result = {'ok': True, 'message': 'Nenhuma alteração detectada.'}
+
+            elif self.path == '/api/production_menus/save_all':
+                payload = json.loads(body.decode('utf-8'))
+                menus = payload.get('menus', [])
+                cat = json.loads(CATALOG.read_text(encoding='utf-8'))
+                cat_audios = cat.setdefault('audio', [])
+                changed = False
+                for m in menus:
+                    m_title = m.get('titulo', '').strip()
+                    for it in m.get('items', []):
+                        a = next((x for x in cat_audios if x.get('id') == it.get('id')), None)
+                        if a:
+                            if m_title and a.get('menu') != m_title:
+                                a['menu'] = m_title; changed = True
+                            if it.get('titulo') and a.get('titulo') != it.get('titulo').strip():
+                                a['titulo'] = it.get('titulo').strip(); changed = True
+                            if 'descricao' in it and a.get('descricao') != it.get('descricao'):
+                                a['descricao'] = it.get('descricao'); changed = True
+                            if it.get('arquivo_fefo'):
+                                clean_f = it.get('arquivo_fefo').strip().lower()
+                                if not clean_f.endswith('.wav'): clean_f += '.wav'
+                                if a.get('arquivo') != f"/usr/a/{clean_f}":
+                                    a['arquivo'] = f"/usr/a/{clean_f}"; changed = True
+                if changed:
+                    new_ver = int(cat.get('catalogVersion', 1)) + 1
+                    cat['catalogVersion'] = new_ver
+                    CATALOG.write_text(json.dumps(cat, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+                    sign_catalog_locally()
+                    result = {'ok': True, 'catalogVersion': new_ver, 'message': f'✓ Menus oficiais salvos no repositório (Catálogo v{new_ver})!'}
                 else: result = {'ok': True, 'message': 'Nenhuma alteração detectada.'}
 
             elif self.path == '/api/packages/publish_official':
@@ -794,9 +832,9 @@ class Handler(SimpleHTTPRequestHandler):
                         "tipo": "audio", "url": f"https://raw.githubusercontent.com/elCortelini/fefo-v1/main/repository/audio/{dest_name}"
                     })
                     audio_idx += 1
-                new_version = int(catalog.get('catalogVersion', 1)) + 1
-                catalog['catalogVersion'] = new_version
-                CATALOG.write_text(json.dumps(catalog, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+                new_version = int(cat.get('catalogVersion', 1)) + 1
+                cat['catalogVersion'] = new_version
+                CATALOG.write_text(json.dumps(cat, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
                 pkg['status'] = 'published'; pkg['published_version'] = new_version; pkg['published_count'] = len(items)
                 save_json_file(DRAFT_PACKAGES_FILE, drafts_data)
                 sign_catalog_locally()
@@ -805,6 +843,48 @@ class Handler(SimpleHTTPRequestHandler):
             # ====================================================
             # 2. ROTAS DE CARDS (c0001.jpg + áudio)
             # ====================================================
+            elif self.path == '/api/card_packs/save_drafts':
+                payload = json.loads(body.decode('utf-8'))
+                card_packs = payload.get('card_packs', [])
+                drafts_data = {'card_packs': card_packs}
+                save_json_file(DRAFT_CARD_PACKS_FILE, drafts_data)
+                result = {'ok': True, 'count': len(card_packs), 'message': '✓ Pacotes de cards salvos no repositório com sucesso!'}
+
+            elif self.path == '/api/card_packs/save_published':
+                payload = json.loads(body.decode('utf-8'))
+                published_packs = payload.get('published', [])
+                cat = json.loads(CATALOG.read_text(encoding='utf-8'))
+                cat['card_packs'] = published_packs
+                new_ver = int(cat.get('catalogVersion', 1)) + 1
+                cat['catalogVersion'] = new_ver
+                CATALOG.write_text(json.dumps(cat, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+                sign_catalog_locally()
+                result = {'ok': True, 'catalogVersion': new_ver, 'message': f'✓ Cards oficiais salvos no repositório (Catálogo v{new_ver})!'}
+
+            elif self.path == '/api/catalog/update_item':
+                payload = json.loads(body.decode('utf-8'))
+                it_upd = payload.get('item', {})
+                item_id = it_upd.get('id')
+                if not item_id: raise ValueError('ID do item ausente.')
+                cat = json.loads(CATALOG.read_text(encoding='utf-8'))
+                found = False
+                for cat_key in ['audio', 'faces', 'videos']:
+                    for x in cat.get(cat_key, []):
+                        if x.get('id') == item_id:
+                            for field in ['titulo', 'menu', 'submenu', 'arquivo', 'evento', 'publicar']:
+                                if field in it_upd:
+                                    x[field] = it_upd[field]
+                            found = True
+                            break
+                    if found: break
+                if found:
+                    new_ver = int(cat.get('catalogVersion', 1)) + 1
+                    cat['catalogVersion'] = new_ver
+                    CATALOG.write_text(json.dumps(cat, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+                    sign_catalog_locally()
+                    result = {'ok': True, 'catalogVersion': new_ver, 'message': f'✓ Item “{it_upd.get("titulo") or item_id}” salvo no repositório (v{new_ver})!'}
+                else:
+                    result = {'ok': False, 'message': f'Item {item_id} não encontrado no catálogo.'}
             elif self.path == '/api/card_packs/save':
                 payload = json.loads(body.decode('utf-8'))
                 pack = payload.get('pack')
