@@ -1,8 +1,24 @@
 {
   "schema": 1,
   "description": "FEFO Content Draft Packages - Grade Completa Pedagógica Unificada com Áudios Vinculados",
-  "updated_at": "2026-11-08T10:33:21.129Z",
+  "updated_at": "2026-11-08T10:33:46.744Z",
   "packages": [
+    {
+      "id": "pkg_24377",
+      "titulo": "Novo Menu",
+      "descricao": "",
+      "target_count": 10,
+      "categoria": "Contos",
+      "licencas": [
+        "home",
+        "clinical",
+        "escola"
+      ],
+      "is_premium": false,
+      "status": "draft",
+      "items": [],
+      "updated_at": "2026-11-08T10:33:46.716Z"
+    },
     {
       "id": "pkg_desafio_e_brincadeiras_desafios",
       "titulo": "Desafio e Brincadeiras - desafios",
