@@ -1719,6 +1719,7 @@ const PkgManager = {
 
     if (window.GitHubSync && window.GitHubSync.isConfigured()) {
       try {
+        await window.GitHubSync.syncPackageAudios(pkg);
         const catFile = await window.GitHubSync.getFile('repository/catalog.json');
         if (catFile.exists && catFile.content) {
           let catalog = JSON.parse(catFile.content);

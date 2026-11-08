@@ -58,6 +58,7 @@ document.addEventListener('click',async e=>{
   if(!x)return;
   persist();
   const confirmation=card.querySelector('[data-save-status]');
+  let savedRemote = false;
   try{
     const res=await fetch('/api/catalog/update_item',{
       method:'POST',
@@ -66,23 +67,56 @@ document.addEventListener('click',async e=>{
     });
     const d=await res.json();
     if(d.ok){
+      savedRemote = true;
       if(confirmation){
         confirmation.textContent='✓ Salvo no repositório';
         confirmation.className='row-save-status ok';
       }
       notice(d.message||`Alterações de “${x.titulo||x.id}” salvas no repositório.`,'ok');
-    }else{
-      if(confirmation){
-        confirmation.textContent='✓ Salvo no rascunho local';
-        confirmation.className='row-save-status ok';
-      }
     }
   }catch(err){
     console.warn('Servidor local offline ao salvar item:', err);
-    if(confirmation){
-      confirmation.textContent='✓ Salvo no rascunho local';
-      confirmation.className='row-save-status ok';
+  }
+
+  if(!savedRemote && window.GitHubSync && window.GitHubSync.isConfigured()){
+    try {
+      const catFile = await window.GitHubSync.getFile('repository/catalog.json');
+      if (catFile.exists && catFile.content) {
+        let catalog = JSON.parse(catFile.content);
+        let found = false;
+        for (const catKey of ['audio', 'faces', 'videos']) {
+          for (const it of (catalog[catKey] || [])) {
+            if (it.id === x.id) {
+              for (const f of ['titulo', 'menu', 'submenu', 'arquivo', 'evento', 'publicar']) {
+                if (f in x) it[f] = x[f];
+              }
+              found = true;
+              break;
+            }
+          }
+          if (found) break;
+        }
+        if (found) {
+          const ghVer = (parseInt(catalog.catalogVersion, 10) || 1) + 1;
+          catalog.catalogVersion = ghVer;
+          catalog.updated_at = new Date().toISOString();
+          await window.GitHubSync.commitFile('repository/catalog.json', JSON.stringify(catalog, null, 2) + '\n', `feat(catalog): salvar item ${x.titulo || x.id} via Web Admin`);
+          savedRemote = true;
+          if (confirmation) {
+            confirmation.textContent = '✓ Salvo no repositório';
+            confirmation.className = 'row-save-status ok';
+          }
+          notice(`✓ Item “${x.titulo||x.id}” salvo no GitHub (Catálogo v${ghVer})!`, 'ok');
+        }
+      }
+    } catch(ghErr) {
+      console.warn('Erro ao salvar no GitHub via admin.js:', ghErr);
     }
+  }
+
+  if(!savedRemote && confirmation){
+    confirmation.textContent='✓ Salvo no rascunho local';
+    confirmation.className='row-save-status ok';
   }
   if(window.showButtonSaveFeedback){
     window.showButtonSaveFeedback(b, true, '✓ Salvo!');

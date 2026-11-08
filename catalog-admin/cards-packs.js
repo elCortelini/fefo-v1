@@ -1078,47 +1078,6 @@ const CardPackManager = {
 
   async saveSingleCardItem(packId, cardId, isProduction = false, btnEl = null) {
     const btn = btnEl || (typeof event !== 'undefined' && event?.target?.closest ? event.target.closest('button') : null);
-    if (btn) {
-      btn.dataset.originalText = btn.textContent.trim() || 'Salvar';
-      btn.textContent = '⏳ Salvando...';
-    }
-
-    if (isProduction) {
-      const pack = (this.state.published || []).find(p => p.id === packId);
-      if (pack) {
-        const drawer = document.getElementById(`drawer-wrap-prod-${packId}`);
-        if (drawer) {
-          const cardWrap = drawer.querySelector(`#card-item-wrap-${cardId}`);
-          if (cardWrap) {
-            const c = (pack.cards || []).find(x => x.id === cardId);
-            if (c) {
-              const tInput = cardWrap.querySelector('.pkg-item-title-input');
-              if (tInput && tInput.value.trim()) c.titulo = tInput.value.trim();
-              const fInput = cardWrap.querySelector('.pkg-item-fefo-input');
-              if (fInput && fInput.value.trim()) c.codigo_acao = fInput.value.trim();
-              const sText = cardWrap.querySelector('.pkg-item-script-textarea');
-              if (sText) c.descricao = sText.value;
-            }
-          }
-        }
-      }
-      CardPackStorage.savePublishedCardPacks(this.state.published);
-      let localSaved = false;
-      try {
-        const res = await fetch('/api/card_packs/save_published', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ published: this.state.published })
-        });
-        const data = await res.json();
-        if (data && data.ok) localSaved = true;
-      } catch (e) {
-        console.warn('Servidor local offline ao salvar cards oficiais:', e);
-      }
-      notice(localSaved ? '✓ Card oficial salvo no repositório!' : '✓ Alterações do card salvas!', 'ok');
-      if (btn && window.showButtonSaveFeedback) window.showButtonSaveFeedback(btn, true, '✓ Salvo!');
-      return;
-    }
     await this.saveCardPackDetails(packId, btn);
   },
 
@@ -1248,7 +1207,7 @@ const CardPackManager = {
       console.warn('Servidor local offline ao salvar cards no repositório:', e);
     }
 
-    if (!isProduction && window.GitHubSync && window.GitHubSync.isConfigured()) {
+    if (window.GitHubSync && window.GitHubSync.isConfigured()) {
       window.GitHubSync.showProgressModal(
         'Sincronizando Pacote de Cards',
         `Enviando imagens e áudios de “${pack.titulo}” para o repositório...`
@@ -1259,8 +1218,21 @@ const CardPackManager = {
           window.GitHubSync.updateProgress(pct, item, detail);
         });
 
-        window.GitHubSync.updateProgress(90, 'Atualizando lista no GitHub...', 'Gravando draft_card_packs.json');
-        await window.GitHubSync.saveDraftCardPacks(this.state.drafts);
+        if (isProduction) {
+          window.GitHubSync.updateProgress(90, 'Atualizando catálogo no GitHub...', 'Gravando catalog.json');
+          const catFile = await window.GitHubSync.getFile('repository/catalog.json');
+          if (catFile.exists && catFile.content) {
+            let catalog = JSON.parse(catFile.content);
+            catalog.card_packs = this.state.published;
+            const ghVer = (parseInt(catalog.catalogVersion, 10) || 1) + 1;
+            catalog.catalogVersion = ghVer;
+            catalog.updated_at = new Date().toISOString();
+            await window.GitHubSync.commitFile('repository/catalog.json', JSON.stringify(catalog, null, 2) + '\n', `feat(cards): salvar pacotes de cards oficiais “${pack.titulo}”`);
+          }
+        } else {
+          window.GitHubSync.updateProgress(90, 'Atualizando lista no GitHub...', 'Gravando draft_card_packs.json');
+          await window.GitHubSync.saveDraftCardPacks(this.state.drafts);
+        }
 
         window.GitHubSync.updateProgress(100, '✓ Concluído com sucesso!', `${syncResult.uploadedAudios} áudio(s) e ${syncResult.uploadedImages} imagem(ns) no repositório.`);
         window.GitHubSync.hideProgressModal(1200);
