@@ -1,11 +1,11 @@
 {
   "schema": 1,
   "description": "FEFO Content Draft Packages - Grade Completa Pedagógica Unificada com Áudios Vinculados",
-  "updated_at": "2026-11-05T13:59:50.894Z",
+  "updated_at": "2026-11-08T10:13:24.892Z",
   "packages": [
     {
-      "id": "pkg_59122",
-      "titulo": "teste de pacote",
+      "id": "pkg_797586",
+      "titulo": "Novo Menu - teaste",
       "descricao": "",
       "target_count": 10,
       "categoria": "Contos",
@@ -16,23 +16,8 @@
       ],
       "is_premium": false,
       "status": "draft",
-      "items": [
-        {
-          "id": "it_71965_1",
-          "titulo": "fefo fefo fefo",
-          "descricao": "olá eu sou o fefo, seu super amiguinho para melhorar a sua vida",
-          "arquivo_fefo": "a0008.wav",
-          "arquivo_origem": "Voz FEFO IA (a0008.wav)",
-          "web_url": "blob:https://fefoplaneta.com.br/9b16fa79-008b-4f7f-b491-9c4547ed64fe",
-          "status": "needs_trim",
-          "tamanho": 212012,
-          "arquivo": "/usr/a/a0008.wav",
-          "is_custom_blob": true,
-          "checksum": "71643060e69b4b9b92c206fe884e6e70fe9a1d6dbf3025d729cc4e67b95239ef",
-          "has_custom_audio": true
-        }
-      ],
-      "updated_at": "2026-11-02T21:11:52.915Z"
+      "items": [],
+      "updated_at": "2026-11-08T10:13:24.864Z"
     },
     {
       "id": "pkg_desafio_e_brincadeiras_desafios",
@@ -4409,120 +4394,6 @@
           "web_url": "",
           "status": "pending_audio",
           "arquivo_fefo": "a0338.wav"
-        }
-      ]
-    },
-    {
-      "id": "pkg_jukebox_do_fefo",
-      "titulo": "Jukebox do fefo",
-      "menu_principal": "Jukebox do fefo",
-      "submenu": "",
-      "descricao": "Pacote pedagógico do FEFO: Jukebox do fefo",
-      "target_count": 8,
-      "categoria": "Jukebox do fefo",
-      "licencas": [
-        "home",
-        "clinical",
-        "escola"
-      ],
-      "is_premium": false,
-      "status": "draft",
-      "items": [
-        {
-          "id": "pkg_jukebox_do_fefo_a0339",
-          "numero": "1",
-          "titulo": "Hora de dormir",
-          "texto_rotulo": "Hora de dormir",
-          "descricao": "",
-          "localizacao": "/jb/",
-          "arquivo_origem": "a0006.wav",
-          "web_url": "/repository/audio/a0006.wav",
-          "status": "published",
-          "arquivo_fefo": "a0339.wav"
-        },
-        {
-          "id": "pkg_jukebox_do_fefo_a0340",
-          "numero": "2",
-          "titulo": "Higiene do FEFO",
-          "texto_rotulo": "Higiene do FEFO",
-          "descricao": "",
-          "localizacao": "/jb/",
-          "arquivo_origem": "",
-          "web_url": "",
-          "status": "pending_audio",
-          "arquivo_fefo": "a0340.wav"
-        },
-        {
-          "id": "pkg_jukebox_do_fefo_a0341",
-          "numero": "3",
-          "titulo": "As cores",
-          "texto_rotulo": "As cores",
-          "descricao": "",
-          "localizacao": "/jb/",
-          "arquivo_origem": "a0001.wav",
-          "web_url": "/repository/audio/a0001.wav",
-          "status": "published",
-          "arquivo_fefo": "a0341.wav"
-        },
-        {
-          "id": "pkg_jukebox_do_fefo_a0342",
-          "numero": "4",
-          "titulo": "Item 4",
-          "texto_rotulo": "",
-          "descricao": "",
-          "localizacao": "/jb/",
-          "arquivo_origem": "",
-          "web_url": "",
-          "status": "pending_audio",
-          "arquivo_fefo": "a0342.wav"
-        },
-        {
-          "id": "pkg_jukebox_do_fefo_a0343",
-          "numero": "5",
-          "titulo": "Item 5",
-          "texto_rotulo": "",
-          "descricao": "",
-          "localizacao": "/jb/",
-          "arquivo_origem": "",
-          "web_url": "",
-          "status": "pending_audio",
-          "arquivo_fefo": "a0343.wav"
-        },
-        {
-          "id": "pkg_jukebox_do_fefo_a0344",
-          "numero": "6",
-          "titulo": "Item 6",
-          "texto_rotulo": "",
-          "descricao": "",
-          "localizacao": "/jb/",
-          "arquivo_origem": "",
-          "web_url": "",
-          "status": "pending_audio",
-          "arquivo_fefo": "a0344.wav"
-        },
-        {
-          "id": "pkg_jukebox_do_fefo_a0345",
-          "numero": "7",
-          "titulo": "Item 7",
-          "texto_rotulo": "",
-          "descricao": "",
-          "localizacao": "/jb/",
-          "arquivo_origem": "",
-          "web_url": "",
-          "status": "pending_audio",
-          "arquivo_fefo": "a0345.wav"
-        },
-        {
-          "id": "pkg_jukebox_do_fefo_a0346",
-          "numero": "8",
-          "titulo": "Item 8",
-          "texto_rotulo": "",
-          "descricao": "",
-          "localizacao": "/jb/",
-          "arquivo_origem": "",
-          "web_url": "",
-          "status": "pending_audio",
-          "arquivo_fefo": "a0346.wav"
         }
       ]
     },
