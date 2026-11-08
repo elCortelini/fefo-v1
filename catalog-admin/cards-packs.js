@@ -268,13 +268,18 @@ const CardPackManager = {
     }
 
     // 4. Mescla inteligente com localStorage: preserva pacotes e edições locais mais recentes
+    const deletedPackIds = CardPackStorage.getDeletedPackIds();
+    drafts = (drafts || []).filter(p => !deletedPackIds.includes(p.id));
+    published = (published || []).filter(p => !deletedPackIds.includes(p.id));
+
     const savedDrafts = CardPackStorage.getCustomCardPacks();
     if (savedDrafts && Array.isArray(savedDrafts) && savedDrafts.length > 0) {
+      const validSavedDrafts = savedDrafts.filter(p => !deletedPackIds.includes(p.id));
       if (!loadedFromRemote || drafts.length === 0) {
-        drafts = savedDrafts;
+        drafts = validSavedDrafts;
       } else {
         const remoteMap = new Map(drafts.map(p => [p.id, p]));
-        savedDrafts.forEach(localP => {
+        validSavedDrafts.forEach(localP => {
           const remoteP = remoteMap.get(localP.id);
           if (!remoteP) {
             drafts.unshift(localP);
@@ -293,8 +298,9 @@ const CardPackManager = {
 
     const savedProd = CardPackStorage.getPublishedCardPacks();
     if (savedProd && Array.isArray(savedProd) && savedProd.length > 0) {
+      const validSavedProd = savedProd.filter(p => !deletedPackIds.includes(p.id));
       if (!loadedFromRemote || published.length === 0) {
-        published = savedProd;
+        published = validSavedProd;
       }
     }
     CardPackStorage.savePublishedCardPacks(published);
@@ -1260,25 +1266,64 @@ const CardPackManager = {
   },
 
   async deleteCardPack(packId) {
-    if (!confirm('Tem certeza que deseja excluir este pacote de cards?')) return;
+    const isProduction = (this.state.published || []).some(p => p.id === packId);
+    const pack = isProduction
+      ? (this.state.published || []).find(p => p.id === packId)
+      : (this.state.drafts || []).find(p => p.id === packId);
+    const title = pack ? pack.titulo : packId;
 
-    this.state.drafts = this.state.drafts.filter(p => p.id !== packId);
-    if (this.state.expandedDraftId === packId) {
-      this.state.expandedDraftId = null;
+    if (!confirm(`Tem certeza que deseja excluir o pacote de cards “${title}”?`)) return;
+
+    if (isProduction) {
+      this.state.published = (this.state.published || []).filter(p => p.id !== packId);
+      if (this.state.expandedProductionId === packId) this.state.expandedProductionId = null;
+      CardPackStorage.savePublishedCardPacks(this.state.published);
+      this.renderPublishedGrid();
+    } else {
+      this.state.drafts = (this.state.drafts || []).filter(p => p.id !== packId);
+      if (this.state.expandedDraftId === packId) this.state.expandedDraftId = null;
+      CardPackStorage.saveCustomCardPacks(this.state.drafts);
+      this.renderDraftsGrid();
     }
 
     CardPackStorage.addDeletedPackId(packId);
-    CardPackStorage.saveCustomCardPacks(this.state.drafts);
-    this.renderDraftsGrid();
-    notice('Pacote de cards excluído com sucesso.', 'ok');
+    notice(`Excluindo pacote de cards “${title}” do repositório...`);
 
+    // 1. Tenta API local do servidor Python
     try {
-      await fetch('/api/card_packs/delete', {
+      const endpoint = isProduction ? '/api/card_packs/save_published' : '/api/card_packs/delete';
+      const body = isProduction ? JSON.stringify({ published: this.state.published }) : JSON.stringify({ id: packId });
+      await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: packId })
+        body: body
       });
     } catch (e) {}
+
+    // 2. Se GitHubSync estiver ativo: grava a nova lista no GitHub
+    if (window.GitHubSync && window.GitHubSync.isConfigured()) {
+      try {
+        if (isProduction) {
+          const catFile = await window.GitHubSync.getFile('repository/catalog.json');
+          if (catFile.exists && catFile.content) {
+            let catalog = JSON.parse(catFile.content);
+            catalog.card_packs = this.state.published;
+            const ghVer = (parseInt(catalog.catalogVersion, 10) || 1) + 1;
+            catalog.catalogVersion = ghVer;
+            catalog.updated_at = new Date().toISOString();
+            await window.GitHubSync.commitFile('repository/catalog.json', JSON.stringify(catalog, null, 2) + '\n', `chore(cards): excluir pacote de cards oficial “${title}”`);
+          }
+        } else {
+          await window.GitHubSync.saveDraftCardPacks(this.state.drafts);
+        }
+        notice(`✓ Pacote de cards “${title}” excluído do repositório no GitHub!`, 'ok');
+      } catch (ghErr) {
+        console.warn('Erro ao sincronizar exclusão de card no GitHub:', ghErr);
+        notice('Pacote de cards excluído localmente.', 'ok');
+      }
+    } else {
+      notice('Pacote de cards excluído com sucesso.', 'ok');
+    }
   },
 
   async publishCardPackOfficial(packId) {
@@ -1488,6 +1533,12 @@ const CardPackManager = {
       });
     } else {
       alert('Módulo de conversão MP3 indisponível.');
+    }
+  },
+
+  async saveAllToRepository(btnEl = null) {
+    if (window.PkgManager && window.PkgManager.saveAllToRepository) {
+      return await window.PkgManager.saveAllToRepository(btnEl);
     }
   },
 };

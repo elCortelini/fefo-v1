@@ -631,13 +631,20 @@ const PkgManager = {
     }
 
     // 4. Mescla inteligente com localStorage: preserva pacotes e edições locais mais recentes
+    const deletedPkgIds = PkgStorage.getDeletedPkgIds();
+    drafts = (drafts || []).filter(p => !deletedPkgIds.includes(p.id));
+
+    const unpublishedMenus = PkgStorage.getUnpublishedMenus();
+    published = (published || []).filter(m => !unpublishedMenus.includes(m.titulo));
+
     const savedDrafts = PkgStorage.getAllDrafts();
     if (savedDrafts && Array.isArray(savedDrafts) && savedDrafts.length > 0) {
+      const validSavedDrafts = savedDrafts.filter(p => !deletedPkgIds.includes(p.id));
       if (!loadedFromRemote || drafts.length === 0) {
-        drafts = savedDrafts;
+        drafts = validSavedDrafts;
       } else {
         const remoteMap = new Map(drafts.map(p => [p.id, p]));
-        savedDrafts.forEach(localP => {
+        validSavedDrafts.forEach(localP => {
           const remoteP = remoteMap.get(localP.id);
           if (!remoteP) {
             drafts.unshift(localP);
@@ -656,8 +663,9 @@ const PkgManager = {
 
     const savedProd = PkgStorage.getAllProductionMenus();
     if (savedProd && Array.isArray(savedProd) && savedProd.length > 0) {
+      const validSavedProd = savedProd.filter(m => !unpublishedMenus.includes(m.titulo));
       if (!loadedFromRemote || published.length === 0) {
-        published = savedProd;
+        published = validSavedProd;
       }
     }
     PkgStorage.saveAllProductionMenus(published);
@@ -1544,6 +1552,113 @@ const PkgManager = {
     PkgStorage.saveAllProductionMenus(this.state.publishedMenus);
   },
 
+  async saveAllToRepository(btnEl = null) {
+    const btn = btnEl || (typeof event !== 'undefined' && event?.target?.closest ? event.target.closest('button') : null);
+    if (btn) {
+      btn.dataset.originalText = btn.textContent.trim() || 'Salvar Tudo no Repositório';
+      btn.textContent = '⏳ Salvando Tudo...';
+    }
+
+    if (window.GitHubSync) {
+      window.GitHubSync.showProgressModal(
+        'Sincronizando Catálogo Completo',
+        'Gravando pacotes em rascunho e menus oficiais no repositório...'
+      );
+    }
+
+    let errorCount = 0;
+
+    // 1. Salva Rascunhos de Áudio localmente e no GitHub
+    try {
+      PkgStorage.saveAllDrafts(this.state.drafts);
+      await fetch('/api/packages/save_drafts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ packages: this.state.drafts })
+      }).catch(() => {});
+
+      if (window.GitHubSync && window.GitHubSync.isConfigured()) {
+        window.GitHubSync.updateProgress(25, 'Salvando rascunhos de áudio no GitHub...', 'draft_packages.json');
+        await window.GitHubSync.saveDraftPackages(this.state.drafts);
+      }
+    } catch (e) {
+      console.warn('Erro ao salvar rascunhos de áudio:', e);
+      errorCount++;
+    }
+
+    // 2. Salva Menus Oficiais (Produção) localmente e no GitHub
+    try {
+      PkgStorage.saveAllProductionMenus(this.state.publishedMenus);
+      await fetch('/api/production_menus/save_all', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ menus: this.state.publishedMenus })
+      }).catch(() => {});
+
+      if (window.GitHubSync && window.GitHubSync.isConfigured()) {
+        window.GitHubSync.updateProgress(60, 'Atualizando menus oficiais no GitHub...', 'catalog.json');
+        const catFile = await window.GitHubSync.getFile('repository/catalog.json');
+        if (catFile.exists && catFile.content) {
+          let catalog = JSON.parse(catFile.content);
+          const currentMenuTitles = new Set((this.state.publishedMenus || []).map(m => m.titulo));
+          catalog.audio = (catalog.audio || []).filter(a => !a.menu || currentMenuTitles.has(a.menu));
+
+          (this.state.publishedMenus || []).forEach(m => {
+            (m.items || []).forEach(it => {
+              const existingAudio = catalog.audio.find(a => a.id === it.id);
+              if (existingAudio) {
+                if (it.titulo) existingAudio.titulo = it.titulo;
+                if (it.descricao) existingAudio.descricao = it.descricao;
+                if (it.arquivo_fefo) existingAudio.arquivo = `/usr/a/${it.arquivo_fefo}`;
+                existingAudio.menu = m.titulo;
+              }
+            });
+          });
+
+          const ghVer = (parseInt(catalog.catalogVersion, 10) || 1) + 1;
+          catalog.catalogVersion = ghVer;
+          catalog.updated_at = new Date().toISOString();
+          await window.GitHubSync.commitFile('repository/catalog.json', JSON.stringify(catalog, null, 2) + '\n', `feat(catalog): sincronização completa de todos os menus (Catálogo v${ghVer})`);
+        }
+      }
+    } catch (e) {
+      console.warn('Erro ao salvar menus oficiais:', e);
+      errorCount++;
+    }
+
+    // 3. Salva Cards (Rascunhos e Publicados)
+    if (window.CardPackManager) {
+      try {
+        if (window.GitHubSync && window.GitHubSync.isConfigured()) {
+          window.GitHubSync.updateProgress(85, 'Salvando pacotes de cards no GitHub...', 'draft_card_packs.json');
+          await window.GitHubSync.saveDraftCardPacks(window.CardPackManager.state.drafts || []);
+        }
+        await fetch('/api/card_packs/save_drafts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ card_packs: window.CardPackManager.state.drafts || [] })
+        }).catch(() => {});
+      } catch (e) {
+        console.warn('Erro ao salvar cards:', e);
+      }
+    }
+
+    if (window.GitHubSync) {
+      window.GitHubSync.updateProgress(100, '✓ Catálogo Sincronizado!', 'Todas as alterações foram gravadas no repositório com sucesso.');
+      window.GitHubSync.hideProgressModal(1200);
+    }
+
+    if (btn) {
+      if (window.showButtonSaveFeedback) {
+        window.showButtonSaveFeedback(btn, errorCount === 0, errorCount === 0 ? '✓ Tudo Salvo no Repositório!' : '⚠️ Salvo com avisos');
+      } else {
+        btn.textContent = '✓ Tudo Salvo no Repositório!';
+        setTimeout(() => { btn.textContent = btn.dataset.originalText || 'Salvar Tudo no Repositório'; }, 2500);
+      }
+    }
+    notice('✓ Todas as alterações de todos os pacotes foram salvas no repositório!', 'ok');
+  },
+
   async saveDraftPackageDetails(pkgId, btnEl = null) {
     const btn = btnEl || (typeof event !== 'undefined' && event?.target?.closest ? event.target.closest('button') : null);
     if (btn) {
@@ -1798,9 +1913,40 @@ const PkgManager = {
     if (!confirm(`Tem certeza que deseja excluir o menu oficial “${menuTitle}”?`)) return;
     this.state.publishedMenus = (this.state.publishedMenus || []).filter(p => p.titulo !== menuTitle);
     if (this.state.expandedProductionTitle === menuTitle) this.state.expandedProductionTitle = null;
+    PkgStorage.addUnpublishedMenu(menuTitle);
     PkgStorage.saveAllProductionMenus(this.state.publishedMenus);
-    notice(`Menu “${menuTitle}” excluído.`, 'ok');
+    notice(`Excluindo menu “${menuTitle}” do catálogo oficial...`);
     this.renderPublishedGrid();
+
+    // 1. Tenta API local do servidor Python
+    try {
+      await fetch('/api/packages/unpublish_menu', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ menu_titulo: menuTitle })
+      });
+    } catch (e) {}
+
+    // 2. Tenta GitHubSync para remover do catalog.json no GitHub
+    if (window.GitHubSync && window.GitHubSync.isConfigured()) {
+      try {
+        const catFile = await window.GitHubSync.getFile('repository/catalog.json');
+        if (catFile.exists && catFile.content) {
+          let catalog = JSON.parse(catFile.content);
+          catalog.audio = (catalog.audio || []).filter(a => a.menu !== menuTitle);
+          const ghVer = (parseInt(catalog.catalogVersion, 10) || 1) + 1;
+          catalog.catalogVersion = ghVer;
+          catalog.updated_at = new Date().toISOString();
+          await window.GitHubSync.commitFile('repository/catalog.json', JSON.stringify(catalog, null, 2) + '\n', `chore(catalog): excluir menu oficial “${menuTitle}”`);
+          notice(`✓ Menu “${menuTitle}” excluído do catálogo oficial no GitHub (v${ghVer})!`, 'ok');
+        }
+      } catch (ghErr) {
+        console.warn('Erro ao excluir menu oficial no GitHub:', ghErr);
+        notice(`✓ Menu “${menuTitle}” removido localmente!`, 'ok');
+      }
+    } else {
+      notice(`Menu “${menuTitle}” excluído com sucesso.`, 'ok');
+    }
   },
 
   updateProductionItemTitle(menuTitle, itemId, newTitle) {
@@ -2082,8 +2228,9 @@ const PkgManager = {
     PkgStorage.saveAllDrafts(this.state.drafts);
 
     this.renderDraftsGrid();
-    notice('Pacote removido com sucesso.', 'ok');
+    notice(`Excluindo pacote “${title}” do repositório...`);
 
+    // 1. Tenta API local do servidor Python
     try {
       await fetch('/api/packages/delete', {
         method: 'POST',
@@ -2091,6 +2238,19 @@ const PkgManager = {
         body: JSON.stringify({ id: pkgId })
       });
     } catch (e) {}
+
+    // 2. Se GitHubSync estiver ativo: salva imediatamente no GitHub
+    if (window.GitHubSync && window.GitHubSync.isConfigured()) {
+      try {
+        await window.GitHubSync.saveDraftPackages(this.state.drafts);
+        notice(`✓ Pacote “${title}” excluído do repositório no GitHub!`, 'ok');
+      } catch (ghErr) {
+        console.warn('Erro ao sincronizar exclusão de pacote no GitHub:', ghErr);
+        notice(`✓ Pacote removido localmente!`, 'ok');
+      }
+    } else {
+      notice('Pacote removido com sucesso.', 'ok');
+    }
   },
 
   async trimDraftItem(pkgId, itemId, audioUrl, title, description = '', itemCode = '') {

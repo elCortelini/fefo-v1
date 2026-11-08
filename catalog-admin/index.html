@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 
 <html lang="pt-BR">
 
@@ -119,6 +119,9 @@
             <h2 style="margin: 0; font-size: 26px;">Menus de Áudio</h2>
           </div>
           <div class="pkg-actions" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+            <button class="btn green" id="btn-save-all-audios" type="button" style="font-size: 14px; padding: 12px 22px; background: #16a34a; color: #fff; font-weight: 600;" onclick="PkgManager.saveAllToRepository(this)">
+              💾 Salvar Tudo no Repositório
+            </button>
             <button class="btn primary" id="btn-new-package" type="button" style="font-size: 14px; padding: 12px 22px;">
               ＋ Criar Novo Pacote / Menu
             </button>
@@ -236,6 +239,9 @@
           </div>
 
           <div class="pkg-actions" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+            <button class="btn green" id="btn-save-all-cards" type="button" style="font-size: 14px; padding: 12px 22px; background: #16a34a; color: #fff; font-weight: 600;" onclick="PkgManager.saveAllToRepository(this)">
+              💾 Salvar Tudo no Repositório
+            </button>
             <button class="btn secondary" type="button" style="font-size: 13px; padding: 12px 18px;" onclick="PkgManager.openAiVoiceSettings()">
               🎙️ Configurar Voz IA (F5-TTS)
             </button>
