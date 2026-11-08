@@ -647,7 +647,11 @@ const PkgManager = {
         validSavedDrafts.forEach(localP => {
           const remoteP = remoteMap.get(localP.id);
           if (!remoteP) {
-            drafts.unshift(localP);
+            // Só adiciona de volta se for um rascunho comprovadamente novo criado offline nesta máquina.
+            // Se já existia e não está mais no repositório remoto, foi excluído e não deve ser ressuscitado.
+            if (localP.is_local_unsaved === true) {
+              drafts.unshift(localP);
+            }
           } else {
             const localTs = localP.updated_at ? new Date(localP.updated_at).getTime() : 0;
             const remoteTs = remoteP.updated_at ? new Date(remoteP.updated_at).getTime() : 0;
@@ -1552,12 +1556,51 @@ const PkgManager = {
     PkgStorage.saveAllProductionMenus(this.state.publishedMenus);
   },
 
+  async reloadFromRemote(btnEl = null) {
+    const btn = btnEl || (typeof event !== 'undefined' && event?.target?.closest ? event.target.closest('button') : null);
+    if (btn) {
+      btn.dataset.originalText = btn.textContent.trim() || '🔄 Atualizar da Nuvem';
+      btn.textContent = '⏳ Baixando...';
+    }
+
+    try {
+      localStorage.removeItem('fefo_saved_all_drafts');
+      localStorage.removeItem('fefo_saved_prod_menus');
+      localStorage.removeItem('fefo_custom_card_packs');
+      localStorage.removeItem('fefo_published_card_packs');
+
+      notice('Baixando versão atualizada do GitHub...', 'info');
+      await this.loadPackages();
+      if (window.CardPackManager && window.CardPackManager.loadCardPacks) {
+        await window.CardPackManager.loadCardPacks();
+      }
+
+      if (btn) {
+        if (window.showButtonSaveFeedback) {
+          window.showButtonSaveFeedback(btn, true, '✓ Atualizado!');
+        } else {
+          btn.textContent = '✓ Atualizado!';
+          setTimeout(() => { btn.textContent = btn.dataset.originalText || '🔄 Atualizar da Nuvem'; }, 2000);
+        }
+      }
+      notice('✓ Catálogo atualizado com sucesso diretamente da nuvem!', 'ok');
+    } catch (e) {
+      console.warn('Erro ao atualizar da nuvem:', e);
+      if (btn) {
+        if (window.showButtonSaveFeedback) window.showButtonSaveFeedback(btn, false, 'Erro ao baixar');
+      }
+      notice('Erro ao baixar catálogo da nuvem.', 'err');
+    }
+  },
+
   async saveAllToRepository(btnEl = null) {
     const btn = btnEl || (typeof event !== 'undefined' && event?.target?.closest ? event.target.closest('button') : null);
     if (btn) {
       btn.dataset.originalText = btn.textContent.trim() || 'Salvar Tudo no Repositório';
       btn.textContent = '⏳ Salvando Tudo...';
     }
+
+    (this.state.drafts || []).forEach(p => { delete p.is_local_unsaved; });
 
     if (window.GitHubSync) {
       window.GitHubSync.showProgressModal(
@@ -1670,6 +1713,7 @@ const PkgManager = {
       if (btn) showButtonSaveFeedback(btn, false, 'Pacote não encontrado');
       return;
     }
+    delete pkg.is_local_unsaved;
 
     // 1. Captura títulos e valores atuais do DOM
     const titleInput = document.getElementById(`draft-title-input-${pkgId}`) || document.getElementById('draft-input-title');
@@ -2054,6 +2098,7 @@ const PkgManager = {
       licencas: ['home', 'clinical', 'escola'],
       is_premium: false,
       status: 'draft',
+      is_local_unsaved: true,
       items: []
     };
 

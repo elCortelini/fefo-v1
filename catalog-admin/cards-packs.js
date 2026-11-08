@@ -282,7 +282,11 @@ const CardPackManager = {
         validSavedDrafts.forEach(localP => {
           const remoteP = remoteMap.get(localP.id);
           if (!remoteP) {
-            drafts.unshift(localP);
+            // Só adiciona se for um rascunho comprovadamente novo criado offline nesta máquina.
+            // Se já existia e não está no repositório remoto, foi excluído e não deve ser ressuscitado.
+            if (localP.is_local_unsaved === true) {
+              drafts.unshift(localP);
+            }
           } else {
             const localTs = localP.updated_at ? new Date(localP.updated_at).getTime() : 0;
             const remoteTs = remoteP.updated_at ? new Date(remoteP.updated_at).getTime() : 0;
@@ -1134,6 +1138,7 @@ const CardPackManager = {
       licencas: ['home', 'clinical', 'escola'],
       is_premium: false,
       status: 'draft',
+      is_local_unsaved: true,
       cards: []
     };
 
@@ -1168,6 +1173,7 @@ const CardPackManager = {
       if (btn && window.showButtonSaveFeedback) window.showButtonSaveFeedback(btn, false, 'Pacote não encontrado');
       return;
     }
+    delete pack.is_local_unsaved;
 
     const titleInput = document.getElementById(`draft-title-input-${packId}`) || document.getElementById(`prod-title-input-${packId}`);
     if (titleInput && titleInput.value.trim()) {
@@ -1539,6 +1545,12 @@ const CardPackManager = {
   async saveAllToRepository(btnEl = null) {
     if (window.PkgManager && window.PkgManager.saveAllToRepository) {
       return await window.PkgManager.saveAllToRepository(btnEl);
+    }
+  },
+
+  async reloadFromRemote(btnEl = null) {
+    if (window.PkgManager && window.PkgManager.reloadFromRemote) {
+      return await window.PkgManager.reloadFromRemote(btnEl);
     }
   },
 };
