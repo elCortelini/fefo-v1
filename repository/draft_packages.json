@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "FEFO Content Draft Packages - Grade Completa Pedagógica Unificada com Áudios Vinculados",
-  "updated_at": "2026-11-09T15:33:20.108Z",
+  "updated_at": "2026-11-09T15:33:54.283Z",
   "packages": [
     {
       "id": "pkg_despub_513766",
@@ -153,14 +153,15 @@
         {
           "id": "au012_970",
           "codigo_item": "au012_970",
-          "titulo": "Nova Faixa Oficial 12",
+          "titulo": "COMO FAZ OS ANIMAIS",
           "descricao": "",
           "arquivo_fefo": "a0339.wav",
-          "arquivo_origem": "a0339.wav",
-          "web_url": "../repository/audio/a0339.wav",
-          "status": "ready",
-          "tamanho": 0,
-          "arquivo": "/usr/a/a0339.wav"
+          "arquivo_origem": "COMO_FAZ_OS_ANIMAIS.mp3",
+          "web_url": "../repository/audio/a0339.wav?_t=1794238434277",
+          "status": "needs_trim",
+          "tamanho": 3230208,
+          "arquivo": "/usr/a/a0339.wav",
+          "checksum": "774d6952932ba5807181f47d794038615cd07a76b930790eae6e511ce05ad241"
         },
         {
           "id": "au013_62",
@@ -235,7 +236,7 @@
           "arquivo": "/usr/a/a0345.wav"
         }
       ],
-      "updated_at": "2026-11-09T15:33:16.524Z"
+      "updated_at": "2026-11-09T15:33:51.265Z"
     },
     {
       "id": "pkg_24377",
