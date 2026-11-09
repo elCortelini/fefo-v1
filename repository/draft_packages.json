@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "FEFO Content Draft Packages - Grade Completa Pedagógica Unificada com Áudios Vinculados",
-  "updated_at": "2026-11-09T15:43:43.962Z",
+  "updated_at": "2026-11-09T15:43:58.007Z",
   "packages": [
     {
       "id": "pkg_despub_513766",
@@ -278,7 +278,7 @@
           "checksum": "ecb285844d17c9f32bf5b5ebe70515995e4906f6b38ffe706647ce4470f62f64"
         }
       ],
-      "updated_at": "2026-11-09T15:43:38.849Z"
+      "updated_at": "2026-11-09T15:43:57.877Z"
     },
     {
       "id": "pkg_24377",
