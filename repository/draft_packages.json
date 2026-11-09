@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "FEFO Content Draft Packages - Grade Completa Pedagógica Unificada com Áudios Vinculados",
-  "updated_at": "2026-11-09T15:35:14.855Z",
+  "updated_at": "2026-11-09T15:35:58.340Z",
   "packages": [
     {
       "id": "pkg_despub_513766",
@@ -192,14 +192,15 @@
         {
           "id": "au015_794",
           "codigo_item": "au015_794",
-          "titulo": "Nova Faixa Oficial 15",
+          "titulo": "DICAS DE SEGURANÇA",
           "descricao": "",
           "arquivo_fefo": "a0342.wav",
-          "arquivo_origem": "a0342.wav",
-          "web_url": "../repository/audio/a0342.wav",
-          "status": "ready",
-          "tamanho": 0,
-          "arquivo": "/usr/a/a0342.wav"
+          "arquivo_origem": "DICAS_DE_SEGURANÇA.mp3",
+          "web_url": "../repository/audio/a0342.wav?_t=1794238558336",
+          "status": "needs_trim",
+          "tamanho": 2318400,
+          "arquivo": "/usr/a/a0342.wav",
+          "checksum": "528902da26013ad9f65571c9aef897efa69d135dfd4b201bd1f905874e00ca21"
         },
         {
           "id": "au016_84",
@@ -238,7 +239,7 @@
           "arquivo": "/usr/a/a0345.wav"
         }
       ],
-      "updated_at": "2026-11-09T15:35:11.436Z"
+      "updated_at": "2026-11-09T15:35:54.508Z"
     },
     {
       "id": "pkg_24377",
