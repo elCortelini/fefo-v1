@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "FEFO Content Draft Packages - Grade Completa Pedagógica Unificada com Áudios Vinculados",
-  "updated_at": "2026-11-09T15:38:57.938Z",
+  "updated_at": "2026-11-09T15:42:31.815Z",
   "packages": [
     {
       "id": "pkg_despub_513766",
@@ -240,9 +240,41 @@
           "tamanho": 4954752,
           "arquivo": "/usr/a/a0345.wav",
           "checksum": "f49f32fb2cce738cb7e66ec5f7ed3a07ba20a2b7dc39937b8bf11ed6c6b8d3cd"
+        },
+        {
+          "id": "it_880185_19",
+          "titulo": "FORMAS GEOMÉTRICAS",
+          "descricao": "",
+          "arquivo_fefo": "a0346.wav",
+          "arquivo_origem": "Formas geométricas com o FEFO  (1).mp3.mpeg",
+          "web_url": "../repository/audio/a0346.wav?_t=1794238951811",
+          "status": "needs_trim",
+          "tamanho": 1926568,
+          "arquivo": "/usr/a/a0346.wav",
+          "checksum": "0b3d82f06a12ac0da357c127fa5c4a18da87b0f8f90ea6caff6db13259890740"
+        },
+        {
+          "id": "it_880817_20",
+          "titulo": "Nova Faixa 20",
+          "descricao": "",
+          "arquivo_fefo": "a0357.wav",
+          "arquivo_origem": "",
+          "web_url": "../repository/audio/a0357.wav",
+          "status": "pending_audio",
+          "arquivo": "/usr/a/a0357.wav"
+        },
+        {
+          "id": "it_881587_21",
+          "titulo": "Nova Faixa 21",
+          "descricao": "",
+          "arquivo_fefo": "a0358.wav",
+          "arquivo_origem": "",
+          "web_url": "../repository/audio/a0358.wav",
+          "status": "pending_audio",
+          "arquivo": "/usr/a/a0358.wav"
         }
       ],
-      "updated_at": "2026-11-09T15:38:57.789Z"
+      "updated_at": "2026-11-09T15:42:28.642Z"
     },
     {
       "id": "pkg_24377",
