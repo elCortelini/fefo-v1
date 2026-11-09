@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "FEFO Content Draft Packages - Grade Completa Pedagógica Unificada com Áudios Vinculados",
-  "updated_at": "2026-11-09T15:36:53.703Z",
+  "updated_at": "2026-11-09T15:37:28.608Z",
   "packages": [
     {
       "id": "pkg_despub_513766",
@@ -231,17 +231,18 @@
         {
           "id": "au018_624",
           "codigo_item": "au018_624",
-          "titulo": "Nova Faixa Oficial 18",
+          "titulo": "SEGURANÇA",
           "descricao": "",
           "arquivo_fefo": "a0345.wav",
-          "arquivo_origem": "a0345.wav",
-          "web_url": "../repository/audio/a0345.wav",
-          "status": "ready",
-          "tamanho": 0,
-          "arquivo": "/usr/a/a0345.wav"
+          "arquivo_origem": "SEGURANÇA.mp3",
+          "web_url": "../repository/audio/a0345.wav?_t=1794238648608",
+          "status": "needs_trim",
+          "tamanho": 4954752,
+          "arquivo": "/usr/a/a0345.wav",
+          "checksum": "f49f32fb2cce738cb7e66ec5f7ed3a07ba20a2b7dc39937b8bf11ed6c6b8d3cd"
         }
       ],
-      "updated_at": "2026-11-09T15:36:49.419Z"
+      "updated_at": "2026-11-09T15:37:24.884Z"
     },
     {
       "id": "pkg_24377",
