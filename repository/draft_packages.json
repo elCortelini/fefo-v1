@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "FEFO Content Draft Packages - Grade Completa Pedagógica Unificada com Áudios Vinculados",
-  "updated_at": "2026-11-09T15:33:54.283Z",
+  "updated_at": "2026-11-09T15:34:43.849Z",
   "packages": [
     {
       "id": "pkg_despub_513766",
@@ -166,14 +166,15 @@
         {
           "id": "au013_62",
           "codigo_item": "au013_62",
-          "titulo": "Nova Faixa Oficial 13",
+          "titulo": "CONTANDO OS NÚMEROS",
           "descricao": "",
           "arquivo_fefo": "a0340.wav",
-          "arquivo_origem": "a0340.wav",
-          "web_url": "../repository/audio/a0340.wav",
-          "status": "ready",
-          "tamanho": 0,
-          "arquivo": "/usr/a/a0340.wav"
+          "arquivo_origem": "CONTANDO_OS_NÚMEROS.mp3",
+          "web_url": "../repository/audio/a0340.wav?_t=1794238483837",
+          "status": "needs_trim",
+          "tamanho": 4392000,
+          "arquivo": "/usr/a/a0340.wav",
+          "checksum": "11da2faeed438649b2b65c88cba5c667f1d432a08e3da767e3724a1b8efc697a"
         },
         {
           "id": "au014_932",
@@ -236,7 +237,7 @@
           "arquivo": "/usr/a/a0345.wav"
         }
       ],
-      "updated_at": "2026-11-09T15:33:51.265Z"
+      "updated_at": "2026-11-09T15:34:40.385Z"
     },
     {
       "id": "pkg_24377",
