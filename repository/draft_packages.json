@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "FEFO Content Draft Packages - Grade Completa Pedagógica Unificada com Áudios Vinculados",
-  "updated_at": "2026-11-09T15:34:43.849Z",
+  "updated_at": "2026-11-09T15:35:14.855Z",
   "packages": [
     {
       "id": "pkg_despub_513766",
@@ -179,14 +179,15 @@
         {
           "id": "au014_932",
           "codigo_item": "au014_932",
-          "titulo": "Nova Faixa Oficial 14",
+          "titulo": "CUIDE DOS ANIMAIS",
           "descricao": "",
           "arquivo_fefo": "a0341.wav",
-          "arquivo_origem": "a0341.wav",
-          "web_url": "../repository/audio/a0341.wav",
-          "status": "ready",
-          "tamanho": 0,
-          "arquivo": "/usr/a/a0341.wav"
+          "arquivo_origem": "CUIDE_DOS_ANIMAIS.mp3",
+          "web_url": "../repository/audio/a0341.wav?_t=1794238514844",
+          "status": "needs_trim",
+          "tamanho": 3526272,
+          "arquivo": "/usr/a/a0341.wav",
+          "checksum": "4e5499bdbcd1a862ed5be7c4ac5495a9c85ec12d2b3ff43901ea6715347b39d2"
         },
         {
           "id": "au015_794",
@@ -237,7 +238,7 @@
           "arquivo": "/usr/a/a0345.wav"
         }
       ],
-      "updated_at": "2026-11-09T15:34:40.385Z"
+      "updated_at": "2026-11-09T15:35:11.436Z"
     },
     {
       "id": "pkg_24377",
