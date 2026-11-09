@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "FEFO Content Draft Packages - Grade Completa Pedagógica Unificada com Áudios Vinculados",
-  "updated_at": "2026-11-09T01:25:39.530Z",
+  "updated_at": "2026-11-09T15:33:20.108Z",
   "packages": [
     {
       "id": "pkg_despub_513766",
@@ -140,14 +140,15 @@
         {
           "id": "au011_870",
           "codigo_item": "au011_870",
-          "titulo": "Nova Faixa Oficial 11",
+          "titulo": "CADA UM DO SEU JEITINHO",
           "descricao": "",
           "arquivo_fefo": "a0008.wav",
-          "arquivo_origem": "a0008.wav",
-          "web_url": "../repository/audio/a0008.wav",
-          "status": "ready",
-          "tamanho": 0,
-          "arquivo": "/usr/a/a0008.wav"
+          "arquivo_origem": "CADA_UM_DO_SEU_JEITINHO.mp3",
+          "web_url": "../repository/audio/a0008.wav?_t=1794238400096",
+          "status": "needs_trim",
+          "tamanho": 4001472,
+          "arquivo": "/usr/a/a0008.wav",
+          "checksum": "730cd040905c4be04f071729d9d82750c596fd92d6eb330ddb1cf0613e41b7cd"
         },
         {
           "id": "au012_970",
@@ -234,7 +235,7 @@
           "arquivo": "/usr/a/a0345.wav"
         }
       ],
-      "updated_at": "2026-11-09T01:25:32.085Z"
+      "updated_at": "2026-11-09T15:33:16.524Z"
     },
     {
       "id": "pkg_24377",
