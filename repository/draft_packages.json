@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "FEFO Content Draft Packages - Grade Completa Pedagógica Unificada com Áudios Vinculados",
-  "updated_at": "2026-11-09T15:42:31.815Z",
+  "updated_at": "2026-11-09T15:43:15.195Z",
   "packages": [
     {
       "id": "pkg_despub_513766",
@@ -255,13 +255,15 @@
         },
         {
           "id": "it_880817_20",
-          "titulo": "Nova Faixa 20",
+          "titulo": "ALFABETO",
           "descricao": "",
           "arquivo_fefo": "a0357.wav",
-          "arquivo_origem": "",
-          "web_url": "../repository/audio/a0357.wav",
-          "status": "pending_audio",
-          "arquivo": "/usr/a/a0357.wav"
+          "arquivo_origem": "WhatsApp Audio 2026-11-08 at 18.41.52.mpeg",
+          "web_url": "../repository/audio/a0357.wav?_t=1794238995191",
+          "status": "needs_trim",
+          "arquivo": "/usr/a/a0357.wav",
+          "tamanho": 2382491,
+          "checksum": "443d36a1f4ba1ac3e36d27fdb2cacaa031e67ca59722d0f182e837407748e9f3"
         },
         {
           "id": "it_881587_21",
@@ -274,7 +276,7 @@
           "arquivo": "/usr/a/a0358.wav"
         }
       ],
-      "updated_at": "2026-11-09T15:42:28.642Z"
+      "updated_at": "2026-11-09T15:43:11.829Z"
     },
     {
       "id": "pkg_24377",
