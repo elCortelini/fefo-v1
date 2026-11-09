@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "FEFO Content Draft Packages - Grade Completa Pedagógica Unificada com Áudios Vinculados",
-  "updated_at": "2026-11-09T15:35:58.340Z",
+  "updated_at": "2026-11-09T15:36:28.856Z",
   "packages": [
     {
       "id": "pkg_despub_513766",
@@ -205,14 +205,15 @@
         {
           "id": "au016_84",
           "codigo_item": "au016_84",
-          "titulo": "Nova Faixa Oficial 16",
+          "titulo": "FRUTAS SAUDÁVEIS",
           "descricao": "",
           "arquivo_fefo": "a0343.wav",
-          "arquivo_origem": "a0343.wav",
-          "web_url": "../repository/audio/a0343.wav",
-          "status": "ready",
-          "tamanho": 0,
-          "arquivo": "/usr/a/a0343.wav"
+          "arquivo_origem": "FRUTAS_SAUDÁVEIS.mp3",
+          "web_url": "../repository/audio/a0343.wav?_t=1794238588850",
+          "status": "needs_trim",
+          "tamanho": 4286592,
+          "arquivo": "/usr/a/a0343.wav",
+          "checksum": "bc79b404b33b7625f84480a5537a3d69419b8e05f11e6c75acdba461b4e15a3a"
         },
         {
           "id": "au017_912",
@@ -239,7 +240,7 @@
           "arquivo": "/usr/a/a0345.wav"
         }
       ],
-      "updated_at": "2026-11-09T15:35:54.508Z"
+      "updated_at": "2026-11-09T15:36:25.030Z"
     },
     {
       "id": "pkg_24377",
