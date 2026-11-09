@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "FEFO Content Draft Packages - Grade Completa Pedagógica Unificada com Áudios Vinculados",
-  "updated_at": "2026-11-09T15:43:15.195Z",
+  "updated_at": "2026-11-09T15:43:43.962Z",
   "packages": [
     {
       "id": "pkg_despub_513766",
@@ -267,16 +267,18 @@
         },
         {
           "id": "it_881587_21",
-          "titulo": "Nova Faixa 21",
+          "titulo": "EMOÇÕES",
           "descricao": "",
           "arquivo_fefo": "a0358.wav",
-          "arquivo_origem": "",
-          "web_url": "../repository/audio/a0358.wav",
-          "status": "pending_audio",
-          "arquivo": "/usr/a/a0358.wav"
+          "arquivo_origem": "WhatsApp Audio 2026-11-08 at 19.11.29.mpeg",
+          "web_url": "../repository/audio/a0358.wav?_t=1794239023962",
+          "status": "needs_trim",
+          "arquivo": "/usr/a/a0358.wav",
+          "tamanho": 3203781,
+          "checksum": "ecb285844d17c9f32bf5b5ebe70515995e4906f6b38ffe706647ce4470f62f64"
         }
       ],
-      "updated_at": "2026-11-09T15:43:11.829Z"
+      "updated_at": "2026-11-09T15:43:38.849Z"
     },
     {
       "id": "pkg_24377",
