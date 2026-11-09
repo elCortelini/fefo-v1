@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "catalogVersion": 100,
+  "catalogVersion": 101,
   "repository": "FEFO Google Drive",
   "firmware": {
     "version": "1.102",
@@ -424,5 +424,5 @@
   "catalogRevision": "official-73",
   "assinaturaCatalogoCanonica": "biSBjpbcCCwT8e3ssN637jU/0S93j0D2+qCnR/Mk7bGgzXEQFbVxzhNcsJ99g21aqENwLhNkdBdhmI1MlXmJX9kjLZwp2dBfQot4CqhsKyZxMEnOlaJ3dhZLgJ/PlSedd/r5jLlqCoMc9uq39+hqsBGvL9eBJnKDW7Hb2DJreL6yVfsf3jtI2Lqnofg0mJ1MkjDzaqsGDBKU/2SJO0h2VT+gNHXbPnejAbWxQVR6odhFpCp9ESzG+O7uD/8s1nwIqwGXTYlaFraOeaiyLWf0pXJrmMfM13VbJ1KsXshRguSRjFIQeNJGb2Jcrvu4cmztOKnBUZlruWsCfYE8sXerPg==",
   "assinaturaCatalogo": "biSBjpbcCCwT8e3ssN637jU/0S93j0D2+qCnR/Mk7bGgzXEQFbVxzhNcsJ99g21aqENwLhNkdBdhmI1MlXmJX9kjLZwp2dBfQot4CqhsKyZxMEnOlaJ3dhZLgJ/PlSedd/r5jLlqCoMc9uq39+hqsBGvL9eBJnKDW7Hb2DJreL6yVfsf3jtI2Lqnofg0mJ1MkjDzaqsGDBKU/2SJO0h2VT+gNHXbPnejAbWxQVR6odhFpCp9ESzG+O7uD/8s1nwIqwGXTYlaFraOeaiyLWf0pXJrmMfM13VbJ1KsXshRguSRjFIQeNJGb2Jcrvu4cmztOKnBUZlruWsCfYE8sXerPg==",
-  "updated_at": "2026-11-09T01:22:06.994Z"
+  "updated_at": "2026-11-09T01:22:36.547Z"
 }
