@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "catalogVersion": 107,
+  "catalogVersion": 108,
   "repository": "FEFO Google Drive",
   "firmware": {
     "version": "1.102",
@@ -24,106 +24,6 @@
     "notas": "Correção da detecção de atualização e suporte inicial aos Cards Interativos."
   },
   "audio": [
-    {
-      "id": "au001",
-      "titulo": "AS CORES",
-      "menu": "Jukebox do Fefo",
-      "arquivo": "/usr/a/a0001.wav",
-      "tamanho": 3765156,
-      "checksum": "4fd6d660627bd031b498e3dcd1b9d4392c0806c145de4d27d1d3910dbb37c8e2",
-      "tipo": "audio",
-      "url": "https://drive.google.com/uc?export=download&id=14Oekv-mgHU5Wz-5NoYzzXLSUvA7dpNYd"
-    },
-    {
-      "id": "au002",
-      "titulo": "Brincar com o fefo 2",
-      "menu": "Jukebox do Fefo",
-      "arquivo": "/usr/a/a0002.wav",
-      "tamanho": 5666928,
-      "checksum": "297de09c62ce96e3bf8f59d7669bbc5156a7364c045e21d96bc8edacd9595806",
-      "tipo": "audio",
-      "url": "https://drive.google.com/uc?export=download&id=1QUv40jpY-IIphM-bgwde1vMjh_vD6uv_"
-    },
-    {
-      "id": "au003",
-      "titulo": "COMIDA SAUDAVEL",
-      "menu": "Jukebox do Fefo",
-      "arquivo": "/usr/a/a0003.wav",
-      "tamanho": 4043824,
-      "checksum": "c128bd4e98bf956dba3c77374b06829b1b745ba34651e439a6d24d9deaaca58a",
-      "tipo": "audio",
-      "url": "https://drive.google.com/uc?export=download&id=1P6NDNjqU3hpyp_1GGbEp1r3rbgW40eex"
-    },
-    {
-      "id": "au004",
-      "titulo": "CONHECENDO O CORPO",
-      "menu": "Jukebox do Fefo",
-      "arquivo": "/usr/a/a0004.wav",
-      "tamanho": 5102444,
-      "checksum": "32dc0a0547158dddb1b3cdb32dc0e3775a67138f7f2b427d5f6498b28a3e7f1f",
-      "tipo": "audio",
-      "url": "https://drive.google.com/uc?export=download&id=1Odu5N5jTsMGwhriolwfM2ekDAkI3Xjje"
-    },
-    {
-      "id": "au005",
-      "titulo": "HIGIENE",
-      "menu": "Jukebox do Fefo",
-      "arquivo": "/usr/a/a0005.wav",
-      "tamanho": 5048426,
-      "checksum": "07464c7c63fe0c3a1772a8d3cd4e027d96e6aad5c2cf662a024bff2af2867dd6",
-      "tipo": "audio",
-      "url": "https://drive.google.com/uc?export=download&id=1gqju5uwoVdkvPTlYTsocmKQZ-tIP5nVX"
-    },
-    {
-      "id": "au006",
-      "titulo": "HORA DE DORMIR",
-      "menu": "Jukebox do Fefo",
-      "arquivo": "/usr/a/a0006.wav",
-      "tamanho": 5343076,
-      "checksum": "ad694742d3f686900319b60782cc00f7c419b2ab825c30557d4401bcc0dc2990",
-      "tipo": "audio",
-      "url": "https://drive.google.com/uc?export=download&id=1BnFjFn3B5vBKY51pKCGJT2SblAJM8urv"
-    },
-    {
-      "id": "au007",
-      "titulo": "OS NUMEROS",
-      "menu": "Jukebox do Fefo",
-      "arquivo": "/usr/a/a0007.wav",
-      "tamanho": 4253740,
-      "checksum": "b0f3502981ca7f078be8fdf31383b97a728c53f81363f86a7968ee19b061be51",
-      "tipo": "audio",
-      "url": "https://drive.google.com/uc?export=download&id=15cFhpW8dlwcGUB59V6j7z0DVd5NhcnNh"
-    },
-    {
-      "id": "au009",
-      "titulo": "Respeitando os colegas 2",
-      "menu": "Jukebox do Fefo",
-      "arquivo": "/usr/a/a0009.wav",
-      "tamanho": 4811018,
-      "checksum": "86391cc30895f99867f0b1cabdc4d52fc9e1889987849446f7c2487fc846d3a1",
-      "tipo": "audio",
-      "url": "https://drive.google.com/uc?export=download&id=1bXLbwQMZ06HyDx-ztELgksv2p5-z1Kxc"
-    },
-    {
-      "id": "au010",
-      "titulo": "RESPIRAR",
-      "menu": "Jukebox do Fefo",
-      "arquivo": "/usr/a/a0010.wav",
-      "tamanho": 3961178,
-      "checksum": "b9249d5bec9f707a07463fd4ef19116a429a14b88b5d34b72d1235a5476558db",
-      "tipo": "audio",
-      "url": "https://drive.google.com/uc?export=download&id=1XFZc89KUroUSW9ojjvHp9ox4VtBgqy6S"
-    },
-    {
-      "id": "au011",
-      "titulo": "SONS DOS ANIMAIS",
-      "menu": "Jukebox do Fefo",
-      "arquivo": "/usr/a/a0011.wav",
-      "tamanho": 4904722,
-      "checksum": "5216a7828c1bf3b3eff50a9a89f1a73077a4a41d00426272d42f829e577a828c",
-      "tipo": "audio",
-      "url": "https://drive.google.com/uc?export=download&id=1dPjQAJT3nlWkCuXOU5YIVuf4Bnp50Dvn"
-    },
     {
       "id": "au012",
       "titulo": "contando numeros",
@@ -424,5 +324,5 @@
   "catalogRevision": "official-73",
   "assinaturaCatalogoCanonica": "biSBjpbcCCwT8e3ssN637jU/0S93j0D2+qCnR/Mk7bGgzXEQFbVxzhNcsJ99g21aqENwLhNkdBdhmI1MlXmJX9kjLZwp2dBfQot4CqhsKyZxMEnOlaJ3dhZLgJ/PlSedd/r5jLlqCoMc9uq39+hqsBGvL9eBJnKDW7Hb2DJreL6yVfsf3jtI2Lqnofg0mJ1MkjDzaqsGDBKU/2SJO0h2VT+gNHXbPnejAbWxQVR6odhFpCp9ESzG+O7uD/8s1nwIqwGXTYlaFraOeaiyLWf0pXJrmMfM13VbJ1KsXshRguSRjFIQeNJGb2Jcrvu4cmztOKnBUZlruWsCfYE8sXerPg==",
   "assinaturaCatalogo": "biSBjpbcCCwT8e3ssN637jU/0S93j0D2+qCnR/Mk7bGgzXEQFbVxzhNcsJ99g21aqENwLhNkdBdhmI1MlXmJX9kjLZwp2dBfQot4CqhsKyZxMEnOlaJ3dhZLgJ/PlSedd/r5jLlqCoMc9uq39+hqsBGvL9eBJnKDW7Hb2DJreL6yVfsf3jtI2Lqnofg0mJ1MkjDzaqsGDBKU/2SJO0h2VT+gNHXbPnejAbWxQVR6odhFpCp9ESzG+O7uD/8s1nwIqwGXTYlaFraOeaiyLWf0pXJrmMfM13VbJ1KsXshRguSRjFIQeNJGb2Jcrvu4cmztOKnBUZlruWsCfYE8sXerPg==",
-  "updated_at": "2026-11-09T01:25:09.949Z"
+  "updated_at": "2026-11-09T01:25:42.443Z"
 }
