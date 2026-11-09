@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "catalogVersion": 109,
+  "catalogVersion": 110,
   "repository": "FEFO Google Drive",
   "firmware": {
     "version": "1.102",
@@ -24,46 +24,6 @@
     "notas": "Correção da detecção de atualização e suporte inicial aos Cards Interativos."
   },
   "audio": [
-    {
-      "id": "au012",
-      "titulo": "contando numeros",
-      "menu": "Jukebox do Fefo 2",
-      "arquivo": "/usr/a/a0012.wav",
-      "tamanho": 8068624,
-      "checksum": "4c0b6f67d9411975bdd232a30b6be36895d3c7cd90311e88a4d833d967823d59",
-      "tipo": "audio",
-      "url": "https://drive.google.com/uc?export=download&id=1Lqfs_38TDiXFmwysmLM-WRnhg4ZBMKVY"
-    },
-    {
-      "id": "au013",
-      "titulo": "cuide dos animais",
-      "menu": "Jukebox do Fefo 2",
-      "arquivo": "/usr/a/a0013.wav",
-      "tamanho": 6478568,
-      "checksum": "f8109b4c50082e8ea54f0a106ebd039a90409bbe352a1733cdddb1fcf98518b4",
-      "tipo": "audio",
-      "url": "https://drive.google.com/uc?export=download&id=18U8HX9k8e6azhjlvtt_u2BCQT5YnzUmm"
-    },
-    {
-      "id": "au014",
-      "titulo": "Dicas de segurança.mp3",
-      "menu": "Jukebox do Fefo 2",
-      "arquivo": "/usr/a/a0014.wav",
-      "tamanho": 6158696,
-      "checksum": "0a79f77e415c9821afb104cb3b11d1caf361284172077b85810a2fa1db22e179",
-      "tipo": "audio",
-      "url": "https://drive.google.com/uc?export=download&id=1S3frzsKkOQZeutQdwwP11pjcFzDVl-2Z"
-    },
-    {
-      "id": "au015",
-      "titulo": "frutas saudaveis",
-      "menu": "Jukebox do Fefo 2",
-      "arquivo": "/usr/a/a0015.wav",
-      "tamanho": 7875616,
-      "checksum": "6a8492bac9b28715d6c421465eb3238a13c1a63ad8faccfc963b8962fe5daefe",
-      "tipo": "audio",
-      "url": "https://drive.google.com/uc?export=download&id=12x5RYVLpV-x9ihWVMgKcVO3on960d-tV"
-    },
     {
       "id": "au017",
       "titulo": "Cabra",
@@ -324,5 +284,5 @@
   "catalogRevision": "official-73",
   "assinaturaCatalogoCanonica": "biSBjpbcCCwT8e3ssN637jU/0S93j0D2+qCnR/Mk7bGgzXEQFbVxzhNcsJ99g21aqENwLhNkdBdhmI1MlXmJX9kjLZwp2dBfQot4CqhsKyZxMEnOlaJ3dhZLgJ/PlSedd/r5jLlqCoMc9uq39+hqsBGvL9eBJnKDW7Hb2DJreL6yVfsf3jtI2Lqnofg0mJ1MkjDzaqsGDBKU/2SJO0h2VT+gNHXbPnejAbWxQVR6odhFpCp9ESzG+O7uD/8s1nwIqwGXTYlaFraOeaiyLWf0pXJrmMfM13VbJ1KsXshRguSRjFIQeNJGb2Jcrvu4cmztOKnBUZlruWsCfYE8sXerPg==",
   "assinaturaCatalogo": "biSBjpbcCCwT8e3ssN637jU/0S93j0D2+qCnR/Mk7bGgzXEQFbVxzhNcsJ99g21aqENwLhNkdBdhmI1MlXmJX9kjLZwp2dBfQot4CqhsKyZxMEnOlaJ3dhZLgJ/PlSedd/r5jLlqCoMc9uq39+hqsBGvL9eBJnKDW7Hb2DJreL6yVfsf3jtI2Lqnofg0mJ1MkjDzaqsGDBKU/2SJO0h2VT+gNHXbPnejAbWxQVR6odhFpCp9ESzG+O7uD/8s1nwIqwGXTYlaFraOeaiyLWf0pXJrmMfM13VbJ1KsXshRguSRjFIQeNJGb2Jcrvu4cmztOKnBUZlruWsCfYE8sXerPg==",
-  "updated_at": "2026-11-09T15:44:12.586Z"
+  "updated_at": "2026-11-09T15:45:15.053Z"
 }
