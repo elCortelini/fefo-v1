@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "description": "FEFO Content Draft Packages - Grade Completa Pedagógica Unificada com Áudios Vinculados",
-  "updated_at": "2026-11-09T15:36:28.856Z",
+  "updated_at": "2026-11-09T15:36:53.703Z",
   "packages": [
     {
       "id": "pkg_despub_513766",
@@ -218,14 +218,15 @@
         {
           "id": "au017_912",
           "codigo_item": "au017_912",
-          "titulo": "Nova Faixa Oficial 17",
+          "titulo": "PULA PULA",
           "descricao": "",
           "arquivo_fefo": "a0344.wav",
-          "arquivo_origem": "a0344.wav",
-          "web_url": "../repository/audio/a0344.wav",
-          "status": "ready",
-          "tamanho": 0,
-          "arquivo": "/usr/a/a0344.wav"
+          "arquivo_origem": "PULA_PULA.mp3",
+          "web_url": "../repository/audio/a0344.wav?_t=1794238613700",
+          "status": "needs_trim",
+          "tamanho": 4096512,
+          "arquivo": "/usr/a/a0344.wav",
+          "checksum": "d25fe7aa9aa1037af2911fe1a45d6f3094e6d46200fd1ad9ae965074bcec35e9"
         },
         {
           "id": "au018_624",
@@ -240,7 +241,7 @@
           "arquivo": "/usr/a/a0345.wav"
         }
       ],
-      "updated_at": "2026-11-09T15:36:25.030Z"
+      "updated_at": "2026-11-09T15:36:49.419Z"
     },
     {
       "id": "pkg_24377",
