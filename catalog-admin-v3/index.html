@@ -31,6 +31,14 @@
       </div>
 
       <div class="top-bar-right">
+        <!-- Badge de Sincronização em Nuvem (Multi-PC) -->
+        <div id="github-sync-pill" class="gh-sync-pill" title="Clique para gerenciar a conexão com o GitHub">
+          <span class="gh-cloud-icon">☁️</span>
+          <span class="gh-repo-name">elCortelini/fefo-v1</span>
+        </div>
+        <button type="button" class="btn-action-sm btn-cloud-refresh" id="btn-sync-cloud" title="Recarregar dados frescos da nuvem em tempo real">
+          🔄 Sincronizar Nuvem
+        </button>
         <input type="file" id="input-import-json" accept=".json" style="display: none;">
         <button type="button" class="btn-action-sm" id="btn-import-catalog" title="Importar catalog-v3.json">📥 Importar</button>
         <button type="button" class="btn-action-sm" id="btn-export-catalog" title="Baixar catalog-v3.json">💾 Baixar JSON</button>
@@ -211,6 +219,7 @@
   <div class="v3-toast-container" id="v3-toast-container" aria-live="polite"></div>
 
   <!-- SCRIPTS -->
+  <script src="github-sync.js"></script>
   <script src="admin-v3.js"></script>
 </body>
 </html>

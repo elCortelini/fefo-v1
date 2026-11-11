@@ -1,11 +1,11 @@
 /**
  * ==========================================================================
- * FEFO CATALOG ADMIN v3 - MOTOR DE DADOS, ÁUDIO VISUAL & UX
+ * FEFO CATALOG ADMIN v3 - MOTOR DE DADOS, ÁUDIO VISUAL & SINCRONIZAÇÃO NUVEM
  * ==========================================================================
+ * - Sincronização em Nuvem Multi-PC via GitHub REST API (idêntico ao v1)
  * - Réplica exata do Mockup Oficial do FEFO
- * - Múltiplos Contos, Músicas, Treck-Trecks, Desafios, Livrinhos e Bobie Gods
- * - Acordeão Sanfonado Inteligente em cada item
- * - Numeração automática inteligente (A0001.WAV, CARD0001) com modo numeração livre
+ * - Contos e MÚSICAS com os MESMOS ELEMENTOS (Player, Waveform, Roteiro, Cards)
+ * - Numeração automática inteligente (A0001.WAV, M0001.WAV, CARD0001) com modo numeração livre
  * - Semáforo de produção (🔴 Sem Áudio / 🟡 Áudio Bruto / 🟢 Pronto)
  * - Cortador de Áudio Waveform nativo com Web Audio API
  */
@@ -14,7 +14,6 @@
   'use strict';
 
   const STORAGE_KEY = 'fefo_catalog_v3_state';
-  const DEFAULT_REPO_URL = '../repository/catalog-v3.json';
 
   // 8 Eixos Temáticos Oficiais
   const EIXOS_OFICIAIS = [
@@ -38,7 +37,7 @@
 
   let currentStoryIndex = 0;
 
-  // Gerenciador de Contexto de Áudio Web Audio API
+  // Web Audio Context compartilhado
   let audioCtx = null;
   function getAudioContext() {
     if (!audioCtx) {
@@ -55,35 +54,64 @@
   // ==========================================================================
   document.addEventListener('DOMContentLoaded', async () => {
     initEixoSelector();
-    await loadCatalogData();
     initTopBarEvents();
     initFooterEvents();
+    
+    // Tenta sincronizar primeiro da nuvem (GitHub REST API) para ter paridade entre todos os PCs
+    await loadCatalogData(true);
     renderCurrentStory();
   });
 
   // ==========================================================================
-  // CARREGAMENTO & PERSISTÊNCIA (LOCAL-FIRST)
+  // CARREGAMENTO & SINCRONIZAÇÃO EM NUVEM (MULTI-PC)
   // ==========================================================================
-  async function loadCatalogData() {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
+  async function loadCatalogData(fromCloudFirst = true) {
+    let loadedData = null;
+
+    // 1. Tentar carregar da Nuvem (GitHub) se estiver online
+    if (fromCloudFirst && window.GitHubSync) {
       try {
-        catalogState = JSON.parse(saved);
+        updateCloudStatus('syncing', 'Sincronizando com o GitHub...');
+        const cloudData = await window.GitHubSync.getCatalogV3();
+        if (cloudData && (cloudData.historinhas || cloudData.temas)) {
+          loadedData = cloudData;
+          updateCloudStatus('connected', 'Conectado à nuvem');
+          showToast('Dados sincronizados em tempo real do GitHub!', 'success');
+        }
       } catch (e) {
-        console.warn('Erro ao ler do localStorage, reiniciando semente...');
+        console.warn('[loadCatalogData] Falha na nuvem, tentando local:', e);
+        updateCloudStatus('disconnected', 'Modo Offline / Local');
       }
     }
 
-    if (!catalogState.historinhas || catalogState.historinhas.length === 0) {
+    // 2. Se não veio da nuvem, tentar do localStorage da máquina
+    if (!loadedData) {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          loadedData = JSON.parse(saved);
+        } catch (e) {}
+      }
+    }
+
+    // 3. Fallback relativo local para primeira execução
+    if (!loadedData) {
       try {
-        const resp = await fetch(DEFAULT_REPO_URL);
+        const resp = await fetch('../repository/catalog-v3.json?_t=' + Date.now(), { cache: 'no-store' });
         if (resp.ok) {
-          const raw = await resp.json();
-          catalogState.catalogVersion = raw.catalogVersion || "v3.001";
-          catalogState.historinhas = convertLegacyCatalogToHistorinhas(raw);
+          loadedData = await resp.json();
         }
-      } catch (e) {
-        console.info('Repositório local não alcançado, criando semente...');
+      } catch (e) {}
+    }
+
+    // Consolidar estado
+    if (loadedData) {
+      catalogState.catalogVersion = loadedData.catalogVersion || "v3.001";
+      catalogState.versionCode = loadedData.versionCode || 3001;
+      if (loadedData.historinhas && Array.isArray(loadedData.historinhas)) {
+        catalogState.historinhas = loadedData.historinhas;
+      } else if (loadedData.temas) {
+        catalogState.historinhas = convertLegacyCatalogToHistorinhas(loadedData);
       }
     }
 
@@ -91,13 +119,67 @@
       catalogState.historinhas = [createDefaultStory(1)];
     }
 
-    saveState(false);
+    // Salva cópia local de segurança
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(catalogState, null, 2));
   }
 
-  function saveState(notify = true) {
+  async function saveCatalogData(isPublish = false) {
+    // 1. Salvar localmente imediatamente
     localStorage.setItem(STORAGE_KEY, JSON.stringify(catalogState, null, 2));
-    if (notify) {
-      showToast('Alterações salvas com sucesso no navegador!', 'success');
+
+    // 2. Se for publicar, incrementa a versão global
+    if (isPublish) {
+      let cur = catalogState.catalogVersion || 'v3.001';
+      const m = cur.match(/^v(\d+)\.(\d+)$/);
+      if (m) {
+        const major = parseInt(m[1], 10);
+        const minor = parseInt(m[2], 10) + 1;
+        catalogState.catalogVersion = `v${major}.${String(minor).padStart(3, '0')}`;
+        catalogState.versionCode = (major * 1000) + minor;
+      }
+      document.getElementById('global-version-display').textContent = catalogState.catalogVersion;
+    }
+
+    // 3. Commit na nuvem GitHub (garantindo que qualquer outro PC receba as alterações)
+    if (window.GitHubSync && window.GitHubSync.isConfigured()) {
+      try {
+        updateCloudStatus('syncing', 'Enviando alterações para o GitHub...');
+        const story = getCurrentStory();
+        const actionLabel = isPublish ? 'publicar' : 'salvar';
+        const msg = `feat(catalog-v3): ${actionLabel} historinha "${story.titulo}" [${catalogState.catalogVersion}] via Web Admin`;
+        
+        await window.GitHubSync.saveCatalogV3(catalogState, msg);
+        updateCloudStatus('connected', 'Conectado à nuvem');
+        showToast(`✅ Sincronizado no GitHub! Todos os PCs agora verão esta versão (${catalogState.catalogVersion}).`, 'success');
+        return;
+      } catch (e) {
+        console.error('Erro ao sincronizar com GitHub:', e);
+        updateCloudStatus('disconnected', 'Erro ao enviar para nuvem');
+        showToast(`Salvo localmente, mas houve erro ao enviar ao GitHub: ${e.message}`, 'warning');
+      }
+    } else {
+      showToast('Salvo localmente neste computador! (Configure o token do GitHub para sincronizar em outros PCs)', 'info');
+    }
+  }
+
+  function updateCloudStatus(status, text) {
+    const pill = document.getElementById('github-sync-pill');
+    if (!pill) return;
+    if (status === 'connected') {
+      pill.style.background = '#064E3B';
+      pill.style.borderColor = '#059669';
+      pill.style.color = '#A7F3D0';
+      pill.innerHTML = `<span class="gh-cloud-icon">☁️</span> <span>${text || 'Nuvem Conectada'}</span>`;
+    } else if (status === 'syncing') {
+      pill.style.background = '#78350F';
+      pill.style.borderColor = '#D97706';
+      pill.style.color = '#FDE68A';
+      pill.innerHTML = `<span class="gh-cloud-icon">🔄</span> <span>${text || 'Sincronizando...'}</span>`;
+    } else {
+      pill.style.background = '#374151';
+      pill.style.borderColor = '#4B5563';
+      pill.style.color = '#9CA3AF';
+      pill.innerHTML = `<span class="gh-cloud-icon">☁️</span> <span>${text || 'Offline'}</span>`;
     }
   }
 
@@ -126,6 +208,23 @@
           }
         }
       ],
+      musicas: [
+        {
+          id: `mus_1`,
+          nomeApp: "Canção do Bom Dia",
+          arquivoPet: "M0001.WAV",
+          arquivoPetManual: false,
+          audioUrl: "",
+          roteiro: "Solzinho acorda de manhã, vem brincar com o FEFO...",
+          trimmer: { inicio: 0.0, fim: 45.0, fadeIn: 0.2, fadeOut: 0.2, duracao: 45.0 },
+          status: "ready",
+          cardVinculado: {
+            nome: "CARD MÚSICA DO DIA",
+            comandoPet: "CARD0002",
+            imagemUrl: ""
+          }
+        }
+      ],
       trecks: [
         {
           id: `trk_1`,
@@ -133,14 +232,6 @@
           arquivoPet: "TRK0001.WAV",
           duracaoSegundos: 90,
           instrucao: "Gire a catraca do robô acompanhando o som rítmico...",
-          status: "ready"
-        }
-      ],
-      musicas: [
-        {
-          id: `mus_1`,
-          titulo: "Canção de Ninar do FEFO",
-          arquivoPet: "M0001.WAV",
           status: "ready"
         }
       ],
@@ -196,8 +287,24 @@
           }
         }
       ],
+      musicas: [
+        {
+          id: `mus_1`,
+          nomeApp: "CANÇÃO DE NINAR",
+          arquivoPet: "M0001.WAV",
+          arquivoPetManual: false,
+          audioUrl: "",
+          roteiro: "Durma bem meu amiguinho, sonhe com as estrelas...",
+          trimmer: { inicio: 0.0, fim: 60.0, fadeIn: 0.2, fadeOut: 0.2, duracao: 60.0 },
+          status: "raw",
+          cardVinculado: {
+            nome: "CARD DA MÚSICA",
+            comandoPet: "CARD0002",
+            imagemUrl: ""
+          }
+        }
+      ],
       trecks: [],
-      musicas: [],
       desafios: [],
       livrinhos: [
         {
@@ -234,7 +341,6 @@
     sel.addEventListener('change', () => {
       const story = getCurrentStory();
       story.eixoId = sel.value;
-      saveState(false);
       updateStorySelectorDisplay();
     });
   }
@@ -250,9 +356,15 @@
       const newStory = createDefaultStory(newNum);
       catalogState.historinhas.push(newStory);
       currentStoryIndex = catalogState.historinhas.length - 1;
-      saveState(false);
       renderCurrentStory();
       showToast(`Nova Historinha ${newNum} criada!`, 'success');
+    });
+
+    // Botão Sincronizar Nuvem em Tempo Real
+    document.getElementById('btn-sync-cloud').addEventListener('click', async () => {
+      showToast('Buscando versão mais recente na nuvem GitHub...', 'info');
+      await loadCatalogData(true);
+      renderCurrentStory();
     });
 
     const fileInput = document.getElementById('input-import-json');
@@ -270,7 +382,6 @@
             catalogState.historinhas = convertLegacyCatalogToHistorinhas(parsed);
           }
           currentStoryIndex = 0;
-          saveState(false);
           renderCurrentStory();
           showToast(`Catálogo ${file.name} importado com sucesso!`, 'success');
         } catch (err) {
@@ -285,26 +396,14 @@
   }
 
   function initFooterEvents() {
-    document.getElementById('btn-salvar-tema').addEventListener('click', () => {
+    document.getElementById('btn-salvar-tema').addEventListener('click', async () => {
       syncCurrentStoryFromInputs();
-      saveState(true);
+      await saveCatalogData(false);
     });
 
-    document.getElementById('btn-publicar-tema').addEventListener('click', () => {
+    document.getElementById('btn-publicar-tema').addEventListener('click', async () => {
       syncCurrentStoryFromInputs();
-      // Incrementar versão global
-      let cur = catalogState.catalogVersion || 'v3.001';
-      const m = cur.match(/^v(\d+)\.(\d+)$/);
-      if (m) {
-        const major = parseInt(m[1], 10);
-        const minor = parseInt(m[2], 10) + 1;
-        catalogState.catalogVersion = `v${major}.${String(minor).padStart(3, '0')}`;
-        catalogState.versionCode = (major * 1000) + minor;
-      }
-      saveState(false);
-      exportCatalogJson();
-      document.getElementById('global-version-display').textContent = catalogState.catalogVersion;
-      showToast(`Historinha publicada! Versão atualizada para ${catalogState.catalogVersion}`, 'success');
+      await saveCatalogData(true);
     });
 
     document.getElementById('btn-excluir-tema').addEventListener('click', () => {
@@ -316,21 +415,21 @@
       if (confirm(`Tem certeza de que deseja excluir "${story.titulo}"?`)) {
         catalogState.historinhas.splice(currentStoryIndex, 1);
         currentStoryIndex = Math.max(0, currentStoryIndex - 1);
-        saveState(false);
         renderCurrentStory();
+        saveCatalogData(false);
         showToast('Historinha removida.', 'info');
       }
     });
 
-    // Seção de botões de adicionar
+    // Botões de adição de blocos
     document.getElementById('btn-add-conto').addEventListener('click', addNewConto);
-    document.getElementById('btn-add-treck').addEventListener('click', addNewTreck);
     document.getElementById('btn-add-musica').addEventListener('click', addNewMusica);
+    document.getElementById('btn-add-treck').addEventListener('click', addNewTreck);
     document.getElementById('btn-add-desafio').addEventListener('click', addNewDesafio);
     document.getElementById('btn-add-livrinho').addEventListener('click', addNewLivrinho);
     document.getElementById('btn-add-bobie').addEventListener('click', addNewBobie);
 
-    // Edição do título no topo
+    // Título no topo
     const titleInput = document.getElementById('story-title-input');
     titleInput.addEventListener('input', () => {
       getCurrentStory().titulo = titleInput.value;
@@ -341,7 +440,6 @@
     ['home', 'escola', 'clinica', 'premium'].forEach(lic => {
       document.getElementById(`lic-${lic}`).addEventListener('change', (e) => {
         getCurrentStory().licencas[lic] = e.target.checked;
-        saveState(false);
       });
     });
   }
@@ -366,12 +464,11 @@
   }
 
   // ==========================================================================
-  // RENDERIZAÇÃO DA HISTORINHA ATUAL (FIEL AO MOCKUP)
+  // RENDERIZAÇÃO DA HISTORINHA
   // ==========================================================================
   function renderCurrentStory() {
     const story = getCurrentStory();
 
-    // 1. Topo: Título, Eixo e Licenças
     document.getElementById('story-title-input').value = story.titulo || '';
     document.getElementById('eixo-selector').value = story.eixoId || 'eixo-03';
     document.getElementById('global-version-display').textContent = catalogState.catalogVersion || 'v3.001';
@@ -384,275 +481,304 @@
 
     updateStorySelectorDisplay();
 
-    // 2. Renderizar Contos
     renderContosSection(story);
-
-    // 3. Renderizar Treck-Treck
+    renderMusicasSection(story); // Músicas agora têm exatamente a mesma estrutura do Conto!
     renderTrecksSection(story);
-
-    // 4. Renderizar Músicas
-    renderMusicasSection(story);
-
-    // 5. Renderizar Desafios
     renderDesafiosSection(story);
-
-    // 6. Renderizar Livrinhos
     renderLivrinhosSection(story);
-
-    // 7. Renderizar Bobie Gods
     renderBobiesSection(story);
   }
 
   // ==========================================================================
-  // SEÇÃO 1: CONTOS (WAVEFORM + ROTEIRO + CARD VINCULADO)
+  // SEÇÃO 1: CONTOS
   // ==========================================================================
   function renderContosSection(story) {
     const container = document.getElementById('contos-container');
     container.innerHTML = '';
 
     (story.contos || []).forEach((conto, idx) => {
-      const card = document.createElement('div');
-      card.className = 'accordion-item-card expanded';
-      card.id = `card-conto-${idx}`;
-
-      const status = getContoStatus(conto);
-      const contoNum = idx + 1;
-
-      card.innerHTML = `
-        <!-- Cabeçalho Sanfonado com Semáforo -->
-        <div class="accordion-header" data-action="toggle-accordion" data-target="card-conto-${idx}">
-          <div class="accordion-title-group">
-            <span class="accordion-title">CONTO ${String(contoNum).padStart(2, '0')} - ${escapeHtml(conto.nomeApp || 'EXEMPLO')}</span>
-            <span class="status-badge-traffic ${status.cls}">${status.icon} ${status.label}</span>
-          </div>
-          <span class="accordion-toggle-arrow">▲</span>
-        </div>
-
-        <div class="accordion-body">
-          <!-- Faixa Vertical Amarela -->
-          <div class="side-vertical-badge">
-            CONTO ${contoNum}
-          </div>
-
-          <div class="accordion-content-inner">
-            
-            <!-- Linha 1: Nome no APP + Selecionar Áudio -->
-            <div class="field-row-horizontal">
-              <label class="field-label-inline">Nome no APP</label>
-              <input type="text" class="field-input-clean" value="${escapeHtml(conto.nomeApp || '')}" placeholder="Nome do conto..." data-idx="${idx}" data-field="nomeApp">
-              <button type="button" class="btn-mockup-mustard" data-idx="${idx}" data-action="upload-audio-conto">Selecionar Áudio</button>
-            </div>
-
-            <!-- Linha 2: Player de Áudio Nativo -->
-            <audio controls class="native-audio-player" id="player-conto-${idx}" src="${conto.audioUrl || ''}">
-              Seu navegador não suporta reprodução de áudio.
-            </audio>
-
-            <!-- Linha 3: Arquivo no PET + Numeração Livre -->
-            <div class="field-row-horizontal">
-              <label class="field-label-inline">Arquivo no PET</label>
-              <input type="text" class="field-input-clean field-input-mono" value="${escapeHtml(conto.arquivoPet || getNextAudioFileName(idx))}" placeholder="A0001.WAV" data-idx="${idx}" data-field="arquivoPet" ${conto.arquivoPetManual ? '' : 'readonly'}>
-              <button type="button" class="btn-mockup-mustard" data-idx="${idx}" data-action="toggle-manual-number" title="Alternar entre numeração automática e edição livre">
-                ${conto.arquivoPetManual ? 'Travar Auto' : 'numeração livre'}
-              </button>
-            </div>
-
-            <!-- Linha 4: Roteiro do Áudio + Gerar Voz IA (ElevenLabs / F5-TTS) -->
-            <div class="sub-accordion-box">
-              <div class="sub-accordion-header">
-                <span class="sub-header-title">Roteiro do Áudio ▲</span>
-                <button type="button" class="btn-mockup-mustard" data-idx="${idx}" data-action="gerar-voz-ia">
-                  🎙️ Gerar Voz do FEFO (IA)
-                </button>
-              </div>
-              <textarea class="textarea-roteiro" placeholder="Digite ou edite aqui o roteiro falado pelo FEFO para este áudio..." data-idx="${idx}" data-field="roteiro">${escapeHtml(conto.roteiro || '')}</textarea>
-            </div>
-
-            <!-- Linha 5: Ajusta/Cortar com Waveform Neon -->
-            <div class="sub-accordion-box">
-              <div class="sub-header-title" style="margin-bottom: 0.65rem;">Ajusta/Cortar ▲</div>
-              <div class="waveform-tool-box">
-                <div class="waveform-canvas-container">
-                  <canvas id="canvas-conto-${idx}" class="waveform-canvas"></canvas>
-                </div>
-                <div class="trimmer-controls-row">
-                  <div class="trimmer-param-chip">Fade In: <span class="val" id="val-fadein-${idx}">${(conto.trimmer?.fadeIn || 0.2).toFixed(2)}s</span></div>
-                  <div class="trimmer-param-chip">Início: <input type="number" step="0.05" value="${(conto.trimmer?.inicio || 0).toFixed(2)}" data-idx="${idx}" data-trim="inicio" id="input-inicio-${idx}"></div>
-                  <div class="trimmer-param-chip">Fim: <input type="number" step="0.05" value="${(conto.trimmer?.fim || 10).toFixed(2)}" data-idx="${idx}" data-trim="fim" id="input-fim-${idx}"></div>
-                  <div class="trimmer-param-chip">Fade Out: <span class="val" id="val-fadeout-${idx}">${(conto.trimmer?.fadeOut || 0.2).toFixed(2)}s</span></div>
-                  <div class="trimmer-param-chip">Duração: <span class="val" id="val-duracao-${idx}">${(conto.trimmer?.duracao || 10).toFixed(2)}s</span></div>
-                </div>
-                <div class="trimmer-buttons-row">
-                  <button type="button" class="btn-trim-secondary" data-idx="${idx}" data-action="ouvir-trecho">▶ Ouvir Trecho</button>
-                  <button type="button" class="btn-trim-secondary" data-idx="${idx}" data-action="redefinir-corte">Redefinir Tudo</button>
-                  <button type="button" class="btn-trim-secondary" data-idx="${idx}" data-action="baixar-mp3">Baixar MP3</button>
-                  <button type="button" class="btn-trim-apply" data-idx="${idx}" data-action="aplicar-corte">Aplicar Corte</button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Linha 6: CARD Vinculado -->
-            <div class="sub-accordion-box">
-              <div class="sub-header-title" style="margin-bottom: 0.65rem;">CARD Vinculado ▲</div>
-              <div class="card-linked-box">
-                <div class="card-preview-thumbnail">
-                  ${conto.cardVinculado?.imagemUrl 
-                    ? `<img src="${conto.cardVinculado.imagemUrl}" alt="Preview do Card">` 
-                    : `<span class="card-preview-placeholder">🎴</span>`
-                  }
-                </div>
-                <div class="card-fields-col">
-                  <div class="field-row-horizontal">
-                    <label class="field-label-inline">Nome no Catálogo</label>
-                    <input type="text" class="field-input-clean" value="${escapeHtml(conto.cardVinculado?.nome || '')}" placeholder="CARD XXXX" data-idx="${idx}" data-field="card-nome">
-                    <button type="button" class="btn-mockup-mustard" data-idx="${idx}" data-action="upload-img-card">Selecionar Card PNG ou JPEG</button>
-                  </div>
-                  <div class="field-row-horizontal">
-                    <label class="field-label-inline">Comando no Pet</label>
-                    <input type="text" class="field-input-clean field-input-mono" value="${escapeHtml(conto.cardVinculado?.comandoPet || `CARD${String(idx+1).padStart(4, '0')}`)}" placeholder="CARD0001" data-idx="${idx}" data-field="card-comando">
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Ações: Botão Confirmar Verde e Lixeira Vermelha -->
-            <div class="item-actions-corner">
-              <button type="button" class="btn-action-circle check" data-idx="${idx}" data-action="save-conto-item" title="Confirmar Conto">✔</button>
-              <button type="button" class="btn-action-circle delete" data-idx="${idx}" data-action="delete-conto-item" title="Excluir Conto">🗑</button>
-            </div>
-
-          </div>
-        </div>
-      `;
-
+      const card = createAudioModuleCard({
+        type: 'CONTO',
+        typeColor: '#D97706',
+        sideBg: '#FEF3C7',
+        item: conto,
+        idx,
+        defaultFilePrefix: 'A',
+        onUploadAudio: () => {
+          promptFileUpload('audio/*', async (file, dataUrl) => {
+            conto.audioUrl = dataUrl;
+            conto.status = 'raw';
+            await loadBufferForModule(conto, file);
+            renderContosSection(getCurrentStory());
+            showToast(`Áudio do Conto ${idx + 1} carregado!`, 'success');
+          });
+        },
+        onDelete: () => {
+          if (confirm(`Remover Conto ${idx + 1}?`)) {
+            story.contos.splice(idx, 1);
+            renderContosSection(story);
+          }
+        },
+        onUpdate: () => renderContosSection(story)
+      });
       container.appendChild(card);
-      initContoEvents(card, idx, conto);
-      drawWaveform(document.getElementById(`canvas-conto-${idx}`), conto.audioBuffer);
     });
   }
 
-  function getContoStatus(conto) {
-    if (!conto.audioUrl && !conto.audioBuffer) {
-      return { cls: 'empty', icon: '🔴', label: 'Sem Áudio' };
-    }
-    if (conto.status === 'ready') {
-      return { cls: 'ready', icon: '🟢', label: 'Pronto' };
-    }
-    return { cls: 'raw', icon: '🟡', label: 'Áudio Bruto' };
+  // ==========================================================================
+  // SEÇÃO 2: MÚSICAS (COM OS MESMOS ELEMENTOS DO CONTO!)
+  // ==========================================================================
+  function renderMusicasSection(story) {
+    const container = document.getElementById('musicas-container');
+    container.innerHTML = '';
+
+    (story.musicas || []).forEach((musica, idx) => {
+      const card = createAudioModuleCard({
+        type: 'MÚSICA',
+        typeColor: '#2563EB',
+        sideBg: '#EFF6FF',
+        item: musica,
+        idx,
+        defaultFilePrefix: 'M',
+        onUploadAudio: () => {
+          promptFileUpload('audio/*', async (file, dataUrl) => {
+            musica.audioUrl = dataUrl;
+            musica.status = 'raw';
+            await loadBufferForModule(musica, file);
+            renderMusicasSection(getCurrentStory());
+            showToast(`Áudio da Música ${idx + 1} carregado!`, 'success');
+          });
+        },
+        onDelete: () => {
+          if (confirm(`Remover Música ${idx + 1}?`)) {
+            story.musicas.splice(idx, 1);
+            renderMusicasSection(story);
+          }
+        },
+        onUpdate: () => renderMusicasSection(story)
+      });
+      container.appendChild(card);
+    });
   }
 
-  function getNextAudioFileName(idx) {
-    return `A${String(idx + 1).padStart(4, '0')}.WAV`;
-  }
+  // ==========================================================================
+  // FÁBRICA DE MÓDULOS DE ÁUDIO (USADA POR CONTOS E MÚSICAS COM IDENTIDADE IGUAL)
+  // ==========================================================================
+  function createAudioModuleCard({ type, typeColor, sideBg, item, idx, defaultFilePrefix, onUploadAudio, onDelete, onUpdate }) {
+    const card = document.createElement('div');
+    card.className = 'accordion-item-card expanded';
+    card.id = `card-${type.toLowerCase()}-${idx}`;
 
-  function initContoEvents(card, idx, conto) {
-    // Acordeão
+    const num = idx + 1;
+    const status = getModuleStatus(item);
+    const petFile = item.arquivoPet || `${defaultFilePrefix}${String(num).padStart(4, '0')}.WAV`;
+
+    card.innerHTML = `
+      <div class="accordion-header" data-action="toggle-accordion">
+        <div class="accordion-title-group">
+          <span class="accordion-title">${type} ${String(num).padStart(2, '0')} - ${escapeHtml(item.nomeApp || 'EXEMPLO')}</span>
+          <span class="status-badge-traffic ${status.cls}">${status.icon} ${status.label}</span>
+        </div>
+        <span class="accordion-toggle-arrow">▲</span>
+      </div>
+
+      <div class="accordion-body">
+        <div class="side-vertical-badge" style="background-color: ${sideBg}; color: ${typeColor};">
+          ${type} ${num}
+        </div>
+
+        <div class="accordion-content-inner">
+          <!-- Linha 1: Nome no APP + Selecionar Áudio -->
+          <div class="field-row-horizontal">
+            <label class="field-label-inline">Nome no APP</label>
+            <input type="text" class="field-input-clean" value="${escapeHtml(item.nomeApp || '')}" placeholder="Nome ${type.toLowerCase()}..." data-field="nomeApp">
+            <button type="button" class="btn-mockup-mustard" data-action="upload-audio">Selecionar Áudio</button>
+          </div>
+
+          <!-- Linha 2: Player de Áudio Nativo -->
+          <audio controls class="native-audio-player" id="player-${type.toLowerCase()}-${idx}" src="${item.audioUrl || ''}">
+            Seu navegador não suporta reprodução de áudio.
+          </audio>
+
+          <!-- Linha 3: Arquivo no PET + Numeração Livre -->
+          <div class="field-row-horizontal">
+            <label class="field-label-inline">Arquivo no PET</label>
+            <input type="text" class="field-input-clean field-input-mono" value="${escapeHtml(petFile)}" placeholder="${defaultFilePrefix}0001.WAV" data-field="arquivoPet" ${item.arquivoPetManual ? '' : 'readonly'}>
+            <button type="button" class="btn-mockup-mustard" data-action="toggle-manual-number">
+              ${item.arquivoPetManual ? 'Travar Auto' : 'numeração livre'}
+            </button>
+          </div>
+
+          <!-- Linha 4: Roteiro / Letra + Botão IA -->
+          <div class="sub-accordion-box">
+            <div class="sub-accordion-header">
+              <span class="sub-header-title">Texto / Roteiro (${type}) ▲</span>
+              <button type="button" class="btn-mockup-mustard" data-action="gerar-voz-ia">
+                🎙️ Gerar Voz do FEFO (IA)
+              </button>
+            </div>
+            <textarea class="textarea-roteiro" placeholder="Digite ou edite aqui o roteiro falado pelo FEFO para este áudio..." data-field="roteiro">${escapeHtml(item.roteiro || '')}</textarea>
+          </div>
+
+          <!-- Linha 5: Ajusta/Cortar com Waveform Neon -->
+          <div class="sub-accordion-box">
+            <div class="sub-header-title" style="margin-bottom: 0.65rem;">Ajusta/Cortar ▲</div>
+            <div class="waveform-tool-box">
+              <div class="waveform-canvas-container">
+                <canvas id="canvas-${type.toLowerCase()}-${idx}" class="waveform-canvas"></canvas>
+              </div>
+              <div class="trimmer-controls-row">
+                <div class="trimmer-param-chip">Fade In: <span class="val">${(item.trimmer?.fadeIn || 0.2).toFixed(2)}s</span></div>
+                <div class="trimmer-param-chip">Início: <input type="number" step="0.05" value="${(item.trimmer?.inicio || 0).toFixed(2)}" data-trim="inicio"></div>
+                <div class="trimmer-param-chip">Fim: <input type="number" step="0.05" value="${(item.trimmer?.fim || 30).toFixed(2)}" data-trim="fim"></div>
+                <div class="trimmer-param-chip">Fade Out: <span class="val">${(item.trimmer?.fadeOut || 0.2).toFixed(2)}s</span></div>
+                <div class="trimmer-param-chip">Duração: <span class="val">${(item.trimmer?.duracao || 30).toFixed(2)}s</span></div>
+              </div>
+              <div class="trimmer-buttons-row">
+                <button type="button" class="btn-trim-secondary" data-action="ouvir-trecho">▶ Ouvir Trecho</button>
+                <button type="button" class="btn-trim-secondary" data-action="redefinir-corte">Redefinir Tudo</button>
+                <button type="button" class="btn-trim-secondary" data-action="baixar-mp3">Baixar MP3</button>
+                <button type="button" class="btn-trim-apply" data-action="aplicar-corte">Aplicar Corte</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Linha 6: CARD Vinculado -->
+          <div class="sub-accordion-box">
+            <div class="sub-header-title" style="margin-bottom: 0.65rem;">CARD Vinculado ▲</div>
+            <div class="card-linked-box">
+              <div class="card-preview-thumbnail">
+                ${item.cardVinculado?.imagemUrl 
+                  ? `<img src="${item.cardVinculado.imagemUrl}" alt="Preview do Card">` 
+                  : `<span class="card-preview-placeholder">🎴</span>`
+                }
+              </div>
+              <div class="card-fields-col">
+                <div class="field-row-horizontal">
+                  <label class="field-label-inline">Nome no Catálogo</label>
+                  <input type="text" class="field-input-clean" value="${escapeHtml(item.cardVinculado?.nome || '')}" placeholder="CARD XXXX" data-field="card-nome">
+                  <button type="button" class="btn-mockup-mustard" data-action="upload-img-card">Selecionar Card PNG ou JPEG</button>
+                </div>
+                <div class="field-row-horizontal">
+                  <label class="field-label-inline">Comando no Pet</label>
+                  <input type="text" class="field-input-clean field-input-mono" value="${escapeHtml(item.cardVinculado?.comandoPet || `CARD${String(num).padStart(4, '0')}`)}" placeholder="CARD0001" data-field="card-comando">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ações Confirmar / Lixeira -->
+          <div class="item-actions-corner">
+            <button type="button" class="btn-action-circle check" data-action="save-item" title="Confirmar">✔</button>
+            <button type="button" class="btn-action-circle delete" data-action="delete-item" title="Excluir">🗑</button>
+          </div>
+
+        </div>
+      </div>
+    `;
+
+    // Eventos
     card.querySelector('[data-action="toggle-accordion"]').addEventListener('click', () => {
       card.classList.toggle('expanded');
       card.classList.toggle('collapsed');
     });
 
-    // Inputs de texto
     card.querySelectorAll('input[data-field], textarea[data-field]').forEach(inp => {
       inp.addEventListener('input', (e) => {
         const f = e.target.getAttribute('data-field');
-        if (f === 'card-nome') conto.cardVinculado.nome = e.target.value;
-        else if (f === 'card-comando') conto.cardVinculado.comandoPet = e.target.value;
-        else conto[f] = e.target.value;
-      });
-    });
-
-    // Numeração livre
-    card.querySelector('[data-action="toggle-manual-number"]').addEventListener('click', () => {
-      conto.arquivoPetManual = !conto.arquivoPetManual;
-      renderContosSection(getCurrentStory());
-    });
-
-    // Upload de Áudio
-    card.querySelector('[data-action="upload-audio-conto"]').addEventListener('click', () => {
-      promptFileUpload('audio/*', async (file, dataUrl) => {
-        conto.audioUrl = dataUrl;
-        conto.status = 'raw';
-        const ctx = getAudioContext();
-        try {
-          const ab = await file.arrayBuffer();
-          conto.audioBuffer = await ctx.decodeAudioData(ab);
-          conto.trimmer = {
-            inicio: 0,
-            fim: conto.audioBuffer.duration,
-            fadeIn: 0.1,
-            fadeOut: 0.1,
-            duracao: conto.audioBuffer.duration
-          };
-        } catch (e) {
-          console.warn('Erro ao decodificar áudio:', e);
+        if (f === 'card-nome') {
+          if (!item.cardVinculado) item.cardVinculado = {};
+          item.cardVinculado.nome = e.target.value;
+        } else if (f === 'card-comando') {
+          if (!item.cardVinculado) item.cardVinculado = {};
+          item.cardVinculado.comandoPet = e.target.value;
+        } else {
+          item[f] = e.target.value;
         }
-        renderContosSection(getCurrentStory());
-        showToast(`Áudio do Conto ${idx + 1} carregado!`, 'success');
       });
     });
 
-    // Upload de Imagem do Card
+    card.querySelector('[data-action="toggle-manual-number"]').addEventListener('click', () => {
+      item.arquivoPetManual = !item.arquivoPetManual;
+      onUpdate();
+    });
+
+    card.querySelector('[data-action="upload-audio"]').addEventListener('click', onUploadAudio);
+
     card.querySelector('[data-action="upload-img-card"]').addEventListener('click', () => {
       promptFileUpload('image/png,image/jpeg', (file, dataUrl) => {
-        if (!conto.cardVinculado) conto.cardVinculado = {};
-        conto.cardVinculado.imagemUrl = dataUrl;
-        renderContosSection(getCurrentStory());
-        showToast('Card vinculado atualizado com sucesso!', 'success');
+        if (!item.cardVinculado) item.cardVinculado = {};
+        item.cardVinculado.imagemUrl = dataUrl;
+        onUpdate();
+        showToast(`Imagem do Card vinculada!`, 'success');
       });
     });
 
-    // Gerar Voz IA
     card.querySelector('[data-action="gerar-voz-ia"]').addEventListener('click', () => {
       showToast('API da ElevenLabs sendo configurada para síntese direta!', 'info');
     });
 
-    // Controles Trimmer
     card.querySelector('[data-action="aplicar-corte"]').addEventListener('click', () => {
-      conto.status = 'ready';
-      renderContosSection(getCurrentStory());
+      item.status = 'ready';
+      onUpdate();
       showToast('Corte de áudio aplicado com sucesso! (Status: Pronto 🟢)', 'success');
     });
 
     card.querySelector('[data-action="ouvir-trecho"]').addEventListener('click', () => {
-      playContoTrimmed(conto);
+      const player = document.getElementById(`player-${type.toLowerCase()}-${idx}`);
+      if (!player) return;
+      const start = item.trimmer?.inicio || 0;
+      const end = item.trimmer?.fim || player.duration || 10;
+      player.currentTime = start;
+      player.play();
+      const checkStop = () => {
+        if (player.currentTime >= end) {
+          player.pause();
+          player.removeEventListener('timeupdate', checkStop);
+        }
+      };
+      player.addEventListener('timeupdate', checkStop);
     });
 
-    card.querySelector('[data-action="redefinir-corte"]').addEventListener('click', () => {
-      if (conto.audioBuffer) {
-        conto.trimmer.inicio = 0;
-        conto.trimmer.fim = conto.audioBuffer.duration;
-        conto.trimmer.duracao = conto.audioBuffer.duration;
-      }
-      renderContosSection(getCurrentStory());
+    card.querySelector('[data-action="save-item"]').addEventListener('click', () => {
+      saveCatalogData(false);
     });
 
-    card.querySelector('[data-action="save-conto-item"]').addEventListener('click', () => {
-      saveState(true);
-    });
+    card.querySelector('[data-action="delete-item"]').addEventListener('click', onDelete);
 
-    card.querySelector('[data-action="delete-conto-item"]').addEventListener('click', () => {
-      if (confirm(`Remover Conto ${idx + 1}?`)) {
-        getCurrentStory().contos.splice(idx, 1);
-        renderContosSection(getCurrentStory());
-      }
-    });
+    // Desenhar Waveform no canvas
+    setTimeout(() => {
+      drawWaveform(card.querySelector('canvas'), item.audioBuffer);
+    }, 50);
+
+    return card;
   }
 
-  function playContoTrimmed(conto) {
-    const player = document.getElementById(`player-conto-${getCurrentStory().contos.indexOf(conto)}`);
-    if (!player) return;
-    const start = conto.trimmer?.inicio || 0;
-    const end = conto.trimmer?.fim || player.duration || 10;
-    player.currentTime = start;
-    player.play();
-    const checkStop = () => {
-      if (player.currentTime >= end) {
-        player.pause();
-        player.removeEventListener('timeupdate', checkStop);
-      }
-    };
-    player.addEventListener('timeupdate', checkStop);
+  async function loadBufferForModule(item, file) {
+    const ctx = getAudioContext();
+    try {
+      const ab = await file.arrayBuffer();
+      item.audioBuffer = await ctx.decodeAudioData(ab);
+      item.trimmer = {
+        inicio: 0,
+        fim: item.audioBuffer.duration,
+        fadeIn: 0.1,
+        fadeOut: 0.1,
+        duracao: item.audioBuffer.duration
+      };
+    } catch (e) {
+      console.warn('Erro ao decodificar buffer:', e);
+    }
+  }
+
+  function getModuleStatus(item) {
+    if (!item.audioUrl && !item.audioBuffer) {
+      return { cls: 'empty', icon: '🔴', label: 'Sem Áudio' };
+    }
+    if (item.status === 'ready') {
+      return { cls: 'ready', icon: '🟢', label: 'Pronto' };
+    }
+    return { cls: 'raw', icon: '🟡', label: 'Áudio Bruto' };
   }
 
   function addNewConto() {
@@ -662,7 +788,7 @@
     story.contos.push({
       id: `conto_${Date.now()}`,
       nomeApp: `PARTE ${num}`,
-      arquivoPet: getNextAudioFileName(num - 1),
+      arquivoPet: `A${String(num).padStart(4, '0')}.WAV`,
       arquivoPetManual: false,
       audioUrl: "",
       roteiro: "",
@@ -678,8 +804,31 @@
     showToast(`Conto ${num} adicionado!`, 'success');
   }
 
+  function addNewMusica() {
+    const story = getCurrentStory();
+    if (!story.musicas) story.musicas = [];
+    const num = story.musicas.length + 1;
+    story.musicas.push({
+      id: `mus_${Date.now()}`,
+      nomeApp: `MÚSICA ${num}`,
+      arquivoPet: `M${String(num).padStart(4, '0')}.WAV`,
+      arquivoPetManual: false,
+      audioUrl: "",
+      roteiro: "",
+      trimmer: { inicio: 0, fim: 45, fadeIn: 0.2, fadeOut: 0.2, duracao: 45 },
+      status: "empty",
+      cardVinculado: {
+        nome: `CARD MÚSICA ${num}`,
+        comandoPet: `CARD${String(num + 10).padStart(4, '0')}`,
+        imagemUrl: ""
+      }
+    });
+    renderMusicasSection(story);
+    showToast(`Música ${num} adicionada com waveform e card!`, 'success');
+  }
+
   // ==========================================================================
-  // SEÇÃO 2: TRECK-TRECK (PADRONIZADA)
+  // SEÇÃO 3: TRECK-TRECK
   // ==========================================================================
   function renderTrecksSection(story) {
     const container = document.getElementById('trecks-container');
@@ -691,7 +840,7 @@
       card.id = `card-treck-${idx}`;
 
       card.innerHTML = `
-        <div class="accordion-header" data-action="toggle-accordion" data-target="card-treck-${idx}">
+        <div class="accordion-header" data-action="toggle-accordion">
           <div class="accordion-title-group">
             <span class="accordion-title">TRECK-TRECK ${idx + 1} - ${escapeHtml(trk.nomeAcao || 'AÇÃO MECÂNICA')}</span>
             <span class="status-badge-traffic ${trk.audioUrl ? 'ready' : 'empty'}">${trk.audioUrl ? '🟢 Configurado' : '🔴 Sem Áudio'}</span>
@@ -706,51 +855,48 @@
           <div class="accordion-content-inner">
             <div class="field-row-horizontal">
               <label class="field-label-inline">Nome da Ação</label>
-              <input type="text" class="field-input-clean" value="${escapeHtml(trk.nomeAcao || '')}" placeholder="Alongamento do Bichinho..." data-idx="${idx}" data-treck-field="nomeAcao">
-              <button type="button" class="btn-mockup-mustard" data-idx="${idx}" data-action="upload-treck-audio">Selecionar Áudio</button>
+              <input type="text" class="field-input-clean" value="${escapeHtml(trk.nomeAcao || '')}" placeholder="Alongamento do Bichinho..." data-treck-field="nomeAcao">
+              <button type="button" class="btn-mockup-mustard" data-action="upload-treck-audio">Selecionar Áudio</button>
             </div>
             <div class="field-row-horizontal">
               <label class="field-label-inline">Arquivo no PET</label>
-              <input type="text" class="field-input-clean field-input-mono" value="${escapeHtml(trk.arquivoPet || `TRK${String(idx+1).padStart(4, '0')}.WAV`)}" data-idx="${idx}" data-treck-field="arquivoPet">
+              <input type="text" class="field-input-clean field-input-mono" value="${escapeHtml(trk.arquivoPet || `TRK${String(idx+1).padStart(4, '0')}.WAV`)}" data-treck-field="arquivoPet">
               <label class="field-label-inline">Duração (seg)</label>
-              <input type="number" class="field-input-clean" style="max-width: 90px;" value="${trk.duracaoSegundos || 90}" data-idx="${idx}" data-treck-field="duracaoSegundos">
+              <input type="number" class="field-input-clean" style="max-width: 90px;" value="${trk.duracaoSegundos || 90}" data-treck-field="duracaoSegundos">
             </div>
             <div class="sub-accordion-box">
               <span class="sub-header-title">Instrução Mecânica e Tátil do Robô</span>
-              <textarea class="textarea-roteiro" placeholder="Descreva a atividade física e o movimento esperado da engrenagem do FEFO..." data-idx="${idx}" data-treck-field="instrucao">${escapeHtml(trk.instrucao || '')}</textarea>
+              <textarea class="textarea-roteiro" placeholder="Descreva a atividade física e o movimento esperado da engrenagem do FEFO..." data-treck-field="instrucao">${escapeHtml(trk.instrucao || '')}</textarea>
             </div>
             <div class="item-actions-corner">
-              <button type="button" class="btn-action-circle delete" data-idx="${idx}" data-action="delete-treck-item">🗑</button>
+              <button type="button" class="btn-action-circle delete" data-action="delete-treck-item">🗑</button>
             </div>
           </div>
         </div>
       `;
 
-      container.appendChild(card);
-      initTreckEvents(card, idx, trk);
-    });
-  }
-
-  function initTreckEvents(card, idx, trk) {
-    card.querySelector('[data-action="toggle-accordion"]').addEventListener('click', () => {
-      card.classList.toggle('expanded');
-      card.classList.toggle('collapsed');
-    });
-    card.querySelectorAll('[data-treck-field]').forEach(inp => {
-      inp.addEventListener('input', (e) => {
-        trk[e.target.getAttribute('data-treck-field')] = e.target.value;
+      card.querySelector('[data-action="toggle-accordion"]').addEventListener('click', () => {
+        card.classList.toggle('expanded');
+        card.classList.toggle('collapsed');
       });
-    });
-    card.querySelector('[data-action="upload-treck-audio"]').addEventListener('click', () => {
-      promptFileUpload('audio/*', (f, dataUrl) => {
-        trk.audioUrl = dataUrl;
+      card.querySelectorAll('[data-treck-field]').forEach(inp => {
+        inp.addEventListener('input', (e) => {
+          trk[e.target.getAttribute('data-treck-field')] = e.target.value;
+        });
+      });
+      card.querySelector('[data-action="upload-treck-audio"]').addEventListener('click', () => {
+        promptFileUpload('audio/*', (f, dataUrl) => {
+          trk.audioUrl = dataUrl;
+          renderTrecksSection(getCurrentStory());
+          showToast('Áudio do Treck-Treck adicionado!', 'success');
+        });
+      });
+      card.querySelector('[data-action="delete-treck-item"]').addEventListener('click', () => {
+        getCurrentStory().trecks.splice(idx, 1);
         renderTrecksSection(getCurrentStory());
-        showToast('Áudio do Treck-Treck adicionado!', 'success');
       });
-    });
-    card.querySelector('[data-action="delete-treck-item"]').addEventListener('click', () => {
-      getCurrentStory().trecks.splice(idx, 1);
-      renderTrecksSection(getCurrentStory());
+
+      container.appendChild(card);
     });
   }
 
@@ -768,85 +914,6 @@
   }
 
   // ==========================================================================
-  // SEÇÃO 3: MÚSICAS & MINDFULNESS
-  // ==========================================================================
-  function renderMusicasSection(story) {
-    const container = document.getElementById('musicas-container');
-    container.innerHTML = '';
-
-    (story.musicas || []).forEach((m, idx) => {
-      const card = document.createElement('div');
-      card.className = 'accordion-item-card expanded';
-      card.id = `card-musica-${idx}`;
-
-      card.innerHTML = `
-        <div class="accordion-header" data-action="toggle-accordion" data-target="card-musica-${idx}">
-          <div class="accordion-title-group">
-            <span class="accordion-title">MÚSICA ${idx + 1} - ${escapeHtml(m.titulo || 'FAIXA')}</span>
-            <span class="status-badge-traffic ${m.audioUrl ? 'ready' : 'empty'}">${m.audioUrl ? '🟢 Pronta' : '🔴 Sem Áudio'}</span>
-          </div>
-          <span class="accordion-toggle-arrow">▲</span>
-        </div>
-        <div class="accordion-body">
-          <div class="side-vertical-badge" style="background-color: #EFF6FF; color: #2563EB; border-color: #BFDBFE;">
-            MÚSICA ${idx + 1}
-          </div>
-          <div class="accordion-content-inner">
-            <div class="field-row-horizontal">
-              <label class="field-label-inline">Título da Música</label>
-              <input type="text" class="field-input-clean" value="${escapeHtml(m.titulo || '')}" placeholder="Nome da música..." data-idx="${idx}" data-mus-field="titulo">
-              <button type="button" class="btn-mockup-mustard" data-idx="${idx}" data-action="upload-musica-audio">Selecionar Áudio</button>
-            </div>
-            <div class="field-row-horizontal">
-              <label class="field-label-inline">Arquivo no PET</label>
-              <input type="text" class="field-input-clean field-input-mono" value="${escapeHtml(m.arquivoPet || `M${String(idx+1).padStart(4, '0')}.WAV`)}" data-idx="${idx}" data-mus-field="arquivoPet">
-            </div>
-            <div class="item-actions-corner">
-              <button type="button" class="btn-action-circle delete" data-idx="${idx}" data-action="delete-musica-item">🗑</button>
-            </div>
-          </div>
-        </div>
-      `;
-      container.appendChild(card);
-      initMusicaEvents(card, idx, m);
-    });
-  }
-
-  function initMusicaEvents(card, idx, m) {
-    card.querySelector('[data-action="toggle-accordion"]').addEventListener('click', () => {
-      card.classList.toggle('expanded');
-      card.classList.toggle('collapsed');
-    });
-    card.querySelectorAll('[data-mus-field]').forEach(inp => {
-      inp.addEventListener('input', (e) => {
-        m[e.target.getAttribute('data-mus-field')] = e.target.value;
-      });
-    });
-    card.querySelector('[data-action="upload-musica-audio"]').addEventListener('click', () => {
-      promptFileUpload('audio/*', (f, dataUrl) => {
-        m.audioUrl = dataUrl;
-        renderMusicasSection(getCurrentStory());
-        showToast('Áudio da Música carregado!', 'success');
-      });
-    });
-    card.querySelector('[data-action="delete-musica-item"]').addEventListener('click', () => {
-      getCurrentStory().musicas.splice(idx, 1);
-      renderMusicasSection(getCurrentStory());
-    });
-  }
-
-  function addNewMusica() {
-    const story = getCurrentStory();
-    if (!story.musicas) story.musicas = [];
-    story.musicas.push({
-      id: `mus_${Date.now()}`,
-      titulo: "Nova Canção Divertida",
-      arquivoPet: `M${String(story.musicas.length + 1).padStart(4, '0')}.WAV`
-    });
-    renderMusicasSection(story);
-  }
-
-  // ==========================================================================
   // SEÇÃO 4: DESAFIOS & ATIVIDADES INTERATIVAS
   // ==========================================================================
   function renderDesafiosSection(story) {
@@ -859,7 +926,7 @@
       card.id = `card-desafio-${idx}`;
 
       card.innerHTML = `
-        <div class="accordion-header" data-action="toggle-accordion" data-target="card-desafio-${idx}">
+        <div class="accordion-header" data-action="toggle-accordion">
           <div class="accordion-title-group">
             <span class="accordion-title">DESAFIO ${idx + 1} - ${escapeHtml(des.titulo || 'MISSÃO')}</span>
             <span class="status-badge-traffic ready">🟢 Interativo</span>
@@ -873,38 +940,36 @@
           <div class="accordion-content-inner">
             <div class="field-row-horizontal">
               <label class="field-label-inline">Título da Missão</label>
-              <input type="text" class="field-input-clean" value="${escapeHtml(des.titulo || '')}" placeholder="Ex: Onde está o Card do Desjejum?" data-idx="${idx}" data-des-field="titulo">
+              <input type="text" class="field-input-clean" value="${escapeHtml(des.titulo || '')}" placeholder="Ex: Onde está o Card do Desjejum?" data-des-field="titulo">
             </div>
             <div class="field-row-horizontal">
               <label class="field-label-inline">Card Esperado</label>
-              <input type="text" class="field-input-clean field-input-mono" value="${escapeHtml(des.cardEsperado || 'CARD0001')}" placeholder="CARD0001" data-idx="${idx}" data-des-field="cardEsperado">
+              <input type="text" class="field-input-clean field-input-mono" value="${escapeHtml(des.cardEsperado || 'CARD0001')}" placeholder="CARD0001" data-des-field="cardEsperado">
               <label class="field-label-inline">Áudio Pergunta</label>
-              <input type="text" class="field-input-clean field-input-mono" value="${escapeHtml(des.audioPergunta || 'A0002.WAV')}" placeholder="A0002.WAV" data-idx="${idx}" data-des-field="audioPergunta">
+              <input type="text" class="field-input-clean field-input-mono" value="${escapeHtml(des.audioPergunta || 'A0002.WAV')}" placeholder="A0002.WAV" data-des-field="audioPergunta">
             </div>
             <div class="item-actions-corner">
-              <button type="button" class="btn-action-circle delete" data-idx="${idx}" data-action="delete-desafio-item">🗑</button>
+              <button type="button" class="btn-action-circle delete" data-action="delete-desafio-item">🗑</button>
             </div>
           </div>
         </div>
       `;
-      container.appendChild(card);
-      initDesafioEvents(card, idx, des);
-    });
-  }
 
-  function initDesafioEvents(card, idx, des) {
-    card.querySelector('[data-action="toggle-accordion"]').addEventListener('click', () => {
-      card.classList.toggle('expanded');
-      card.classList.toggle('collapsed');
-    });
-    card.querySelectorAll('[data-des-field]').forEach(inp => {
-      inp.addEventListener('input', (e) => {
-        des[e.target.getAttribute('data-des-field')] = e.target.value;
+      card.querySelector('[data-action="toggle-accordion"]').addEventListener('click', () => {
+        card.classList.toggle('expanded');
+        card.classList.toggle('collapsed');
       });
-    });
-    card.querySelector('[data-action="delete-desafio-item"]').addEventListener('click', () => {
-      getCurrentStory().desafios.splice(idx, 1);
-      renderDesafiosSection(getCurrentStory());
+      card.querySelectorAll('[data-des-field]').forEach(inp => {
+        inp.addEventListener('input', (e) => {
+          des[e.target.getAttribute('data-des-field')] = e.target.value;
+        });
+      });
+      card.querySelector('[data-action="delete-desafio-item"]').addEventListener('click', () => {
+        getCurrentStory().desafios.splice(idx, 1);
+        renderDesafiosSection(getCurrentStory());
+      });
+
+      container.appendChild(card);
     });
   }
 
@@ -933,7 +998,7 @@
       card.id = `card-livro-${idx}`;
 
       card.innerHTML = `
-        <div class="accordion-header" data-action="toggle-accordion" data-target="card-livro-${idx}">
+        <div class="accordion-header" data-action="toggle-accordion">
           <div class="accordion-title-group">
             <span class="accordion-title">LIVRINHO ${String(idx + 1).padStart(2, '0')} - ${escapeHtml(livro.nome || 'EXEMPLO')}</span>
             <span class="status-badge-traffic ${livro.pdfUrl ? 'ready' : 'empty'}">${livro.pdfUrl ? '🟢 PDF Pronto' : '🔴 Sem PDF'}</span>
@@ -948,43 +1013,40 @@
             <div class="pdf-fields-col">
               <div class="field-row-horizontal">
                 <label class="field-label-inline">Nome no Catálogo</label>
-                <input type="text" class="field-input-clean" value="${escapeHtml(livro.nome || '')}" placeholder="AVENTURAS DO FEFO" data-idx="${idx}" data-livro-field="nome">
-                <button type="button" class="btn-mockup-mustard" data-idx="${idx}" data-action="upload-livro-pdf">Selecionar PDF</button>
+                <input type="text" class="field-input-clean" value="${escapeHtml(livro.nome || '')}" placeholder="AVENTURAS DO FEFO" data-livro-field="nome">
+                <button type="button" class="btn-mockup-mustard" data-action="upload-livro-pdf">Selecionar PDF</button>
               </div>
             </div>
             <div class="item-actions-corner">
               <button type="button" class="btn-action-circle check" data-action="save-livro">✔</button>
-              <button type="button" class="btn-action-circle delete" data-idx="${idx}" data-action="delete-livro">🗑</button>
+              <button type="button" class="btn-action-circle delete" data-action="delete-livro">🗑</button>
             </div>
           </div>
         </div>
       `;
 
-      container.appendChild(card);
-      initLivroEvents(card, idx, livro);
-    });
-  }
-
-  function initLivroEvents(card, idx, livro) {
-    card.querySelector('[data-action="toggle-accordion"]').addEventListener('click', () => {
-      card.classList.toggle('expanded');
-      card.classList.toggle('collapsed');
-    });
-    card.querySelector('input[data-livro-field="nome"]').addEventListener('input', (e) => {
-      livro.nome = e.target.value;
-    });
-    card.querySelector('[data-action="upload-livro-pdf"]').addEventListener('click', () => {
-      promptFileUpload('application/pdf', (file, dataUrl) => {
-        livro.pdfUrl = dataUrl;
-        livro.nomeArquivo = file.name;
-        renderLivrinhosSection(getCurrentStory());
-        showToast(`PDF do Livrinho "${file.name}" carregado!`, 'success');
+      card.querySelector('[data-action="toggle-accordion"]').addEventListener('click', () => {
+        card.classList.toggle('expanded');
+        card.classList.toggle('collapsed');
       });
-    });
-    card.querySelector('[data-action="save-livro"]').addEventListener('click', () => saveState(true));
-    card.querySelector('[data-action="delete-livro"]').addEventListener('click', () => {
-      getCurrentStory().livrinhos.splice(idx, 1);
-      renderLivrinhosSection(getCurrentStory());
+      card.querySelector('input[data-livro-field="nome"]').addEventListener('input', (e) => {
+        livro.nome = e.target.value;
+      });
+      card.querySelector('[data-action="upload-livro-pdf"]').addEventListener('click', () => {
+        promptFileUpload('application/pdf', (file, dataUrl) => {
+          livro.pdfUrl = dataUrl;
+          livro.nomeArquivo = file.name;
+          renderLivrinhosSection(getCurrentStory());
+          showToast(`PDF do Livrinho "${file.name}" carregado!`, 'success');
+        });
+      });
+      card.querySelector('[data-action="save-livro"]').addEventListener('click', () => saveCatalogData(false));
+      card.querySelector('[data-action="delete-livro"]').addEventListener('click', () => {
+        getCurrentStory().livrinhos.splice(idx, 1);
+        renderLivrinhosSection(getCurrentStory());
+      });
+
+      container.appendChild(card);
     });
   }
 
@@ -1001,7 +1063,7 @@
   }
 
   // ==========================================================================
-  // SEÇÃO 6: BOBIE GODS (PARA COLORIR EM PDF)
+  // SEÇÃO 6: BOBIE GODS
   // ==========================================================================
   function renderBobiesSection(story) {
     const container = document.getElementById('bobies-container');
@@ -1013,7 +1075,7 @@
       card.id = `card-bobie-${idx}`;
 
       card.innerHTML = `
-        <div class="accordion-header" data-action="toggle-accordion" data-target="card-bobie-${idx}">
+        <div class="accordion-header" data-action="toggle-accordion">
           <div class="accordion-title-group">
             <span class="accordion-title">BOBIE GOD ${String(idx + 1).padStart(2, '0')} - ${escapeHtml(bobie.nome || 'EXEMPLO')}</span>
             <span class="status-badge-traffic ${bobie.pdfUrl ? 'ready' : 'empty'}">${bobie.pdfUrl ? '🟢 PDF Pronto' : '🔴 Sem PDF'}</span>
@@ -1028,43 +1090,40 @@
             <div class="pdf-fields-col">
               <div class="field-row-horizontal">
                 <label class="field-label-inline">Nome no Catálogo</label>
-                <input type="text" class="field-input-clean" value="${escapeHtml(bobie.nome || '')}" placeholder="AVENTURAS DO FEFO - COLORIR" data-idx="${idx}" data-bobie-field="nome">
-                <button type="button" class="btn-mockup-mustard" data-idx="${idx}" data-action="upload-bobie-pdf">Selecionar PDF</button>
+                <input type="text" class="field-input-clean" value="${escapeHtml(bobie.nome || '')}" placeholder="AVENTURAS DO FEFO - COLORIR" data-bobie-field="nome">
+                <button type="button" class="btn-mockup-mustard" data-action="upload-bobie-pdf">Selecionar PDF</button>
               </div>
             </div>
             <div class="item-actions-corner">
               <button type="button" class="btn-action-circle check" data-action="save-bobie">✔</button>
-              <button type="button" class="btn-action-circle delete" data-idx="${idx}" data-action="delete-bobie">🗑</button>
+              <button type="button" class="btn-action-circle delete" data-action="delete-bobie">🗑</button>
             </div>
           </div>
         </div>
       `;
 
-      container.appendChild(card);
-      initBobieEvents(card, idx, bobie);
-    });
-  }
-
-  function initBobieEvents(card, idx, bobie) {
-    card.querySelector('[data-action="toggle-accordion"]').addEventListener('click', () => {
-      card.classList.toggle('expanded');
-      card.classList.toggle('collapsed');
-    });
-    card.querySelector('input[data-bobie-field="nome"]').addEventListener('input', (e) => {
-      bobie.nome = e.target.value;
-    });
-    card.querySelector('[data-action="upload-bobie-pdf"]').addEventListener('click', () => {
-      promptFileUpload('application/pdf,image/png,image/jpeg', (file, dataUrl) => {
-        bobie.pdfUrl = dataUrl;
-        bobie.nomeArquivo = file.name;
-        renderBobiesSection(getCurrentStory());
-        showToast(`Bobie God "${file.name}" carregado!`, 'success');
+      card.querySelector('[data-action="toggle-accordion"]').addEventListener('click', () => {
+        card.classList.toggle('expanded');
+        card.classList.toggle('collapsed');
       });
-    });
-    card.querySelector('[data-action="save-bobie"]').addEventListener('click', () => saveState(true));
-    card.querySelector('[data-action="delete-bobie"]').addEventListener('click', () => {
-      getCurrentStory().bobies.splice(idx, 1);
-      renderBobiesSection(getCurrentStory());
+      card.querySelector('input[data-bobie-field="nome"]').addEventListener('input', (e) => {
+        bobie.nome = e.target.value;
+      });
+      card.querySelector('[data-action="upload-bobie-pdf"]').addEventListener('click', () => {
+        promptFileUpload('application/pdf,image/png,image/jpeg', (file, dataUrl) => {
+          bobie.pdfUrl = dataUrl;
+          bobie.nomeArquivo = file.name;
+          renderBobiesSection(getCurrentStory());
+          showToast(`Bobie God "${file.name}" carregado!`, 'success');
+        });
+      });
+      card.querySelector('[data-action="save-bobie"]').addEventListener('click', () => saveCatalogData(false));
+      card.querySelector('[data-action="delete-bobie"]').addEventListener('click', () => {
+        getCurrentStory().bobies.splice(idx, 1);
+        renderBobiesSection(getCurrentStory());
+      });
+
+      container.appendChild(card);
     });
   }
 
@@ -1081,7 +1140,7 @@
   }
 
   // ==========================================================================
-  // RENDERIZAÇÃO DE WAVEFORM NO CANVAS (VERDE LIMÃO NEON)
+  // RENDERIZAÇÃO DE WAVEFORM
   // ==========================================================================
   function drawWaveform(canvas, audioBuffer) {
     if (!canvas) return;
@@ -1095,7 +1154,6 @@
     ctx.fillStyle = '#22C55E';
 
     if (!audioBuffer) {
-      // Onda simulada estética quando ainda não carregou áudio
       const bars = Math.floor(width / 4);
       for (let i = 0; i < bars; i++) {
         const h = Math.sin(i * 0.15) * (height * 0.35) + Math.cos(i * 0.05) * (height * 0.25) + 15;

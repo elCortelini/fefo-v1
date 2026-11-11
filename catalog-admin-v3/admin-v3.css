@@ -173,6 +173,38 @@ body.fefo-theme-v3 {
   border-radius: 999px;
 }
 
+/* Sincronização em Nuvem (GitHub Multi-PC) */
+.gh-sync-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background-color: #064E3B;
+  color: #A7F3D0;
+  border: 1px solid #059669;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.gh-sync-pill:hover {
+  background-color: #065F46;
+  border-color: #10B981;
+}
+
+.btn-cloud-refresh {
+  background-color: #0D9488 !important;
+  color: #FFFFFF !important;
+  border-color: #14B8A6 !important;
+  font-weight: 700 !important;
+}
+
+.btn-cloud-refresh:hover {
+  background-color: #0F766E !important;
+}
+
 /* ==========================================================================
    PRANCHETA PRINCIPAL COM O DEGRADÊ DO MOCKUP
    ========================================================================== */
