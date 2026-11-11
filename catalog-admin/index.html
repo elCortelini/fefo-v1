@@ -26,15 +26,15 @@
 
   <title>Administrador do Catálogo · FEFO Pet</title>
 
-  <link rel="stylesheet" href="admin.css?v=unified-22">
+  <link rel="stylesheet" href="admin.css?v=unified-23">
 
-  <link rel="stylesheet" href="packages.css?v=unified-22">
+  <link rel="stylesheet" href="packages.css?v=unified-23">
 
-  <link rel="stylesheet" href="cards-packs.css?v=unified-22">
+  <link rel="stylesheet" href="cards-packs.css?v=unified-23">
 
-  <link rel="stylesheet" href="audio-editor.css?v=unified-22">
+  <link rel="stylesheet" href="audio-editor.css?v=unified-23">
 
-  <link rel="stylesheet" href="image-editor.css?v=unified-22">
+  <link rel="stylesheet" href="image-editor.css?v=unified-23">
 
 </head>
 
@@ -225,31 +225,17 @@
 
       <div class="card" style="padding: 28px;">
 
-        <div class="packages-toolbar" style="margin-bottom: 24px;">
-
+        <div class="packages-toolbar" style="margin-bottom: 20px;">
           <div>
-
-            <p class="eyebrow">VISUALIZAÇÃO EXCLUSIVA NO APP FEFO</p>
-
-            <h2 style="margin: 0 0 6px; font-size: 26px;">Pacotes de Cards do Fefo</h2>
-
-            <div style="font-size: 13px; color: var(--muted); line-height: 1.4;">
-
-              Cards interativos e terapêuticos (c0001.jpg + áudio vinculado). <strong>Formatados exclusivamente para visualização no App móvel</strong> (o card não é exibido no display do pet).
-
-            </div>
-
+            <h2 style="margin: 0; font-size: 26px;">Pacotes de Cards</h2>
           </div>
 
           <div class="pkg-actions" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
             <button class="btn green" id="btn-save-all-cards" type="button" style="font-size: 14px; padding: 12px 22px; background: #16a34a; color: #fff; font-weight: 600;" onclick="PkgManager.saveAllToRepository(this)">
               💾 Salvar Tudo no Repositório
             </button>
-            <button class="btn secondary" id="btn-reload-remote-cards" type="button" style="font-size: 13px; padding: 12px 16px;" onclick="CardPackManager.reloadFromRemote(this)" title="Recarrega os cards frescos do GitHub e limpa resíduos de pacotes antigos">
+            <button class="btn secondary" id="btn-reload-remote-cards" type="button" style="font-size: 14px; padding: 12px 18px;" onclick="CardPackManager.reloadFromRemote(this)" title="Recarrega os cards frescos do GitHub e limpa resíduos de pacotes antigos">
               🔄 Atualizar da Nuvem
-            </button>
-            <button class="btn secondary" type="button" style="font-size: 13px; padding: 12px 18px;" onclick="PkgManager.openAiVoiceSettings()">
-              🎙️ Configurar Voz IA (F5-TTS)
             </button>
             <button class="btn primary" id="btn-new-card-pack" type="button" style="font-size: 14px; padding: 12px 22px;">
               ＋ Criar Novo Pacote de Cards
@@ -258,13 +244,32 @@
 
         </div>
 
-
+        <!-- Barra de Busca e Filtros Rápidos -->
+        <div class="pkg-filter-bar">
+          <input type="text" id="cards-filter-search" class="pkg-filter-input" 
+                 placeholder="🔍 Filtrar tópicos por nome, palavra-chave ou código (ex: 'emoções', 'alegria', 'c0001')...">
+          <select id="cards-filter-license" class="pkg-filter-select">
+            <option value="all">Todas as Licenças (Home, Clínica, Escola)</option>
+            <option value="home">🏡 Licença Home</option>
+            <option value="clinical">🩺 Licença Clínica</option>
+            <option value="escola">🏫 Licença Escola</option>
+          </select>
+          <select id="cards-filter-category" class="pkg-filter-select">
+            <option value="all">Todas as Categorias</option>
+          </select>
+          <select id="cards-filter-status" class="pkg-filter-select">
+            <option value="all">Todos os Status</option>
+            <option value="needs_trim">🟡 Com Áudio Bruto (Pronto p/ Cortar)</option>
+            <option value="ready">🟢 Cortado / Pronto</option>
+            <option value="pending">🔴 Sem Áudio (Aguardando)</option>
+          </select>
+        </div>
 
         <!-- Rascunhos de Pacotes de Cards -->
         <div style="margin-bottom: 36px;">
           <div class="pkg-section-header">
             <span class="pkg-pin">📌</span>
-            <h3>PACOTES DE CARDS EM RASCUNHO</h3>
+            <h3>PACOTES EM RASCUNHO</h3>
           </div>
           <div id="draft-card-packs-grid" class="packages-grid">
             <div class="empty">Carregando pacotes de cards em rascunho…</div>
@@ -278,7 +283,7 @@
         <div>
           <div class="pkg-section-header">
             <span class="pkg-pin">📌</span>
-            <h3>PACOTES DE CARDS PUBLICADOS</h3>
+            <h3>PACOTES PUBLICADOS</h3>
           </div>
           <div id="published-card-packs-grid" class="packages-grid">
             <div class="empty">Carregando pacotes oficiais de cards…</div>
@@ -443,12 +448,12 @@
 
 
   <script src="lame.min.js"></script>
-  <script src="admin.js?v=fefofinal-v37"></script>
-  <script src="audio-editor.js?v=fefofinal-v37"></script>
-  <script src="image-editor.js?v=fefofinal-v37"></script>
-  <script src="github-sync.js?v=fefofinal-v37"></script>
-  <script src="packages.js?v=fefofinal-v37"></script>
-  <script src="cards-packs.js?v=fefofinal-v37"></script>
+  <script src="admin.js?v=fefofinal-v38"></script>
+  <script src="audio-editor.js?v=fefofinal-v38"></script>
+  <script src="image-editor.js?v=fefofinal-v38"></script>
+  <script src="github-sync.js?v=fefofinal-v38"></script>
+  <script src="packages.js?v=fefofinal-v38"></script>
+  <script src="cards-packs.js?v=fefofinal-v38"></script>
 
 
     <!-- Modal de Configuração da Voz do FEFO (IA) -->

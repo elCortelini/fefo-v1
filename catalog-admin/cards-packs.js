@@ -145,7 +145,11 @@ const CardPackManager = {
     expandedProductionId: null,
     expandedCardIds: new Set(),
     debounceTimers: {},
-    loading: false
+    loading: false,
+    filterSearch: '',
+    filterLicense: 'all',
+    filterCategory: 'all',
+    filterStatus: 'all'
   },
 
   async init() {
@@ -165,6 +169,42 @@ const CardPackManager = {
     });
 
     document.getElementById('btn-new-card-pack')?.addEventListener('click', () => this.createNewCardPack());
+
+    const searchInput = document.getElementById('cards-filter-search');
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        this.state.filterSearch = e.target.value.toLowerCase().trim();
+        this.renderDraftsGrid();
+        this.renderPublishedGrid();
+      });
+    }
+
+    const licSelect = document.getElementById('cards-filter-license');
+    if (licSelect) {
+      licSelect.addEventListener('change', (e) => {
+        this.state.filterLicense = e.target.value;
+        this.renderDraftsGrid();
+        this.renderPublishedGrid();
+      });
+    }
+
+    const catSelect = document.getElementById('cards-filter-category');
+    if (catSelect) {
+      catSelect.addEventListener('change', (e) => {
+        this.state.filterCategory = e.target.value;
+        this.renderDraftsGrid();
+        this.renderPublishedGrid();
+      });
+    }
+
+    const statusSelect = document.getElementById('cards-filter-status');
+    if (statusSelect) {
+      statusSelect.addEventListener('change', (e) => {
+        this.state.filterStatus = e.target.value;
+        this.renderDraftsGrid();
+        this.renderPublishedGrid();
+      });
+    }
   },
 
   escapeHtml(str) {
@@ -316,7 +356,96 @@ const CardPackManager = {
     this.render();
   },
 
+  updateCategories() {
+    const cats = new Set();
+    (this.state.drafts || []).forEach(p => {
+      if (p.categoria) cats.add(p.categoria.trim());
+    });
+    (this.state.published || []).forEach(p => {
+      if (p.categoria) cats.add(p.categoria.trim());
+    });
+
+    const catSelect = document.getElementById('cards-filter-category');
+    if (catSelect) {
+      const currentVal = this.state.filterCategory || 'all';
+      catSelect.innerHTML = '<option value="all">Todas as Categorias</option>';
+      const sortedCats = Array.from(cats).filter(Boolean).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+      sortedCats.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat;
+        opt.textContent = cat;
+        if (cat.toLowerCase() === currentVal.toLowerCase()) opt.selected = true;
+        catSelect.appendChild(opt);
+      });
+    }
+  },
+
+  matchesFilter(pkg) {
+    if (!pkg) return false;
+    const norm = (s) => (s || '').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+    // 1. Filtro de Texto (Pesquisa)
+    const q = norm(this.state.filterSearch);
+    if (q) {
+      const matchTitle = norm(pkg.titulo).includes(q);
+      const matchDesc = norm(pkg.descricao).includes(q);
+      const matchCat = norm(pkg.categoria).includes(q);
+      const matchId = norm(pkg.id).includes(q);
+      const matchCards = (pkg.cards || []).some(c => {
+        return norm(c.titulo).includes(q) ||
+               norm(c.descricao).includes(q) ||
+               norm(c.codigo_acao).includes(q) ||
+               norm(c.arquivo_audio).includes(q) ||
+               norm(c.id).includes(q);
+      });
+      if (!matchTitle && !matchDesc && !matchCat && !matchId && !matchCards) {
+        return false;
+      }
+    }
+
+    // 2. Filtro de Licenca ('all', 'home', 'clinical', 'escola')
+    const lic = (this.state.filterLicense || 'all').toLowerCase();
+    if (lic !== 'all') {
+      const pkgLics = (Array.isArray(pkg.licencas) ? pkg.licencas : []).map(l => (l || '').toLowerCase());
+      if (pkgLics.length > 0 && !pkgLics.includes(lic)) {
+        return false;
+      }
+    }
+
+    // 3. Filtro de Categoria ('all' ou nome da categoria)
+    const cat = (this.state.filterCategory || 'all').trim();
+    if (cat !== 'all') {
+      const pkgCat = (pkg.categoria || '').trim();
+      if (pkgCat.toLowerCase() !== cat.toLowerCase()) {
+        return false;
+      }
+    }
+
+    // 4. Filtro de Status ('all', 'needs_trim', 'ready', 'pending')
+    const status = this.state.filterStatus || 'all';
+    if (status !== 'all') {
+      const cards = pkg.cards || [];
+      if (status === 'needs_trim') {
+        const hasTrim = cards.some(c => c.status === 'needs_trim' || c.status === 'raw');
+        if (!hasTrim) return false;
+      } else if (status === 'ready') {
+        const isReady = cards.length > 0 && cards.every(c => c.status === 'ready' || (c.audio_url && c.status !== 'needs_trim' && c.status !== 'pending'));
+        if (!isReady) return false;
+      } else if (status === 'pending') {
+        const hasPending = cards.some(c => c.status === 'pending' || (!c.audio_url && !c.arquivo_audio));
+        if (!hasPending) return false;
+      }
+    }
+
+    return true;
+  },
+
   render() {
+    try {
+      this.updateCategories();
+    } catch (e) {
+      console.warn('Erro ao atualizar categorias dos cards:', e);
+    }
     this.renderDraftsGrid();
     this.renderPublishedGrid();
   },
@@ -328,10 +457,12 @@ const CardPackManager = {
     const grid = document.getElementById('draft-card-packs-grid');
     if (!grid) return;
 
-    if (!this.state.drafts.length) {
+    const filteredDrafts = (this.state.drafts || []).filter(p => this.matchesFilter(p));
+
+    if (!filteredDrafts.length) {
       grid.innerHTML = `
         <div class="empty">
-          <p>Nenhum rascunho de pacote de cards encontrado.</p>
+          <p>${(this.state.drafts || []).length === 0 ? 'Nenhum rascunho de pacote de cards encontrado.' : 'Nenhum rascunho encontrado com os filtros atuais.'}</p>
           <button class="btn primary" onclick="CardPackManager.createNewCardPack()">＋ Criar Novo Pacote de Cards</button>
         </div>
       `;
@@ -339,7 +470,7 @@ const CardPackManager = {
       return;
     }
 
-    grid.innerHTML = this.state.drafts.map((pkg, idx) => {
+    grid.innerHTML = filteredDrafts.map((pkg, idx) => {
       const isExpanded = this.state.expandedDraftId === pkg.id;
       const numLabel = `PACOTE DE CARDS ${idx + 1}${pkg.titulo ? ` - ${this.escapeHtml(pkg.titulo)}` : ''}`;
 
@@ -500,9 +631,10 @@ const CardPackManager = {
   renderCardItem(packId, c, cIdx, isProduction = false) {
     const isCardOpen = this.state.expandedCardIds && this.state.expandedCardIds.has(c.id);
     const audioUrl = this.resolveUrl(c.audio_url || '');
+    const imgSrc = this.resolveUrl(c.mini_card_img || '');
     const cCode = c.codigo_acao || c.id || `c${String(cIdx + 1).padStart(4, '0')}`;
     const cardTitle = c.titulo || '';
-    const hasImage = Boolean(c.mini_card_img);
+    const hasImage = Boolean(imgSrc);
 
     return `
       <div class="pkg-track-collapsible-item" id="card-item-wrap-${c.id}">
@@ -557,7 +689,7 @@ const CardPackManager = {
                      ondragleave="this.classList.remove('drag-over');"
                      ondrop="CardPackManager.handleCardImageDrop(event, '${packId}', '${c.id}', ${isProduction})">
                   
-                  <img id="card-img-preview-${c.id}" src="${this.escapeHtml(c.mini_card_img || '')}" style="display: ${hasImage ? 'block' : 'none'}; width: 100%; height: 100%; object-fit: cover; border-radius: 10px;" alt="Card">
+                  <img id="card-img-preview-${c.id}" src="${this.escapeHtml(imgSrc)}" style="display: ${hasImage ? 'block' : 'none'}; width: 100%; height: 100%; object-fit: cover; border-radius: 10px;" alt="Card">
                   
                   <div class="card-upload-placeholder" id="card-placeholder-${c.id}" style="display: ${hasImage ? 'none' : 'flex'};">
                     <span class="icon" style="font-size: 28px;">🃏</span>
@@ -644,6 +776,10 @@ const CardPackManager = {
                            value="${this.escapeHtml(cCode)}" 
                            placeholder="c0001" 
                            oninput="CardPackManager.updateCardAction('${packId}', '${c.id}', this.value, ${isProduction})">
+                    <button type="button" class="btn-suggest-name" title="Sugerir próximo código livre de card"
+                            onclick="CardPackManager.suggestNextCardCode('${packId}', '${c.id}', ${isProduction})">
+                      ⚡
+                    </button>
                   </div>
                 </div>
                 <div style="display: flex; gap: 8px; align-items: center;">
@@ -652,12 +788,10 @@ const CardPackManager = {
                           onclick="CardPackManager.saveSingleCardItem('${packId}', '${c.id}', ${isProduction}, this)">
                     Salvar
                   </button>
-                  ${!isProduction ? `
-                    <button type="button" class="pkg-item-delete" title="Remover card"
-                            onclick="CardPackManager.deleteCardItem('${packId}', '${c.id}')">
-                      🗑
-                    </button>
-                  ` : ''}
+                  <button type="button" class="pkg-item-delete" title="Remover card"
+                          onclick="CardPackManager.deleteCardItem('${packId}', '${c.id}', ${isProduction})">
+                    🗑
+                  </button>
                 </div>
               </div>
 
@@ -1091,12 +1225,41 @@ const CardPackManager = {
     await this.saveCardPackDetails(packId, btn);
   },
 
-  addNewEmptyCardItem(packId) {
-    const pack = this.state.drafts.find(p => p.id === packId);
+  getNextAvailableCardCode() {
+    const used = new Set();
+    const scan = (packs) => {
+      (packs || []).forEach(p => {
+        (p.cards || []).forEach(c => {
+          const code = c.codigo_acao || '';
+          const match = code.match(/c(\d{1,5})/i);
+          if (match) used.add(parseInt(match[1], 10));
+        });
+      });
+    };
+    scan(this.state.published);
+    scan(this.state.drafts);
+
+    let cand = 1;
+    while (used.has(cand)) cand++;
+    return `c${String(cand).padStart(4, '0')}`;
+  },
+
+  suggestNextCardCode(packId, cardId, isProduction = false) {
+    const nextCode = this.getNextAvailableCardCode();
+    this.updateCardAction(packId, cardId, nextCode, isProduction);
+    const cardWrap = document.getElementById(`card-item-wrap-${cardId}`);
+    const input = cardWrap ? cardWrap.querySelector('.pkg-item-fefo-input') : null;
+    if (input) input.value = nextCode;
+    notice(`Código único sugerido: ${nextCode}`, 'ok');
+  },
+
+  addNewEmptyCardItem(packId, isProduction = false) {
+    const packsList = isProduction ? this.state.published : this.state.drafts;
+    const pack = packsList.find(p => p.id === packId);
     if (!pack) return;
     pack.cards = pack.cards || [];
     const nextNum = pack.cards.length + 1;
-    const nextCode = `c${String(nextNum).padStart(4, '0')}`;
+    const nextCode = this.getNextAvailableCardCode();
 
     const newCard = {
       id: `card_${Date.now() % 1000000}_${nextNum}`,
@@ -1110,21 +1273,105 @@ const CardPackManager = {
 
     pack.cards.push(newCard);
     this.state.expandedCardIds.add(newCard.id);
-    CardPackStorage.saveCustomCardPacks(this.state.drafts);
-    this.renderDraftExpandedPanel();
+    if (isProduction) {
+      CardPackStorage.savePublishedCardPacks(this.state.published);
+      this.renderProductionExpandedPanel();
+      this.renderPublishedGrid();
+    } else {
+      CardPackStorage.saveCustomCardPacks(this.state.drafts);
+      this.renderDraftExpandedPanel();
+      this.renderDraftsGrid();
+    }
     notice('Novo card adicionado ao pacote!', 'ok');
   },
 
-  deleteCardItem(packId, cardId) {
+  deleteCardItem(packId, cardId, isProduction = false) {
     if (!confirm('Excluir este card do pacote?')) return;
-    const pack = this.state.drafts.find(p => p.id === packId);
+    const packsList = isProduction ? this.state.published : this.state.drafts;
+    const pack = packsList.find(p => p.id === packId);
     if (!pack) return;
     pack.cards = (pack.cards || []).filter(c => c.id !== cardId);
     this.state.expandedCardIds.delete(cardId);
     CardPackStorage.addDeletedCardId(cardId);
-    CardPackStorage.saveCustomCardPacks(this.state.drafts);
-    this.renderDraftExpandedPanel();
+    if (isProduction) {
+      CardPackStorage.savePublishedCardPacks(this.state.published);
+      this.renderProductionExpandedPanel();
+      this.renderPublishedGrid();
+    } else {
+      CardPackStorage.saveCustomCardPacks(this.state.drafts);
+      this.renderDraftExpandedPanel();
+      this.renderDraftsGrid();
+    }
     notice('Card excluído.', 'ok');
+  },
+
+  toggleProductionLicense(packId, licKey) {
+    const pkg = (this.state.published || []).find(p => p.id === packId);
+    if (!pkg) return;
+    pkg.licencas = pkg.licencas || ['home', 'clinical', 'escola'];
+    if (pkg.licencas.includes(licKey)) {
+      pkg.licencas = pkg.licencas.filter(l => l !== licKey);
+    } else {
+      pkg.licencas.push(licKey);
+    }
+    CardPackStorage.savePublishedCardPacks(this.state.published);
+  },
+
+  toggleProductionPremium(packId) {
+    const pkg = (this.state.published || []).find(p => p.id === packId);
+    if (!pkg) return;
+    pkg.is_premium = !pkg.is_premium;
+    CardPackStorage.savePublishedCardPacks(this.state.published);
+  },
+
+  async unpublishCardPack(packId) {
+    const pack = (this.state.published || []).find(p => p.id === packId);
+    if (!pack) return;
+
+    if (!confirm(`Despublicar o pacote de cards “${pack.titulo}”?\n\nEle sairá do catálogo oficial e será movido para os Pacotes de Cards em Rascunho para que você possa alterar áudios, imagens ou renomear livremente.`)) {
+      return;
+    }
+
+    notice(`Despublicando pacote de cards “${pack.titulo}”...`);
+
+    // Remove dos publicados
+    this.state.published = this.state.published.filter(p => p.id !== packId);
+    if (this.state.expandedProductionId === packId) {
+      this.state.expandedProductionId = null;
+    }
+
+    // Adiciona aos rascunhos
+    const restoredPack = {
+      ...pack,
+      status: 'draft',
+      updated_at: new Date().toISOString()
+    };
+    this.state.drafts.unshift(restoredPack);
+    this.state.expandedDraftId = pack.id;
+
+    CardPackStorage.savePublishedCardPacks(this.state.published);
+    CardPackStorage.saveCustomCardPacks(this.state.drafts);
+
+    this.render();
+    notice(`✓ Pacote “${pack.titulo}” movido para Rascunhos!`, 'ok');
+
+    // Sincroniza com servidor/github se online
+    if (window.GitHubSync && window.GitHubSync.isConfigured()) {
+      try {
+        const catFile = await window.GitHubSync.getFile('repository/catalog.json');
+        if (catFile.exists && catFile.content) {
+          let catalog = JSON.parse(catFile.content);
+          catalog.card_packs = this.state.published;
+          const ghVer = (parseInt(catalog.catalogVersion, 10) || 1) + 1;
+          catalog.catalogVersion = ghVer;
+          catalog.updated_at = new Date().toISOString();
+          await window.GitHubSync.commitFile('repository/catalog.json', JSON.stringify(catalog, null, 2) + '\n', `chore(cards): despublicar pacote de cards “${pack.titulo}”`);
+        }
+        await window.GitHubSync.saveDraftCardPacks(this.state.drafts);
+      } catch (e) {
+        console.warn('Erro ao sincronizar despublicação no GitHub:', e);
+      }
+    }
   },
 
   createNewCardPack() {
@@ -1392,13 +1639,15 @@ const CardPackManager = {
     const grid = document.getElementById('published-card-packs-grid');
     if (!grid) return;
 
-    if (!this.state.published.length) {
-      grid.innerHTML = `<div class="empty">Nenhum pacote de cards oficial publicado ainda.</div>`;
+    const filteredPublished = (this.state.published || []).filter(p => this.matchesFilter(p));
+
+    if (!filteredPublished.length) {
+      grid.innerHTML = `<div class="empty">${(this.state.published || []).length === 0 ? 'Nenhum pacote de cards oficial publicado ainda.' : 'Nenhum pacote oficial encontrado com os filtros atuais.'}</div>`;
       this.renderProductionExpandedPanel();
       return;
     }
 
-    grid.innerHTML = this.state.published.map((pkg, idx) => {
+    grid.innerHTML = filteredPublished.map((pkg, idx) => {
       const isExpanded = this.state.expandedProductionId === pkg.id;
       const numLabel = `PACOTE DE CARDS ${idx + 1}${pkg.titulo ? ` - ${this.escapeHtml(pkg.titulo)}` : ''}`;
 
@@ -1475,8 +1724,8 @@ const CardPackManager = {
 
             <!-- 3 Botões de Ação -->
             <div class="pkg-action-pills-row">
-              <button type="button" class="btn-pkg-action blue" onclick="notice('Pacote já publicado oficialmente no catálogo.', 'ok')">
-                Publicado
+              <button type="button" class="btn-pkg-action blue" title="Despublicar pacote de cards (reverter para rascunho)" onclick="CardPackManager.unpublishCardPack('${pkg.id}')">
+                Despublicar
               </button>
               <button type="button" class="btn-pkg-action red" onclick="CardPackManager.deleteCardPack('${pkg.id}')">
                 Excluir
@@ -1491,22 +1740,22 @@ const CardPackManager = {
             <div class="pkg-lic-title">Licenças</div>
             <div class="pkg-lic-box">
               <label class="pkg-lic-item">
-                <input type="checkbox" ${hasHome ? 'checked' : ''} disabled>
+                <input type="checkbox" ${hasHome ? 'checked' : ''} onchange="CardPackManager.toggleProductionLicense('${pkg.id}', 'home')">
                 <span class="lic-icon">🏠</span>
                 <span class="lic-name">Home</span>
               </label>
               <label class="pkg-lic-item">
-                <input type="checkbox" ${hasClinical ? 'checked' : ''} disabled>
+                <input type="checkbox" ${hasClinical ? 'checked' : ''} onchange="CardPackManager.toggleProductionLicense('${pkg.id}', 'clinical')">
                 <span class="lic-icon">🏠</span>
                 <span class="lic-name">Clinica</span>
               </label>
               <label class="pkg-lic-item">
-                <input type="checkbox" ${hasEscola ? 'checked' : ''} disabled>
+                <input type="checkbox" ${hasEscola ? 'checked' : ''} onchange="CardPackManager.toggleProductionLicense('${pkg.id}', 'escola')">
                 <span class="lic-icon">🏠</span>
                 <span class="lic-name">Escola</span>
               </label>
               <label class="pkg-lic-item">
-                <input type="checkbox" ${pkg.is_premium ? 'checked' : ''} disabled>
+                <input type="checkbox" ${pkg.is_premium ? 'checked' : ''} onchange="CardPackManager.toggleProductionPremium('${pkg.id}')">
                 <span class="lic-icon">🏠</span>
                 <span class="lic-name">Premium</span>
               </label>
@@ -1519,12 +1768,29 @@ const CardPackManager = {
           ${cards.map((c, cIdx) => this.renderCardItem(pkg.id, c, cIdx, true)).join('')}
         </div>
 
+        <div style="display: flex; justify-content: flex-start; margin: 6px 0;">
+          <button type="button" class="btn-add-track-pill" onclick="CardPackManager.addNewEmptyCardItem('${pkg.id}', true)">
+            ＋ Adicionar Novo Card
+          </button>
+        </div>
+
         <!-- Seta central de recolhimento no fundo do card -->
         <div class="pkg-collapse-arrow-btn green" title="Recolher pacote" onclick="CardPackManager.toggleProductionPackage('${pkg.id}')">
           ▲
         </div>
       </div>
     `;
+
+    // Hidrata imagens salvas no IndexedDB para cards oficiais
+    cards.forEach(async (c) => {
+      if (window.CardImageDB) {
+        const imgBlob = await window.CardImageDB.getImage(c.id);
+        if (imgBlob) {
+          const imgEl = document.getElementById(`card-img-preview-${c.id}`);
+          if (imgEl) imgEl.src = URL.createObjectURL(imgBlob);
+        }
+      }
+    });
   },
 
   downloadCardMp3(cardId, title) {

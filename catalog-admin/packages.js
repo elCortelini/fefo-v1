@@ -1658,6 +1658,10 @@ const PkgManager = {
             });
           });
 
+          if (window.CardPackManager && window.CardPackManager.state && Array.isArray(window.CardPackManager.state.published)) {
+            catalog.card_packs = window.CardPackManager.state.published;
+          }
+
           const ghVer = (parseInt(catalog.catalogVersion, 10) || 1) + 1;
           catalog.catalogVersion = ghVer;
           catalog.updated_at = new Date().toISOString();
@@ -1680,6 +1684,11 @@ const PkgManager = {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ card_packs: window.CardPackManager.state.drafts || [] })
+        }).catch(() => {});
+        await fetch('/api/card_packs/save_published', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ published: window.CardPackManager.state.published || [] })
         }).catch(() => {});
       } catch (e) {
         console.warn('Erro ao salvar cards:', e);

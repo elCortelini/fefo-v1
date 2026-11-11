@@ -1,0 +1,214 @@
+{
+  "schema": 3,
+  "catalogVersion": "v3.001",
+  "versionCode": 3001,
+  "lastUpdated": "2026-11-11T10:00:00Z",
+  "repository": "FEFO Ecosystem v3",
+  "eixos": [
+    {
+      "id": "eixo-01",
+      "nome": "Rotina & Hábitos",
+      "descricao": "Organização do dia, horários, transições e autonomia diária.",
+      "icone": "⏰",
+      "cor": "#FF6B6B"
+    },
+    {
+      "id": "eixo-02",
+      "nome": "Autocuidado & Higiene",
+      "descricao": "Escovação dos dentes, banho, lavar as mãos e cuidado com o corpo.",
+      "icone": "🪥",
+      "cor": "#4ECDC4"
+    },
+    {
+      "id": "eixo-03",
+      "nome": "Emoções & Autorregulação",
+      "descricao": "Identificação, nomeação e acolhimento das emoções com respiração.",
+      "icone": "💛",
+      "cor": "#FFD166"
+    },
+    {
+      "id": "eixo-04",
+      "nome": "Alimentação Saudável",
+      "descricao": "Exploração de sabores, cores no prato e relação positiva com a comida.",
+      "icone": "🍎",
+      "cor": "#06D6A0"
+    },
+    {
+      "id": "eixo-05",
+      "nome": "Socialização & Empatia",
+      "descricao": "Compartilhar, esperar a vez, gentileza e convivência em grupo.",
+      "icone": "🤝",
+      "cor": "#118AB2"
+    },
+    {
+      "id": "eixo-06",
+      "nome": "Movimento & Coordenação",
+      "descricao": "Expressão corporal, dança, circuitos motores e equilíbrio.",
+      "icone": "🏃",
+      "cor": "#8338EC"
+    },
+    {
+      "id": "eixo-07",
+      "nome": "Linguagem & Imaginação",
+      "descricao": "Histórias fantásticas, vocabulário, rimas e contação de causos.",
+      "icone": "📚",
+      "cor": "#3A86FF"
+    },
+    {
+      "id": "eixo-08",
+      "nome": "Ciência & Natureza",
+      "descricao": "Ciclos naturais, bichinhos, plantas e curiosidades do mundo.",
+      "icone": "🌱",
+      "cor": "#2EC4B6"
+    }
+  ],
+  "temas": [
+    {
+      "codigo": "t01.01",
+      "eixoId": "eixo-01",
+      "titulo": "Aventuras da Manhã: Acordando com Alegria",
+      "descricao": "Uma jornada lúdica para ajudar a criança a despertar bem-humorada, arrumar a caminha e começar o dia com energia.",
+      "faixaEtaria": "2 a 5 anos",
+      "materiais": {
+        "historiaAudio": {
+          "titulo": "A Cidade dos Bichos Acorda Cedo",
+          "arquivo": "audio_historia_t01_01.mp3",
+          "url": "https://fefo.io/media/v3/audio/t01_01_historia.mp3",
+          "duracaoSegundos": 280
+        },
+        "livrinhoPdf": {
+          "titulo": "Livrinho Ilustrado - Aventuras da Manhã",
+          "arquivo": "livrinho_t01_01.pdf",
+          "url": "https://fefo.io/media/v3/pdf/t01_01_livrinho.pdf",
+          "paginas": 12
+        },
+        "bobieGods": [
+          {
+            "nome": "Bobie Solzinho Despertador",
+            "tipo": "pdf",
+            "arquivo": "bobie_solzinho.pdf",
+            "url": "https://fefo.io/media/v3/bobies/t01_01_solzinho.pdf"
+          },
+          {
+            "nome": "Bobie Pantufa Fofinha",
+            "tipo": "imagem",
+            "arquivo": "bobie_pantufa.png",
+            "url": "https://fefo.io/media/v3/bobies/t01_01_pantufa.png"
+          }
+        ],
+        "atividadesImpressasPdf": {
+          "titulo": "Caderno de Atividades Matinais",
+          "arquivo": "atividades_t01_01.pdf",
+          "url": "https://fefo.io/media/v3/pdf/t01_01_atividades.pdf"
+        }
+      },
+      "interacoesFefo": {
+        "treckTreck": {
+          "ativo": true,
+          "titulo": "Alongamento do Bichinho Preguiça",
+          "audio": "treck_t01_01.mp3",
+          "url": "https://fefo.io/media/v3/audio/t01_01_treck.mp3",
+          "duracaoSegundos": 90,
+          "descricao": "Movimento guiado de girar o treck-treck simulando o esticar dos braços e pernas pela manhã.",
+          "perfilHardware": {
+            "led": "#FFA500",
+            "rosto": "animado",
+            "vibracao": "pulsar_suave"
+          }
+        },
+        "cardsRfid": [
+          {
+            "id": "card_01",
+            "tagUid": "3A7F2B01",
+            "nome": "Card Pantufas Macias",
+            "descricao": "Ao aproximar o card das pantufas, FEFO comemora o primeiro passo fora da cama.",
+            "audio": "card_pantufas.mp3",
+            "url": "https://fefo.io/media/v3/audio/t01_01_card1.mp3",
+            "perfilHardware": {
+              "led": "#FFDD00",
+              "rosto": "feliz",
+              "vibracao": "curta"
+            }
+          },
+          {
+            "id": "card_02",
+            "tagUid": "3A7F2B02",
+            "nome": "Card Copinho d'Água",
+            "descricao": "Lembrete de hidratar o corpo logo ao acordar.",
+            "audio": "card_agua.mp3",
+            "url": "https://fefo.io/media/v3/audio/t01_01_card2.mp3",
+            "perfilHardware": {
+              "led": "#00CCFF",
+              "rosto": "piscando",
+              "vibracao": "duplo_toque"
+            }
+          }
+        ],
+        "musicasEMindfulness": [
+          {
+            "id": "mus_01",
+            "tipo": "musica",
+            "titulo": "Dança do Bom Dia, Sol!",
+            "audio": "musica_bom_dia.mp3",
+            "url": "https://fefo.io/media/v3/audio/t01_01_musica.mp3",
+            "duracaoSegundos": 140,
+            "perfilHardware": {
+              "led": "#FF9900",
+              "rosto": "cantando",
+              "vibracao": "ritmica"
+            }
+          },
+          {
+            "id": "mind_01",
+            "tipo": "mindfulness",
+            "titulo": "Respiração da Janela Aberta",
+            "audio": "mindfulness_janela.mp3",
+            "url": "https://fefo.io/media/v3/audio/t01_01_mindfulness.mp3",
+            "duracaoSegundos": 120,
+            "perfilHardware": {
+              "led": "#00FFCC",
+              "rosto": "zen",
+              "vibracao": "ondas"
+            }
+          }
+        ],
+        "desafios": [
+          {
+            "id": "des_01",
+            "tipo": "card_rfid",
+            "titulo": "Onde está o Card do Desjejum?",
+            "descricao": "FEFO pede para a criança encontrar e encostar o card do café da manhã nutritivo.",
+            "audioPergunta": "desafio_pergunta_desjejum.mp3",
+            "urlAudioPergunta": "https://fefo.io/media/v3/audio/t01_01_des_perg.mp3",
+            "cardEsperadoUid": "3A7F2B02",
+            "audioSucesso": "desafio_sucesso_desjejum.mp3",
+            "urlAudioSucesso": "https://fefo.io/media/v3/audio/t01_01_des_suc.mp3",
+            "audioTenteNovamente": "desafio_erro_desjejum.mp3",
+            "urlAudioTenteNovamente": "https://fefo.io/media/v3/audio/t01_01_des_err.mp3",
+            "perfilHardware": {
+              "led": "#00FF66",
+              "rosto": "comemorando",
+              "vibracao": "sucesso"
+            }
+          },
+          {
+            "id": "des_02",
+            "tipo": "reflexivo_guiado",
+            "titulo": "Agradecimento do Raio de Sol",
+            "descricao": "Momento reflexivo guiado onde FEFO convida a criança a fechar os olhos e pensar em algo que a faz feliz hoje.",
+            "audioGuia": "desafio_reflexao_sol.mp3",
+            "urlAudioGuia": "https://fefo.io/media/v3/audio/t01_01_refl_guia.mp3",
+            "pausaSegundos": 15,
+            "audioConclusao": "desafio_reflexao_conclusao.mp3",
+            "urlAudioConclusao": "https://fefo.io/media/v3/audio/t01_01_refl_fim.mp3",
+            "perfilHardware": {
+              "led": "#9966FF",
+              "rosto": "zen",
+              "vibracao": "ondas"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
