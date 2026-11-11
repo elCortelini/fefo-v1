@@ -1,57 +1,64 @@
 /**
  * ==========================================================================
- * FEFO CATALOG ADMIN v3 - MOTOR DE DADOS, REGRAS DE NEGÓCIO & UX
+ * FEFO CATALOG ADMIN v3 - MOTOR DE DADOS, ÁUDIO VISUAL & UX
  * ==========================================================================
- * - Duplo Versionamento: Versão Global (v3.001) e Código do Tema (tXX.YY)
- * - 8 Eixos Temáticos Gerenciáveis
- * - Materiais Físicos (Livrinho, Bobie Gods, Caderno) & Mídias
- * - Hardware FEFO (Treck-Treck, Cards RFID, Músicas & Mindfulness, Desafios)
- * - Local-First & Exportação JSON
+ * - Réplica exata do Mockup Oficial do FEFO
+ * - Múltiplos Contos, Músicas, Treck-Trecks, Desafios, Livrinhos e Bobie Gods
+ * - Acordeão Sanfonado Inteligente em cada item
+ * - Numeração automática inteligente (A0001.WAV, CARD0001) com modo numeração livre
+ * - Semáforo de produção (🔴 Sem Áudio / 🟡 Áudio Bruto / 🟢 Pronto)
+ * - Cortador de Áudio Waveform nativo com Web Audio API
  */
 
 (() => {
   'use strict';
 
-  // Chaves de armazenamento Local-First
-  const STORAGE_KEY = 'fefo_catalog_v3_data';
-  const DEFAULT_REPO_PATH = '../repository/catalog-v3.json';
+  const STORAGE_KEY = 'fefo_catalog_v3_state';
+  const DEFAULT_REPO_URL = '../repository/catalog-v3.json';
 
-  // Estado Central da Aplicação v3
+  // 8 Eixos Temáticos Oficiais
+  const EIXOS_OFICIAIS = [
+    { id: "eixo-01", nome: "Rotina & Hábitos", icone: "⏰" },
+    { id: "eixo-02", nome: "Autocuidado & Higiene", icone: "🪥" },
+    { id: "eixo-03", nome: "Emoções & Autorregulação", icone: "💛" },
+    { id: "eixo-04", nome: "Alimentação Saudável", icone: "🍎" },
+    { id: "eixo-05", nome: "Socialização & Empatia", icone: "🤝" },
+    { id: "eixo-06", nome: "Movimento & Coordenação", icone: "🏃" },
+    { id: "eixo-07", nome: "Linguagem & Imaginação", icone: "📚" },
+    { id: "eixo-08", nome: "Ciência & Natureza", icone: "🌱" }
+  ];
+
+  // Estado Central do Catálogo v3
   let catalogState = {
     schema: 3,
     catalogVersion: "v3.001",
     versionCode: 3001,
-    lastUpdated: new Date().toISOString(),
-    repository: "FEFO Ecosystem v3",
-    eixos: [],
-    temas: []
+    historinhas: []
   };
 
-  // Estado do Editor de Tema
-  let currentEditingIndex = -1; // -1 para novo tema
-  let currentStep = 1;
-  const TOTAL_STEPS = 5;
+  let currentStoryIndex = 0;
 
-  // Buffer temporário para listas dinâmicas no formulário
-  let tempBobies = [];
-  let tempMusicas = [];
-  let tempCardsRfid = [];
-  let tempDesafios = [];
+  // Gerenciador de Contexto de Áudio Web Audio API
+  let audioCtx = null;
+  function getAudioContext() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+    return audioCtx;
+  }
 
   // ==========================================================================
-  // INICIALIZAÇÃO DA APLICAÇÃO
+  // INICIALIZAÇÃO
   // ==========================================================================
   document.addEventListener('DOMContentLoaded', async () => {
-    initSimulator();
-    initNavigationTabs();
-    initStepper();
-    initFilterEvents();
-    initModalEvents();
-    initGlobalVersionControl();
-    initIOEvents();
-
+    initEixoSelector();
     await loadCatalogData();
-    renderAll();
+    initTopBarEvents();
+    initFooterEvents();
+    renderCurrentStory();
   });
 
   // ==========================================================================
@@ -62,1135 +69,1113 @@
     if (saved) {
       try {
         catalogState = JSON.parse(saved);
-        showToast('Catálogo v3 carregado do armazenamento local.', 'success');
-        return;
-      } catch (err) {
-        console.error('Falha ao ler dados locais:', err);
+      } catch (e) {
+        console.warn('Erro ao ler do localStorage, reiniciando semente...');
       }
     }
 
-    // Tentar carregar do arquivo catalog-v3.json relativo
-    try {
-      const response = await fetch(DEFAULT_REPO_PATH);
-      if (response.ok) {
-        catalogState = await response.json();
-        saveToLocalStorage(false);
-        showToast('Catálogo v3 sincronizado com o repositório.', 'success');
-        return;
-      }
-    } catch (e) {
-      console.warn('Repositório remoto inacessível localmente, usando semente padrão.');
-    }
-
-    // Semente padrão caso não encontre
-    if (!catalogState.eixos || catalogState.eixos.length === 0) {
-      catalogState.eixos = getSeedEixos();
-    }
-  }
-
-  function saveToLocalStorage(notify = true) {
-    catalogState.lastUpdated = new Date().toISOString();
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(catalogState, null, 2));
-    updateFooterStats();
-    if (notify) {
-      showToast('Alterações salvas localmente com sucesso!', 'success');
-    }
-  }
-
-  function getSeedEixos() {
-    return [
-      { id: "eixo-01", nome: "Rotina & Hábitos", descricao: "Organização do dia, horários e autonomia.", icone: "⏰", cor: "#FF6B6B" },
-      { id: "eixo-02", nome: "Autocuidado & Higiene", descricao: "Escovação dos dentes, banho e cuidado com o corpo.", icone: "🪥", cor: "#4ECDC4" },
-      { id: "eixo-03", nome: "Emoções & Autorregulação", descricao: "Identificação e acolhimento das emoções.", icone: "💛", cor: "#FFD166" },
-      { id: "eixo-04", nome: "Alimentação Saudável", descricao: "Exploração de sabores e cores no prato.", icone: "🍎", cor: "#06D6A0" },
-      { id: "eixo-05", nome: "Socialização & Empatia", descricao: "Compartilhar, gentileza e convivência.", icone: "🤝", cor: "#118AB2" },
-      { id: "eixo-06", nome: "Movimento & Coordenação", descricao: "Expressão corporal, dança e equilíbrio.", icone: "🏃", cor: "#8338EC" },
-      { id: "eixo-07", nome: "Linguagem & Imaginação", descricao: "Histórias fantásticas, vocabulário e rimas.", icone: "📚", cor: "#3A86FF" },
-      { id: "eixo-08", nome: "Ciência & Natureza", descricao: "Ciclos naturais, bichinhos e o mundo ao redor.", icone: "🌱", cor: "#2EC4B6" }
-    ];
-  }
-
-  // ==========================================================================
-  // RENDERIZAÇÃO PRINCIPAL
-  // ==========================================================================
-  function renderAll() {
-    renderTemas();
-    renderEixos();
-    renderFilterSelects();
-    updateFooterStats();
-    updateHeaderCounters();
-  }
-
-  function updateHeaderCounters() {
-    document.getElementById('count-temas').textContent = catalogState.temas ? catalogState.temas.length : 0;
-    document.getElementById('count-eixos').textContent = catalogState.eixos ? catalogState.eixos.length : 0;
-  }
-
-  function updateFooterStats() {
-    const totalTemas = catalogState.temas ? catalogState.temas.length : 0;
-    const totalEixos = catalogState.eixos ? catalogState.eixos.length : 0;
-    
-    document.getElementById('footer-stats').textContent = `${totalTemas} Tema(s) • ${totalEixos} Eixos Ativos`;
-    document.getElementById('catalog-global-version').textContent = catalogState.catalogVersion || 'v3.001';
-    
-    if (catalogState.lastUpdated) {
-      const d = new Date(catalogState.lastUpdated);
-      document.getElementById('footer-last-sync').textContent = `Atualizado em: ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-    }
-  }
-
-  // ==========================================================================
-  // ABA 1: TEMAS PEDAGÓGICOS (RENDER & FILTROS)
-  // ==========================================================================
-  function renderTemas() {
-    const container = document.getElementById('temas-container');
-    const emptyState = document.getElementById('temas-empty');
-    const searchVal = document.getElementById('search-temas').value.trim().toLowerCase();
-    const filterEixo = document.getElementById('filter-eixo').value;
-    const sortVal = document.getElementById('sort-temas').value;
-
-    let temas = [...(catalogState.temas || [])];
-
-    // Filtros
-    if (filterEixo !== 'todos') {
-      temas = temas.filter(t => t.eixoId === filterEixo);
-    }
-    if (searchVal) {
-      temas = temas.filter(t => 
-        (t.codigo && t.codigo.toLowerCase().includes(searchVal)) ||
-        (t.titulo && t.titulo.toLowerCase().includes(searchVal)) ||
-        (t.descricao && t.descricao.toLowerCase().includes(searchVal))
-      );
-    }
-
-    // Ordenação
-    temas.sort((a, b) => {
-      if (sortVal === 'codigo-asc') return (a.codigo || '').localeCompare(b.codigo || '');
-      if (sortVal === 'codigo-desc') return (b.codigo || '').localeCompare(a.codigo || '');
-      if (sortVal === 'titulo-asc') return (a.titulo || '').localeCompare(b.titulo || '');
-      return 0;
-    });
-
-    container.innerHTML = '';
-
-    if (temas.length === 0) {
-      emptyState.style.display = 'block';
-      return;
-    }
-    emptyState.style.display = 'none';
-
-    temas.forEach((tema, idx) => {
-      const realIndex = catalogState.temas.findIndex(t => t.codigo === tema.codigo);
-      const card = createTemaCardElement(tema, realIndex);
-      container.appendChild(card);
-    });
-  }
-
-  function createTemaCardElement(tema, realIndex) {
-    const card = document.createElement('article');
-    card.className = 'tema-card';
-
-    const eixo = (catalogState.eixos || []).find(e => e.id === tema.eixoId) || {
-      nome: 'Eixo Geral',
-      icone: '📌',
-      cor: '#94A3B8'
-    };
-
-    // Verificação de recursos configurados
-    const hasAudio = !!(tema.materiais?.historiaAudio?.arquivo || tema.materiais?.historiaAudio?.url);
-    const hasLivro = !!(tema.materiais?.livrinhoPdf?.arquivo || tema.materiais?.livrinhoPdf?.url);
-    const hasTreck = !!(tema.interacoesFefo?.treckTreck?.ativo);
-    const countCards = tema.interacoesFefo?.cardsRfid?.length || 0;
-    const countDesafios = tema.interacoesFefo?.desafios?.length || 0;
-
-    card.innerHTML = `
-      <div class="tema-card-header">
-        <span class="tema-code-pill">${escapeHtml(tema.codigo || 't00.00')}</span>
-        <span class="tema-eixo-badge" style="background-color: ${eixo.cor}20; color: ${eixo.cor}; border: 1px solid ${eixo.cor}40;">
-          <span>${eixo.icone}</span> ${escapeHtml(eixo.nome)}
-        </span>
-      </div>
-
-      <div class="tema-card-body">
-        <h3 class="tema-card-title">${escapeHtml(tema.titulo || 'Sem Título')}</h3>
-        <p class="tema-card-desc">${escapeHtml(tema.descricao || 'Sem descrição cadastrada.')}</p>
-
-        <div class="tema-features">
-          <span class="feature-tag ${hasAudio ? 'active' : ''}">🎧 Áudio</span>
-          <span class="feature-tag ${hasLivro ? 'active' : ''}">📖 Livrinho</span>
-          <span class="feature-tag ${hasTreck ? 'active' : ''}">⚙️ Treck</span>
-          <span class="feature-tag ${countCards > 0 ? 'active' : ''}">🎴 ${countCards} Cards</span>
-          <span class="feature-tag ${countDesafios > 0 ? 'active' : ''}">🏆 ${countDesafios} Desafios</span>
-        </div>
-      </div>
-
-      <div class="tema-card-footer">
-        <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">
-          👶 ${escapeHtml(tema.faixaEtaria || '2 a 5 anos')}
-        </span>
-        <div class="tema-card-actions">
-          <button class="btn btn-secondary btn-chip" data-action="testar" data-index="${realIndex}" title="Testar no Simulador">
-            Simular
-          </button>
-          <button class="btn btn-secondary btn-chip" data-action="editar" data-index="${realIndex}" title="Editar este Tema">
-            Editar
-          </button>
-          <button class="btn btn-danger-outline btn-chip" data-action="excluir" data-index="${realIndex}" title="Excluir Tema">
-            Excluir
-          </button>
-        </div>
-      </div>
-    `;
-
-    // Eventos de Ação do Card
-    card.querySelector('[data-action="editar"]').addEventListener('click', () => openEditorForTema(realIndex));
-    card.querySelector('[data-action="excluir"]').addEventListener('click', () => deleteTema(realIndex));
-    card.querySelector('[data-action="testar"]').addEventListener('click', () => previewTemaInSimulator(tema));
-
-    return card;
-  }
-
-  // ==========================================================================
-  // ABA 2: 8 EIXOS TEMÁTICOS (RENDER & GESTÃO)
-  // ==========================================================================
-  function renderEixos() {
-    const container = document.getElementById('eixos-container');
-    container.innerHTML = '';
-
-    (catalogState.eixos || []).forEach((eixo, idx) => {
-      const temasCount = (catalogState.temas || []).filter(t => t.eixoId === eixo.id).length;
-
-      const card = document.createElement('div');
-      card.className = 'eixo-card';
-      card.innerHTML = `
-        <div class="eixo-icon-box" style="background-color: ${eixo.cor}25; color: ${eixo.cor};">
-          ${eixo.icone}
-        </div>
-        <div class="eixo-card-body">
-          <h3>${escapeHtml(eixo.nome)}</h3>
-          <p>${escapeHtml(eixo.descricao)}</p>
-          <div class="eixo-meta-count">
-            📚 ${temasCount} tema(s) associado(s)
-          </div>
-        </div>
-      `;
-      container.appendChild(card);
-    });
-  }
-
-  function renderFilterSelects() {
-    const filterSelect = document.getElementById('filter-eixo');
-    const modalSelect = document.getElementById('tema-eixo');
-
-    const currentFilter = filterSelect.value;
-    filterSelect.innerHTML = '<option value="todos">Todos os Eixos Temáticos</option>';
-    modalSelect.innerHTML = '';
-
-    (catalogState.eixos || []).forEach(eixo => {
-      const opt1 = document.createElement('option');
-      opt1.value = eixo.id;
-      opt1.textContent = `${eixo.icone} ${eixo.nome}`;
-      filterSelect.appendChild(opt1);
-
-      const opt2 = document.createElement('option');
-      opt2.value = eixo.id;
-      opt2.textContent = `${eixo.icone} ${eixo.nome}`;
-      modalSelect.appendChild(opt2);
-    });
-
-    if (currentFilter && filterSelect.querySelector(`option[value="${currentFilter}"]`)) {
-      filterSelect.value = currentFilter;
-    }
-  }
-
-  // ==========================================================================
-  // ABA 3: SIMULADOR DE HARDWARE DO ROBÔ FEFO
-  // ==========================================================================
-  function initSimulator() {
-    const presetButtons = document.querySelectorAll('.preset-buttons button');
-    presetButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const led = btn.getAttribute('data-test-led');
-        const face = btn.getAttribute('data-test-face');
-        const vibe = btn.getAttribute('data-test-vibe');
-        updateSimulatorHardware({ led, rosto: face, vibracao: vibe });
-      });
-    });
-  }
-
-  function updateSimulatorHardware(profile) {
-    if (!profile) return;
-
-    // 1. Atualizar Halo de LED
-    const halo = document.getElementById('sim-led-halo');
-    const ledHex = document.getElementById('sim-led-hex');
-    const color = profile.led || '#00FFCC';
-    
-    halo.style.borderColor = color;
-    halo.style.boxShadow = `0 0 35px ${color}`;
-    halo.style.background = `${color}15`;
-    ledHex.textContent = color.toUpperCase();
-
-    // 2. Atualizar Display OLED
-    const faceContainer = document.getElementById('sim-oled-face');
-    const label = document.getElementById('sim-oled-label');
-    const faceType = profile.rosto || 'feliz';
-
-    label.textContent = `Rosto: ${faceType.toUpperCase()}`;
-    faceContainer.style.color = color;
-    faceContainer.style.textShadow = `0 0 10px ${color}`;
-
-    switch (faceType) {
-      case 'feliz':
-        faceContainer.innerHTML = '<span class="oled-eye left">^</span><span class="oled-mouth">‿</span><span class="oled-eye right">^</span>';
-        break;
-      case 'animado':
-        faceContainer.innerHTML = '<span class="oled-eye left">></span><span class="oled-mouth">ヮ</span><span class="oled-eye right"><</span>';
-        break;
-      case 'comemorando':
-        faceContainer.innerHTML = '<span class="oled-eye left">★</span><span class="oled-mouth">▽</span><span class="oled-eye right">★</span>';
-        break;
-      case 'zen':
-        faceContainer.innerHTML = '<span class="oled-eye left">-</span><span class="oled-mouth">_</span><span class="oled-eye right">-</span>';
-        break;
-      case 'cantando':
-        faceContainer.innerHTML = '<span class="oled-eye left">♪</span><span class="oled-mouth">o</span><span class="oled-eye right">♫</span>';
-        break;
-      case 'alerta':
-      case 'piscando':
-        faceContainer.innerHTML = '<span class="oled-eye left">●</span><span class="oled-mouth">_</span><span class="oled-eye right">─</span>';
-        break;
-      default:
-        faceContainer.innerHTML = '<span class="oled-eye left">^</span><span class="oled-mouth">‿</span><span class="oled-eye right">^</span>';
-    }
-
-    // 3. Atualizar Vibração
-    const vibeName = document.getElementById('sim-vibe-name');
-    vibeName.textContent = `Padrão: ${formatVibeName(profile.vibracao)}`;
-  }
-
-  function formatVibeName(vibe) {
-    switch (vibe) {
-      case 'pulsar_suave': return 'Pulsar Suave';
-      case 'ritmica': return 'Rítmica Contínua';
-      case 'curta': return 'Toque Curto';
-      case 'ondas': return 'Ondas Graduais';
-      case 'sucesso': return 'Comemoração Sucesso';
-      case 'duplo_toque': return 'Duplo Toque';
-      default: return 'Padrão Suave';
-    }
-  }
-
-  function previewTemaInSimulator(tema) {
-    // Muda para a aba do simulador e aplica perfil
-    document.querySelector('.nav-tab[data-tab="simulador"]').click();
-
-    // Preferência de perfil: desafio > treck > card > padrão
-    let profile = { led: "#00FFCC", rosto: "feliz", vibracao: "pulsar_suave" };
-    if (tema.interacoesFefo?.treckTreck?.perfilHardware) {
-      profile = tema.interacoesFefo.treckTreck.perfilHardware;
-    } else if (tema.interacoesFefo?.cardsRfid?.[0]?.perfilHardware) {
-      profile = tema.interacoesFefo.cardsRfid[0].perfilHardware;
-    }
-
-    updateSimulatorHardware(profile);
-    showToast(`Testando perfil do tema ${tema.codigo} no simulador!`, 'info');
-  }
-
-  // ==========================================================================
-  // NAVEGAÇÃO ENTRE ABAS
-  // ==========================================================================
-  function initNavigationTabs() {
-    const tabs = document.querySelectorAll('.nav-tab');
-    tabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        tabs.forEach(t => {
-          t.classList.remove('active');
-          t.setAttribute('aria-selected', 'false');
-        });
-        document.querySelectorAll('.tab-pane').forEach(p => p.style.display = 'none');
-
-        tab.classList.add('active');
-        tab.setAttribute('aria-selected', 'true');
-        const targetPane = document.getElementById(`pane-${tab.dataset.tab}`);
-        if (targetPane) targetPane.style.display = 'block';
-      });
-    });
-  }
-
-  // ==========================================================================
-  // EDITOR DE TEMA (STEPPER & CHUNKS DE MILLER)
-  // ==========================================================================
-  function initStepper() {
-    const stepBtns = document.querySelectorAll('.step-btn');
-    stepBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        goToStep(parseInt(btn.dataset.step, 10));
-      });
-    });
-
-    document.getElementById('btn-step-prev').addEventListener('click', () => {
-      if (currentStep > 1) goToStep(currentStep - 1);
-    });
-
-    document.getElementById('btn-step-next').addEventListener('click', () => {
-      if (currentStep < TOTAL_STEPS) goToStep(currentStep + 1);
-    });
-  }
-
-  function goToStep(stepNumber) {
-    currentStep = stepNumber;
-
-    // Atualiza Abas do Stepper
-    document.querySelectorAll('.step-btn').forEach(btn => {
-      btn.classList.toggle('active', parseInt(btn.dataset.step, 10) === currentStep);
-    });
-
-    // Atualiza Painéis do Formulário
-    document.querySelectorAll('.form-step').forEach((pane, idx) => {
-      pane.style.display = (idx + 1 === currentStep) ? 'block' : 'none';
-    });
-
-    // Atualiza Rótulos e Barra de Progresso
-    const labels = [
-      "Passo 1 de 5: Informações & Eixo",
-      "Passo 2 de 5: Materiais Físicos",
-      "Passo 3 de 5: FEFO Físico & Músicas",
-      "Passo 4 de 5: Cards RFID Interativos",
-      "Passo 5 de 5: Desafios & Missões"
-    ];
-
-    document.getElementById('stepper-label').textContent = labels[currentStep - 1];
-    const pct = Math.round((currentStep / TOTAL_STEPS) * 100);
-    document.getElementById('stepper-percent').textContent = `${pct}% concluído`;
-    document.getElementById('stepper-progress-fill').style.width = `${pct}%`;
-
-    // Visibilidade dos Botões Anterior/Próximo
-    document.getElementById('btn-step-prev').style.visibility = (currentStep === 1) ? 'hidden' : 'visible';
-    document.getElementById('btn-step-next').style.display = (currentStep === TOTAL_STEPS) ? 'none' : 'inline-flex';
-  }
-
-  function openEditorForTema(index) {
-    currentEditingIndex = index;
-    goToStep(1);
-
-    if (index >= 0) {
-      // Editar existente
-      const tema = catalogState.temas[index];
-      document.getElementById('modal-tema-title').textContent = `Editar Tema: ${tema.codigo}`;
-      document.getElementById('modal-tema-subtitle').textContent = `Atualização de Conteúdo v3`;
-      populateFormWithTema(tema);
-    } else {
-      // Novo Tema
-      document.getElementById('modal-tema-title').textContent = 'Cadastrar Novo Tema';
-      document.getElementById('modal-tema-subtitle').textContent = 'Novo Tema Pedagógico v3';
-      resetTemaForm();
-      sugerirProximoCodigoTema();
-    }
-
-    document.getElementById('modal-tema-backdrop').style.display = 'flex';
-  }
-
-  function closeEditorModal() {
-    document.getElementById('modal-tema-backdrop').style.display = 'none';
-    currentEditingIndex = -1;
-  }
-
-  // Preenche o formulário com dados do tema existente
-  function populateFormWithTema(tema) {
-    document.getElementById('tema-codigo').value = tema.codigo || '';
-    document.getElementById('tema-eixo').value = tema.eixoId || '';
-    document.getElementById('tema-titulo').value = tema.titulo || '';
-    document.getElementById('tema-descricao').value = tema.descricao || '';
-    document.getElementById('tema-faixa-etaria').value = tema.faixaEtaria || '2 a 5 anos';
-
-    // Etapa 2: Materiais
-    const mat = tema.materiais || {};
-    document.getElementById('mat-hist-titulo').value = mat.historiaAudio?.titulo || '';
-    document.getElementById('mat-hist-arquivo').value = mat.historiaAudio?.arquivo || '';
-    document.getElementById('mat-hist-duracao').value = mat.historiaAudio?.duracaoSegundos || '';
-    document.getElementById('mat-hist-url').value = mat.historiaAudio?.url || '';
-
-    document.getElementById('mat-livro-titulo').value = mat.livrinhoPdf?.titulo || '';
-    document.getElementById('mat-livro-arquivo').value = mat.livrinhoPdf?.arquivo || '';
-    document.getElementById('mat-livro-paginas').value = mat.livrinhoPdf?.paginas || 12;
-    document.getElementById('mat-livro-url').value = mat.livrinhoPdf?.url || '';
-
-    document.getElementById('mat-ativ-titulo').value = mat.atividadesImpressasPdf?.titulo || '';
-    document.getElementById('mat-ativ-arquivo').value = mat.atividadesImpressasPdf?.arquivo || '';
-    document.getElementById('mat-ativ-url').value = mat.atividadesImpressasPdf?.url || '';
-
-    tempBobies = JSON.parse(JSON.stringify(mat.bobieGods || []));
-    renderBobiesList();
-
-    // Etapa 3: FEFO Físico (Treck & Músicas)
-    const fefo = tema.interacoesFefo || {};
-    const treck = fefo.treckTreck || {};
-    document.getElementById('treck-ativo').checked = treck.ativo !== false;
-    document.getElementById('treck-titulo').value = treck.titulo || '';
-    document.getElementById('treck-arquivo').value = treck.audio || '';
-    document.getElementById('treck-duracao').value = treck.duracaoSegundos || 90;
-    document.getElementById('treck-desc').value = treck.descricao || '';
-    document.getElementById('treck-led').value = treck.perfilHardware?.led || '#FFA500';
-    document.getElementById('treck-rosto').value = treck.perfilHardware?.rosto || 'animado';
-    document.getElementById('treck-vibracao').value = treck.perfilHardware?.vibracao || 'pulsar_suave';
-
-    tempMusicas = JSON.parse(JSON.stringify(fefo.musicasEMindfulness || []));
-    renderMusicasList();
-
-    // Etapa 4: Cards RFID
-    tempCardsRfid = JSON.parse(JSON.stringify(fefo.cardsRfid || []));
-    renderCardsRfidList();
-
-    // Etapa 5: Desafios
-    tempDesafios = JSON.parse(JSON.stringify(fefo.desafios || []));
-    renderDesafiosList();
-  }
-
-  function resetTemaForm() {
-    document.getElementById('form-tema').reset();
-    document.getElementById('tema-faixa-etaria').value = '2 a 5 anos';
-    document.getElementById('mat-livro-paginas').value = '12';
-    document.getElementById('treck-duracao').value = '90';
-    document.getElementById('treck-ativo').checked = true;
-    document.getElementById('treck-led').value = '#FFA500';
-
-    tempBobies = [];
-    tempMusicas = [];
-    tempCardsRfid = [];
-    tempDesafios = [];
-
-    renderBobiesList();
-    renderMusicasList();
-    renderCardsRfidList();
-    renderDesafiosList();
-  }
-
-  // ==========================================================================
-  // REGRA DE VERSIONAMENTO DUPLO: SUGESTÃO AUTOMÁTICA DE CÓDIGO
-  // ==========================================================================
-  function sugerirProximoCodigoTema() {
-    const eixoSelect = document.getElementById('tema-eixo');
-    const selectedEixoId = eixoSelect.value || (catalogState.eixos?.[0]?.id || 'eixo-01');
-
-    // Extrair número do eixo (ex: eixo-01 -> 1)
-    const matchEixo = selectedEixoId.match(/\d+/);
-    const eixoNum = matchEixo ? parseInt(matchEixo[0], 10) : 1;
-
-    // Encontrar temas que começam com esse número
-    const prefix = `t${String(eixoNum).padStart(2, '0')}.`;
-    const existing = (catalogState.temas || [])
-      .filter(t => t.codigo && t.codigo.startsWith(prefix))
-      .map(t => {
-        const parts = t.codigo.split('.');
-        return parseInt(parts[1], 10) || 0;
-      });
-
-    const nextVer = existing.length > 0 ? Math.max(...existing) + 1 : 1;
-    const suggestedCode = `${prefix}${String(nextVer).padStart(2, '0')}`;
-
-    document.getElementById('tema-codigo').value = suggestedCode;
-    showToast(`Código sugerido automaticamente: ${suggestedCode}`, 'info');
-  }
-
-  // ==========================================================================
-  // LISTAS DINÂMICAS: BOBIE GODS
-  // ==========================================================================
-  function renderBobiesList() {
-    const container = document.getElementById('bobies-list-container');
-    container.innerHTML = '';
-
-    tempBobies.forEach((bobie, idx) => {
-      const item = document.createElement('div');
-      item.className = 'dynamic-item-card';
-      item.innerHTML = `
-        <div style="flex: 1; display: flex; gap: 0.75rem; align-items: center;">
-          <span style="font-size: 1.25rem;">🧸</span>
-          <input type="text" placeholder="Nome do Bobie" value="${escapeHtml(bobie.nome || '')}" data-idx="${idx}" data-field="nome" style="flex: 2;">
-          <select data-idx="${idx}" data-field="tipo" style="flex: 1;">
-            <option value="pdf" ${bobie.tipo === 'pdf' ? 'selected' : ''}>PDF (Imprimir)</option>
-            <option value="imagem" ${bobie.tipo === 'imagem' ? 'selected' : ''}>Imagem (Visualizar)</option>
-          </select>
-          <input type="text" placeholder="arquivo.pdf / url" value="${escapeHtml(bobie.url || bobie.arquivo || '')}" data-idx="${idx}" data-field="url" style="flex: 2;" class="mono-input">
-        </div>
-        <button type="button" class="btn btn-danger-outline btn-chip" data-idx="${idx}" data-action="remove-bobie">✕</button>
-      `;
-
-      item.querySelector('[data-action="remove-bobie"]').addEventListener('click', () => {
-        tempBobies.splice(idx, 1);
-        renderBobiesList();
-      });
-
-      item.querySelectorAll('input, select').forEach(input => {
-        input.addEventListener('input', (e) => {
-          const field = e.target.getAttribute('data-field');
-          tempBobies[idx][field] = e.target.value;
-        });
-      });
-
-      container.appendChild(item);
-    });
-  }
-
-  // ==========================================================================
-  // LISTAS DINÂMICAS: MÚSICAS & MINDFULNESS
-  // ==========================================================================
-  function renderMusicasList() {
-    const container = document.getElementById('musicas-list-container');
-    container.innerHTML = '';
-
-    tempMusicas.forEach((m, idx) => {
-      const item = document.createElement('div');
-      item.className = 'dynamic-item-card';
-      item.style.flexDirection = 'column';
-      item.style.alignItems = 'stretch';
-      
-      item.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-weight: 700; font-size: 0.85rem;">Faixa #${idx + 1}</span>
-          <button type="button" class="btn btn-danger-outline btn-chip" data-idx="${idx}" data-action="remove-musica">✕ Remover</button>
-        </div>
-        <div class="form-row" style="margin-top: 0.5rem; margin-bottom: 0;">
-          <div class="form-group col-3">
-            <label>Tipo:</label>
-            <select data-idx="${idx}" data-field="tipo">
-              <option value="musica" ${m.tipo === 'musica' ? 'selected' : ''}>🎶 Música Divertida</option>
-              <option value="mindfulness" ${m.tipo === 'mindfulness' ? 'selected' : ''}>🧘 Mindfulness Zen</option>
-            </select>
-          </div>
-          <div class="form-group col-5">
-            <label>Título:</label>
-            <input type="text" value="${escapeHtml(m.titulo || '')}" data-idx="${idx}" data-field="titulo" placeholder="Nome da música">
-          </div>
-          <div class="form-group col-4">
-            <label>Arquivo Áudio:</label>
-            <input type="text" value="${escapeHtml(m.audio || '')}" data-idx="${idx}" data-field="audio" placeholder="musica.mp3" class="mono-input">
-          </div>
-        </div>
-      `;
-
-      item.querySelector('[data-action="remove-musica"]').addEventListener('click', () => {
-        tempMusicas.splice(idx, 1);
-        renderMusicasList();
-      });
-
-      item.querySelectorAll('input, select').forEach(input => {
-        input.addEventListener('input', (e) => {
-          const field = e.target.getAttribute('data-field');
-          tempMusicas[idx][field] = e.target.value;
-        });
-      });
-
-      container.appendChild(item);
-    });
-  }
-
-  // ==========================================================================
-  // LISTAS DINÂMICAS: CARDS RFID
-  // ==========================================================================
-  function renderCardsRfidList() {
-    const container = document.getElementById('cards-rfid-container');
-    const emptySub = document.getElementById('cards-rfid-empty');
-    container.innerHTML = '';
-
-    if (tempCardsRfid.length === 0) {
-      emptySub.style.display = 'block';
-      return;
-    }
-    emptySub.style.display = 'none';
-
-    tempCardsRfid.forEach((card, idx) => {
-      const cardEl = document.createElement('div');
-      cardEl.className = 'rfid-editor-card';
-
-      const hardware = card.perfilHardware || { led: "#00CCFF", rosto: "feliz", vibracao: "curta" };
-
-      cardEl.innerHTML = `
-        <div class="card-header-bar">
-          <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <span style="font-size: 1.25rem;">🎴</span>
-            <strong>Card #${idx + 1}</strong>
-          </div>
-          <button type="button" class="btn btn-danger-outline btn-chip" data-idx="${idx}" data-action="remove-card">✕ Remover Card</button>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group col-4">
-            <label>UID da Tag RFID <span class="required">*</span></label>
-            <input type="text" value="${escapeHtml(card.tagUid || '')}" placeholder="Ex: 3A7F2B01" class="mono-input" data-idx="${idx}" data-field="tagUid">
-          </div>
-          <div class="form-group col-5">
-            <label>Nome do Card <span class="required">*</span></label>
-            <input type="text" value="${escapeHtml(card.nome || '')}" placeholder="Ex: Card Copinho d'Água" data-idx="${idx}" data-field="nome">
-          </div>
-          <div class="form-group col-3">
-            <label>Áudio Disparado</label>
-            <input type="text" value="${escapeHtml(card.audio || '')}" placeholder="card_agua.mp3" class="mono-input" data-idx="${idx}" data-field="audio">
-          </div>
-        </div>
-
-        <!-- Perfil de Hardware Sensorial do Card -->
-        <div class="sensor-profile-row">
-          <span class="sensor-title">Perfil Sensorial:</span>
-          <div class="sensor-field">
-            <label>LED:</label>
-            <input type="color" value="${hardware.led || '#00CCFF'}" data-idx="${idx}" data-field="hw-led">
-          </div>
-          <div class="sensor-field">
-            <label>Display OLED:</label>
-            <select data-idx="${idx}" data-field="hw-rosto">
-              <option value="feliz" ${hardware.rosto === 'feliz' ? 'selected' : ''}>Feliz</option>
-              <option value="animado" ${hardware.rosto === 'animado' ? 'selected' : ''}>Animado</option>
-              <option value="piscando" ${hardware.rosto === 'piscando' ? 'selected' : ''}>Piscando</option>
-              <option value="comemorando" ${hardware.rosto === 'comemorando' ? 'selected' : ''}>Comemorando</option>
-              <option value="zen" ${hardware.rosto === 'zen' ? 'selected' : ''}>Zen</option>
-            </select>
-          </div>
-          <div class="sensor-field">
-            <label>Vibração:</label>
-            <select data-idx="${idx}" data-field="hw-vibe">
-              <option value="curta" ${hardware.vibracao === 'curta' ? 'selected' : ''}>Toque Curto</option>
-              <option value="duplo_toque" ${hardware.vibracao === 'duplo_toque' ? 'selected' : ''}>Duplo Toque</option>
-              <option value="pulsar_suave" ${hardware.vibracao === 'pulsar_suave' ? 'selected' : ''}>Pulsar Suave</option>
-              <option value="sucesso" ${hardware.vibracao === 'sucesso' ? 'selected' : ''}>Sucesso</option>
-            </select>
-          </div>
-        </div>
-      `;
-
-      cardEl.querySelector('[data-action="remove-card"]').addEventListener('click', () => {
-        tempCardsRfid.splice(idx, 1);
-        renderCardsRfidList();
-      });
-
-      cardEl.querySelectorAll('input, select').forEach(input => {
-        input.addEventListener('input', (e) => {
-          const field = e.target.getAttribute('data-field');
-          if (field.startsWith('hw-')) {
-            if (!tempCardsRfid[idx].perfilHardware) tempCardsRfid[idx].perfilHardware = {};
-            if (field === 'hw-led') tempCardsRfid[idx].perfilHardware.led = e.target.value;
-            if (field === 'hw-rosto') tempCardsRfid[idx].perfilHardware.rosto = e.target.value;
-            if (field === 'hw-vibe') tempCardsRfid[idx].perfilHardware.vibracao = e.target.value;
-          } else {
-            tempCardsRfid[idx][field] = e.target.value;
-          }
-        });
-      });
-
-      container.appendChild(cardEl);
-    });
-  }
-
-  // ==========================================================================
-  // LISTAS DINÂMICAS: DESAFIOS (CARD RFID OU REFLEXIVO GUIADO)
-  // ==========================================================================
-  function renderDesafiosList() {
-    const container = document.getElementById('desafios-container');
-    const emptySub = document.getElementById('desafios-empty');
-    container.innerHTML = '';
-
-    if (tempDesafios.length === 0) {
-      emptySub.style.display = 'block';
-      return;
-    }
-    emptySub.style.display = 'none';
-
-    tempDesafios.forEach((des, idx) => {
-      const cardEl = document.createElement('div');
-      cardEl.className = 'desafio-editor-card';
-
-      const isRfid = des.tipo === 'card_rfid';
-
-      cardEl.innerHTML = `
-        <div class="card-header-bar">
-          <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <span style="font-size: 1.25rem;">🏆</span>
-            <strong>Desafio #${idx + 1}</strong>
-          </div>
-          <button type="button" class="btn btn-danger-outline btn-chip" data-idx="${idx}" data-action="remove-desafio">✕ Remover</button>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group col-4">
-            <label>Tipo de Desafio:</label>
-            <select data-idx="${idx}" data-field="tipo">
-              <option value="card_rfid" ${isRfid ? 'selected' : ''}>Validação por Card RFID</option>
-              <option value="reflexivo_guiado" ${!isRfid ? 'selected' : ''}>Áudio Reflexivo c/ Pausa</option>
-            </select>
-          </div>
-          <div class="form-group col-8">
-            <label>Título da Missão:</label>
-            <input type="text" value="${escapeHtml(des.titulo || '')}" placeholder="Ex: Onde está o Card do Desjejum?" data-idx="${idx}" data-field="titulo">
-          </div>
-        </div>
-
-        ${isRfid ? `
-          <!-- Campos do Modo Card RFID -->
-          <div class="form-row">
-            <div class="form-group col-4">
-              <label>UID do Card Esperado:</label>
-              <input type="text" value="${escapeHtml(des.cardEsperadoUid || '')}" placeholder="3A7F2B02" class="mono-input" data-idx="${idx}" data-field="cardEsperadoUid">
-            </div>
-            <div class="form-group col-4">
-              <label>Áudio da Pergunta:</label>
-              <input type="text" value="${escapeHtml(des.audioPergunta || '')}" placeholder="pergunta.mp3" class="mono-input" data-idx="${idx}" data-field="audioPergunta">
-            </div>
-            <div class="form-group col-4">
-              <label>Áudio de Sucesso:</label>
-              <input type="text" value="${escapeHtml(des.audioSucesso || '')}" placeholder="sucesso.mp3" class="mono-input" data-idx="${idx}" data-field="audioSucesso">
-            </div>
-          </div>
-        ` : `
-          <!-- Campos do Modo Reflexivo Guiado -->
-          <div class="form-row">
-            <div class="form-group col-6">
-              <label>Áudio Guia da Reflexão:</label>
-              <input type="text" value="${escapeHtml(des.audioGuia || '')}" placeholder="guia_zen.mp3" class="mono-input" data-idx="${idx}" data-field="audioGuia">
-            </div>
-            <div class="form-group col-3">
-              <label>Pausa de Silêncio (segundos):</label>
-              <input type="number" value="${des.pausaSegundos || 15}" placeholder="15" data-idx="${idx}" data-field="pausaSegundos">
-            </div>
-            <div class="form-group col-3">
-              <label>Áudio Conclusão:</label>
-              <input type="text" value="${escapeHtml(des.audioConclusao || '')}" placeholder="fim_zen.mp3" class="mono-input" data-idx="${idx}" data-field="audioConclusao">
-            </div>
-          </div>
-        `}
-      `;
-
-      cardEl.querySelector('[data-action="remove-desafio"]').addEventListener('click', () => {
-        tempDesafios.splice(idx, 1);
-        renderDesafiosList();
-      });
-
-      cardEl.querySelectorAll('input, select').forEach(input => {
-        input.addEventListener('change', (e) => {
-          const field = e.target.getAttribute('data-field');
-          tempDesafios[idx][field] = e.target.value;
-          if (field === 'tipo') {
-            renderDesafiosList(); // re-renderiza para alternar os inputs
-          }
-        });
-      });
-
-      container.appendChild(cardEl);
-    });
-  }
-
-  // ==========================================================================
-  // SALVAR TEMA (VALIDAÇÕES E REGRAS)
-  // ==========================================================================
-  function saveTemaFromForm() {
-    const codigoInput = document.getElementById('tema-codigo');
-    const codigo = codigoInput.value.trim();
-    const titulo = document.getElementById('tema-titulo').value.trim();
-    const descricao = document.getElementById('tema-descricao').value.trim();
-    const eixoId = document.getElementById('tema-eixo').value;
-
-    // 1. Validação do código: Padrão tXX.YY
-    const regexCodigo = /^t\d{2}\.\d{2}$/;
-    if (!regexCodigo.test(codigo)) {
-      showToast('O código do tema deve seguir o padrão tXX.YY (ex: t01.01, t02.01).', 'error');
-      goToStep(1);
-      codigoInput.focus();
-      return;
-    }
-
-    if (!titulo) {
-      showToast('Por favor, informe o título da aventura.', 'error');
-      goToStep(1);
-      document.getElementById('tema-titulo').focus();
-      return;
-    }
-
-    // Verificar unicidade de código se for novo tema ou edição com alteração
-    const duplicateIndex = catalogState.temas.findIndex(t => t.codigo === codigo);
-    if (duplicateIndex !== -1 && duplicateIndex !== currentEditingIndex) {
-      showToast(`O código ${codigo} já está em uso por outro tema!`, 'error');
-      goToStep(1);
-      codigoInput.focus();
-      return;
-    }
-
-    // 2. Montar Objeto Estruturado do Tema
-    const temaData = {
-      codigo,
-      eixoId,
-      titulo,
-      descricao,
-      faixaEtaria: document.getElementById('tema-faixa-etaria').value.trim() || '2 a 5 anos',
-      materiais: {
-        historiaAudio: {
-          titulo: document.getElementById('mat-hist-titulo').value.trim(),
-          arquivo: document.getElementById('mat-hist-arquivo').value.trim(),
-          duracaoSegundos: parseInt(document.getElementById('mat-hist-duracao').value, 10) || 0,
-          url: document.getElementById('mat-hist-url').value.trim()
-        },
-        livrinhoPdf: {
-          titulo: document.getElementById('mat-livro-titulo').value.trim(),
-          arquivo: document.getElementById('mat-livro-arquivo').value.trim(),
-          paginas: parseInt(document.getElementById('mat-livro-paginas').value, 10) || 12,
-          url: document.getElementById('mat-livro-url').value.trim()
-        },
-        bobieGods: tempBobies,
-        atividadesImpressasPdf: {
-          titulo: document.getElementById('mat-ativ-titulo').value.trim(),
-          arquivo: document.getElementById('mat-ativ-arquivo').value.trim(),
-          url: document.getElementById('mat-ativ-url').value.trim()
+    if (!catalogState.historinhas || catalogState.historinhas.length === 0) {
+      try {
+        const resp = await fetch(DEFAULT_REPO_URL);
+        if (resp.ok) {
+          const raw = await resp.json();
+          catalogState.catalogVersion = raw.catalogVersion || "v3.001";
+          catalogState.historinhas = convertLegacyCatalogToHistorinhas(raw);
         }
-      },
-      interacoesFefo: {
-        treckTreck: {
-          ativo: document.getElementById('treck-ativo').checked,
-          titulo: document.getElementById('treck-titulo').value.trim(),
-          audio: document.getElementById('treck-arquivo').value.trim(),
-          duracaoSegundos: parseInt(document.getElementById('treck-duracao').value, 10) || 90,
-          descricao: document.getElementById('treck-desc').value.trim(),
-          perfilHardware: {
-            led: document.getElementById('treck-led').value,
-            rosto: document.getElementById('treck-rosto').value,
-            vibracao: document.getElementById('treck-vibracao').value
+      } catch (e) {
+        console.info('Repositório local não alcançado, criando semente...');
+      }
+    }
+
+    if (!catalogState.historinhas || catalogState.historinhas.length === 0) {
+      catalogState.historinhas = [createDefaultStory(1)];
+    }
+
+    saveState(false);
+  }
+
+  function saveState(notify = true) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(catalogState, null, 2));
+    if (notify) {
+      showToast('Alterações salvas com sucesso no navegador!', 'success');
+    }
+  }
+
+  function convertLegacyCatalogToHistorinhas(raw) {
+    if (!raw.temas || raw.temas.length === 0) return [createDefaultStory(1)];
+    return raw.temas.map((t, idx) => ({
+      id: `hist_${idx + 1}`,
+      codigo: t.codigo || `t01.${String(idx + 1).padStart(2, '0')}`,
+      titulo: t.titulo || `Historinha ${idx + 1}`,
+      eixoId: t.eixoId || "eixo-03",
+      licencas: { home: true, escola: true, clinica: true, premium: true },
+      contos: [
+        {
+          id: `conto_1`,
+          nomeApp: "A VINDA",
+          arquivoPet: "A0001.WAV",
+          arquivoPetManual: false,
+          audioUrl: t.materiais?.historiaAudio?.url || "",
+          roteiro: "Olá amiguinho! O FEFO chegou para viver muitas aventuras com você na Terra!",
+          trimmer: { inicio: 0.50, fim: 51.37, fadeIn: 0.2, fadeOut: 0.2, duracao: 50.87 },
+          status: "ready",
+          cardVinculado: {
+            nome: "CARD FEFO CHEGOU",
+            comandoPet: "CARD0001",
+            imagemUrl: ""
           }
-        },
-        cardsRfid: tempCardsRfid,
-        musicasEMindfulness: tempMusicas,
-        desafios: tempDesafios
-      }
+        }
+      ],
+      trecks: [
+        {
+          id: `trk_1`,
+          nomeAcao: t.interacoesFefo?.treckTreck?.titulo || "Alongamento da Manhã",
+          arquivoPet: "TRK0001.WAV",
+          duracaoSegundos: 90,
+          instrucao: "Gire a catraca do robô acompanhando o som rítmico...",
+          status: "ready"
+        }
+      ],
+      musicas: [
+        {
+          id: `mus_1`,
+          titulo: "Canção de Ninar do FEFO",
+          arquivoPet: "M0001.WAV",
+          status: "ready"
+        }
+      ],
+      desafios: [
+        {
+          id: `des_1`,
+          tipo: "card_rfid",
+          titulo: "Onde está o Card do Amiguinho?",
+          cardEsperado: "CARD0001",
+          audioPergunta: "A0002.WAV"
+        }
+      ],
+      livrinhos: [
+        {
+          id: `livro_1`,
+          nome: "AVENTURAS DO FEFO",
+          pdfUrl: t.materiais?.livrinhoPdf?.url || "",
+          capaUrl: ""
+        }
+      ],
+      bobies: [
+        {
+          id: `bobie_1`,
+          nome: "AVENTURAS DO FEFO - COLORIR",
+          pdfUrl: "",
+          capaUrl: ""
+        }
+      ]
+    }));
+  }
+
+  function createDefaultStory(num) {
+    return {
+      id: `hist_${Date.now()}`,
+      codigo: `t01.${String(num).padStart(2, '0')}`,
+      titulo: `Historinha ${num} - O fefo vindo para terra`,
+      eixoId: "eixo-03",
+      licencas: { home: true, escola: true, clinica: true, premium: true },
+      contos: [
+        {
+          id: `conto_1`,
+          nomeApp: "A VINDA",
+          arquivoPet: "A0001.WAV",
+          arquivoPetManual: false,
+          audioUrl: "",
+          roteiro: "Digite ou edite aqui o roteiro falado pelo FEFO para este áudio...",
+          trimmer: { inicio: 0.50, fim: 51.37, fadeIn: 0.2, fadeOut: 0.2, duracao: 50.87 },
+          status: "raw",
+          cardVinculado: {
+            nome: "CARD 001",
+            comandoPet: "CARD0001",
+            imagemUrl: ""
+          }
+        }
+      ],
+      trecks: [],
+      musicas: [],
+      desafios: [],
+      livrinhos: [
+        {
+          id: `livro_1`,
+          nome: "AVENTURAS DO FEFO",
+          pdfUrl: "",
+          capaUrl: ""
+        }
+      ],
+      bobies: [
+        {
+          id: `bobie_1`,
+          nome: "AVENTURAS DO FEFO - COLORIR",
+          pdfUrl: "",
+          capaUrl: ""
+        }
+      ]
     };
-
-    // 3. Atualizar no Estado
-    if (currentEditingIndex >= 0) {
-      catalogState.temas[currentEditingIndex] = temaData;
-      showToast(`Tema ${codigo} atualizado com sucesso!`, 'success');
-    } else {
-      catalogState.temas.push(temaData);
-      showToast(`Novo tema ${codigo} cadastrado com sucesso!`, 'success');
-    }
-
-    saveToLocalStorage(false);
-    closeEditorModal();
-    renderAll();
-  }
-
-  function deleteTema(index) {
-    const tema = catalogState.temas[index];
-    if (!tema) return;
-
-    if (confirm(`Tem certeza de que deseja remover o tema "${tema.codigo} - ${tema.titulo}"? Esta ação pode ser revertida importando o backup.`)) {
-      catalogState.temas.splice(index, 1);
-      saveToLocalStorage(false);
-      renderAll();
-      showToast(`Tema ${tema.codigo} removido.`, 'info');
-    }
   }
 
   // ==========================================================================
-  // EVENTOS GLOBAIS DE INTERFACE & IO
+  // CONFIGURAÇÃO DOS EIXOS & TOP-BAR
   // ==========================================================================
-  function initFilterEvents() {
-    document.getElementById('search-temas').addEventListener('input', debounce(renderTemas, 200));
-    document.getElementById('filter-eixo').addEventListener('change', renderTemas);
-    document.getElementById('sort-temas').addEventListener('change', renderTemas);
-  }
-
-  function initModalEvents() {
-    document.getElementById('btn-novo-tema').addEventListener('click', () => openEditorForTema(-1));
-    document.getElementById('btn-empty-novo-tema').addEventListener('click', () => openEditorForTema(-1));
-    document.getElementById('btn-close-modal').addEventListener('click', closeEditorModal);
-    document.getElementById('btn-cancelar-modal').addEventListener('click', closeEditorModal);
-    document.getElementById('btn-salvar-tema').addEventListener('click', saveTemaFromForm);
-
-    document.getElementById('btn-sugerir-codigo').addEventListener('click', sugerirProximoCodigoTema);
-    document.getElementById('tema-eixo').addEventListener('change', () => {
-      const eixo = catalogState.eixos.find(e => e.id === document.getElementById('tema-eixo').value);
-      document.getElementById('tema-eixo-desc').textContent = eixo ? `${eixo.icone} ${eixo.descricao}` : '';
+  function initEixoSelector() {
+    const sel = document.getElementById('eixo-selector');
+    sel.innerHTML = '';
+    EIXOS_OFICIAIS.forEach(eixo => {
+      const opt = document.createElement('option');
+      opt.value = eixo.id;
+      opt.textContent = `${eixo.icone} ${eixo.nome}`;
+      sel.appendChild(opt);
     });
 
-    // Botões de adição dinâmica
-    document.getElementById('btn-add-bobie').addEventListener('click', () => {
-      tempBobies.push({ nome: 'Novo Bobie', tipo: 'pdf', arquivo: '', url: '' });
-      renderBobiesList();
-    });
-
-    document.getElementById('btn-add-musica').addEventListener('click', () => {
-      tempMusicas.push({ id: `mus_${Date.now()}`, tipo: 'musica', titulo: 'Nova Faixa', audio: '', duracaoSegundos: 120 });
-      renderMusicasList();
-    });
-
-    document.getElementById('btn-add-card-rfid').addEventListener('click', () => {
-      tempCardsRfid.push({
-        id: `card_${Date.now()}`,
-        tagUid: '',
-        nome: 'Novo Card',
-        audio: '',
-        perfilHardware: { led: '#00CCFF', rosto: 'feliz', vibracao: 'curta' }
-      });
-      renderCardsRfidList();
-    });
-
-    document.getElementById('btn-add-desafio').addEventListener('click', () => {
-      tempDesafios.push({
-        id: `des_${Date.now()}`,
-        tipo: 'card_rfid',
-        titulo: 'Nova Missão Interativa',
-        cardEsperadoUid: '',
-        audioPergunta: '',
-        audioSucesso: '',
-        perfilHardware: { led: '#00FF66', rosto: 'comemorando', vibracao: 'sucesso' }
-      });
-      renderDesafiosList();
-    });
-
-    // Novo Eixo
-    document.getElementById('btn-adicionar-eixo').addEventListener('click', () => {
-      const nome = prompt('Nome do novo Eixo Temático:');
-      if (!nome) return;
-      const icone = prompt('Ícone Emoji para o Eixo (ex: 🌟, 🎨):', '🌟') || '🌟';
-      const novoId = `eixo-${String(catalogState.eixos.length + 1).padStart(2, '0')}`;
-      catalogState.eixos.push({
-        id: novoId,
-        nome,
-        descricao: 'Diretriz pedagógica personalizada.',
-        icone,
-        cor: '#0D9488'
-      });
-      saveToLocalStorage(false);
-      renderAll();
-      showToast(`Eixo "${nome}" adicionado com sucesso!`, 'success');
+    sel.addEventListener('change', () => {
+      const story = getCurrentStory();
+      story.eixoId = sel.value;
+      saveState(false);
+      updateStorySelectorDisplay();
     });
   }
 
-  // ==========================================================================
-  // CONTROLE DE VERSIONAMENTO GLOBAL DO CATÁLOGO
-  // ==========================================================================
-  function initGlobalVersionControl() {
-    const bumpBtn = document.getElementById('btn-bump-version');
-    bumpBtn.addEventListener('click', () => {
-      let current = catalogState.catalogVersion || 'v3.001';
-      // Extrair parte numérica após 'v'
-      const match = current.match(/^v(\d+)\.(\d+)$/);
-      if (match) {
-        const major = parseInt(match[1], 10);
-        let minor = parseInt(match[2], 10) + 1;
-        const newVer = `v${major}.${String(minor).padStart(3, '0')}`;
-        catalogState.catalogVersion = newVer;
-        catalogState.versionCode = (major * 1000) + minor;
-        saveToLocalStorage(false);
-        updateFooterStats();
-        showToast(`Versão do Catálogo incrementada para ${newVer}!`, 'success');
-      } else {
-        catalogState.catalogVersion = 'v3.002';
-        saveToLocalStorage(false);
-        updateFooterStats();
-      }
+  function initTopBarEvents() {
+    document.getElementById('select-historinha').addEventListener('change', (e) => {
+      currentStoryIndex = parseInt(e.target.value, 10) || 0;
+      renderCurrentStory();
     });
 
-    document.getElementById('footer-version-pill').addEventListener('dblclick', () => {
-      const manual = prompt('Definir versão global do catálogo manualmente (ex: v3.005):', catalogState.catalogVersion);
-      if (manual && manual.trim()) {
-        catalogState.catalogVersion = manual.trim();
-        saveToLocalStorage(false);
-        updateFooterStats();
-        showToast(`Versão global definida para ${catalogState.catalogVersion}`, 'info');
-      }
+    document.getElementById('btn-nova-historinha').addEventListener('click', () => {
+      const newNum = catalogState.historinhas.length + 1;
+      const newStory = createDefaultStory(newNum);
+      catalogState.historinhas.push(newStory);
+      currentStoryIndex = catalogState.historinhas.length - 1;
+      saveState(false);
+      renderCurrentStory();
+      showToast(`Nova Historinha ${newNum} criada!`, 'success');
     });
-  }
 
-  // ==========================================================================
-  // IMPORTAÇÃO / EXPORTAÇÃO JSON
-  // ==========================================================================
-  function initIOEvents() {
-    const importInput = document.getElementById('file-import-json');
-    const importBtn = document.getElementById('btn-import-json');
-    const exportBtn = document.getElementById('btn-export-json');
-
-    importBtn.addEventListener('click', () => importInput.click());
-
-    importInput.addEventListener('change', (e) => {
+    const fileInput = document.getElementById('input-import-json');
+    document.getElementById('btn-import-catalog').addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (!file) return;
-
       const reader = new FileReader();
-      reader.onload = (event) => {
+      reader.onload = (evt) => {
         try {
-          const parsed = JSON.parse(event.target.result);
-          if (!parsed.schema || parsed.schema < 3) {
-            if (!confirm('Este arquivo não parece ser o esquema v3 do FEFO. Deseja tentar importar mesmo assim?')) {
-              return;
-            }
+          const parsed = JSON.parse(evt.target.result);
+          if (parsed.historinhas && Array.isArray(parsed.historinhas)) {
+            catalogState = parsed;
+          } else if (parsed.temas) {
+            catalogState.historinhas = convertLegacyCatalogToHistorinhas(parsed);
           }
-          catalogState = parsed;
-          saveToLocalStorage(false);
-          renderAll();
-          showToast(`Arquivo ${file.name} importado com sucesso!`, 'success');
+          currentStoryIndex = 0;
+          saveState(false);
+          renderCurrentStory();
+          showToast(`Catálogo ${file.name} importado com sucesso!`, 'success');
         } catch (err) {
-          showToast('Erro ao processar arquivo JSON. Verifique a sintaxe.', 'error');
+          showToast('Erro ao importar JSON. Verifique a sintaxe.', 'error');
         }
       };
       reader.readAsText(file);
-      importInput.value = '';
+      fileInput.value = '';
     });
 
-    exportBtn.addEventListener('click', () => {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(catalogState, null, 2));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `catalog-v3_${catalogState.catalogVersion || 'latest'}.json`);
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
-      showToast('Download do catalog-v3.json iniciado!', 'success');
+    document.getElementById('btn-export-catalog').addEventListener('click', exportCatalogJson);
+  }
+
+  function initFooterEvents() {
+    document.getElementById('btn-salvar-tema').addEventListener('click', () => {
+      syncCurrentStoryFromInputs();
+      saveState(true);
+    });
+
+    document.getElementById('btn-publicar-tema').addEventListener('click', () => {
+      syncCurrentStoryFromInputs();
+      // Incrementar versão global
+      let cur = catalogState.catalogVersion || 'v3.001';
+      const m = cur.match(/^v(\d+)\.(\d+)$/);
+      if (m) {
+        const major = parseInt(m[1], 10);
+        const minor = parseInt(m[2], 10) + 1;
+        catalogState.catalogVersion = `v${major}.${String(minor).padStart(3, '0')}`;
+        catalogState.versionCode = (major * 1000) + minor;
+      }
+      saveState(false);
+      exportCatalogJson();
+      document.getElementById('global-version-display').textContent = catalogState.catalogVersion;
+      showToast(`Historinha publicada! Versão atualizada para ${catalogState.catalogVersion}`, 'success');
+    });
+
+    document.getElementById('btn-excluir-tema').addEventListener('click', () => {
+      if (catalogState.historinhas.length <= 1) {
+        showToast('Não é possível excluir a única historinha do catálogo!', 'warning');
+        return;
+      }
+      const story = getCurrentStory();
+      if (confirm(`Tem certeza de que deseja excluir "${story.titulo}"?`)) {
+        catalogState.historinhas.splice(currentStoryIndex, 1);
+        currentStoryIndex = Math.max(0, currentStoryIndex - 1);
+        saveState(false);
+        renderCurrentStory();
+        showToast('Historinha removida.', 'info');
+      }
+    });
+
+    // Seção de botões de adicionar
+    document.getElementById('btn-add-conto').addEventListener('click', addNewConto);
+    document.getElementById('btn-add-treck').addEventListener('click', addNewTreck);
+    document.getElementById('btn-add-musica').addEventListener('click', addNewMusica);
+    document.getElementById('btn-add-desafio').addEventListener('click', addNewDesafio);
+    document.getElementById('btn-add-livrinho').addEventListener('click', addNewLivrinho);
+    document.getElementById('btn-add-bobie').addEventListener('click', addNewBobie);
+
+    // Edição do título no topo
+    const titleInput = document.getElementById('story-title-input');
+    titleInput.addEventListener('input', () => {
+      getCurrentStory().titulo = titleInput.value;
+      updateStorySelectorDisplay();
+    });
+
+    // Licenças
+    ['home', 'escola', 'clinica', 'premium'].forEach(lic => {
+      document.getElementById(`lic-${lic}`).addEventListener('change', (e) => {
+        getCurrentStory().licencas[lic] = e.target.checked;
+        saveState(false);
+      });
+    });
+  }
+
+  function getCurrentStory() {
+    if (!catalogState.historinhas[currentStoryIndex]) {
+      currentStoryIndex = 0;
+    }
+    return catalogState.historinhas[currentStoryIndex];
+  }
+
+  function updateStorySelectorDisplay() {
+    const sel = document.getElementById('select-historinha');
+    sel.innerHTML = '';
+    catalogState.historinhas.forEach((h, idx) => {
+      const opt = document.createElement('option');
+      opt.value = idx;
+      opt.textContent = `${h.codigo || 't01.' + (idx+1)}: ${h.titulo}`;
+      if (idx === currentStoryIndex) opt.selected = true;
+      sel.appendChild(opt);
     });
   }
 
   // ==========================================================================
-  // TOASTS DE NOTIFICAÇÃO
+  // RENDERIZAÇÃO DA HISTORINHA ATUAL (FIEL AO MOCKUP)
   // ==========================================================================
-  function showToast(message, type = 'info') {
-    const container = document.getElementById('toast-container');
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    
-    let icon = 'ℹ️';
-    if (type === 'success') icon = '✅';
-    if (type === 'error') icon = '⚠️';
+  function renderCurrentStory() {
+    const story = getCurrentStory();
 
-    toast.innerHTML = `<span>${icon}</span> <span>${escapeHtml(message)}</span>`;
-    container.appendChild(toast);
+    // 1. Topo: Título, Eixo e Licenças
+    document.getElementById('story-title-input').value = story.titulo || '';
+    document.getElementById('eixo-selector').value = story.eixoId || 'eixo-03';
+    document.getElementById('global-version-display').textContent = catalogState.catalogVersion || 'v3.001';
 
+    story.licencas = story.licencas || { home: true, escola: true, clinica: true, premium: true };
+    document.getElementById('lic-home').checked = !!story.licencas.home;
+    document.getElementById('lic-escola').checked = !!story.licencas.escola;
+    document.getElementById('lic-clinica').checked = !!story.licencas.clinica;
+    document.getElementById('lic-premium').checked = !!story.licencas.premium;
+
+    updateStorySelectorDisplay();
+
+    // 2. Renderizar Contos
+    renderContosSection(story);
+
+    // 3. Renderizar Treck-Treck
+    renderTrecksSection(story);
+
+    // 4. Renderizar Músicas
+    renderMusicasSection(story);
+
+    // 5. Renderizar Desafios
+    renderDesafiosSection(story);
+
+    // 6. Renderizar Livrinhos
+    renderLivrinhosSection(story);
+
+    // 7. Renderizar Bobie Gods
+    renderBobiesSection(story);
+  }
+
+  // ==========================================================================
+  // SEÇÃO 1: CONTOS (WAVEFORM + ROTEIRO + CARD VINCULADO)
+  // ==========================================================================
+  function renderContosSection(story) {
+    const container = document.getElementById('contos-container');
+    container.innerHTML = '';
+
+    (story.contos || []).forEach((conto, idx) => {
+      const card = document.createElement('div');
+      card.className = 'accordion-item-card expanded';
+      card.id = `card-conto-${idx}`;
+
+      const status = getContoStatus(conto);
+      const contoNum = idx + 1;
+
+      card.innerHTML = `
+        <!-- Cabeçalho Sanfonado com Semáforo -->
+        <div class="accordion-header" data-action="toggle-accordion" data-target="card-conto-${idx}">
+          <div class="accordion-title-group">
+            <span class="accordion-title">CONTO ${String(contoNum).padStart(2, '0')} - ${escapeHtml(conto.nomeApp || 'EXEMPLO')}</span>
+            <span class="status-badge-traffic ${status.cls}">${status.icon} ${status.label}</span>
+          </div>
+          <span class="accordion-toggle-arrow">▲</span>
+        </div>
+
+        <div class="accordion-body">
+          <!-- Faixa Vertical Amarela -->
+          <div class="side-vertical-badge">
+            CONTO ${contoNum}
+          </div>
+
+          <div class="accordion-content-inner">
+            
+            <!-- Linha 1: Nome no APP + Selecionar Áudio -->
+            <div class="field-row-horizontal">
+              <label class="field-label-inline">Nome no APP</label>
+              <input type="text" class="field-input-clean" value="${escapeHtml(conto.nomeApp || '')}" placeholder="Nome do conto..." data-idx="${idx}" data-field="nomeApp">
+              <button type="button" class="btn-mockup-mustard" data-idx="${idx}" data-action="upload-audio-conto">Selecionar Áudio</button>
+            </div>
+
+            <!-- Linha 2: Player de Áudio Nativo -->
+            <audio controls class="native-audio-player" id="player-conto-${idx}" src="${conto.audioUrl || ''}">
+              Seu navegador não suporta reprodução de áudio.
+            </audio>
+
+            <!-- Linha 3: Arquivo no PET + Numeração Livre -->
+            <div class="field-row-horizontal">
+              <label class="field-label-inline">Arquivo no PET</label>
+              <input type="text" class="field-input-clean field-input-mono" value="${escapeHtml(conto.arquivoPet || getNextAudioFileName(idx))}" placeholder="A0001.WAV" data-idx="${idx}" data-field="arquivoPet" ${conto.arquivoPetManual ? '' : 'readonly'}>
+              <button type="button" class="btn-mockup-mustard" data-idx="${idx}" data-action="toggle-manual-number" title="Alternar entre numeração automática e edição livre">
+                ${conto.arquivoPetManual ? 'Travar Auto' : 'numeração livre'}
+              </button>
+            </div>
+
+            <!-- Linha 4: Roteiro do Áudio + Gerar Voz IA (ElevenLabs / F5-TTS) -->
+            <div class="sub-accordion-box">
+              <div class="sub-accordion-header">
+                <span class="sub-header-title">Roteiro do Áudio ▲</span>
+                <button type="button" class="btn-mockup-mustard" data-idx="${idx}" data-action="gerar-voz-ia">
+                  🎙️ Gerar Voz do FEFO (IA)
+                </button>
+              </div>
+              <textarea class="textarea-roteiro" placeholder="Digite ou edite aqui o roteiro falado pelo FEFO para este áudio..." data-idx="${idx}" data-field="roteiro">${escapeHtml(conto.roteiro || '')}</textarea>
+            </div>
+
+            <!-- Linha 5: Ajusta/Cortar com Waveform Neon -->
+            <div class="sub-accordion-box">
+              <div class="sub-header-title" style="margin-bottom: 0.65rem;">Ajusta/Cortar ▲</div>
+              <div class="waveform-tool-box">
+                <div class="waveform-canvas-container">
+                  <canvas id="canvas-conto-${idx}" class="waveform-canvas"></canvas>
+                </div>
+                <div class="trimmer-controls-row">
+                  <div class="trimmer-param-chip">Fade In: <span class="val" id="val-fadein-${idx}">${(conto.trimmer?.fadeIn || 0.2).toFixed(2)}s</span></div>
+                  <div class="trimmer-param-chip">Início: <input type="number" step="0.05" value="${(conto.trimmer?.inicio || 0).toFixed(2)}" data-idx="${idx}" data-trim="inicio" id="input-inicio-${idx}"></div>
+                  <div class="trimmer-param-chip">Fim: <input type="number" step="0.05" value="${(conto.trimmer?.fim || 10).toFixed(2)}" data-idx="${idx}" data-trim="fim" id="input-fim-${idx}"></div>
+                  <div class="trimmer-param-chip">Fade Out: <span class="val" id="val-fadeout-${idx}">${(conto.trimmer?.fadeOut || 0.2).toFixed(2)}s</span></div>
+                  <div class="trimmer-param-chip">Duração: <span class="val" id="val-duracao-${idx}">${(conto.trimmer?.duracao || 10).toFixed(2)}s</span></div>
+                </div>
+                <div class="trimmer-buttons-row">
+                  <button type="button" class="btn-trim-secondary" data-idx="${idx}" data-action="ouvir-trecho">▶ Ouvir Trecho</button>
+                  <button type="button" class="btn-trim-secondary" data-idx="${idx}" data-action="redefinir-corte">Redefinir Tudo</button>
+                  <button type="button" class="btn-trim-secondary" data-idx="${idx}" data-action="baixar-mp3">Baixar MP3</button>
+                  <button type="button" class="btn-trim-apply" data-idx="${idx}" data-action="aplicar-corte">Aplicar Corte</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Linha 6: CARD Vinculado -->
+            <div class="sub-accordion-box">
+              <div class="sub-header-title" style="margin-bottom: 0.65rem;">CARD Vinculado ▲</div>
+              <div class="card-linked-box">
+                <div class="card-preview-thumbnail">
+                  ${conto.cardVinculado?.imagemUrl 
+                    ? `<img src="${conto.cardVinculado.imagemUrl}" alt="Preview do Card">` 
+                    : `<span class="card-preview-placeholder">🎴</span>`
+                  }
+                </div>
+                <div class="card-fields-col">
+                  <div class="field-row-horizontal">
+                    <label class="field-label-inline">Nome no Catálogo</label>
+                    <input type="text" class="field-input-clean" value="${escapeHtml(conto.cardVinculado?.nome || '')}" placeholder="CARD XXXX" data-idx="${idx}" data-field="card-nome">
+                    <button type="button" class="btn-mockup-mustard" data-idx="${idx}" data-action="upload-img-card">Selecionar Card PNG ou JPEG</button>
+                  </div>
+                  <div class="field-row-horizontal">
+                    <label class="field-label-inline">Comando no Pet</label>
+                    <input type="text" class="field-input-clean field-input-mono" value="${escapeHtml(conto.cardVinculado?.comandoPet || `CARD${String(idx+1).padStart(4, '0')}`)}" placeholder="CARD0001" data-idx="${idx}" data-field="card-comando">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ações: Botão Confirmar Verde e Lixeira Vermelha -->
+            <div class="item-actions-corner">
+              <button type="button" class="btn-action-circle check" data-idx="${idx}" data-action="save-conto-item" title="Confirmar Conto">✔</button>
+              <button type="button" class="btn-action-circle delete" data-idx="${idx}" data-action="delete-conto-item" title="Excluir Conto">🗑</button>
+            </div>
+
+          </div>
+        </div>
+      `;
+
+      container.appendChild(card);
+      initContoEvents(card, idx, conto);
+      drawWaveform(document.getElementById(`canvas-conto-${idx}`), conto.audioBuffer);
+    });
+  }
+
+  function getContoStatus(conto) {
+    if (!conto.audioUrl && !conto.audioBuffer) {
+      return { cls: 'empty', icon: '🔴', label: 'Sem Áudio' };
+    }
+    if (conto.status === 'ready') {
+      return { cls: 'ready', icon: '🟢', label: 'Pronto' };
+    }
+    return { cls: 'raw', icon: '🟡', label: 'Áudio Bruto' };
+  }
+
+  function getNextAudioFileName(idx) {
+    return `A${String(idx + 1).padStart(4, '0')}.WAV`;
+  }
+
+  function initContoEvents(card, idx, conto) {
+    // Acordeão
+    card.querySelector('[data-action="toggle-accordion"]').addEventListener('click', () => {
+      card.classList.toggle('expanded');
+      card.classList.toggle('collapsed');
+    });
+
+    // Inputs de texto
+    card.querySelectorAll('input[data-field], textarea[data-field]').forEach(inp => {
+      inp.addEventListener('input', (e) => {
+        const f = e.target.getAttribute('data-field');
+        if (f === 'card-nome') conto.cardVinculado.nome = e.target.value;
+        else if (f === 'card-comando') conto.cardVinculado.comandoPet = e.target.value;
+        else conto[f] = e.target.value;
+      });
+    });
+
+    // Numeração livre
+    card.querySelector('[data-action="toggle-manual-number"]').addEventListener('click', () => {
+      conto.arquivoPetManual = !conto.arquivoPetManual;
+      renderContosSection(getCurrentStory());
+    });
+
+    // Upload de Áudio
+    card.querySelector('[data-action="upload-audio-conto"]').addEventListener('click', () => {
+      promptFileUpload('audio/*', async (file, dataUrl) => {
+        conto.audioUrl = dataUrl;
+        conto.status = 'raw';
+        const ctx = getAudioContext();
+        try {
+          const ab = await file.arrayBuffer();
+          conto.audioBuffer = await ctx.decodeAudioData(ab);
+          conto.trimmer = {
+            inicio: 0,
+            fim: conto.audioBuffer.duration,
+            fadeIn: 0.1,
+            fadeOut: 0.1,
+            duracao: conto.audioBuffer.duration
+          };
+        } catch (e) {
+          console.warn('Erro ao decodificar áudio:', e);
+        }
+        renderContosSection(getCurrentStory());
+        showToast(`Áudio do Conto ${idx + 1} carregado!`, 'success');
+      });
+    });
+
+    // Upload de Imagem do Card
+    card.querySelector('[data-action="upload-img-card"]').addEventListener('click', () => {
+      promptFileUpload('image/png,image/jpeg', (file, dataUrl) => {
+        if (!conto.cardVinculado) conto.cardVinculado = {};
+        conto.cardVinculado.imagemUrl = dataUrl;
+        renderContosSection(getCurrentStory());
+        showToast('Card vinculado atualizado com sucesso!', 'success');
+      });
+    });
+
+    // Gerar Voz IA
+    card.querySelector('[data-action="gerar-voz-ia"]').addEventListener('click', () => {
+      showToast('API da ElevenLabs sendo configurada para síntese direta!', 'info');
+    });
+
+    // Controles Trimmer
+    card.querySelector('[data-action="aplicar-corte"]').addEventListener('click', () => {
+      conto.status = 'ready';
+      renderContosSection(getCurrentStory());
+      showToast('Corte de áudio aplicado com sucesso! (Status: Pronto 🟢)', 'success');
+    });
+
+    card.querySelector('[data-action="ouvir-trecho"]').addEventListener('click', () => {
+      playContoTrimmed(conto);
+    });
+
+    card.querySelector('[data-action="redefinir-corte"]').addEventListener('click', () => {
+      if (conto.audioBuffer) {
+        conto.trimmer.inicio = 0;
+        conto.trimmer.fim = conto.audioBuffer.duration;
+        conto.trimmer.duracao = conto.audioBuffer.duration;
+      }
+      renderContosSection(getCurrentStory());
+    });
+
+    card.querySelector('[data-action="save-conto-item"]').addEventListener('click', () => {
+      saveState(true);
+    });
+
+    card.querySelector('[data-action="delete-conto-item"]').addEventListener('click', () => {
+      if (confirm(`Remover Conto ${idx + 1}?`)) {
+        getCurrentStory().contos.splice(idx, 1);
+        renderContosSection(getCurrentStory());
+      }
+    });
+  }
+
+  function playContoTrimmed(conto) {
+    const player = document.getElementById(`player-conto-${getCurrentStory().contos.indexOf(conto)}`);
+    if (!player) return;
+    const start = conto.trimmer?.inicio || 0;
+    const end = conto.trimmer?.fim || player.duration || 10;
+    player.currentTime = start;
+    player.play();
+    const checkStop = () => {
+      if (player.currentTime >= end) {
+        player.pause();
+        player.removeEventListener('timeupdate', checkStop);
+      }
+    };
+    player.addEventListener('timeupdate', checkStop);
+  }
+
+  function addNewConto() {
+    const story = getCurrentStory();
+    if (!story.contos) story.contos = [];
+    const num = story.contos.length + 1;
+    story.contos.push({
+      id: `conto_${Date.now()}`,
+      nomeApp: `PARTE ${num}`,
+      arquivoPet: getNextAudioFileName(num - 1),
+      arquivoPetManual: false,
+      audioUrl: "",
+      roteiro: "",
+      trimmer: { inicio: 0, fim: 30, fadeIn: 0.2, fadeOut: 0.2, duracao: 30 },
+      status: "empty",
+      cardVinculado: {
+        nome: `CARD ${String(num).padStart(3, '0')}`,
+        comandoPet: `CARD${String(num).padStart(4, '0')}`,
+        imagemUrl: ""
+      }
+    });
+    renderContosSection(story);
+    showToast(`Conto ${num} adicionado!`, 'success');
+  }
+
+  // ==========================================================================
+  // SEÇÃO 2: TRECK-TRECK (PADRONIZADA)
+  // ==========================================================================
+  function renderTrecksSection(story) {
+    const container = document.getElementById('trecks-container');
+    container.innerHTML = '';
+
+    (story.trecks || []).forEach((trk, idx) => {
+      const card = document.createElement('div');
+      card.className = 'accordion-item-card expanded';
+      card.id = `card-treck-${idx}`;
+
+      card.innerHTML = `
+        <div class="accordion-header" data-action="toggle-accordion" data-target="card-treck-${idx}">
+          <div class="accordion-title-group">
+            <span class="accordion-title">TRECK-TRECK ${idx + 1} - ${escapeHtml(trk.nomeAcao || 'AÇÃO MECÂNICA')}</span>
+            <span class="status-badge-traffic ${trk.audioUrl ? 'ready' : 'empty'}">${trk.audioUrl ? '🟢 Configurado' : '🔴 Sem Áudio'}</span>
+          </div>
+          <span class="accordion-toggle-arrow">▲</span>
+        </div>
+
+        <div class="accordion-body">
+          <div class="side-vertical-badge" style="background-color: #ECFDF5; color: #059669; border-color: #A7F3D0;">
+            TRECK ${idx + 1}
+          </div>
+          <div class="accordion-content-inner">
+            <div class="field-row-horizontal">
+              <label class="field-label-inline">Nome da Ação</label>
+              <input type="text" class="field-input-clean" value="${escapeHtml(trk.nomeAcao || '')}" placeholder="Alongamento do Bichinho..." data-idx="${idx}" data-treck-field="nomeAcao">
+              <button type="button" class="btn-mockup-mustard" data-idx="${idx}" data-action="upload-treck-audio">Selecionar Áudio</button>
+            </div>
+            <div class="field-row-horizontal">
+              <label class="field-label-inline">Arquivo no PET</label>
+              <input type="text" class="field-input-clean field-input-mono" value="${escapeHtml(trk.arquivoPet || `TRK${String(idx+1).padStart(4, '0')}.WAV`)}" data-idx="${idx}" data-treck-field="arquivoPet">
+              <label class="field-label-inline">Duração (seg)</label>
+              <input type="number" class="field-input-clean" style="max-width: 90px;" value="${trk.duracaoSegundos || 90}" data-idx="${idx}" data-treck-field="duracaoSegundos">
+            </div>
+            <div class="sub-accordion-box">
+              <span class="sub-header-title">Instrução Mecânica e Tátil do Robô</span>
+              <textarea class="textarea-roteiro" placeholder="Descreva a atividade física e o movimento esperado da engrenagem do FEFO..." data-idx="${idx}" data-treck-field="instrucao">${escapeHtml(trk.instrucao || '')}</textarea>
+            </div>
+            <div class="item-actions-corner">
+              <button type="button" class="btn-action-circle delete" data-idx="${idx}" data-action="delete-treck-item">🗑</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      container.appendChild(card);
+      initTreckEvents(card, idx, trk);
+    });
+  }
+
+  function initTreckEvents(card, idx, trk) {
+    card.querySelector('[data-action="toggle-accordion"]').addEventListener('click', () => {
+      card.classList.toggle('expanded');
+      card.classList.toggle('collapsed');
+    });
+    card.querySelectorAll('[data-treck-field]').forEach(inp => {
+      inp.addEventListener('input', (e) => {
+        trk[e.target.getAttribute('data-treck-field')] = e.target.value;
+      });
+    });
+    card.querySelector('[data-action="upload-treck-audio"]').addEventListener('click', () => {
+      promptFileUpload('audio/*', (f, dataUrl) => {
+        trk.audioUrl = dataUrl;
+        renderTrecksSection(getCurrentStory());
+        showToast('Áudio do Treck-Treck adicionado!', 'success');
+      });
+    });
+    card.querySelector('[data-action="delete-treck-item"]').addEventListener('click', () => {
+      getCurrentStory().trecks.splice(idx, 1);
+      renderTrecksSection(getCurrentStory());
+    });
+  }
+
+  function addNewTreck() {
+    const story = getCurrentStory();
+    if (!story.trecks) story.trecks = [];
+    story.trecks.push({
+      id: `trk_${Date.now()}`,
+      nomeAcao: "Nova Ação Mecânica",
+      arquivoPet: `TRK${String(story.trecks.length + 1).padStart(4, '0')}.WAV`,
+      duracaoSegundos: 90,
+      instrucao: ""
+    });
+    renderTrecksSection(story);
+  }
+
+  // ==========================================================================
+  // SEÇÃO 3: MÚSICAS & MINDFULNESS
+  // ==========================================================================
+  function renderMusicasSection(story) {
+    const container = document.getElementById('musicas-container');
+    container.innerHTML = '';
+
+    (story.musicas || []).forEach((m, idx) => {
+      const card = document.createElement('div');
+      card.className = 'accordion-item-card expanded';
+      card.id = `card-musica-${idx}`;
+
+      card.innerHTML = `
+        <div class="accordion-header" data-action="toggle-accordion" data-target="card-musica-${idx}">
+          <div class="accordion-title-group">
+            <span class="accordion-title">MÚSICA ${idx + 1} - ${escapeHtml(m.titulo || 'FAIXA')}</span>
+            <span class="status-badge-traffic ${m.audioUrl ? 'ready' : 'empty'}">${m.audioUrl ? '🟢 Pronta' : '🔴 Sem Áudio'}</span>
+          </div>
+          <span class="accordion-toggle-arrow">▲</span>
+        </div>
+        <div class="accordion-body">
+          <div class="side-vertical-badge" style="background-color: #EFF6FF; color: #2563EB; border-color: #BFDBFE;">
+            MÚSICA ${idx + 1}
+          </div>
+          <div class="accordion-content-inner">
+            <div class="field-row-horizontal">
+              <label class="field-label-inline">Título da Música</label>
+              <input type="text" class="field-input-clean" value="${escapeHtml(m.titulo || '')}" placeholder="Nome da música..." data-idx="${idx}" data-mus-field="titulo">
+              <button type="button" class="btn-mockup-mustard" data-idx="${idx}" data-action="upload-musica-audio">Selecionar Áudio</button>
+            </div>
+            <div class="field-row-horizontal">
+              <label class="field-label-inline">Arquivo no PET</label>
+              <input type="text" class="field-input-clean field-input-mono" value="${escapeHtml(m.arquivoPet || `M${String(idx+1).padStart(4, '0')}.WAV`)}" data-idx="${idx}" data-mus-field="arquivoPet">
+            </div>
+            <div class="item-actions-corner">
+              <button type="button" class="btn-action-circle delete" data-idx="${idx}" data-action="delete-musica-item">🗑</button>
+            </div>
+          </div>
+        </div>
+      `;
+      container.appendChild(card);
+      initMusicaEvents(card, idx, m);
+    });
+  }
+
+  function initMusicaEvents(card, idx, m) {
+    card.querySelector('[data-action="toggle-accordion"]').addEventListener('click', () => {
+      card.classList.toggle('expanded');
+      card.classList.toggle('collapsed');
+    });
+    card.querySelectorAll('[data-mus-field]').forEach(inp => {
+      inp.addEventListener('input', (e) => {
+        m[e.target.getAttribute('data-mus-field')] = e.target.value;
+      });
+    });
+    card.querySelector('[data-action="upload-musica-audio"]').addEventListener('click', () => {
+      promptFileUpload('audio/*', (f, dataUrl) => {
+        m.audioUrl = dataUrl;
+        renderMusicasSection(getCurrentStory());
+        showToast('Áudio da Música carregado!', 'success');
+      });
+    });
+    card.querySelector('[data-action="delete-musica-item"]').addEventListener('click', () => {
+      getCurrentStory().musicas.splice(idx, 1);
+      renderMusicasSection(getCurrentStory());
+    });
+  }
+
+  function addNewMusica() {
+    const story = getCurrentStory();
+    if (!story.musicas) story.musicas = [];
+    story.musicas.push({
+      id: `mus_${Date.now()}`,
+      titulo: "Nova Canção Divertida",
+      arquivoPet: `M${String(story.musicas.length + 1).padStart(4, '0')}.WAV`
+    });
+    renderMusicasSection(story);
+  }
+
+  // ==========================================================================
+  // SEÇÃO 4: DESAFIOS & ATIVIDADES INTERATIVAS
+  // ==========================================================================
+  function renderDesafiosSection(story) {
+    const container = document.getElementById('desafios-container');
+    container.innerHTML = '';
+
+    (story.desafios || []).forEach((des, idx) => {
+      const card = document.createElement('div');
+      card.className = 'accordion-item-card expanded';
+      card.id = `card-desafio-${idx}`;
+
+      card.innerHTML = `
+        <div class="accordion-header" data-action="toggle-accordion" data-target="card-desafio-${idx}">
+          <div class="accordion-title-group">
+            <span class="accordion-title">DESAFIO ${idx + 1} - ${escapeHtml(des.titulo || 'MISSÃO')}</span>
+            <span class="status-badge-traffic ready">🟢 Interativo</span>
+          </div>
+          <span class="accordion-toggle-arrow">▲</span>
+        </div>
+        <div class="accordion-body">
+          <div class="side-vertical-badge" style="background-color: #FAF5FF; color: #7C3AED; border-color: #E9D5FF;">
+            DESAFIO ${idx + 1}
+          </div>
+          <div class="accordion-content-inner">
+            <div class="field-row-horizontal">
+              <label class="field-label-inline">Título da Missão</label>
+              <input type="text" class="field-input-clean" value="${escapeHtml(des.titulo || '')}" placeholder="Ex: Onde está o Card do Desjejum?" data-idx="${idx}" data-des-field="titulo">
+            </div>
+            <div class="field-row-horizontal">
+              <label class="field-label-inline">Card Esperado</label>
+              <input type="text" class="field-input-clean field-input-mono" value="${escapeHtml(des.cardEsperado || 'CARD0001')}" placeholder="CARD0001" data-idx="${idx}" data-des-field="cardEsperado">
+              <label class="field-label-inline">Áudio Pergunta</label>
+              <input type="text" class="field-input-clean field-input-mono" value="${escapeHtml(des.audioPergunta || 'A0002.WAV')}" placeholder="A0002.WAV" data-idx="${idx}" data-des-field="audioPergunta">
+            </div>
+            <div class="item-actions-corner">
+              <button type="button" class="btn-action-circle delete" data-idx="${idx}" data-action="delete-desafio-item">🗑</button>
+            </div>
+          </div>
+        </div>
+      `;
+      container.appendChild(card);
+      initDesafioEvents(card, idx, des);
+    });
+  }
+
+  function initDesafioEvents(card, idx, des) {
+    card.querySelector('[data-action="toggle-accordion"]').addEventListener('click', () => {
+      card.classList.toggle('expanded');
+      card.classList.toggle('collapsed');
+    });
+    card.querySelectorAll('[data-des-field]').forEach(inp => {
+      inp.addEventListener('input', (e) => {
+        des[e.target.getAttribute('data-des-field')] = e.target.value;
+      });
+    });
+    card.querySelector('[data-action="delete-desafio-item"]').addEventListener('click', () => {
+      getCurrentStory().desafios.splice(idx, 1);
+      renderDesafiosSection(getCurrentStory());
+    });
+  }
+
+  function addNewDesafio() {
+    const story = getCurrentStory();
+    if (!story.desafios) story.desafios = [];
+    story.desafios.push({
+      id: `des_${Date.now()}`,
+      titulo: "Novo Desafio com Card",
+      cardEsperado: "CARD0001",
+      audioPergunta: "A0002.WAV"
+    });
+    renderDesafiosSection(story);
+  }
+
+  // ==========================================================================
+  // SEÇÃO 5: LIVRINHOS ILUSTRADOS EM PDF
+  // ==========================================================================
+  function renderLivrinhosSection(story) {
+    const container = document.getElementById('livrinhos-container');
+    container.innerHTML = '';
+
+    (story.livrinhos || []).forEach((livro, idx) => {
+      const card = document.createElement('div');
+      card.className = 'accordion-item-card expanded';
+      card.id = `card-livro-${idx}`;
+
+      card.innerHTML = `
+        <div class="accordion-header" data-action="toggle-accordion" data-target="card-livro-${idx}">
+          <div class="accordion-title-group">
+            <span class="accordion-title">LIVRINHO ${String(idx + 1).padStart(2, '0')} - ${escapeHtml(livro.nome || 'EXEMPLO')}</span>
+            <span class="status-badge-traffic ${livro.pdfUrl ? 'ready' : 'empty'}">${livro.pdfUrl ? '🟢 PDF Pronto' : '🔴 Sem PDF'}</span>
+          </div>
+          <span class="accordion-toggle-arrow">▲</span>
+        </div>
+        <div class="accordion-body">
+          <div class="pdf-material-card-body" style="width: 100%;">
+            <div class="pdf-preview-box">
+              ${livro.capaUrl ? `<img src="${livro.capaUrl}" alt="Capa">` : `<span style="font-size: 2.25rem;">📖</span>`}
+            </div>
+            <div class="pdf-fields-col">
+              <div class="field-row-horizontal">
+                <label class="field-label-inline">Nome no Catálogo</label>
+                <input type="text" class="field-input-clean" value="${escapeHtml(livro.nome || '')}" placeholder="AVENTURAS DO FEFO" data-idx="${idx}" data-livro-field="nome">
+                <button type="button" class="btn-mockup-mustard" data-idx="${idx}" data-action="upload-livro-pdf">Selecionar PDF</button>
+              </div>
+            </div>
+            <div class="item-actions-corner">
+              <button type="button" class="btn-action-circle check" data-action="save-livro">✔</button>
+              <button type="button" class="btn-action-circle delete" data-idx="${idx}" data-action="delete-livro">🗑</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      container.appendChild(card);
+      initLivroEvents(card, idx, livro);
+    });
+  }
+
+  function initLivroEvents(card, idx, livro) {
+    card.querySelector('[data-action="toggle-accordion"]').addEventListener('click', () => {
+      card.classList.toggle('expanded');
+      card.classList.toggle('collapsed');
+    });
+    card.querySelector('input[data-livro-field="nome"]').addEventListener('input', (e) => {
+      livro.nome = e.target.value;
+    });
+    card.querySelector('[data-action="upload-livro-pdf"]').addEventListener('click', () => {
+      promptFileUpload('application/pdf', (file, dataUrl) => {
+        livro.pdfUrl = dataUrl;
+        livro.nomeArquivo = file.name;
+        renderLivrinhosSection(getCurrentStory());
+        showToast(`PDF do Livrinho "${file.name}" carregado!`, 'success');
+      });
+    });
+    card.querySelector('[data-action="save-livro"]').addEventListener('click', () => saveState(true));
+    card.querySelector('[data-action="delete-livro"]').addEventListener('click', () => {
+      getCurrentStory().livrinhos.splice(idx, 1);
+      renderLivrinhosSection(getCurrentStory());
+    });
+  }
+
+  function addNewLivrinho() {
+    const story = getCurrentStory();
+    if (!story.livrinhos) story.livrinhos = [];
+    story.livrinhos.push({
+      id: `livro_${Date.now()}`,
+      nome: "NOVO LIVRINHO ILUSTRADO",
+      pdfUrl: "",
+      capaUrl: ""
+    });
+    renderLivrinhosSection(story);
+  }
+
+  // ==========================================================================
+  // SEÇÃO 6: BOBIE GODS (PARA COLORIR EM PDF)
+  // ==========================================================================
+  function renderBobiesSection(story) {
+    const container = document.getElementById('bobies-container');
+    container.innerHTML = '';
+
+    (story.bobies || []).forEach((bobie, idx) => {
+      const card = document.createElement('div');
+      card.className = 'accordion-item-card expanded';
+      card.id = `card-bobie-${idx}`;
+
+      card.innerHTML = `
+        <div class="accordion-header" data-action="toggle-accordion" data-target="card-bobie-${idx}">
+          <div class="accordion-title-group">
+            <span class="accordion-title">BOBIE GOD ${String(idx + 1).padStart(2, '0')} - ${escapeHtml(bobie.nome || 'EXEMPLO')}</span>
+            <span class="status-badge-traffic ${bobie.pdfUrl ? 'ready' : 'empty'}">${bobie.pdfUrl ? '🟢 PDF Pronto' : '🔴 Sem PDF'}</span>
+          </div>
+          <span class="accordion-toggle-arrow">▲</span>
+        </div>
+        <div class="accordion-body">
+          <div class="pdf-material-card-body" style="width: 100%;">
+            <div class="pdf-preview-box">
+              ${bobie.capaUrl ? `<img src="${bobie.capaUrl}" alt="Capa">` : `<span style="font-size: 2.25rem;">🎨</span>`}
+            </div>
+            <div class="pdf-fields-col">
+              <div class="field-row-horizontal">
+                <label class="field-label-inline">Nome no Catálogo</label>
+                <input type="text" class="field-input-clean" value="${escapeHtml(bobie.nome || '')}" placeholder="AVENTURAS DO FEFO - COLORIR" data-idx="${idx}" data-bobie-field="nome">
+                <button type="button" class="btn-mockup-mustard" data-idx="${idx}" data-action="upload-bobie-pdf">Selecionar PDF</button>
+              </div>
+            </div>
+            <div class="item-actions-corner">
+              <button type="button" class="btn-action-circle check" data-action="save-bobie">✔</button>
+              <button type="button" class="btn-action-circle delete" data-idx="${idx}" data-action="delete-bobie">🗑</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      container.appendChild(card);
+      initBobieEvents(card, idx, bobie);
+    });
+  }
+
+  function initBobieEvents(card, idx, bobie) {
+    card.querySelector('[data-action="toggle-accordion"]').addEventListener('click', () => {
+      card.classList.toggle('expanded');
+      card.classList.toggle('collapsed');
+    });
+    card.querySelector('input[data-bobie-field="nome"]').addEventListener('input', (e) => {
+      bobie.nome = e.target.value;
+    });
+    card.querySelector('[data-action="upload-bobie-pdf"]').addEventListener('click', () => {
+      promptFileUpload('application/pdf,image/png,image/jpeg', (file, dataUrl) => {
+        bobie.pdfUrl = dataUrl;
+        bobie.nomeArquivo = file.name;
+        renderBobiesSection(getCurrentStory());
+        showToast(`Bobie God "${file.name}" carregado!`, 'success');
+      });
+    });
+    card.querySelector('[data-action="save-bobie"]').addEventListener('click', () => saveState(true));
+    card.querySelector('[data-action="delete-bobie"]').addEventListener('click', () => {
+      getCurrentStory().bobies.splice(idx, 1);
+      renderBobiesSection(getCurrentStory());
+    });
+  }
+
+  function addNewBobie() {
+    const story = getCurrentStory();
+    if (!story.bobies) story.bobies = [];
+    story.bobies.push({
+      id: `bobie_${Date.now()}`,
+      nome: "NOVO BOBIE GOD - COLORIR",
+      pdfUrl: "",
+      capaUrl: ""
+    });
+    renderBobiesSection(story);
+  }
+
+  // ==========================================================================
+  // RENDERIZAÇÃO DE WAVEFORM NO CANVAS (VERDE LIMÃO NEON)
+  // ==========================================================================
+  function drawWaveform(canvas, audioBuffer) {
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width = canvas.parentElement.clientWidth || 600;
+    const height = canvas.height = canvas.parentElement.clientHeight || 90;
+
+    ctx.fillStyle = '#090D16';
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.fillStyle = '#22C55E';
+
+    if (!audioBuffer) {
+      // Onda simulada estética quando ainda não carregou áudio
+      const bars = Math.floor(width / 4);
+      for (let i = 0; i < bars; i++) {
+        const h = Math.sin(i * 0.15) * (height * 0.35) + Math.cos(i * 0.05) * (height * 0.25) + 15;
+        const x = i * 4;
+        const y = (height - h) / 2;
+        ctx.fillRect(x, y, 2.5, h);
+      }
+      return;
+    }
+
+    const data = audioBuffer.getChannelData(0);
+    const step = Math.ceil(data.length / width);
+    const amp = height / 2;
+
+    for (let i = 0; i < width; i++) {
+      let min = 1.0;
+      let max = -1.0;
+      for (let j = 0; j < step; j++) {
+        const datum = data[(i * step) + j];
+        if (datum < min) min = datum;
+        if (datum > max) max = datum;
+      }
+      const y = (1 + min) * amp;
+      const h = Math.max(2, (max - min) * amp);
+      ctx.fillRect(i, y, 1.5, h);
+    }
+  }
+
+  // ==========================================================================
+  // UTILITÁRIOS GLOBAIS
+  // ==========================================================================
+  function syncCurrentStoryFromInputs() {
+    const story = getCurrentStory();
+    story.titulo = document.getElementById('story-title-input').value.trim();
+    story.eixoId = document.getElementById('eixo-selector').value;
+  }
+
+  function promptFileUpload(accept, callback) {
+    const input = document.getElementById('file-uploader-general');
+    input.accept = accept;
+    input.onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => callback(file, evt.target.result);
+      reader.readAsDataURL(file);
+      input.value = '';
+    };
+    input.click();
+  }
+
+  function exportCatalogJson() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(catalogState, null, 2));
+    const a = document.createElement('a');
+    a.href = dataStr;
+    a.download = `catalog-v3_${catalogState.catalogVersion || 'latest'}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
+  function showToast(msg, type = 'info') {
+    const c = document.getElementById('v3-toast-container');
+    const t = document.createElement('div');
+    t.className = `v3-toast ${type}`;
+    t.innerHTML = `<span>${type === 'success' ? '✅' : type === 'error' ? '⚠️' : 'ℹ️'}</span> <span>${escapeHtml(msg)}</span>`;
+    c.appendChild(t);
     setTimeout(() => {
-      toast.style.opacity = '0';
-      toast.style.transform = 'translateY(-10px)';
-      toast.style.transition = 'all 0.3s ease';
-      setTimeout(() => toast.remove(), 300);
-    }, 3500);
+      t.style.opacity = '0';
+      t.style.transform = 'translateY(15px)';
+      t.style.transition = 'all 0.25s ease';
+      setTimeout(() => t.remove(), 250);
+    }, 3200);
   }
 
-  // ==========================================================================
-  // UTILITÁRIOS
-  // ==========================================================================
   function escapeHtml(str) {
     if (typeof str !== 'string') return str;
-    return str.replace(/[&<>'"]/g, tag => ({
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      "'": '&#39;',
-      '"': '&quot;'
-    }[tag] || tag));
-  }
-
-  function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-      const later = () => {
-        clearTimeout(timeout);
-        func(...args);
-      };
-      clearTimeout(timeout);
-      timeout = setTimeout(later, wait);
-    };
+    return str.replace(/[&<>'"]/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    }[c] || c));
   }
 
 })();

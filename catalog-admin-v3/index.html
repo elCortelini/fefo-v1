@@ -7,535 +7,210 @@
   <link rel="stylesheet" href="admin-v3.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
 </head>
-<body>
-  <!-- Cabeçalho Principal (Lei de Jakob & Fitts) -->
-  <header class="app-header">
-    <div class="header-container">
-      <div class="brand">
-        <div class="brand-avatar">🤖</div>
-        <div>
-          <div class="brand-title">FEFO <span class="badge-v3">CATÁLOGO v3</span></div>
-          <div class="brand-subtitle">Ecossistema Pedagógico & Robótica Afetiva</div>
+<body class="fefo-theme-v3">
+
+  <!-- BARRA SUPERIOR DE CONTROLE E NAVEGAÇÃO -->
+  <header class="v3-top-bar">
+    <div class="top-bar-container">
+      <div class="top-bar-left">
+        <a href="../index.html" class="btn-back-site" title="Voltar ao Site Oficial">🌐 Site</a>
+        <div class="brand-pill">
+          <span class="brand-icon">🤖</span>
+          <span class="brand-name">FEFO <span class="badge-v3">CATÁLOGO v3</span></span>
+        </div>
+        <!-- Seletor de Historinhas Existentes -->
+        <div class="story-selector-wrapper">
+          <label for="select-historinha" class="sr-only">Selecionar Historinha:</label>
+          <select id="select-historinha" class="select-historinha">
+            <!-- Preenchido via JS -->
+          </select>
+          <button type="button" class="btn-action-sm" id="btn-nova-historinha" title="Criar Nova Historinha">➕ Nova</button>
         </div>
       </div>
 
-      <nav class="nav-tabs" role="tablist" aria-label="Abas Principais">
-        <button class="nav-tab active" data-tab="temas" role="tab" aria-selected="true" id="tab-btn-temas">
-          <span class="tab-icon">📖</span> Temas Pedagógicos
-          <span class="badge-count" id="count-temas">0</span>
-        </button>
-        <button class="nav-tab" data-tab="eixos" role="tab" aria-selected="false" id="tab-btn-eixos">
-          <span class="tab-icon">🎯</span> 8 Eixos Temáticos
-          <span class="badge-count" id="count-eixos">8</span>
-        </button>
-        <button class="nav-tab" data-tab="simulador" role="tab" aria-selected="false" id="tab-btn-simulador">
-          <span class="tab-icon">💡</span> Simulador do Robô
-        </button>
-      </nav>
-
-      <div class="header-actions">
-        <a href="../index.html" class="btn btn-outline" title="Voltar para a Página Principal do FEFO">
-          <span class="btn-icon">🌐</span> Site Oficial
-        </a>
-        <input type="file" id="file-import-json" accept=".json" style="display: none;">
-        <button class="btn btn-secondary" id="btn-import-json" title="Importar arquivo catalog-v3.json">
-          <span class="btn-icon">📥</span> Importar
-        </button>
-        <button class="btn btn-secondary" id="btn-export-json" title="Baixar arquivo catalog-v3.json atualizado">
-          <span class="btn-icon">💾</span> Baixar JSON
-        </button>
-        <button class="btn btn-primary" id="btn-novo-tema">
-          <span class="btn-icon">✨</span> Novo Tema
-        </button>
+      <div class="top-bar-right">
+        <input type="file" id="input-import-json" accept=".json" style="display: none;">
+        <button type="button" class="btn-action-sm" id="btn-import-catalog" title="Importar catalog-v3.json">📥 Importar</button>
+        <button type="button" class="btn-action-sm" id="btn-export-catalog" title="Baixar catalog-v3.json">💾 Baixar JSON</button>
+        <div class="version-badge" id="global-version-display" title="Versão Global do Catálogo">v3.001</div>
       </div>
     </div>
   </header>
 
-  <!-- Conteúdo Principal -->
-  <main class="main-content">
+  <!-- CONTAINER PRINCIPAL DO MOCKUP (DEGRADÊ ÂMBAR / AMARELO FEFO) -->
+  <main class="v3-main-container">
+    <div class="v3-sheet-card">
 
-    <!-- ABA 1: LISTAGEM DE TEMAS -->
-    <section class="tab-pane active" id="pane-temas" role="tabpanel" aria-labelledby="tab-btn-temas">
-      <!-- Barra de Controle & Filtros (Lei de Hick) -->
-      <div class="filter-bar">
-        <div class="search-box">
-          <span class="search-icon">🔍</span>
-          <input type="text" id="search-temas" placeholder="Buscar por título, código (ex: t01.01) ou palavra-chave..." aria-label="Buscar temas">
-        </div>
+      <!-- CABEÇALHO DO TEMA / HISTORINHA -->
+      <section class="sheet-header">
         
-        <div class="filter-controls">
-          <label for="filter-eixo" class="sr-only">Filtrar por Eixo:</label>
-          <select id="filter-eixo" aria-label="Filtrar por Eixo Temático">
-            <option value="todos">Todos os Eixos Temáticos</option>
-          </select>
-
-          <label for="sort-temas" class="sr-only">Ordenar por:</label>
-          <select id="sort-temas" aria-label="Ordenar temas">
-            <option value="codigo-asc">Código (Crescente)</option>
-            <option value="codigo-desc">Código (Decrescente)</option>
-            <option value="titulo-asc">Título (A-Z)</option>
-          </select>
+        <!-- Linha 1: Eixo Temático -->
+        <div class="eixo-header-row">
+          <div class="eixo-tag-badge">
+            <span class="pin-icon">📌</span>
+            <span class="eixo-label-prefix">EIXO TEMÁTICO:</span>
+            <select id="eixo-selector" class="eixo-select-inline">
+              <!-- Preenchido dinamicamente via JS com os 8 eixos -->
+            </select>
+          </div>
         </div>
-      </div>
 
-      <!-- Grade de Cards de Temas -->
-      <div class="temas-grid" id="temas-container">
-        <!-- Renderizado dinamicamente via JS -->
-      </div>
+        <!-- Linha 2: Título da Historinha & Licenças (Conforme Mockup) -->
+        <div class="story-title-row">
+          <div class="story-title-box">
+            <input type="text" id="story-title-input" class="story-title-input" value="Historinha 1 - O fefo vindo para terra" placeholder="Título da Historinha / Tema...">
+            <button type="button" class="btn-edit-title" id="btn-edit-title" title="Editar título">✏️</button>
+          </div>
 
-      <!-- Estado Vazio -->
-      <div class="empty-state" id="temas-empty" style="display: none;">
-        <div class="empty-icon">📂</div>
-        <h3>Nenhum tema encontrado</h3>
-        <p>Tente ajustar os filtros ou clique em "Novo Tema" para criar o primeiro tema da v3.</p>
-        <button class="btn btn-primary" id="btn-empty-novo-tema">Criar Novo Tema</button>
-      </div>
-    </section>
-
-    <!-- ABA 2: EIXOS TEMÁTICOS -->
-    <section class="tab-pane" id="pane-eixos" role="tabpanel" aria-labelledby="tab-btn-eixos" style="display: none;">
-      <div class="pane-header">
-        <div>
-          <h2>8 Eixos Temáticos Estruturantes</h2>
-          <p class="section-desc">Gerenciamento dinâmico das diretrizes pedagógicas norteadoras do FEFO.</p>
+          <!-- Caixa de Licenças (Home, Escola, Clínica, Premium) -->
+          <div class="licenses-box">
+            <span class="licenses-title">Licenças</span>
+            <div class="licenses-options">
+              <label class="license-checkbox-label">
+                <input type="checkbox" id="lic-home" checked>
+                <span class="custom-check">✔</span> Home
+              </label>
+              <label class="license-checkbox-label">
+                <input type="checkbox" id="lic-escola" checked>
+                <span class="custom-check">✔</span> Escola
+              </label>
+              <label class="license-checkbox-label">
+                <input type="checkbox" id="lic-clinica" checked>
+                <span class="custom-check">✔</span> Clínica
+              </label>
+              <label class="license-checkbox-label">
+                <input type="checkbox" id="lic-premium" checked>
+                <span class="custom-check">✔</span> Premium
+              </label>
+            </div>
+          </div>
         </div>
-        <button class="btn btn-secondary" id="btn-adicionar-eixo">
-          <span class="btn-icon">➕</span> Novo Eixo
+
+      </section>
+
+      <!-- ====================================================================
+           1. SEÇÃO DE CONTOS (MÚLTIPLOS CONTOS DA HISTORINHA)
+           ==================================================================== -->
+      <section class="sheet-section" id="section-contos">
+        <div id="contos-container" class="items-accordion-container">
+          <!-- Renderizado dinamicamente via JS -->
+        </div>
+
+        <!-- Botão Verde Largo de Adicionar Conto -->
+        <div class="add-button-wrapper">
+          <button type="button" class="btn-add-section-item" id="btn-add-conto">
+            ADICIONAR NOVO CONTO
+          </button>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           2. SEÇÃO DE TRECK-TRECK (ATIVIDADES TÁTEIS & MECÂNICAS)
+           ==================================================================== -->
+      <section class="sheet-section" id="section-treck">
+        <div id="trecks-container" class="items-accordion-container">
+          <!-- Renderizado dinamicamente via JS -->
+        </div>
+
+        <!-- Botão Verde Largo de Adicionar Treck-Treck -->
+        <div class="add-button-wrapper">
+          <button type="button" class="btn-add-section-item" id="btn-add-treck">
+            ADICIONAR TRECK-TRECK
+          </button>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           3. SEÇÃO DE MÚSICAS & MINDFULNESS
+           ==================================================================== -->
+      <section class="sheet-section" id="section-musicas">
+        <div id="musicas-container" class="items-accordion-container">
+          <!-- Renderizado dinamicamente via JS -->
+        </div>
+
+        <!-- Botão Verde Largo de Adicionar Música -->
+        <div class="add-button-wrapper">
+          <button type="button" class="btn-add-section-item" id="btn-add-musica">
+            ADICIONAR NOVA MÚSICA
+          </button>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           4. SEÇÃO DE DESAFIOS & ATIVIDADES INTERATIVAS
+           ==================================================================== -->
+      <section class="sheet-section" id="section-desafios">
+        <div id="desafios-container" class="items-accordion-container">
+          <!-- Renderizado dinamicamente via JS -->
+        </div>
+
+        <!-- Botão Verde Largo de Adicionar Desafio -->
+        <div class="add-button-wrapper">
+          <button type="button" class="btn-add-section-item" id="btn-add-desafio">
+            ADICIONAR NOVO DESAFIO / ATIVIDADE
+          </button>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           5. SEÇÃO DE LIVRINHOS ILUSTRADOS EM PDF
+           ==================================================================== -->
+      <section class="sheet-section" id="section-livrinhos">
+        <div id="livrinhos-container" class="items-accordion-container">
+          <!-- Renderizado dinamicamente via JS -->
+        </div>
+
+        <!-- Botão Verde Largo de Adicionar Livrinho -->
+        <div class="add-button-wrapper">
+          <button type="button" class="btn-add-section-item" id="btn-add-livrinho">
+            ADICIONAR NOVO LIVRINHO
+          </button>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           6. SEÇÃO DE BOBIE GODS (LIVROS DE COLORIR / PERSONAGENS EM PDF)
+           ==================================================================== -->
+      <section class="sheet-section" id="section-bobies">
+        <div id="bobies-container" class="items-accordion-container">
+          <!-- Renderizado dinamicamente via JS -->
+        </div>
+
+        <!-- Botão Verde Largo de Adicionar Bobie God -->
+        <div class="add-button-wrapper">
+          <button type="button" class="btn-add-section-item" id="btn-add-bobie">
+            ADICIONAR NOVO BOBIE GOD
+          </button>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           RODAPÉ DE AÇÕES DA HISTORINHA (PUBLICAR, EXCLUIR, SALVAR)
+           ==================================================================== -->
+      <footer class="sheet-footer-actions">
+        <button type="button" class="btn-footer btn-publicar" id="btn-publicar-tema">
+          Publicar
         </button>
-      </div>
+        <button type="button" class="btn-footer btn-excluir" id="btn-excluir-tema">
+          Excluir
+        </button>
+        <button type="button" class="btn-footer btn-salvar" id="btn-salvar-tema">
+          Salvar
+        </button>
+      </footer>
 
-      <div class="eixos-grid" id="eixos-container">
-        <!-- Renderizado dinamicamente via JS -->
-      </div>
-    </section>
-
-    <!-- ABA 3: SIMULADOR DE HARDWARE DO FEFO -->
-    <section class="tab-pane" id="pane-simulador" role="tabpanel" aria-labelledby="tab-btn-simulador" style="display: none;">
-      <div class="simulator-wrapper">
-        <div class="simulator-card">
-          <h2>Simulador Sensorial do Robô FEFO</h2>
-          <p class="section-desc">Visualize e teste as reações de Hardware (LEDs RGB, Display OLED e Vibração Tátil) configuradas nos temas.</p>
-          
-          <div class="robot-visualizer">
-            <!-- Anel de LED RGB Superior -->
-            <div class="robot-led-halo" id="sim-led-halo" style="box-shadow: 0 0 35px #00FFCC; border-color: #00FFCC;">
-              <span class="led-indicator-text" id="sim-led-hex">#00FFCC</span>
-            </div>
-
-            <!-- Display OLED dos Olhos / Rosto -->
-            <div class="oled-screen" id="sim-oled-screen">
-              <div class="oled-face" id="sim-oled-face">
-                <span class="oled-eye left">^</span>
-                <span class="oled-mouth">‿</span>
-                <span class="oled-eye right">^</span>
-              </div>
-              <div class="oled-meta" id="sim-oled-label">Rosto: Feliz</div>
-            </div>
-
-            <!-- Indicador de Vibração Tátil -->
-            <div class="vibration-gauge" id="sim-vibration-gauge">
-              <div class="vibe-icon">📳</div>
-              <div class="vibe-info">
-                <div class="vibe-name" id="sim-vibe-name">Padrão: Pulsar Suave</div>
-                <div class="vibe-bars">
-                  <div class="vibe-bar"></div>
-                  <div class="vibe-bar"></div>
-                  <div class="vibe-bar"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Controles de Teste Rápido do Simulador -->
-          <div class="simulator-controls">
-            <h3>Testar Perfis Sensoriais Prontos</h3>
-            <div class="preset-buttons">
-              <button class="btn btn-chip" data-test-led="#00FFCC" data-test-face="feliz" data-test-vibe="suave">😊 Feliz & Suave</button>
-              <button class="btn btn-chip" data-test-led="#FFDD00" data-test-face="animado" data-test-vibe="curta">⚡ Animado & Rápido</button>
-              <button class="btn btn-chip" data-test-led="#00FF66" data-test-face="comemorando" data-test-vibe="sucesso">🎉 Comemoração Sucesso</button>
-              <button class="btn btn-chip" data-test-led="#9966FF" data-test-face="zen" data-test-vibe="ondas">🧘 Mindfulness Zen</button>
-              <button class="btn btn-chip" data-test-led="#FF9900" data-test-face="cantando" data-test-vibe="ritmica">🎶 Cantando Música</button>
-              <button class="btn btn-chip" data-test-led="#FF4444" data-test-face="alerta" data-test-vibe="duplo_toque">⚠️ Tente Novamente</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
+    </div>
   </main>
 
-  <!-- MODAL DO EDITOR DE TEMA (MODO MULTI-STEP / CHUNKS DE MILLER) -->
-  <div class="modal-backdrop" id="modal-tema-backdrop" style="display: none;">
-    <div class="modal-container" role="dialog" aria-labelledby="modal-tema-title" aria-modal="true">
-      
-      <!-- Cabeçalho do Modal -->
-      <div class="modal-header">
-        <div>
-          <div class="modal-pre-title" id="modal-tema-subtitle">Tema Pedagógico v3</div>
-          <h2 class="modal-title" id="modal-tema-title">Cadastrar Novo Tema</h2>
-        </div>
-        <div class="modal-header-actions">
-          <button class="btn-icon-close" id="btn-close-modal" aria-label="Fechar Modal">&times;</button>
-        </div>
-      </div>
+  <!-- RECEPTÁCULO INVISÍVEL PARA UPLOAD DE ARQUIVOS -->
+  <input type="file" id="file-uploader-general" style="display: none;">
 
-      <!-- Barra de Progresso Zeigarnik / Gradiente de Meta -->
-      <div class="stepper-progress">
-        <div class="stepper-header">
-          <span class="stepper-step-label" id="stepper-label">Passo 1 de 5: Informações & Eixo</span>
-          <span class="stepper-percent" id="stepper-percent">20% concluído</span>
-        </div>
-        <div class="progress-track">
-          <div class="progress-fill" id="stepper-progress-fill" style="width: 20%;"></div>
-        </div>
-        <nav class="stepper-nav" aria-label="Etapas do cadastro">
-          <button class="step-btn active" data-step="1">1. Identificação</button>
-          <button class="step-btn" data-step="2">2. Materiais Físicos</button>
-          <button class="step-btn" data-step="3">3. FEFO Físico</button>
-          <button class="step-btn" data-step="4">4. Cards RFID</button>
-          <button class="step-btn" data-step="5">5. Desafios</button>
-        </nav>
-      </div>
+  <!-- TOAST DE NOTIFICAÇÃO NÃO INTRUSIVO -->
+  <div class="v3-toast-container" id="v3-toast-container" aria-live="polite"></div>
 
-      <!-- Corpo do Formulário do Tema -->
-      <div class="modal-body">
-        <form id="form-tema" novalidate>
-          
-          <!-- ETAPA 1: IDENTIFICAÇÃO E EIXO TEMÁTICO (Miller: 5 controles) -->
-          <div class="form-step active" id="step-1">
-            <h3 class="step-title">Etapa 1: Identificação & Diretriz Pedagógica</h3>
-            <p class="step-desc">Defina o código de versionamento do tema e o eixo temático estruturante.</p>
-
-            <div class="form-row">
-              <div class="form-group col-4">
-                <label for="tema-codigo">
-                  Código do Tema <span class="required">*</span>
-                  <span class="hint-inline">(Padrão tXX.YY)</span>
-                </label>
-                <div class="input-with-action">
-                  <input type="text" id="tema-codigo" required placeholder="ex: t01.01" pattern="^t\d{2}\.\d{2}$" class="mono-input">
-                  <button type="button" class="btn btn-chip" id="btn-sugerir-codigo" title="Sugerir próximo código automático">Auto</button>
-                </div>
-                <small class="form-hint">Onde tXX é o tema e .YY é a versão interna deste tema.</small>
-              </div>
-
-              <div class="form-group col-8">
-                <label for="tema-eixo">Eixo Temático Estruturante <span class="required">*</span></label>
-                <select id="tema-eixo" required>
-                  <!-- Preenchido dinamicamente -->
-                </select>
-                <small class="form-hint" id="tema-eixo-desc">Carregando detalhes do eixo...</small>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="tema-titulo">Título Completo da Aventura <span class="required">*</span></label>
-              <input type="text" id="tema-titulo" required placeholder="Ex: Aventuras da Manhã: Acordando com Alegria">
-            </div>
-
-            <div class="form-group">
-              <label for="tema-descricao">Descrição Pedagógica / Sinopse <span class="required">*</span></label>
-              <textarea id="tema-descricao" rows="3" required placeholder="Descreva brevemente o propósito pedagógico, contexto e desenvolvimento infantil trabalhado nesta aventura..."></textarea>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group col-6">
-                <label for="tema-faixa-etaria">Faixa Etária Recomendada</label>
-                <input type="text" id="tema-faixa-etaria" placeholder="Ex: 2 a 5 anos" value="2 a 5 anos">
-              </div>
-              <div class="form-group col-6">
-                <label for="tema-duracao-total">Estimativa de Tempo da Atividade</label>
-                <input type="text" id="tema-duracao-total" placeholder="Ex: 15 a 20 minutos" value="15 minutos">
-              </div>
-            </div>
-          </div>
-
-          <!-- ETAPA 2: MATERIAIS FÍSICOS & IMPRESSOS (Miller: 4 blocos limpos) -->
-          <div class="form-step" id="step-2" style="display: none;">
-            <h3 class="step-title">Etapa 2: Materiais Físicos, Mídias & Impressos</h3>
-            <p class="step-desc">Configure os arquivos da história em áudio, livrinho PDF, Bobie Gods e atividades complementares.</p>
-
-            <!-- Bloco 1: Áudio da História -->
-            <div class="media-box">
-              <div class="media-box-header">
-                <div class="media-icon">🎧</div>
-                <div>
-                  <h4>Áudio da Historinha Principal</h4>
-                  <p>Áudio guia narrado que inicia a experiência com o FEFO.</p>
-                </div>
-              </div>
-              <div class="form-row">
-                <div class="form-group col-6">
-                  <label for="mat-hist-titulo">Título da História</label>
-                  <input type="text" id="mat-hist-titulo" placeholder="Ex: A Cidade dos Bichos Acorda Cedo">
-                </div>
-                <div class="form-group col-3">
-                  <label for="mat-hist-arquivo">Nome do Arquivo</label>
-                  <input type="text" id="mat-hist-arquivo" placeholder="historia.mp3" class="mono-input">
-                </div>
-                <div class="form-group col-3">
-                  <label for="mat-hist-duracao">Duração (segundos)</label>
-                  <input type="number" id="mat-hist-duracao" placeholder="280">
-                </div>
-              </div>
-              <div class="form-group">
-                <label for="mat-hist-url">URL de Download / Nuvem</label>
-                <input type="url" id="mat-hist-url" placeholder="https://fefo.io/media/v3/audio/t01_01_historia.mp3">
-              </div>
-            </div>
-
-            <!-- Bloco 2: Livrinho Ilustrado em PDF -->
-            <div class="media-box">
-              <div class="media-box-header">
-                <div class="media-icon">📖</div>
-                <div>
-                  <h4>Livrinho Ilustrado (PDF)</h4>
-                  <p>Material visual para os pais lerem e acompanharem junto à criança.</p>
-                </div>
-              </div>
-              <div class="form-row">
-                <div class="form-group col-6">
-                  <label for="mat-livro-titulo">Título do Livrinho</label>
-                  <input type="text" id="mat-livro-titulo" placeholder="Ex: Livrinho Ilustrado - Aventuras da Manhã">
-                </div>
-                <div class="form-group col-4">
-                  <label for="mat-livro-arquivo">Arquivo PDF</label>
-                  <input type="text" id="mat-livro-arquivo" placeholder="livrinho.pdf" class="mono-input">
-                </div>
-                <div class="form-group col-2">
-                  <label for="mat-livro-paginas">Páginas</label>
-                  <input type="number" id="mat-livro-paginas" placeholder="12" value="12">
-                </div>
-              </div>
-              <div class="form-group">
-                <label for="mat-livro-url">URL do PDF do Livrinho</label>
-                <input type="url" id="mat-livro-url" placeholder="https://fefo.io/media/v3/pdf/t01_01_livrinho.pdf">
-              </div>
-            </div>
-
-            <!-- Bloco 3: Bobie Gods (Personagens / Esculturas / Papercraft) -->
-            <div class="media-box">
-              <div class="media-box-header">
-                <div class="media-icon">🧸</div>
-                <div>
-                  <h4>Bobie Gods (Materiais dos Personagens)</h4>
-                  <p>Ficheiros para impressão, recortar ou montagem física dos Bobies.</p>
-                </div>
-                <button type="button" class="btn btn-chip" id="btn-add-bobie">➕ Adicionar Bobie</button>
-              </div>
-              <div id="bobies-list-container" class="item-list-container">
-                <!-- Itens inseridos dinamicamente -->
-              </div>
-            </div>
-
-            <!-- Bloco 4: Atividades Impressas em PDF -->
-            <div class="media-box">
-              <div class="media-box-header">
-                <div class="media-icon">🖍️</div>
-                <div>
-                  <h4>Caderno de Atividades Impressas (PDF)</h4>
-                  <p>Folhas de colorir, recortar, ligar pontos e dinâmicas pedagógicas offline.</p>
-                </div>
-              </div>
-              <div class="form-row">
-                <div class="form-group col-6">
-                  <label for="mat-ativ-titulo">Título do Caderno</label>
-                  <input type="text" id="mat-ativ-titulo" placeholder="Ex: Caderno de Atividades Matinais">
-                </div>
-                <div class="form-group col-6">
-                  <label for="mat-ativ-arquivo">Arquivo PDF</label>
-                  <input type="text" id="mat-ativ-arquivo" placeholder="atividades.pdf" class="mono-input">
-                </div>
-              </div>
-              <div class="form-group">
-                <label for="mat-ativ-url">URL do Caderno de Atividades</label>
-                <input type="url" id="mat-ativ-url" placeholder="https://fefo.io/media/v3/pdf/t01_01_atividades.pdf">
-              </div>
-            </div>
-
-          </div>
-
-          <!-- ETAPA 3: ATIVIDADES INTERATIVAS NO FEFO (FÍSICO: TRECK-TRECK, MÚSICA & MINDFULNESS) -->
-          <div class="form-step" id="step-3" style="display: none;">
-            <h3 class="step-title">Etapa 3: Interação Física no Robô FEFO</h3>
-            <p class="step-desc">Configure o Treck-Treck (estímulo tátil/motor), Músicas e momentos de Mindfulness com perfis de hardware.</p>
-
-            <!-- Seção Treck-Treck -->
-            <div class="hardware-card">
-              <div class="hardware-card-header">
-                <div class="toggle-group">
-                  <input type="checkbox" id="treck-ativo" checked>
-                  <label for="treck-ativo" class="toggle-label">Ativar Treck-Treck Tátil neste Tema</label>
-                </div>
-                <span class="badge-tag">Mecânica & Tátil</span>
-              </div>
-              <div id="treck-controls-body">
-                <div class="form-row">
-                  <div class="form-group col-6">
-                    <label for="treck-titulo">Título da Ação Tátil</label>
-                    <input type="text" id="treck-titulo" placeholder="Ex: Alongamento do Bichinho Preguiça">
-                  </div>
-                  <div class="form-group col-3">
-                    <label for="treck-arquivo">Áudio Guia</label>
-                    <input type="text" id="treck-arquivo" placeholder="treck.mp3" class="mono-input">
-                  </div>
-                  <div class="form-group col-3">
-                    <label for="treck-duracao">Duração (seg)</label>
-                    <input type="number" id="treck-duracao" placeholder="90" value="90">
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label for="treck-desc">Instrução Física da Atividade</label>
-                  <textarea id="treck-desc" rows="2" placeholder="Ex: Movimento guiado de girar a catraca do robô acompanhando o som rítmico..."></textarea>
-                </div>
-
-                <!-- Perfil Sensorial Treck-Treck -->
-                <div class="sensor-profile-row">
-                  <span class="sensor-title">Perfil de Hardware:</span>
-                  <div class="sensor-field">
-                    <label for="treck-led">Luz LED:</label>
-                    <input type="color" id="treck-led" value="#FFA500">
-                  </div>
-                  <div class="sensor-field">
-                    <label for="treck-rosto">Display OLED:</label>
-                    <select id="treck-rosto">
-                      <option value="animado">Animado (Olhos piscando)</option>
-                      <option value="feliz">Feliz (Sorriso)</option>
-                      <option value="comemorando">Comemorando</option>
-                      <option value="zen">Zen (Olhos fechados)</option>
-                      <option value="cantando">Cantando</option>
-                    </select>
-                  </div>
-                  <div class="sensor-field">
-                    <label for="treck-vibracao">Vibração:</label>
-                    <select id="treck-vibracao">
-                      <option value="pulsar_suave">Pulsar Suave</option>
-                      <option value="ritmica">Rítmica Contínua</option>
-                      <option value="curta">Toque Curto</option>
-                      <option value="ondas">Ondas Graduais</option>
-                      <option value="desligada">Desligada</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Seção Músicas e Mindfulness -->
-            <div class="hardware-card">
-              <div class="hardware-card-header">
-                <div>
-                  <h4>Músicas & Momentos de Mindfulness</h4>
-                  <p>Trilhas sonoras e respirações guiadas com integração sensorial do FEFO.</p>
-                </div>
-                <button type="button" class="btn btn-chip" id="btn-add-musica">➕ Adicionar Faixa</button>
-              </div>
-              <div id="musicas-list-container" class="item-list-container">
-                <!-- Inserido dinamicamente -->
-              </div>
-            </div>
-
-          </div>
-
-          <!-- ETAPA 4: CARDS RFID INTERATIVOS (UID + ÁUDIO + HARDWARE) -->
-          <div class="form-step" id="step-4" style="display: none;">
-            <div class="step-header-with-action">
-              <div>
-                <h3 class="step-title">Etapa 4: Cards RFID Interativos do Robô</h3>
-                <p class="step-desc">Cada card físico aproximado do leitor RFID do FEFO dispara áudios e respostas sensoriais dedicadas.</p>
-              </div>
-              <button type="button" class="btn btn-secondary" id="btn-add-card-rfid">
-                <span class="btn-icon">🎴</span> Adicionar Card RFID
-              </button>
-            </div>
-
-            <div id="cards-rfid-container" class="cards-rfid-grid">
-              <!-- Cards RFID renderizados aqui -->
-            </div>
-
-            <div class="empty-state-sub" id="cards-rfid-empty" style="display: none;">
-              <p>Nenhum card RFID cadastrado para este tema. Clique no botão acima para adicionar.</p>
-            </div>
-          </div>
-
-          <!-- ETAPA 5: DESAFIOS INTERATIVOS (COM CARD OU REFLEXIVO GUIADO) -->
-          <div class="form-step" id="step-5" style="display: none;">
-            <div class="step-header-with-action">
-              <div>
-                <h3 class="step-title">Etapa 5: Desafios & Missões Interativas</h3>
-                <p class="step-desc">Dois modos suportados: Validação por Card RFID esperado ou Modo Áudio Reflexivo com pausa guiada.</p>
-              </div>
-              <button type="button" class="btn btn-secondary" id="btn-add-desafio">
-                <span class="btn-icon">🏆</span> Adicionar Desafio
-              </button>
-            </div>
-
-            <div id="desafios-container" class="desafios-grid">
-              <!-- Desafios renderizados dinamicamente -->
-            </div>
-
-            <div class="empty-state-sub" id="desafios-empty" style="display: none;">
-              <p>Nenhum desafio interativo cadastrado. Adicione um desafio para fixação da rotina.</p>
-            </div>
-          </div>
-
-        </form>
-      </div>
-
-      <!-- Rodapé do Modal (Lei de Fitts e Von Restorff) -->
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" id="btn-step-prev" style="visibility: hidden;">
-          ← Anterior
-        </button>
-
-        <div class="modal-footer-right">
-          <button type="button" class="btn btn-outline" id="btn-cancelar-modal">
-            Cancelar
-          </button>
-          <button type="button" class="btn btn-secondary" id="btn-step-next">
-            Próximo →
-          </button>
-          <button type="button" class="btn btn-primary" id="btn-salvar-tema">
-            <span class="btn-icon">💾</span> Salvar Tema no Catálogo
-          </button>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- RODAPÉ PERMANENTE COM VERSIONAMENTO DUPLO (Diretriz Chave) -->
-  <footer class="app-footer">
-    <div class="footer-container">
-      <div class="footer-left">
-        <span class="footer-dot"></span>
-        <span class="footer-title">Catálogo FEFO v3</span>
-        <span class="footer-separator">•</span>
-        <span class="footer-sub">Modo Offline / Local-First</span>
-        <span class="footer-separator">•</span>
-        <span id="footer-stats">Carregando temas...</span>
-      </div>
-
-      <div class="footer-center">
-        <!-- Versionamento Global do Catálogo (v3.001) -->
-        <div class="version-pill" id="footer-version-pill" title="Clique para editar ou alterar a versão global">
-          <span class="version-label">Versão do Catálogo:</span>
-          <span class="version-number" id="catalog-global-version">v3.001</span>
-          <button class="btn-bump-version" id="btn-bump-version" title="Incrementar versão (+0.001)">+0.001</button>
-        </div>
-      </div>
-
-      <div class="footer-right">
-        <span class="last-sync" id="footer-last-sync">Última atualização: Hoje</span>
-      </div>
-    </div>
-  </footer>
-
-  <!-- Toast de Notificações Acessível -->
-  <div class="toast-container" id="toast-container" aria-live="polite"></div>
-
-  <!-- Scripts da Aplicação v3 -->
+  <!-- SCRIPTS -->
   <script src="admin-v3.js"></script>
 </body>
 </html>
