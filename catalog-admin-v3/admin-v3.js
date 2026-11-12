@@ -609,59 +609,69 @@
             </button>
           </div>
 
-          <!-- Linha 4: Roteiro / Letra + Botão IA -->
-          <div class="sub-accordion-box">
-            <div class="sub-accordion-header">
-              <span class="sub-header-title">Texto / Roteiro (${type}) ▲</span>
-              <button type="button" class="btn-mockup-mustard" data-action="gerar-voz-ia">
+          <!-- Sub-bloco 1: Roteiro / Letra + Botão IA com Sanfona -->
+          <div class="sub-accordion-box expanded" id="sub-roteiro-${type.toLowerCase()}-${idx}">
+            <div class="sub-accordion-header" data-action="toggle-sub-accordion" data-target="sub-roteiro-${type.toLowerCase()}-${idx}">
+              <span class="sub-header-title">Texto / Roteiro (${type}) <span class="sub-arrow">▲</span></span>
+              <button type="button" class="btn-mockup-mustard" data-action="gerar-voz-ia" onclick="event.stopPropagation();">
                 🎙️ Gerar Voz do FEFO (IA)
               </button>
             </div>
-            <textarea class="textarea-roteiro" placeholder="Digite ou edite aqui o roteiro falado pelo FEFO para este áudio..." data-field="roteiro">${escapeHtml(item.roteiro || '')}</textarea>
+            <div class="sub-accordion-body">
+              <textarea class="textarea-roteiro" placeholder="Digite ou edite aqui o roteiro falado pelo FEFO para este áudio..." data-field="roteiro">${escapeHtml(item.roteiro || '')}</textarea>
+            </div>
           </div>
 
-          <!-- Linha 5: Ajusta/Cortar com Waveform Neon -->
-          <div class="sub-accordion-box">
-            <div class="sub-header-title" style="margin-bottom: 0.65rem;">Ajusta/Cortar ▲</div>
-            <div class="waveform-tool-box">
-              <div class="waveform-canvas-container">
-                <canvas id="canvas-${type.toLowerCase()}-${idx}" class="waveform-canvas"></canvas>
-              </div>
-              <div class="trimmer-controls-row">
-                <div class="trimmer-param-chip">Fade In: <span class="val">${(item.trimmer?.fadeIn || 0.2).toFixed(2)}s</span></div>
-                <div class="trimmer-param-chip">Início: <input type="number" step="0.05" value="${(item.trimmer?.inicio || 0).toFixed(2)}" data-trim="inicio"></div>
-                <div class="trimmer-param-chip">Fim: <input type="number" step="0.05" value="${(item.trimmer?.fim || 30).toFixed(2)}" data-trim="fim"></div>
-                <div class="trimmer-param-chip">Fade Out: <span class="val">${(item.trimmer?.fadeOut || 0.2).toFixed(2)}s</span></div>
-                <div class="trimmer-param-chip">Duração: <span class="val">${(item.trimmer?.duracao || 30).toFixed(2)}s</span></div>
-              </div>
-              <div class="trimmer-buttons-row">
-                <button type="button" class="btn-trim-secondary" data-action="ouvir-trecho">▶ Ouvir Trecho</button>
-                <button type="button" class="btn-trim-secondary" data-action="redefinir-corte">Redefinir Tudo</button>
-                <button type="button" class="btn-trim-secondary" data-action="baixar-mp3">Baixar MP3</button>
-                <button type="button" class="btn-trim-apply" data-action="aplicar-corte">Aplicar Corte</button>
+          <!-- Sub-bloco 2: Ajusta/Cortar com Sanfona + Waveform Neon com Barras Amarelas -->
+          <div class="sub-accordion-box expanded" id="sub-corte-${type.toLowerCase()}-${idx}">
+            <div class="sub-accordion-header" data-action="toggle-sub-accordion" data-target="sub-corte-${type.toLowerCase()}-${idx}">
+              <span class="sub-header-title">Ajusta/Cortar <span class="sub-arrow">▲</span></span>
+            </div>
+            <div class="sub-accordion-body">
+              <div class="waveform-tool-box">
+                <div class="waveform-canvas-container">
+                  <canvas id="canvas-${type.toLowerCase()}-${idx}" class="waveform-canvas"></canvas>
+                </div>
+                <div class="trimmer-controls-row">
+                  <div class="trimmer-param-chip">Fade In: <span class="val">${(item.trimmer?.fadeIn || 0.2).toFixed(2)}s</span></div>
+                  <div class="trimmer-param-chip">Início: <input type="number" step="0.05" value="${(item.trimmer?.inicio || 0).toFixed(2)}" data-trim="inicio" id="input-inicio-${type.toLowerCase()}-${idx}"></div>
+                  <div class="trimmer-param-chip">Fim: <input type="number" step="0.05" value="${(item.trimmer?.fim || 30).toFixed(2)}" data-trim="fim" id="input-fim-${type.toLowerCase()}-${idx}"></div>
+                  <div class="trimmer-param-chip">Fade Out: <span class="val">${(item.trimmer?.fadeOut || 0.2).toFixed(2)}s</span></div>
+                  <div class="trimmer-param-chip">Duração: <span class="val" id="val-dur-${type.toLowerCase()}-${idx}">${(item.trimmer?.duracao || 30).toFixed(2)}s</span></div>
+                </div>
+                <div class="trimmer-buttons-row">
+                  <button type="button" class="btn-trim-secondary" data-action="ouvir-trecho">▶ Ouvir Trecho</button>
+                  <button type="button" class="btn-trim-secondary" data-action="redefinir-corte">Redefinir Tudo</button>
+                  <button type="button" class="btn-trim-secondary" data-action="baixar-mp3">Baixar MP3</button>
+                  <button type="button" class="btn-trim-apply" data-action="aplicar-corte">Aplicar Corte</button>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- Linha 6: CARD Vinculado -->
-          <div class="sub-accordion-box">
-            <div class="sub-header-title" style="margin-bottom: 0.65rem;">CARD Vinculado ▲</div>
-            <div class="card-linked-box">
-              <div class="card-preview-thumbnail">
-                ${item.cardVinculado?.imagemUrl 
-                  ? `<img src="${item.cardVinculado.imagemUrl}" alt="Preview do Card">` 
-                  : `<span class="card-preview-placeholder">🎴</span>`
-                }
-              </div>
-              <div class="card-fields-col">
-                <div class="field-row-horizontal">
-                  <label class="field-label-inline">Nome no Catálogo</label>
-                  <input type="text" class="field-input-clean" value="${escapeHtml(item.cardVinculado?.nome || '')}" placeholder="CARD XXXX" data-field="card-nome">
-                  <button type="button" class="btn-mockup-mustard" data-action="upload-img-card">Selecionar Card PNG ou JPEG</button>
+          <!-- Sub-bloco 3: CARD Vinculado com Sanfona -->
+          <div class="sub-accordion-box expanded" id="sub-card-${type.toLowerCase()}-${idx}">
+            <div class="sub-accordion-header" data-action="toggle-sub-accordion" data-target="sub-card-${type.toLowerCase()}-${idx}">
+              <span class="sub-header-title">CARD Vinculado <span class="sub-arrow">▲</span></span>
+            </div>
+            <div class="sub-accordion-body">
+              <div class="card-linked-box">
+                <div class="card-preview-thumbnail">
+                  ${item.cardVinculado?.imagemUrl 
+                    ? `<img src="${item.cardVinculado.imagemUrl}" alt="Preview do Card">` 
+                    : `<span class="card-preview-placeholder">🎴</span>`
+                  }
                 </div>
-                <div class="field-row-horizontal">
-                  <label class="field-label-inline">Comando no Pet</label>
-                  <input type="text" class="field-input-clean field-input-mono" value="${escapeHtml(item.cardVinculado?.comandoPet || `CARD${String(num).padStart(4, '0')}`)}" placeholder="CARD0001" data-field="card-comando">
+                <div class="card-fields-col">
+                  <div class="field-row-horizontal">
+                    <label class="field-label-inline">Nome no Catálogo</label>
+                    <input type="text" class="field-input-clean" value="${escapeHtml(item.cardVinculado?.nome || '')}" placeholder="CARD XXXX" data-field="card-nome">
+                    <button type="button" class="btn-mockup-mustard" data-action="upload-img-card">Selecionar Card PNG ou JPEG</button>
+                  </div>
+                  <div class="field-row-horizontal">
+                    <label class="field-label-inline">Comando no Pet</label>
+                    <input type="text" class="field-input-clean field-input-mono" value="${escapeHtml(item.cardVinculado?.comandoPet || `CARD${String(num).padStart(4, '0')}`)}" placeholder="CARD0001" data-field="card-comando">
+                  </div>
                 </div>
               </div>
             </div>
@@ -740,15 +750,84 @@
       player.addEventListener('timeupdate', checkStop);
     });
 
+    // Eventos dos Sub-acordeões Sanfona (Roteiro, Ajusta/Cortar, Card Vinculado)
+    card.querySelectorAll('[data-action="toggle-sub-accordion"]').forEach(header => {
+      header.addEventListener('click', (e) => {
+        // Evita fechar se clicar no botão do gerador de voz
+        if (e.target.closest('[data-action="gerar-voz-ia"]')) return;
+        const targetId = header.getAttribute('data-target');
+        const box = document.getElementById(targetId);
+        if (!box) return;
+        box.classList.toggle('expanded');
+        box.classList.toggle('collapsed');
+        const arrow = header.querySelector('.sub-arrow');
+        if (arrow) {
+          arrow.textContent = box.classList.contains('collapsed') ? '▼' : '▲';
+        }
+        // Se abriu a sanfona de corte, redesenha o canvas com as barras amarelas
+        if (box.id.includes('sub-corte-') && !box.classList.contains('collapsed')) {
+          setTimeout(() => {
+            const c = box.querySelector('canvas');
+            if (c) drawWaveform(c, item.audioBuffer, item.trimmer);
+          }, 50);
+        }
+      });
+    });
+
+    // Controles Reativos do Waveform e Barras Amarelas de Corte
+    const canvas = card.querySelector('canvas');
+    const inputInicio = card.querySelector('[data-trim="inicio"]');
+    const inputFim = card.querySelector('[data-trim="fim"]');
+    const valDur = card.querySelector(`#val-dur-${type.toLowerCase()}-${idx}`);
+
+    const updateTrimmerAndCanvas = () => {
+      const ini = parseFloat(inputInicio.value) || 0;
+      const fim = parseFloat(inputFim.value) || (item.audioBuffer?.duration || 30);
+      item.trimmer = item.trimmer || {};
+      item.trimmer.inicio = Math.max(0, ini);
+      item.trimmer.fim = Math.max(item.trimmer.inicio + 0.05, fim);
+      item.trimmer.duracao = item.trimmer.fim - item.trimmer.inicio;
+      if (valDur) valDur.textContent = `${item.trimmer.duracao.toFixed(2)}s`;
+      drawWaveform(canvas, item.audioBuffer, item.trimmer);
+    };
+
+    if (inputInicio) inputInicio.addEventListener('input', updateTrimmerAndCanvas);
+    if (inputFim) inputFim.addEventListener('input', updateTrimmerAndCanvas);
+
+    // Clicar no Canvas do Waveform para mover as Barras Amarelas de Início ou Fim
+    if (canvas) {
+      canvas.style.cursor = 'crosshair';
+      canvas.title = 'Clique para mover o Início do corte. Shift + Clique para mover o Fim.';
+      canvas.addEventListener('click', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const totalDur = (item.audioBuffer && item.audioBuffer.duration) ? item.audioBuffer.duration : (item.trimmer?.fim || 30);
+        const clickSec = (clickX / rect.width) * totalDur;
+
+        if (e.shiftKey) {
+          inputFim.value = clickSec.toFixed(2);
+        } else {
+          const curIni = parseFloat(inputInicio.value) || 0;
+          const curFim = parseFloat(inputFim.value) || totalDur;
+          if (Math.abs(clickSec - curIni) <= Math.abs(clickSec - curFim)) {
+            inputInicio.value = clickSec.toFixed(2);
+          } else {
+            inputFim.value = clickSec.toFixed(2);
+          }
+        }
+        updateTrimmerAndCanvas();
+      });
+    }
+
     card.querySelector('[data-action="save-item"]').addEventListener('click', () => {
       saveCatalogData(false);
     });
 
     card.querySelector('[data-action="delete-item"]').addEventListener('click', onDelete);
 
-    // Desenhar Waveform no canvas
+    // Desenhar Waveform com as barras amarelas no canvas
     setTimeout(() => {
-      drawWaveform(card.querySelector('canvas'), item.audioBuffer);
+      drawWaveform(card.querySelector('canvas'), item.audioBuffer, item.trimmer);
     }, 50);
 
     return card;
@@ -1140,20 +1219,31 @@
   }
 
   // ==========================================================================
-  // RENDERIZAÇÃO DE WAVEFORM
+  // RENDERIZAÇÃO DE WAVEFORM & BARRAS AMARELAS DE CORTE
   // ==========================================================================
-  function drawWaveform(canvas, audioBuffer) {
+  function drawWaveform(canvas, audioBuffer, trimmer) {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     const width = canvas.width = canvas.parentElement.clientWidth || 600;
     const height = canvas.height = canvas.parentElement.clientHeight || 90;
 
+    // Fundo escuro do visualizador
     ctx.fillStyle = '#090D16';
     ctx.fillRect(0, 0, width, height);
 
+    // Linha central de guia
+    ctx.strokeStyle = '#1E293B';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, height / 2);
+    ctx.lineTo(width, height / 2);
+    ctx.stroke();
+
+    // 1. Desenhar a Onda Sonora Verde Neon
     ctx.fillStyle = '#22C55E';
 
     if (!audioBuffer) {
+      // Onda simulada estética suave antes de carregar o arquivo
       const bars = Math.floor(width / 4);
       for (let i = 0; i < bars; i++) {
         const h = Math.sin(i * 0.15) * (height * 0.35) + Math.cos(i * 0.05) * (height * 0.25) + 15;
@@ -1161,25 +1251,72 @@
         const y = (height - h) / 2;
         ctx.fillRect(x, y, 2.5, h);
       }
-      return;
-    }
+    } else {
+      const data = audioBuffer.getChannelData(0);
+      const step = Math.ceil(data.length / width);
+      const amp = height / 2;
 
-    const data = audioBuffer.getChannelData(0);
-    const step = Math.ceil(data.length / width);
-    const amp = height / 2;
-
-    for (let i = 0; i < width; i++) {
-      let min = 1.0;
-      let max = -1.0;
-      for (let j = 0; j < step; j++) {
-        const datum = data[(i * step) + j];
-        if (datum < min) min = datum;
-        if (datum > max) max = datum;
+      for (let i = 0; i < width; i++) {
+        let min = 1.0;
+        let max = -1.0;
+        for (let j = 0; j < step; j++) {
+          const datum = data[(i * step) + j];
+          if (datum < min) min = datum;
+          if (datum > max) max = datum;
+        }
+        const y = (1 + min) * amp;
+        const h = Math.max(2, (max - min) * amp);
+        ctx.fillRect(i, y, 1.5, h);
       }
-      const y = (1 + min) * amp;
-      const h = Math.max(2, (max - min) * amp);
-      ctx.fillRect(i, y, 1.5, h);
     }
+
+    // 2. Calcular Posições de Início e Fim
+    const totalDur = (audioBuffer && audioBuffer.duration) ? audioBuffer.duration : Math.max(10, trimmer?.fim || 30);
+    const startSec = Math.max(0, Math.min(totalDur, trimmer?.inicio || 0));
+    const endSec = Math.max(startSec + 0.05, Math.min(totalDur, trimmer?.fim || totalDur));
+
+    const sx = Math.max(0, Math.min(width, (startSec / totalDur) * width));
+    const ex = Math.max(0, Math.min(width, (endSec / totalDur) * width));
+
+    // 3. Regiões fora do corte sombreadas (escurecidas para dar foco no trecho ativo)
+    ctx.fillStyle = 'rgba(7, 13, 22, 0.75)';
+    if (sx > 0) ctx.fillRect(0, 0, sx, height);
+    if (ex < width) ctx.fillRect(ex, 0, width - ex, height);
+
+    // 4. Região cortada selecionada com leve brilho verde
+    ctx.fillStyle = 'rgba(34, 197, 94, 0.12)';
+    ctx.fillRect(sx, 0, ex - sx, height);
+
+    // 5. BARRAS AMARELAS DE CORTE (Conforme desenho do usuário no print)
+    const drawYellowBar = (xPos, isStart) => {
+      // Linha vertical amarela viva
+      ctx.strokeStyle = '#FACC15';
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.moveTo(xPos, 0);
+      ctx.lineTo(xPos, height);
+      ctx.stroke();
+
+      // Puxador circular superior idêntico ao desenho da caneta amarela
+      ctx.fillStyle = '#FACC15';
+      ctx.beginPath();
+      ctx.arc(xPos, 9, 6.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Borda contrastante no puxador
+      ctx.strokeStyle = '#92400E';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Ponto inferior de apoio
+      ctx.fillStyle = '#FACC15';
+      ctx.beginPath();
+      ctx.arc(xPos, height - 7, 4, 0, Math.PI * 2);
+      ctx.fill();
+    };
+
+    drawYellowBar(sx, true);
+    drawYellowBar(ex, false);
   }
 
   // ==========================================================================

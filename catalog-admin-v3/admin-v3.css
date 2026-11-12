@@ -566,20 +566,27 @@ body.fefo-theme-v3 {
 }
 
 /* ==========================================================================
-   SUB-SEÇÃO: ROTEIRO DO ÁUDIO
+   SUB-SEÇÃO: ACORDEÕES SANFONA INTERNOS (ROTEIRO, AJUSTA/CORTAR, CARD VINCULADO)
    ========================================================================== */
 .sub-accordion-box {
   border: 1px solid #E5E7EB;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 0.85rem 1rem;
   background-color: #FAFAFA;
+  transition: all 0.2s ease;
 }
 
 .sub-accordion-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.65rem;
+  cursor: pointer;
+  user-select: none;
+  padding: 0.25rem 0;
+}
+
+.sub-accordion-header:hover .sub-header-title {
+  color: #B45309;
 }
 
 .sub-header-title {
@@ -591,6 +598,31 @@ body.fefo-theme-v3 {
   display: flex;
   align-items: center;
   gap: 0.35rem;
+}
+
+.sub-arrow {
+  display: inline-block;
+  font-size: 0.75rem;
+  color: #92400E;
+  transition: transform 0.25s ease;
+}
+
+.sub-accordion-box.collapsed .sub-arrow {
+  transform: rotate(180deg);
+}
+
+.sub-accordion-box.collapsed .sub-accordion-body {
+  display: none;
+}
+
+.sub-accordion-body {
+  margin-top: 0.75rem;
+  animation: sub-accordion-open 0.2s ease-out;
+}
+
+@keyframes sub-accordion-open {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .textarea-roteiro {
