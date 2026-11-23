@@ -510,7 +510,7 @@ body.fefo-theme-v4 {
 .section-row-layout {
   display: flex;
   gap: 1rem;
-  align-items: flex-start;
+  align-items: flex-end; /* Alinha o botão sempre com o final (linha do último item) */
   width: 100%;
 }
 
@@ -522,11 +522,14 @@ body.fefo-theme-v4 {
   gap: 0.85rem;
 }
 
-/* Botão Compacto e Harmônico ao Lado da Sanfona (Alinhado à direita) */
+/* Botão Padronizado e Harmônico ao Lado da Sanfona (Alinhado à direita no último item) */
 .btn-add-side {
+  width: 165px;
+  min-width: 165px;
+  max-width: 165px;
   height: 48px;
-  min-width: 145px;
-  padding: 0 1.15rem;
+  padding: 0 0.75rem;
+  box-sizing: border-box;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -544,7 +547,7 @@ body.fefo-theme-v4 {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   white-space: nowrap;
   flex-shrink: 0;
-  align-self: flex-start;
+  align-self: flex-end; /* Garante que fique na linha do último item */
 }
 
 .btn-add-side:hover {
