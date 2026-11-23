@@ -20,14 +20,6 @@
           <span class="brand-icon">🤖</span>
           <span class="brand-name">FEFO <span class="badge-v4">CATÁLOGO v4</span></span>
         </div>
-        <!-- Seletor de Historinhas Existentes -->
-        <div class="story-selector-wrapper">
-          <label for="select-historinha" class="sr-only">Selecionar Historinha:</label>
-          <select id="select-historinha" class="select-historinha">
-            <!-- Preenchido via JS -->
-          </select>
-          <button type="button" class="btn-action-sm" id="btn-nova-historinha" title="Criar Nova Historinha">➕ Nova</button>
-        </div>
       </div>
 
       <div class="top-bar-right">
@@ -50,200 +42,27 @@
     </div>
   </header>
 
-  <!-- CONTAINER PRINCIPAL DO MOCKUP (DEGRADÊ ÂMBAR / AMARELO FEFO) -->
+  <!-- CONTAINER PRINCIPAL: GESTÃO POR EIXOS TEMÁTICOS & PACOTES (v4) -->
   <main class="v3-main-container">
-    <div class="v3-sheet-card">
 
-      <!-- CABEÇALHO DO TEMA / HISTORINHA -->
-      <section class="sheet-header">
-        
-        <!-- Linha 1: Eixo Temático -->
-        <div class="eixo-header-row">
-          <div class="eixo-tag-badge">
-            <span class="pin-icon">📌</span>
-            <span class="eixo-label-prefix">EIXO TEMÁTICO:</span>
-            <select id="eixo-selector" class="eixo-select-inline">
-              <!-- Preenchido dinamicamente via JS com os 8 eixos -->
-            </select>
-          </div>
-        </div>
-
-        <!-- Linha 2: Título da Historinha & Licenças (Conforme Mockup) -->
-        <div class="story-title-row">
-          <div class="story-title-box">
-            <input type="text" id="story-title-input" class="story-title-input" value="Historinha 1 - O fefo vindo para terra" placeholder="Título da Historinha / Tema...">
-            <button type="button" class="btn-edit-title" id="btn-edit-title" title="Editar título">✏️</button>
-          </div>
-
-          <!-- Caixa de Licenças (Home, Escola, Clínica, Premium) -->
-          <div class="licenses-box">
-            <span class="licenses-title">Licenças</span>
-            <div class="licenses-options">
-              <label class="license-checkbox-label">
-                <input type="checkbox" id="lic-home" checked>
-                <span class="custom-check">✔</span> Home
-              </label>
-              <label class="license-checkbox-label">
-                <input type="checkbox" id="lic-escola" checked>
-                <span class="custom-check">✔</span> Escola
-              </label>
-              <label class="license-checkbox-label">
-                <input type="checkbox" id="lic-clinica" checked>
-                <span class="custom-check">✔</span> Clínica
-              </label>
-              <label class="license-checkbox-label">
-                <input type="checkbox" id="lic-premium" checked>
-                <span class="custom-check">✔</span> Premium
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <!-- ====================================================================
-             CHECKLIST DO PACOTE - STATUS VISUAL RÁPIDO (SEM ENTRAR EM CADA ITEM)
-             ==================================================================== -->
-        <div class="package-health-card" id="package-health-card">
-          <div class="health-header">
-            <span class="health-title">📋 Checklist de Prontidão do Pacote</span>
-            <span class="health-status-badge" id="health-overall-badge">🟡 Em Edição / Rascunho</span>
-          </div>
-          <div class="health-pills-grid">
-            <div class="health-pill" id="pill-conto" title="Áudio da História (aXXXX.wav)">
-              <span class="pill-dot">⚪</span>
-              <span class="pill-label">Conto:</span>
-              <span class="pill-val">Pendente</span>
-            </div>
-            <div class="health-pill" id="pill-faces" title="Expressões Faciais (fXXXX.raw)">
-              <span class="pill-dot">⚪</span>
-              <span class="pill-label">Faces:</span>
-              <span class="pill-val">Pendente</span>
-            </div>
-            <div class="health-pill" id="pill-musicas" title="Músicas & Efeitos (aXXXX.wav)">
-              <span class="pill-dot">⚪</span>
-              <span class="pill-label">Músicas:</span>
-              <span class="pill-val">0 músicas</span>
-            </div>
-            <div class="health-pill" id="pill-cards" title="Cards Físicos / RFID (cXXXX.png + som)">
-              <span class="pill-dot">⚪</span>
-              <span class="pill-label">Cards:</span>
-              <span class="pill-val">0 cards</span>
-            </div>
-            <div class="health-pill" id="pill-atividades" title="Atividades Didáticas (PDF / Docs para Impressão)">
-              <span class="pill-dot">⚪</span>
-              <span class="pill-label">Atividades:</span>
-              <span class="pill-val">0 itens</span>
-            </div>
-          </div>
-        </div>
-
-      </section>
-
-      <!-- ====================================================================
-           1. SEÇÃO DE CONTOS (MÚLTIPLOS CONTOS DA HISTORINHA)
-           ==================================================================== -->
-      <section class="sheet-section" id="section-contos">
-        <div class="section-row-layout">
-          <div id="contos-container" class="items-accordion-container">
-            <!-- Renderizado dinamicamente via JS -->
-          </div>
-          <button type="button" class="btn-add-side btn-add-conto" id="btn-add-conto" title="Adicionar Novo Conto">
-            <span class="btn-icon">➕</span>
-            <span class="btn-label">Novo Conto</span>
-          </button>
-        </div>
-      </section>
-
-      <!-- ====================================================================
-           2. SEÇÃO DE TRECK-TRECK (ATIVIDADES TÁTEIS & MECÂNICAS)
-           ==================================================================== -->
-      <section class="sheet-section" id="section-treck">
-        <div class="section-row-layout">
-          <div id="trecks-container" class="items-accordion-container">
-            <!-- Renderizado dinamicamente via JS -->
-          </div>
-          <button type="button" class="btn-add-side btn-add-treck" id="btn-add-treck" title="Adicionar Novo Treck-Treck">
-            <span class="btn-icon">➕</span>
-            <span class="btn-label">Novo Treck</span>
-          </button>
-        </div>
-      </section>
-
-      <!-- ====================================================================
-           3. SEÇÃO DE MÚSICAS & MINDFULNESS
-           ==================================================================== -->
-      <section class="sheet-section" id="section-musicas">
-        <div class="section-row-layout">
-          <div id="musicas-container" class="items-accordion-container">
-            <!-- Renderizado dinamicamente via JS -->
-          </div>
-          <button type="button" class="btn-add-side btn-add-musica" id="btn-add-musica" title="Adicionar Nova Música">
-            <span class="btn-icon">➕</span>
-            <span class="btn-label">Nova Música</span>
-          </button>
-        </div>
-      </section>
-
-      <!-- ====================================================================
-           4. SEÇÃO DE DESAFIOS & ATIVIDADES INTERATIVAS
-           ==================================================================== -->
-      <section class="sheet-section" id="section-desafios">
-        <div class="section-row-layout">
-          <div id="desafios-container" class="items-accordion-container">
-            <!-- Renderizado dinamicamente via JS -->
-          </div>
-          <button type="button" class="btn-add-side btn-add-desafio" id="btn-add-desafio" title="Adicionar Novo Desafio">
-            <span class="btn-icon">➕</span>
-            <span class="btn-label">Novo Desafio</span>
-          </button>
-        </div>
-      </section>
-
-      <!-- ====================================================================
-           5. SEÇÃO DE LIVRINHOS ILUSTRADOS EM PDF
-           ==================================================================== -->
-      <section class="sheet-section" id="section-livrinhos">
-        <div class="section-row-layout">
-          <div id="livrinhos-container" class="items-accordion-container">
-            <!-- Renderizado dinamicamente via JS -->
-          </div>
-          <button type="button" class="btn-add-side btn-add-livrinho" id="btn-add-livrinho" title="Adicionar Novo Livrinho">
-            <span class="btn-icon">➕</span>
-            <span class="btn-label">Novo Livrinho</span>
-          </button>
-        </div>
-      </section>
-
-      <!-- ====================================================================
-           6. SEÇÃO DE BOBIE GODS (LIVROS DE COLORIR / PERSONAGENS EM PDF)
-           ==================================================================== -->
-      <section class="sheet-section" id="section-bobies">
-        <div class="section-row-layout">
-          <div id="bobies-container" class="items-accordion-container">
-            <!-- Renderizado dinamicamente via JS -->
-          </div>
-          <button type="button" class="btn-add-side btn-add-bobie" id="btn-add-bobie" title="Adicionar Novo Bobie God">
-            <span class="btn-icon">➕</span>
-            <span class="btn-label">Novo Bobie</span>
-          </button>
-        </div>
-      </section>
-
-      <!-- ====================================================================
-           RODAPÉ DE AÇÕES DA HISTORINHA (PUBLICAR, EXCLUIR, SALVAR)
-           ==================================================================== -->
-      <footer class="sheet-footer-actions">
-        <button type="button" class="btn-footer btn-publicar" id="btn-publicar-tema">
-          Publicar
+    <!-- CABEÇALHO DO CATÁLOGO: TÍTULO & BOTÃO DE ADICIONAR PACOTE (OPÇÃO A) -->
+    <div class="catalog-overview-header">
+      <div class="overview-title-box">
+        <h1 class="overview-title">🎨 Eixos Temáticos & Gestão de Pacotes</h1>
+        <p class="overview-subtitle">8 Eixos Oficiais do Ecossistema FEFO com controle de pacotes, downloads e integração com firmware/app.</p>
+      </div>
+      <div class="overview-actions-box">
+        <button type="button" class="btn-top-add-pacote" id="btn-top-add-pacote" title="Adicionar Novo Pacote / Historinha">
+          ➕ Adicionar Novo Pacote
         </button>
-        <button type="button" class="btn-footer btn-excluir" id="btn-excluir-tema">
-          Excluir
-        </button>
-        <button type="button" class="btn-footer btn-salvar" id="btn-salvar-tema">
-          Salvar
-        </button>
-      </footer>
-
+      </div>
     </div>
+
+    <!-- LISTA MASTER DE EIXOS TEMÁTICOS COM PACOTES SUBMISSOS -->
+    <div id="eixos-master-container" class="eixos-master-list">
+      <!-- Renderizado dinamicamente via JS -->
+    </div>
+
   </main>
 
   <!-- RECEPTÁCULO INVISÍVEL PARA UPLOAD DE ARQUIVOS -->

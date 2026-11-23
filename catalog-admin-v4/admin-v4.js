@@ -1,13 +1,14 @@
 /**
  * ==========================================================================
- * FEFO CATALOG ADMIN v3 - MOTOR DE DADOS, ÁUDIO VISUAL & SINCRONIZAÇÃO NUVEM
+ * FEFO CATALOG ADMIN v4 - GESTOR PEDAGÓGICO, EIXOS TEMÁTICOS & BUNDLES SD
  * ==========================================================================
- * - Sincronização em Nuvem Multi-PC via GitHub REST API (idêntico ao v1)
- * - Réplica exata do Mockup Oficial do FEFO
- * - Contos e MÚSICAS com os MESMOS ELEMENTOS (Player, Waveform, Roteiro, Cards)
- * - Numeração automática inteligente (A0001.WAV, M0001.WAV, CARD0001) com modo numeração livre
- * - Semáforo de produção (🔴 Sem Áudio / 🟡 Áudio Bruto / 🟢 Pronto)
- * - Cortador de Áudio Waveform nativo com Web Audio API
+ * - Eixos Temáticos em Destaque com Pacotes Submissos
+ * - Semáforo Oficial: 🟢 PRONTO | 🟡 EM PROCESSO | 🔴 INCOMPLETO
+ * - Sanfona Colapsável por Pacote (Fechado por Padrão)
+ * - Botão de Download em Cada Item + Download Total no Rodapé do Pacote
+ * - Botões de Reordenação (▲ / ▼) para Pacotes e Itens Internos
+ * - Exclusão Segura Apenas Dentro do Pacote Aberto
+ * - Sincronização em Nuvem Multi-PC via GitHub REST API
  */
 
 (() => {
@@ -35,7 +36,8 @@
     historinhas: []
   };
 
-  let currentStoryIndex = 0;
+  // Conjunto de IDs de pacotes expandidos (por padrão todos começam colapsados)
+  const expandedStories = new Set();
 
   // Web Audio Context compartilhado
   let audioCtx = null;
@@ -53,13 +55,11 @@
   // INICIALIZAÇÃO
   // ==========================================================================
   document.addEventListener('DOMContentLoaded', async () => {
-    initEixoSelector();
     initTopBarEvents();
-    initFooterEvents();
     
     // Tenta sincronizar primeiro da nuvem (GitHub REST API) para ter paridade entre todos os PCs
     await loadCatalogData(true);
-    renderCurrentStory();
+    renderCatalogFeed();
   });
 
   // ==========================================================================
@@ -68,7 +68,6 @@
   async function loadCatalogData(fromCloudFirst = true) {
     let loadedData = null;
 
-    // 1. Tentar carregar da Nuvem (GitHub) se estiver online
     if (fromCloudFirst && window.GitHubSync) {
       try {
         updateCloudStatus('syncing', 'Sincronizando com o GitHub...');
@@ -84,7 +83,6 @@
       }
     }
 
-    // 2. Se não veio da nuvem, tentar do localStorage da máquina
     if (!loadedData) {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
@@ -94,7 +92,6 @@
       }
     }
 
-    // 3. Fallback relativo local para primeira execução
     if (!loadedData) {
       try {
         const resp = await fetch('../repository/catalog-v3.json?_t=' + Date.now(), { cache: 'no-store' });
@@ -104,10 +101,9 @@
       } catch (e) {}
     }
 
-    // Consolidar estado
     if (loadedData) {
-      catalogState.catalogVersion = loadedData.catalogVersion || "v3.001";
-      catalogState.versionCode = loadedData.versionCode || 3001;
+      catalogState.catalogVersion = loadedData.catalogVersion || "v4.001";
+      catalogState.versionCode = loadedData.versionCode || 4001;
       if (loadedData.historinhas && Array.isArray(loadedData.historinhas)) {
         catalogState.historinhas = loadedData.historinhas;
       } else if (loadedData.temas) {
@@ -119,17 +115,16 @@
       catalogState.historinhas = [createDefaultStory(1)];
     }
 
-    // Salva cópia local de segurança
     localStorage.setItem(STORAGE_KEY, JSON.stringify(catalogState, null, 2));
+    const versionDisplay = document.getElementById('global-version-display');
+    if (versionDisplay) versionDisplay.textContent = catalogState.catalogVersion;
   }
 
-  async function saveCatalogData(isPublish = false) {
-    // 1. Salvar localmente imediatamente
+  async function saveCatalogData(isPublish = false, specificStory = null) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(catalogState, null, 2));
 
-    // 2. Se for publicar, incrementa a versão global
     if (isPublish) {
-      let cur = catalogState.catalogVersion || 'v3.001';
+      let cur = catalogState.catalogVersion || 'v4.001';
       const m = cur.match(/^v(\d+)\.(\d+)$/);
       if (m) {
         const major = parseInt(m[1], 10);
@@ -137,49 +132,39 @@
         catalogState.catalogVersion = `v${major}.${String(minor).padStart(3, '0')}`;
         catalogState.versionCode = (major * 1000) + minor;
       }
-      document.getElementById('global-version-display').textContent = catalogState.catalogVersion;
+      const versionDisplay = document.getElementById('global-version-display');
+      if (versionDisplay) versionDisplay.textContent = catalogState.catalogVersion;
     }
 
-    // 3. Commit na nuvem GitHub (garantindo que qualquer outro PC receba as alterações)
     if (window.GitHubSync && window.GitHubSync.isConfigured()) {
       try {
         updateCloudStatus('syncing', 'Enviando alterações para o GitHub...');
-        const story = getCurrentStory();
         const actionLabel = isPublish ? 'publicar' : 'salvar';
-        const msg = `feat(catalog-v3): ${actionLabel} historinha "${story.titulo}" [${catalogState.catalogVersion}] via Web Admin`;
+        const storyName = specificStory ? `"${specificStory.titulo}"` : 'Catálogo v4';
+        const msg = `feat(catalog-v4): ${actionLabel} ${storyName} [${catalogState.catalogVersion}] via Web Admin`;
         
         await window.GitHubSync.saveCatalogV3(catalogState, msg);
         updateCloudStatus('connected', 'Conectado à nuvem');
-        showToast(`✅ Sincronizado no GitHub! Todos os PCs agora verão esta versão (${catalogState.catalogVersion}).`, 'success');
+        showToast(`✅ Sincronizado no GitHub! (${catalogState.catalogVersion})`, 'success');
         return;
       } catch (e) {
         console.error('Erro ao sincronizar com GitHub:', e);
         updateCloudStatus('disconnected', 'Erro ao enviar para nuvem');
-        showToast(`Salvo localmente, mas houve erro ao enviar ao GitHub: ${e.message}`, 'warning');
+        showToast(`Salvo localmente, erro ao enviar ao GitHub: ${e.message}`, 'warning');
       }
     } else {
-      showToast('Salvo localmente neste computador! (Configure o token do GitHub para sincronizar em outros PCs)', 'info');
+      showToast(isPublish ? 'Versão local publicada com sucesso!' : 'Alterações salvas localmente!', 'success');
     }
   }
 
   function updateCloudStatus(status, text) {
     const pill = document.getElementById('github-sync-pill');
     if (!pill) return;
-    if (status === 'connected') {
-      pill.style.background = '#064E3B';
-      pill.style.borderColor = '#059669';
-      pill.style.color = '#A7F3D0';
-      pill.innerHTML = `<span class="gh-cloud-icon">☁️</span> <span>${text || 'Nuvem Conectada'}</span>`;
-    } else if (status === 'syncing') {
-      pill.style.background = '#78350F';
-      pill.style.borderColor = '#D97706';
-      pill.style.color = '#FDE68A';
-      pill.innerHTML = `<span class="gh-cloud-icon">🔄</span> <span>${text || 'Sincronizando...'}</span>`;
-    } else {
-      pill.style.background = '#374151';
-      pill.style.borderColor = '#4B5563';
-      pill.style.color = '#9CA3AF';
-      pill.innerHTML = `<span class="gh-cloud-icon">☁️</span> <span>${text || 'Offline'}</span>`;
+    pill.className = `gh-sync-pill ${status}`;
+    pill.title = text;
+    const icon = pill.querySelector('.gh-cloud-icon');
+    if (icon) {
+      icon.textContent = status === 'connected' ? '☁️' : status === 'syncing' ? '🔄' : '⚠️';
     }
   }
 
@@ -189,21 +174,22 @@
       id: `hist_${idx + 1}`,
       codigo: t.codigo || `t01.${String(idx + 1).padStart(2, '0')}`,
       titulo: t.titulo || `Historinha ${idx + 1}`,
-      eixoId: t.eixoId || "eixo-03",
+      eixoId: t.eixoId || "eixo-01",
       licencas: { home: true, escola: true, clinica: true, premium: true },
       contos: [
         {
           id: `conto_1`,
           nomeApp: "A VINDA",
-          arquivoPet: "A0001.WAV",
+          arquivoPet: "a0001.wav",
           arquivoPetManual: false,
           audioUrl: t.materiais?.historiaAudio?.url || "",
+          facePet: "f0001.raw",
           roteiro: "Olá amiguinho! O FEFO chegou para viver muitas aventuras com você na Terra!",
           trimmer: { inicio: 0.50, fim: 51.37, fadeIn: 0.2, fadeOut: 0.2, duracao: 50.87 },
-          status: "ready",
+          status: t.materiais?.historiaAudio?.url ? "ready" : "raw",
           cardVinculado: {
-            nome: "CARD FEFO CHEGOU",
-            comandoPet: "CARD0001",
+            nome: "CARD 001",
+            comandoPet: "c0001.png",
             imagemUrl: ""
           }
         }
@@ -212,15 +198,16 @@
         {
           id: `mus_1`,
           nomeApp: "Canção do Bom Dia",
-          arquivoPet: "M0001.WAV",
+          arquivoPet: "a0011.wav",
           arquivoPetManual: false,
           audioUrl: "",
+          facePet: "f0001.raw",
           roteiro: "Solzinho acorda de manhã, vem brincar com o FEFO...",
-          trimmer: { inicio: 0.0, fim: 45.0, fadeIn: 0.2, fadeOut: 0.2, duracao: 45.0 },
-          status: "ready",
+          trimmer: { inicio: 0, fim: 30, fadeIn: 0.2, fadeOut: 0.2, duracao: 30 },
+          status: "empty",
           cardVinculado: {
-            nome: "CARD MÚSICA DO DIA",
-            comandoPet: "CARD0002",
+            nome: "CARD MÚSICA 1",
+            comandoPet: "c0011.png",
             imagemUrl: ""
           }
         }
@@ -228,34 +215,34 @@
       trecks: [
         {
           id: `trk_1`,
-          nomeAcao: t.interacoesFefo?.treckTreck?.titulo || "Alongamento da Manhã",
+          nomeAcao: t.interacoesFefo?.treckTreck?.titulo || "Alongamento do Bichinho Preguiça",
           arquivoPet: "TRK0001.WAV",
           duracaoSegundos: 90,
           instrucao: "Gire a catraca do robô acompanhando o som rítmico...",
-          status: "ready"
+          audioUrl: ""
         }
       ],
       desafios: [
         {
           id: `des_1`,
-          tipo: "card_rfid",
           titulo: "Onde está o Card do Amiguinho?",
-          cardEsperado: "CARD0001",
-          audioPergunta: "A0002.WAV"
+          cardEsperado: "c0001.png",
+          audioPergunta: "a0002.wav",
+          facePet: "f0001.raw"
         }
       ],
       livrinhos: [
         {
           id: `livro_1`,
-          nome: "AVENTURAS DO FEFO",
-          pdfUrl: t.materiais?.livrinhoPdf?.url || "",
+          nome: "Aventuras do FEFO",
+          pdfUrl: "",
           capaUrl: ""
         }
       ],
       bobies: [
         {
           id: `bobie_1`,
-          nome: "AVENTURAS DO FEFO - COLORIR",
+          nome: "Aventuras do FEFO - Colorir",
           pdfUrl: "",
           capaUrl: ""
         }
@@ -263,26 +250,27 @@
     }));
   }
 
-  function createDefaultStory(num) {
+  function createDefaultStory(num, forcedEixoId = "eixo-01") {
     return {
-      id: `hist_${Date.now()}`,
+      id: `hist_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
       codigo: `t01.${String(num).padStart(2, '0')}`,
-      titulo: `Historinha ${num} - O fefo vindo para terra`,
-      eixoId: "eixo-03",
+      titulo: `Historinha ${num} - Nova Aventura do FEFO`,
+      eixoId: forcedEixoId,
       licencas: { home: true, escola: true, clinica: true, premium: true },
       contos: [
         {
           id: `conto_1`,
-          nomeApp: "A VINDA",
-          arquivoPet: "A0001.WAV",
+          nomeApp: "PARTE 01",
+          arquivoPet: "a0001.wav",
           arquivoPetManual: false,
           audioUrl: "",
-          roteiro: "Digite ou edite aqui o roteiro falado pelo FEFO para este áudio...",
-          trimmer: { inicio: 0.50, fim: 51.37, fadeIn: 0.2, fadeOut: 0.2, duracao: 50.87 },
-          status: "raw",
+          facePet: "f0001.raw",
+          roteiro: "Digite ou edite aqui o roteiro falado pelo FEFO...",
+          trimmer: { inicio: 0, fim: 30, fadeIn: 0.2, fadeOut: 0.2, duracao: 30 },
+          status: "empty",
           cardVinculado: {
             nome: "CARD 001",
-            comandoPet: "CARD0001",
+            comandoPet: "c0001.png",
             imagemUrl: ""
           }
         }
@@ -290,26 +278,44 @@
       musicas: [
         {
           id: `mus_1`,
-          nomeApp: "CANÇÃO DE NINAR",
-          arquivoPet: "M0001.WAV",
+          nomeApp: "CANÇÃO 01",
+          arquivoPet: "a0011.wav",
           arquivoPetManual: false,
           audioUrl: "",
-          roteiro: "Durma bem meu amiguinho, sonhe com as estrelas...",
-          trimmer: { inicio: 0.0, fim: 60.0, fadeIn: 0.2, fadeOut: 0.2, duracao: 60.0 },
-          status: "raw",
+          facePet: "f0001.raw",
+          roteiro: "Letra da música...",
+          trimmer: { inicio: 0, fim: 45, fadeIn: 0.2, fadeOut: 0.2, duracao: 45 },
+          status: "empty",
           cardVinculado: {
-            nome: "CARD DA MÚSICA",
-            comandoPet: "CARD0002",
+            nome: "CARD MÚSICA 1",
+            comandoPet: "c0011.png",
             imagemUrl: ""
           }
         }
       ],
-      trecks: [],
-      desafios: [],
+      trecks: [
+        {
+          id: `trk_1`,
+          nomeAcao: "Alongamento Tátil",
+          arquivoPet: "TRK0001.WAV",
+          duracaoSegundos: 60,
+          instrucao: "Instruções físicas do robô...",
+          audioUrl: ""
+        }
+      ],
+      desafios: [
+        {
+          id: `des_1`,
+          titulo: "Desafio do Card",
+          cardEsperado: "c0001.png",
+          audioPergunta: "a0002.wav",
+          facePet: "f0001.raw"
+        }
+      ],
       livrinhos: [
         {
           id: `livro_1`,
-          nome: "AVENTURAS DO FEFO",
+          nome: "Livrinho Ilustrado",
           pdfUrl: "",
           capaUrl: ""
         }
@@ -317,7 +323,7 @@
       bobies: [
         {
           id: `bobie_1`,
-          nome: "AVENTURAS DO FEFO - COLORIR",
+          nome: "Livro de Colorir",
           pdfUrl: "",
           capaUrl: ""
         }
@@ -326,252 +332,554 @@
   }
 
   // ==========================================================================
-  // CONFIGURAÇÃO DOS EIXOS & TOP-BAR
+  // EVENTOS DA TOP BAR & AÇÕES GLOBAIS
   // ==========================================================================
-  function initEixoSelector() {
-    const sel = document.getElementById('eixo-selector');
-    sel.innerHTML = '';
-    EIXOS_OFICIAIS.forEach(eixo => {
-      const opt = document.createElement('option');
-      opt.value = eixo.id;
-      opt.textContent = `${eixo.icone} ${eixo.nome}`;
-      sel.appendChild(opt);
-    });
-
-    sel.addEventListener('change', () => {
-      const story = getCurrentStory();
-      story.eixoId = sel.value;
-      updateStorySelectorDisplay();
-    });
-  }
-
   function initTopBarEvents() {
-    document.getElementById('select-historinha').addEventListener('change', (e) => {
-      currentStoryIndex = parseInt(e.target.value, 10) || 0;
-      renderCurrentStory();
-    });
+    // Botão Sincronizar Nuvem
+    const btnSync = document.getElementById('btn-sync-cloud');
+    if (btnSync) {
+      btnSync.addEventListener('click', async () => {
+        showToast('Buscando versão mais recente no GitHub...', 'info');
+        await loadCatalogData(true);
+        renderCatalogFeed();
+      });
+    }
 
-    document.getElementById('btn-nova-historinha').addEventListener('click', () => {
-      const newNum = catalogState.historinhas.length + 1;
-      const newStory = createDefaultStory(newNum);
-      catalogState.historinhas.push(newStory);
-      currentStoryIndex = catalogState.historinhas.length - 1;
-      renderCurrentStory();
-      showToast(`Nova Historinha ${newNum} criada!`, 'success');
-    });
-
-    // Botão Sincronizar Nuvem em Tempo Real
-    document.getElementById('btn-sync-cloud').addEventListener('click', async () => {
-      showToast('Buscando versão mais recente na nuvem GitHub...', 'info');
-      await loadCatalogData(true);
-      renderCurrentStory();
-    });
-
+    // Botão Importar Catálogo
     const fileInput = document.getElementById('input-import-json');
-    document.getElementById('btn-import-catalog').addEventListener('click', () => fileInput.click());
-    fileInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        try {
-          const parsed = JSON.parse(evt.target.result);
-          if (parsed.historinhas && Array.isArray(parsed.historinhas)) {
-            catalogState = parsed;
-          } else if (parsed.temas) {
-            catalogState.historinhas = convertLegacyCatalogToHistorinhas(parsed);
+    const btnImport = document.getElementById('btn-import-catalog');
+    if (btnImport && fileInput) {
+      btnImport.addEventListener('click', () => fileInput.click());
+      fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          try {
+            const parsed = JSON.parse(evt.target.result);
+            if (parsed.historinhas && Array.isArray(parsed.historinhas)) {
+              catalogState = parsed;
+            } else if (parsed.temas) {
+              catalogState.historinhas = convertLegacyCatalogToHistorinhas(parsed);
+            }
+            saveCatalogData(false);
+            renderCatalogFeed();
+            showToast(`Catálogo "${file.name}" importado com sucesso!`, 'success');
+          } catch (err) {
+            showToast('Erro ao importar JSON. Verifique a sintaxe.', 'error');
           }
-          currentStoryIndex = 0;
-          renderCurrentStory();
-          showToast(`Catálogo ${file.name} importado com sucesso!`, 'success');
-        } catch (err) {
-          showToast('Erro ao importar JSON. Verifique a sintaxe.', 'error');
-        }
-      };
-      reader.readAsText(file);
-      fileInput.value = '';
-    });
+        };
+        reader.readAsText(file);
+        fileInput.value = '';
+      });
+    }
 
-    document.getElementById('btn-export-catalog').addEventListener('click', exportCatalogJson);
+    // Botão Baixar JSON Global
+    const btnExport = document.getElementById('btn-export-catalog');
+    if (btnExport) btnExport.addEventListener('click', exportCatalogJson);
 
+    // Botão Gerar Bundle SD Global
     const btnBundle = document.getElementById('btn-gerar-bundle-sd');
-    if (btnBundle) {
-      btnBundle.addEventListener('click', gerarBundleSD);
+    if (btnBundle) btnBundle.addEventListener('click', () => gerarBundleSD(null));
+
+    // Botão Topo: Adicionar Novo Pacote (Opção A)
+    const btnTopAdd = document.getElementById('btn-top-add-pacote');
+    if (btnTopAdd) {
+      btnTopAdd.addEventListener('click', () => addNewPackage("eixo-01"));
     }
   }
 
-  function initFooterEvents() {
-    document.getElementById('btn-salvar-tema').addEventListener('click', async () => {
-      syncCurrentStoryFromInputs();
-      await saveCatalogData(false);
-    });
+  // ==========================================================================
+  // SEMÁFORO DE STATUS DO PACOTE (🟢 PRONTO | 🟡 EM PROCESSO | 🔴 INCOMPLETO)
+  // ==========================================================================
+  function calculateStoryStatus(story) {
+    const contos = story.contos || [];
+    const musicas = story.musicas || [];
+    const cards = (story.desafios || []).length + contos.filter(c => c.cardVinculado?.comandoPet).length;
 
-    document.getElementById('btn-publicar-tema').addEventListener('click', async () => {
-      syncCurrentStoryFromInputs();
-      await saveCatalogData(true);
-    });
+    const contosProntos = contos.filter(c => c.audioUrl || c.status === 'ready').length;
+    const musicasProntas = musicas.filter(m => m.audioUrl || m.status === 'ready').length;
 
-    document.getElementById('btn-excluir-tema').addEventListener('click', () => {
-      if (catalogState.historinhas.length <= 1) {
-        showToast('Não é possível excluir a única historinha do catálogo!', 'warning');
-        return;
+    if (contosProntos > 0 && musicasProntas > 0 && cards > 0) {
+      return { cls: 'status-ready', icon: '🟢', label: 'PRONTO' };
+    }
+    if (contosProntos > 0 || musicasProntas > 0 || contos.some(c => c.roteiro) || cards > 0) {
+      return { cls: 'status-process', icon: '🟡', label: 'EM PROCESSO' };
+    }
+    return { cls: 'status-incomplete', icon: '🔴', label: 'INCOMPLETO' };
+  }
+
+  // ==========================================================================
+  // RENDERIZAÇÃO DO FEED DE EIXOS & PACOTES (HIERARQUIA PRINCIPAL)
+  // ==========================================================================
+  function renderCatalogFeed() {
+    const container = document.getElementById('eixos-master-container');
+    if (!container) return;
+    container.innerHTML = '';
+
+    EIXOS_OFICIAIS.forEach(eixo => {
+      // Filtra pacotes do eixo
+      const eixoStories = catalogState.historinhas.filter(h => h.eixoId === eixo.id || (!h.eixoId && eixo.id === 'eixo-01'));
+
+      const eixoWrapper = document.createElement('div');
+      eixoWrapper.className = 'eixo-card-wrapper';
+      eixoWrapper.id = `eixo-card-${eixo.id}`;
+
+      eixoWrapper.innerHTML = `
+        <div class="eixo-header-bar" data-action="toggle-eixo">
+          <div class="eixo-title-group">
+            <span class="eixo-pin">📌</span>
+            <span class="eixo-badge-icone">${eixo.icone}</span>
+            <span class="eixo-name">${escapeHtml(eixo.nome)}</span>
+            <span class="eixo-count-chip">${eixoStories.length} ${eixoStories.length === 1 ? 'pacote' : 'pacotes'}</span>
+          </div>
+          <div class="eixo-actions-group">
+            <button type="button" class="btn-add-pacote-eixo" data-action="add-story-eixo" title="Adicionar Pacote neste Eixo">
+              ➕ Novo Pacote
+            </button>
+            <span class="eixo-toggle-arrow">▼</span>
+          </div>
+        </div>
+        <div class="eixo-stories-container" id="stories-container-${eixo.id}">
+          <!-- Pacotes serão inseridos aqui -->
+        </div>
+      `;
+
+      // Evento de recolher/expandir o eixo
+      eixoWrapper.querySelector('[data-action="toggle-eixo"]').addEventListener('click', (e) => {
+        if (e.target.closest('[data-action="add-story-eixo"]')) return;
+        eixoWrapper.classList.toggle('collapsed');
+      });
+
+      // Botão de adicionar pacote diretamente neste eixo
+      eixoWrapper.querySelector('[data-action="add-story-eixo"]').addEventListener('click', (e) => {
+        e.stopPropagation();
+        addNewPackage(eixo.id);
+      });
+
+      const storiesContainer = eixoWrapper.querySelector(`#stories-container-${eixo.id}`);
+
+      if (eixoStories.length === 0) {
+        storiesContainer.innerHTML = `
+          <div style="text-align: center; padding: 1.5rem; color: #94A3B8; font-size: 0.85rem; font-weight: 600;">
+            Nenhum pacote neste eixo ainda. Clique em "➕ Novo Pacote" acima para adicionar.
+          </div>
+        `;
+      } else {
+        eixoStories.forEach(story => {
+          const globalStoryIdx = catalogState.historinhas.indexOf(story);
+          const pkgElement = createPackageElement(story, globalStoryIdx);
+          storiesContainer.appendChild(pkgElement);
+        });
       }
-      const story = getCurrentStory();
-      if (confirm(`Tem certeza de que deseja excluir "${story.titulo}"?`)) {
-        catalogState.historinhas.splice(currentStoryIndex, 1);
-        currentStoryIndex = Math.max(0, currentStoryIndex - 1);
-        renderCurrentStory();
-        saveCatalogData(false);
-        showToast('Historinha removida.', 'info');
+
+      container.appendChild(eixoWrapper);
+    });
+  }
+
+  // ==========================================================================
+  // ELEMENTO DO PACOTE (SANFONA MASTER COM SUB-MÓDULOS INTERNOS)
+  // ==========================================================================
+  function createPackageElement(story, storyIdx) {
+    const pkg = document.createElement('div');
+    const isExpanded = expandedStories.has(story.id);
+    pkg.className = `package-card-wrapper ${isExpanded ? 'expanded' : 'collapsed'}`;
+    pkg.id = `pkg-${story.id}`;
+
+    const status = calculateStoryStatus(story);
+    const contosCount = (story.contos || []).length;
+    const musicasCount = (story.musicas || []).length;
+    const cardsCount = ((story.contos || []).filter(c => c.cardVinculado?.comandoPet).length) + ((story.desafios || []).length);
+    const ativCount = ((story.livrinhos || []).length) + ((story.bobies || []).length) + ((story.trecks || []).length);
+
+    pkg.innerHTML = `
+      <!-- CABEÇALHO DO PACOTE (MINIMIZADO / EXPANDIDO) -->
+      <div class="package-header-bar" data-action="toggle-package">
+        <div class="package-header-left">
+          <div class="package-order-controls" onclick="event.stopPropagation();">
+            <button type="button" class="btn-order-arrow" data-action="move-pkg-up" title="Mover Pacote para Cima">▲</button>
+            <button type="button" class="btn-order-arrow" data-action="move-pkg-down" title="Mover Pacote para Baixo">▼</button>
+          </div>
+          <span class="package-icon-folder">📁</span>
+          <span class="package-title-display"><strong>${escapeHtml(story.codigo || 't01.01')}</strong> - ${escapeHtml(story.titulo || 'Nova Historinha')}</span>
+          <span class="package-status-chip ${status.cls}">${status.icon} ${status.label}</span>
+          <span class="package-meta-summary">(${contosCount} Contos • ${musicasCount} Músicas • ${cardsCount} Cards • ${ativCount} Atividades)</span>
+        </div>
+
+        <div class="package-header-right">
+          <button type="button" class="btn-header-pkg-download" data-action="download-pkg-quick" title="Baixar Pacote Completo (Manifesto SD)" onclick="event.stopPropagation();">
+            ⬇ Baixar Pacote
+          </button>
+          <span class="btn-toggle-package">▼</span>
+        </div>
+      </div>
+
+      <!-- CORPO DO PACOTE: EDIÇÃO COMPLETA -->
+      <div class="package-body-content">
+        
+        <!-- CABEÇALHO INTERNO DO PACOTE -->
+        <section class="sheet-header">
+          <div class="eixo-header-row">
+            <div class="eixo-tag-badge">
+              <span class="pin-icon">📌</span>
+              <span class="eixo-label-prefix">EIXO TEMÁTICO:</span>
+              <select class="eixo-select-inline" data-field="eixoId">
+                ${EIXOS_OFICIAIS.map(e => `<option value="${e.id}" ${e.id === (story.eixoId || 'eixo-01') ? 'selected' : ''}>${e.icone} ${e.nome}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+
+          <div class="story-title-row">
+            <div class="story-title-box">
+              <input type="text" class="story-title-input" value="${escapeHtml(story.titulo || '')}" placeholder="Título da Historinha / Tema..." data-field="titulo">
+            </div>
+
+            <!-- Licenças -->
+            <div class="licenses-box">
+              <span class="licenses-title">Licenças</span>
+              <div class="licenses-options">
+                <label class="license-checkbox-label">
+                  <input type="checkbox" data-lic="home" ${story.licencas?.home ? 'checked' : ''}>
+                  <span class="custom-check">✔</span> Home
+                </label>
+                <label class="license-checkbox-label">
+                  <input type="checkbox" data-lic="escola" ${story.licencas?.escola ? 'checked' : ''}>
+                  <span class="custom-check">✔</span> Escola
+                </label>
+                <label class="license-checkbox-label">
+                  <input type="checkbox" data-lic="clinica" ${story.licencas?.clinica ? 'checked' : ''}>
+                  <span class="custom-check">✔</span> Clínica
+                </label>
+                <label class="license-checkbox-label">
+                  <input type="checkbox" data-lic="premium" ${story.licencas?.premium ? 'checked' : ''}>
+                  <span class="custom-check">✔</span> Premium
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- CHECKLIST DE SAÚDE DO PACOTE -->
+          <div class="package-health-card">
+            <div class="health-header">
+              <span class="health-title">📋 Checklist de Prontidão do Pacote</span>
+              <span class="health-status-badge ${status.cls === 'status-ready' ? 'ready' : ''}">${status.icon} ${status.label}</span>
+            </div>
+            <div class="health-pills-grid">
+              <div class="health-pill ${contosCount > 0 ? 'ok' : 'empty'}">
+                <span class="pill-dot">${contosCount > 0 ? '✅' : '⚪'}</span>
+                <span class="pill-label">Contos:</span>
+                <span class="pill-val">${contosCount} (${story.contos?.[0]?.arquivoPet || 'a0001.wav'})</span>
+              </div>
+              <div class="health-pill ok">
+                <span class="pill-dot">✅</span>
+                <span class="pill-label">Faces:</span>
+                <span class="pill-val">f0001.raw OK</span>
+              </div>
+              <div class="health-pill ${musicasCount > 0 ? 'ok' : 'empty'}">
+                <span class="pill-dot">${musicasCount > 0 ? '✅' : '⚪'}</span>
+                <span class="pill-label">Músicas:</span>
+                <span class="pill-val">${musicasCount} prontas</span>
+              </div>
+              <div class="health-pill ${cardsCount > 0 ? 'ok' : 'empty'}">
+                <span class="pill-dot">${cardsCount > 0 ? '✅' : '⚪'}</span>
+                <span class="pill-label">Cards:</span>
+                <span class="pill-val">${cardsCount} cards</span>
+              </div>
+              <div class="health-pill ${ativCount > 0 ? 'ok' : 'empty'}">
+                <span class="pill-dot">${ativCount > 0 ? '✅' : '⚪'}</span>
+                <span class="pill-label">Atividades:</span>
+                <span class="pill-val">${ativCount} itens</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SEÇÃO 1: CONTOS -->
+        <section class="sheet-section">
+          <div class="section-row-layout">
+            <div class="items-accordion-container" id="contos-container-${story.id}"></div>
+            <button type="button" class="btn-add-side btn-add-conto" data-action="add-conto" title="Adicionar Novo Conto">
+              <span class="btn-icon">➕</span>
+              <span class="btn-label">Novo Conto</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- SEÇÃO 2: TRECK-TRECK -->
+        <section class="sheet-section">
+          <div class="section-row-layout">
+            <div class="items-accordion-container" id="trecks-container-${story.id}"></div>
+            <button type="button" class="btn-add-side btn-add-treck" data-action="add-treck" title="Adicionar Novo Treck">
+              <span class="btn-icon">➕</span>
+              <span class="btn-label">Novo Treck</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- SEÇÃO 3: MÚSICAS -->
+        <section class="sheet-section">
+          <div class="section-row-layout">
+            <div class="items-accordion-container" id="musicas-container-${story.id}"></div>
+            <button type="button" class="btn-add-side btn-add-musica" data-action="add-musica" title="Adicionar Nova Música">
+              <span class="btn-icon">➕</span>
+              <span class="btn-label">Nova Música</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- SEÇÃO 4: DESAFIOS -->
+        <section class="sheet-section">
+          <div class="section-row-layout">
+            <div class="items-accordion-container" id="desafios-container-${story.id}"></div>
+            <button type="button" class="btn-add-side btn-add-desafio" data-action="add-desafio" title="Adicionar Novo Desafio">
+              <span class="btn-icon">➕</span>
+              <span class="btn-label">Novo Desafio</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- SEÇÃO 5: LIVRINHOS -->
+        <section class="sheet-section">
+          <div class="section-row-layout">
+            <div class="items-accordion-container" id="livrinhos-container-${story.id}"></div>
+            <button type="button" class="btn-add-side btn-add-livrinho" data-action="add-livrinho" title="Adicionar Novo Livrinho">
+              <span class="btn-icon">➕</span>
+              <span class="btn-label">Novo Livrinho</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- SEÇÃO 6: BOBIE GODS -->
+        <section class="sheet-section">
+          <div class="section-row-layout">
+            <div class="items-accordion-container" id="bobies-container-${story.id}"></div>
+            <button type="button" class="btn-add-side btn-add-bobie" data-action="add-bobie" title="Adicionar Novo Bobie God">
+              <span class="btn-icon">➕</span>
+              <span class="btn-label">Novo Bobie</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- RODAPÉ DE AÇÕES DO PACOTE -->
+        <footer class="sheet-footer-actions">
+          <button type="button" class="btn-footer btn-footer-download-total" data-action="download-pkg-total" title="Baixar Todos os Arquivos do Pacote">
+            ⬇ Download Total do Pacote
+          </button>
+          <button type="button" class="btn-footer btn-excluir" data-action="delete-package" title="Excluir este Pacote do Catálogo">
+            🗑 Excluir Pacote
+          </button>
+          <button type="button" class="btn-footer btn-salvar" data-action="save-package">
+            💾 Salvar Pacote
+          </button>
+          <button type="button" class="btn-footer btn-publicar" data-action="publish-package">
+            🚀 Publicar
+          </button>
+        </footer>
+
+      </div>
+    `;
+
+    // ------------------------------------------------------------------------
+    // EVENTOS DO PACOTE (SANFONA & REORDENAÇÃO)
+    // ------------------------------------------------------------------------
+    pkg.querySelector('[data-action="toggle-package"]').addEventListener('click', (e) => {
+      if (e.target.closest('.package-order-controls') || e.target.closest('[data-action="download-pkg-quick"]')) return;
+      if (expandedStories.has(story.id)) {
+        expandedStories.delete(story.id);
+        pkg.classList.remove('expanded');
+        pkg.classList.add('collapsed');
+      } else {
+        expandedStories.add(story.id);
+        pkg.classList.add('expanded');
+        pkg.classList.remove('collapsed');
       }
     });
 
-    // Botões de adição de blocos
-    document.getElementById('btn-add-conto').addEventListener('click', addNewConto);
-    document.getElementById('btn-add-musica').addEventListener('click', addNewMusica);
-    document.getElementById('btn-add-treck').addEventListener('click', addNewTreck);
-    document.getElementById('btn-add-desafio').addEventListener('click', addNewDesafio);
-    document.getElementById('btn-add-livrinho').addEventListener('click', addNewLivrinho);
-    document.getElementById('btn-add-bobie').addEventListener('click', addNewBobie);
+    // Reordenação de Pacotes (▲ / ▼)
+    pkg.querySelector('[data-action="move-pkg-up"]').addEventListener('click', () => moveStory(storyIdx, -1));
+    pkg.querySelector('[data-action="move-pkg-down"]').addEventListener('click', () => moveStory(storyIdx, 1));
 
-    // Título no topo
-    const titleInput = document.getElementById('story-title-input');
-    titleInput.addEventListener('input', () => {
-      getCurrentStory().titulo = titleInput.value;
-      updateStorySelectorDisplay();
+    // Download do Pacote Completo no Header e no Rodapé
+    pkg.querySelector('[data-action="download-pkg-quick"]').addEventListener('click', () => gerarBundleSD(story));
+    pkg.querySelector('[data-action="download-pkg-total"]').addEventListener('click', () => gerarBundleSD(story));
+
+    // Inputs do Pacote
+    pkg.querySelector('[data-field="titulo"]').addEventListener('input', (e) => {
+      story.titulo = e.target.value;
+      const titleDisplay = pkg.querySelector('.package-title-display');
+      if (titleDisplay) titleDisplay.innerHTML = `<strong>${escapeHtml(story.codigo || 't01.01')}</strong> - ${escapeHtml(story.titulo)}`;
+    });
+
+    pkg.querySelector('[data-field="eixoId"]').addEventListener('change', (e) => {
+      story.eixoId = e.target.value;
+      renderCatalogFeed();
+      showToast(`Pacote movido para o eixo "${e.target.options[e.target.selectedIndex].text}"!`, 'info');
     });
 
     // Licenças
     ['home', 'escola', 'clinica', 'premium'].forEach(lic => {
-      document.getElementById(`lic-${lic}`).addEventListener('change', (e) => {
-        getCurrentStory().licencas[lic] = e.target.checked;
-      });
+      const chk = pkg.querySelector(`[data-lic="${lic}"]`);
+      if (chk) {
+        chk.addEventListener('change', (e) => {
+          story.licencas = story.licencas || {};
+          story.licencas[lic] = e.target.checked;
+        });
+      }
     });
-  }
 
-  function getCurrentStory() {
-    if (!catalogState.historinhas[currentStoryIndex]) {
-      currentStoryIndex = 0;
-    }
-    return catalogState.historinhas[currentStoryIndex];
-  }
-
-  function updateStorySelectorDisplay() {
-    const sel = document.getElementById('select-historinha');
-    sel.innerHTML = '';
-    catalogState.historinhas.forEach((h, idx) => {
-      const opt = document.createElement('option');
-      opt.value = idx;
-      opt.textContent = `${h.codigo || 't01.' + (idx+1)}: ${h.titulo}`;
-      if (idx === currentStoryIndex) opt.selected = true;
-      sel.appendChild(opt);
+    // Ações do Rodapé
+    pkg.querySelector('[data-action="save-package"]').addEventListener('click', () => {
+      saveCatalogData(false, story);
     });
+
+    pkg.querySelector('[data-action="publish-package"]').addEventListener('click', () => {
+      saveCatalogData(true, story);
+    });
+
+    // Exclusão Segura: só deleta de dentro do pacote
+    pkg.querySelector('[data-action="delete-package"]').addEventListener('click', () => {
+      if (confirm(`Tem certeza absoluta de que deseja excluir o pacote "${story.titulo}"?\nEsta ação removerá todos os seus áudios e cards associados.`)) {
+        catalogState.historinhas.splice(storyIdx, 1);
+        expandedStories.delete(story.id);
+        saveCatalogData(false);
+        renderCatalogFeed();
+        showToast('Pacote excluído com sucesso.', 'info');
+      }
+    });
+
+    // ------------------------------------------------------------------------
+    // RENDERIZAÇÃO DOS SUB-MÓDULOS INTERNOS
+    // ------------------------------------------------------------------------
+    renderSubModules(pkg, story, storyIdx);
+
+    return pkg;
   }
 
   // ==========================================================================
-  // RENDERIZAÇÃO DA HISTORINHA
+  // RENDERIZAÇÃO DE TODOS OS SUB-MÓDULOS DE UM PACOTE
   // ==========================================================================
-  function renderCurrentStory() {
-    const story = getCurrentStory();
-
-    document.getElementById('story-title-input').value = story.titulo || '';
-    document.getElementById('eixo-selector').value = story.eixoId || 'eixo-03';
-    document.getElementById('global-version-display').textContent = catalogState.catalogVersion || 'v3.001';
-
-    story.licencas = story.licencas || { home: true, escola: true, clinica: true, premium: true };
-    document.getElementById('lic-home').checked = !!story.licencas.home;
-    document.getElementById('lic-escola').checked = !!story.licencas.escola;
-    document.getElementById('lic-clinica').checked = !!story.licencas.clinica;
-    document.getElementById('lic-premium').checked = !!story.licencas.premium;
-
-    updateStorySelectorDisplay();
-
-    renderContosSection(story);
-    renderMusicasSection(story); // Músicas agora têm exatamente a mesma estrutura do Conto!
-    renderTrecksSection(story);
-    renderDesafiosSection(story);
-    renderLivrinhosSection(story);
-    renderBobiesSection(story);
-
-    updatePackageHealthCheck(story);
-  }
-
-  // ==========================================================================
-  // SEÇÃO 1: CONTOS
-  // ==========================================================================
-  function renderContosSection(story) {
-    const container = document.getElementById('contos-container');
-    container.innerHTML = '';
-
-    (story.contos || []).forEach((conto, idx) => {
+  function renderSubModules(pkg, story, storyIdx) {
+    // 1. Contos
+    const contosContainer = pkg.querySelector(`#contos-container-${story.id}`);
+    contosContainer.innerHTML = '';
+    (story.contos || []).forEach((conto, cIdx) => {
       const card = createAudioModuleCard({
         type: 'CONTO',
         typeColor: '#D97706',
         sideBg: '#FEF3C7',
         item: conto,
-        idx,
+        idx: cIdx,
         defaultFilePrefix: 'a',
+        onMoveUp: () => moveItemInStory(storyIdx, 'contos', cIdx, -1),
+        onMoveDown: () => moveItemInStory(storyIdx, 'contos', cIdx, 1),
         onUploadAudio: () => {
           promptFileUpload('audio/*', async (file, dataUrl) => {
             conto.audioUrl = dataUrl;
-            conto.status = 'raw';
+            conto.status = 'ready';
             await loadBufferForModule(conto, file);
-            renderContosSection(getCurrentStory());
-            showToast(`Áudio do Conto ${idx + 1} carregado!`, 'success');
+            renderCatalogFeed();
+            showToast(`Áudio do Conto ${cIdx + 1} carregado!`, 'success');
           });
         },
         onDelete: () => {
-          if (confirm(`Remover Conto ${idx + 1}?`)) {
-            story.contos.splice(idx, 1);
-            renderContosSection(story);
+          if (confirm(`Remover Conto ${cIdx + 1}?`)) {
+            story.contos.splice(cIdx, 1);
+            renderCatalogFeed();
           }
         },
-        onUpdate: () => renderContosSection(story)
+        onUpdate: () => renderCatalogFeed()
       });
-      container.appendChild(card);
+      contosContainer.appendChild(card);
     });
-  }
+    pkg.querySelector('[data-action="add-conto"]').addEventListener('click', () => {
+      addNewItemToStory(story, 'contos');
+    });
 
-  // ==========================================================================
-  // SEÇÃO 2: MÚSICAS (COM OS MESMOS ELEMENTOS DO CONTO!)
-  // ==========================================================================
-  function renderMusicasSection(story) {
-    const container = document.getElementById('musicas-container');
-    container.innerHTML = '';
-
-    (story.musicas || []).forEach((musica, idx) => {
+    // 2. Músicas
+    const musicasContainer = pkg.querySelector(`#musicas-container-${story.id}`);
+    musicasContainer.innerHTML = '';
+    (story.musicas || []).forEach((musica, mIdx) => {
       const card = createAudioModuleCard({
         type: 'MÚSICA',
         typeColor: '#2563EB',
         sideBg: '#EFF6FF',
         item: musica,
-        idx,
+        idx: mIdx,
         defaultFilePrefix: 'a',
+        onMoveUp: () => moveItemInStory(storyIdx, 'musicas', mIdx, -1),
+        onMoveDown: () => moveItemInStory(storyIdx, 'musicas', mIdx, 1),
         onUploadAudio: () => {
           promptFileUpload('audio/*', async (file, dataUrl) => {
             musica.audioUrl = dataUrl;
-            musica.status = 'raw';
+            musica.status = 'ready';
             await loadBufferForModule(musica, file);
-            renderMusicasSection(getCurrentStory());
-            showToast(`Áudio da Música ${idx + 1} carregado!`, 'success');
+            renderCatalogFeed();
+            showToast(`Áudio da Música ${mIdx + 1} carregado!`, 'success');
           });
         },
         onDelete: () => {
-          if (confirm(`Remover Música ${idx + 1}?`)) {
-            story.musicas.splice(idx, 1);
-            renderMusicasSection(story);
+          if (confirm(`Remover Música ${mIdx + 1}?`)) {
+            story.musicas.splice(mIdx, 1);
+            renderCatalogFeed();
           }
         },
-        onUpdate: () => renderMusicasSection(story)
+        onUpdate: () => renderCatalogFeed()
       });
-      container.appendChild(card);
+      musicasContainer.appendChild(card);
+    });
+    pkg.querySelector('[data-action="add-musica"]').addEventListener('click', () => {
+      addNewItemToStory(story, 'musicas');
+    });
+
+    // 3. Trecks
+    const trecksContainer = pkg.querySelector(`#trecks-container-${story.id}`);
+    trecksContainer.innerHTML = '';
+    (story.trecks || []).forEach((trk, tIdx) => {
+      const card = createTreckCard(story, trk, tIdx, storyIdx);
+      trecksContainer.appendChild(card);
+    });
+    pkg.querySelector('[data-action="add-treck"]').addEventListener('click', () => {
+      addNewItemToStory(story, 'trecks');
+    });
+
+    // 4. Desafios
+    const desafiosContainer = pkg.querySelector(`#desafios-container-${story.id}`);
+    desafiosContainer.innerHTML = '';
+    (story.desafios || []).forEach((des, dIdx) => {
+      const card = createDesafioCard(story, des, dIdx, storyIdx);
+      desafiosContainer.appendChild(card);
+    });
+    pkg.querySelector('[data-action="add-desafio"]').addEventListener('click', () => {
+      addNewItemToStory(story, 'desafios');
+    });
+
+    // 5. Livrinhos
+    const livrinhosContainer = pkg.querySelector(`#livrinhos-container-${story.id}`);
+    livrinhosContainer.innerHTML = '';
+    (story.livrinhos || []).forEach((liv, lIdx) => {
+      const card = createLivrinhoCard(story, liv, lIdx, storyIdx);
+      livrinhosContainer.appendChild(card);
+    });
+    pkg.querySelector('[data-action="add-livrinho"]').addEventListener('click', () => {
+      addNewItemToStory(story, 'livrinhos');
+    });
+
+    // 6. Bobies
+    const bobiesContainer = pkg.querySelector(`#bobies-container-${story.id}`);
+    bobiesContainer.innerHTML = '';
+    (story.bobies || []).forEach((bob, bIdx) => {
+      const card = createBobieCard(story, bob, bIdx, storyIdx);
+      bobiesContainer.appendChild(card);
+    });
+    pkg.querySelector('[data-action="add-bobie"]').addEventListener('click', () => {
+      addNewItemToStory(story, 'bobies');
     });
   }
 
   // ==========================================================================
-  // FÁBRICA DE MÓDULOS DE ÁUDIO (USADA POR CONTOS E MÚSICAS COM IDENTIDADE IGUAL)
+  // CARD DE ÁUDIO COM REORDENAÇÃO & DOWNLOAD (CONTOS E MÚSICAS)
   // ==========================================================================
-  function createAudioModuleCard({ type, typeColor, sideBg, item, idx, defaultFilePrefix, onUploadAudio, onDelete, onUpdate }) {
+  function createAudioModuleCard({ type, typeColor, sideBg, item, idx, defaultFilePrefix, onMoveUp, onMoveDown, onUploadAudio, onDelete, onUpdate }) {
     const card = document.createElement('div');
     card.className = 'accordion-item-card expanded';
     card.id = `card-${type.toLowerCase()}-${idx}`;
@@ -583,8 +891,15 @@
     card.innerHTML = `
       <div class="accordion-header" data-action="toggle-accordion">
         <div class="accordion-title-group">
+          <div class="package-order-controls" onclick="event.stopPropagation();">
+            <button type="button" class="btn-order-arrow" data-action="move-item-up" title="Mover para Cima">▲</button>
+            <button type="button" class="btn-order-arrow" data-action="move-item-down" title="Mover para Baixo">▼</button>
+          </div>
           <span class="accordion-title">${type} ${String(num).padStart(2, '0')} - ${escapeHtml(item.nomeApp || 'EXEMPLO')}</span>
           <span class="status-badge-traffic ${status.cls}">${status.icon} ${status.label}</span>
+          <button type="button" class="btn-header-download" data-action="quick-download-audio" title="Baixar ${petFile}" onclick="event.stopPropagation();">
+            ⬇ Baixar ${petFile}
+          </button>
         </div>
         <span class="accordion-toggle-arrow">▲</span>
       </div>
@@ -595,11 +910,12 @@
         </div>
 
         <div class="accordion-content-inner">
-          <!-- Linha 1: Nome no APP + Selecionar Áudio -->
+          <!-- Linha 1: Nome no APP + Selecionar Áudio + Baixar Áudio -->
           <div class="field-row-horizontal">
             <label class="field-label-inline">Nome no APP</label>
             <input type="text" class="field-input-clean" value="${escapeHtml(item.nomeApp || '')}" placeholder="Nome ${type.toLowerCase()}..." data-field="nomeApp">
             <button type="button" class="btn-mockup-mustard" data-action="upload-audio">Selecionar Áudio</button>
+            <button type="button" class="btn-mockup-download" data-action="download-audio" title="Baixar Arquivo ${petFile}">⬇ Baixar Áudio</button>
           </div>
 
           <!-- Linha 2: Player de Áudio Nativo -->
@@ -629,7 +945,7 @@
             </div>
           </div>
 
-          <!-- Sub-bloco 2: Ajusta/Cortar com Sanfona + Waveform Neon com Barras Amarelas -->
+          <!-- Sub-bloco 2: Ajusta/Cortar com Sanfona + Waveform -->
           <div class="sub-accordion-box expanded" id="sub-corte-${type.toLowerCase()}-${idx}">
             <div class="sub-accordion-header" data-action="toggle-sub-accordion" data-target="sub-corte-${type.toLowerCase()}-${idx}">
               <span class="sub-header-title">Ajusta/Cortar <span class="sub-arrow">▲</span></span>
@@ -641,8 +957,8 @@
                 </div>
                 <div class="trimmer-controls-row">
                   <div class="trimmer-param-chip">Fade In: <span class="val">${(item.trimmer?.fadeIn || 0.2).toFixed(2)}s</span></div>
-                  <div class="trimmer-param-chip">Início: <input type="number" step="0.05" value="${(item.trimmer?.inicio || 0).toFixed(2)}" data-trim="inicio" id="input-inicio-${type.toLowerCase()}-${idx}"></div>
-                  <div class="trimmer-param-chip">Fim: <input type="number" step="0.05" value="${(item.trimmer?.fim || 30).toFixed(2)}" data-trim="fim" id="input-fim-${type.toLowerCase()}-${idx}"></div>
+                  <div class="trimmer-param-chip">Início: <input type="number" step="0.05" value="${(item.trimmer?.inicio || 0).toFixed(2)}" data-trim="inicio"></div>
+                  <div class="trimmer-param-chip">Fim: <input type="number" step="0.05" value="${(item.trimmer?.fim || 30).toFixed(2)}" data-trim="fim"></div>
                   <div class="trimmer-param-chip">Fade Out: <span class="val">${(item.trimmer?.fadeOut || 0.2).toFixed(2)}s</span></div>
                   <div class="trimmer-param-chip">Duração: <span class="val" id="val-dur-${type.toLowerCase()}-${idx}">${(item.trimmer?.duracao || 30).toFixed(2)}s</span></div>
                 </div>
@@ -673,19 +989,21 @@
                   <div class="field-row-horizontal">
                     <label class="field-label-inline">Nome no Catálogo</label>
                     <input type="text" class="field-input-clean" value="${escapeHtml(item.cardVinculado?.nome || '')}" placeholder="CARD XXXX" data-field="card-nome">
-                    <button type="button" class="btn-mockup-mustard" data-action="upload-img-card">Selecionar Card PNG ou JPEG</button>
+                    <button type="button" class="btn-mockup-mustard" data-action="upload-img-card">Selecionar Card</button>
+                    <button type="button" class="btn-mockup-download" data-action="download-card-img" title="Baixar Card PNG">⬇ Baixar Card</button>
                   </div>
                   <div class="field-row-horizontal">
                     <label class="field-label-inline">Comando no Pet</label>
-                    <input type="text" class="field-input-clean field-input-mono" value="${escapeHtml(item.cardVinculado?.comandoPet || `CARD${String(num).padStart(4, '0')}`)}" placeholder="CARD0001" data-field="card-comando">
+                    <input type="text" class="field-input-clean field-input-mono" value="${escapeHtml(item.cardVinculado?.comandoPet || `c${String(num).padStart(4, '0')}.png`)}" placeholder="c0001.png" data-field="card-comando">
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Ações Confirmar / Lixeira -->
+          <!-- Ações Confirmar / Lixeira / Download -->
           <div class="item-actions-corner">
+            <button type="button" class="btn-action-circle download" data-action="download-item-file" title="Baixar Arquivo (${petFile})">⬇</button>
             <button type="button" class="btn-action-circle check" data-action="save-item" title="Confirmar">✔</button>
             <button type="button" class="btn-action-circle delete" data-action="delete-item" title="Excluir">🗑</button>
           </div>
@@ -694,20 +1012,40 @@
       </div>
     `;
 
-    // Eventos
-    card.querySelector('[data-action="toggle-accordion"]').addEventListener('click', () => {
+    // Reordenação
+    card.querySelector('[data-action="move-item-up"]').addEventListener('click', onMoveUp);
+    card.querySelector('[data-action="move-item-down"]').addEventListener('click', onMoveDown);
+
+    // Downloads
+    const downloadAction = () => {
+      triggerDownloadResource(item.audioUrl, petFile, `FEFO Pet Audio: ${petFile}\nNome: ${item.nomeApp || ''}\nRoteiro: ${item.roteiro || ''}`);
+    };
+    card.querySelector('[data-action="quick-download-audio"]').addEventListener('click', downloadAction);
+    card.querySelector('[data-action="download-audio"]').addEventListener('click', downloadAction);
+    card.querySelector('[data-action="download-item-file"]').addEventListener('click', downloadAction);
+
+    // Download do Card
+    card.querySelector('[data-action="download-card-img"]').addEventListener('click', () => {
+      const cardFile = item.cardVinculado?.comandoPet || `c${String(num).padStart(4, '0')}.png`;
+      triggerDownloadResource(item.cardVinculado?.imagemUrl, cardFile, `FEFO Pet Card Specification: ${cardFile}\nNome: ${item.cardVinculado?.nome || ''}`);
+    });
+
+    // Sanfona do Card
+    card.querySelector('[data-action="toggle-accordion"]').addEventListener('click', (e) => {
+      if (e.target.closest('.package-order-controls') || e.target.closest('[data-action="quick-download-audio"]')) return;
       card.classList.toggle('expanded');
       card.classList.toggle('collapsed');
     });
 
+    // Inputs
     card.querySelectorAll('input[data-field], textarea[data-field]').forEach(inp => {
       inp.addEventListener('input', (e) => {
         const f = e.target.getAttribute('data-field');
         if (f === 'card-nome') {
-          if (!item.cardVinculado) item.cardVinculado = {};
+          item.cardVinculado = item.cardVinculado || {};
           item.cardVinculado.nome = e.target.value;
         } else if (f === 'card-comando') {
-          if (!item.cardVinculado) item.cardVinculado = {};
+          item.cardVinculado = item.cardVinculado || {};
           item.cardVinculado.comandoPet = e.target.value;
         } else {
           item[f] = e.target.value;
@@ -715,129 +1053,575 @@
       });
     });
 
-    card.querySelector('[data-action="toggle-manual-number"]').addEventListener('click', () => {
-      item.arquivoPetManual = !item.arquivoPetManual;
-      onUpdate();
-    });
-
+    // Uploads
     card.querySelector('[data-action="upload-audio"]').addEventListener('click', onUploadAudio);
-
     card.querySelector('[data-action="upload-img-card"]').addEventListener('click', () => {
       promptFileUpload('image/png,image/jpeg', (file, dataUrl) => {
-        if (!item.cardVinculado) item.cardVinculado = {};
+        item.cardVinculado = item.cardVinculado || {};
         item.cardVinculado.imagemUrl = dataUrl;
-        onUpdate();
-        showToast(`Imagem do Card vinculada!`, 'success');
+        const imgThumb = card.querySelector('.card-preview-thumbnail');
+        if (imgThumb) imgThumb.innerHTML = `<img src="${dataUrl}" alt="Card">`;
+        showToast('Card anexado com sucesso!', 'success');
       });
     });
 
-    card.querySelector('[data-action="gerar-voz-ia"]').addEventListener('click', () => {
-      showToast('API da ElevenLabs sendo configurada para síntese direta!', 'info');
+    // Numeração livre
+    card.querySelector('[data-action="toggle-manual-number"]').addEventListener('click', () => {
+      item.arquivoPetManual = !item.arquivoPetManual;
+      const inp = card.querySelector('input[data-field="arquivoPet"]');
+      if (inp) {
+        if (item.arquivoPetManual) inp.removeAttribute('readonly');
+        else inp.setAttribute('readonly', 'true');
+      }
+      card.querySelector('[data-action="toggle-manual-number"]').textContent = item.arquivoPetManual ? 'Travar Auto' : 'numeração livre';
     });
-
-    card.querySelector('[data-action="aplicar-corte"]').addEventListener('click', () => {
-      item.status = 'ready';
-      onUpdate();
-      showToast('Corte de áudio aplicado com sucesso! (Status: Pronto 🟢)', 'success');
-    });
-
-    card.querySelector('[data-action="ouvir-trecho"]').addEventListener('click', () => {
-      const player = document.getElementById(`player-${type.toLowerCase()}-${idx}`);
-      if (!player) return;
-      const start = item.trimmer?.inicio || 0;
-      const end = item.trimmer?.fim || player.duration || 10;
-      player.currentTime = start;
-      player.play();
-      const checkStop = () => {
-        if (player.currentTime >= end) {
-          player.pause();
-          player.removeEventListener('timeupdate', checkStop);
-        }
-      };
-      player.addEventListener('timeupdate', checkStop);
-    });
-
-    // Eventos dos Sub-acordeões Sanfona (Roteiro, Ajusta/Cortar, Card Vinculado)
-    card.querySelectorAll('[data-action="toggle-sub-accordion"]').forEach(header => {
-      header.addEventListener('click', (e) => {
-        // Evita fechar se clicar no botão do gerador de voz
-        if (e.target.closest('[data-action="gerar-voz-ia"]')) return;
-        const targetId = header.getAttribute('data-target');
-        const box = document.getElementById(targetId);
-        if (!box) return;
-        box.classList.toggle('expanded');
-        box.classList.toggle('collapsed');
-        const arrow = header.querySelector('.sub-arrow');
-        if (arrow) {
-          arrow.textContent = box.classList.contains('collapsed') ? '▼' : '▲';
-        }
-        // Se abriu a sanfona de corte, redesenha o canvas com as barras amarelas
-        if (box.id.includes('sub-corte-') && !box.classList.contains('collapsed')) {
-          setTimeout(() => {
-            const c = box.querySelector('canvas');
-            if (c) drawWaveform(c, item.audioBuffer, item.trimmer);
-          }, 50);
-        }
-      });
-    });
-
-    // Controles Reativos do Waveform e Barras Amarelas de Corte
-    const canvas = card.querySelector('canvas');
-    const inputInicio = card.querySelector('[data-trim="inicio"]');
-    const inputFim = card.querySelector('[data-trim="fim"]');
-    const valDur = card.querySelector(`#val-dur-${type.toLowerCase()}-${idx}`);
-
-    const updateTrimmerAndCanvas = () => {
-      const ini = parseFloat(inputInicio.value) || 0;
-      const fim = parseFloat(inputFim.value) || (item.audioBuffer?.duration || 30);
-      item.trimmer = item.trimmer || {};
-      item.trimmer.inicio = Math.max(0, ini);
-      item.trimmer.fim = Math.max(item.trimmer.inicio + 0.05, fim);
-      item.trimmer.duracao = item.trimmer.fim - item.trimmer.inicio;
-      if (valDur) valDur.textContent = `${item.trimmer.duracao.toFixed(2)}s`;
-      drawWaveform(canvas, item.audioBuffer, item.trimmer);
-    };
-
-    if (inputInicio) inputInicio.addEventListener('input', updateTrimmerAndCanvas);
-    if (inputFim) inputFim.addEventListener('input', updateTrimmerAndCanvas);
-
-    // Clicar no Canvas do Waveform para mover as Barras Amarelas de Início ou Fim
-    if (canvas) {
-      canvas.style.cursor = 'crosshair';
-      canvas.title = 'Clique para mover o Início do corte. Shift + Clique para mover o Fim.';
-      canvas.addEventListener('click', (e) => {
-        const rect = canvas.getBoundingClientRect();
-        const clickX = e.clientX - rect.left;
-        const totalDur = (item.audioBuffer && item.audioBuffer.duration) ? item.audioBuffer.duration : (item.trimmer?.fim || 30);
-        const clickSec = (clickX / rect.width) * totalDur;
-
-        if (e.shiftKey) {
-          inputFim.value = clickSec.toFixed(2);
-        } else {
-          const curIni = parseFloat(inputInicio.value) || 0;
-          const curFim = parseFloat(inputFim.value) || totalDur;
-          if (Math.abs(clickSec - curIni) <= Math.abs(clickSec - curFim)) {
-            inputInicio.value = clickSec.toFixed(2);
-          } else {
-            inputFim.value = clickSec.toFixed(2);
-          }
-        }
-        updateTrimmerAndCanvas();
-      });
-    }
 
     card.querySelector('[data-action="save-item"]').addEventListener('click', () => {
       saveCatalogData(false);
+      showToast('Item salvo!', 'success');
     });
 
     card.querySelector('[data-action="delete-item"]').addEventListener('click', onDelete);
 
-    // Desenhar Waveform com as barras amarelas no canvas
-    setTimeout(() => {
-      drawWaveform(card.querySelector('canvas'), item.audioBuffer, item.trimmer);
-    }, 50);
+    return card;
+  }
+
+  // ==========================================================================
+  // CARDS DE TRECK, DESAFIO, LIVRINHO E BOBIE COM REORDENAÇÃO & DOWNLOAD
+  // ==========================================================================
+  function createTreckCard(story, trk, idx, storyIdx) {
+    const card = document.createElement('div');
+    card.className = 'accordion-item-card expanded';
+    card.innerHTML = `
+      <div class="accordion-header" data-action="toggle-accordion">
+        <div class="accordion-title-group">
+          <div class="package-order-controls" onclick="event.stopPropagation();">
+            <button type="button" class="btn-order-arrow" data-action="move-up">▲</button>
+            <button type="button" class="btn-order-arrow" data-action="move-down">▼</button>
+          </div>
+          <span class="accordion-title">TRECK ${idx + 1} - ${escapeHtml(trk.nomeAcao || 'AÇÃO MECÂNICA')}</span>
+          <span class="status-badge-traffic ${trk.audioUrl ? 'ready' : 'empty'}">${trk.audioUrl ? '🟢 Configurado' : '🔴 Sem Áudio'}</span>
+          <button type="button" class="btn-header-download" data-action="quick-download" onclick="event.stopPropagation();">
+            ⬇ Baixar ${trk.arquivoPet || 'TRK0001.WAV'}
+          </button>
+        </div>
+        <span class="accordion-toggle-arrow">▲</span>
+      </div>
+      <div class="accordion-body">
+        <div class="side-vertical-badge" style="background-color: #ECFDF5; color: #059669; border-color: #A7F3D0;">
+          TRK ${idx + 1}
+        </div>
+        <div class="accordion-content-inner">
+          <div class="field-row-horizontal">
+            <label class="field-label-inline">Nome da Ação</label>
+            <input type="text" class="field-input-clean" value="${escapeHtml(trk.nomeAcao || '')}" placeholder="Alongamento..." data-trk-field="nomeAcao">
+            <button type="button" class="btn-mockup-mustard" data-action="upload-audio">Selecionar Áudio</button>
+            <button type="button" class="btn-mockup-download" data-action="download-audio">⬇ Baixar Áudio</button>
+          </div>
+          <div class="field-row-horizontal">
+            <label class="field-label-inline">Arquivo no PET</label>
+            <input type="text" class="field-input-clean field-input-mono" value="${escapeHtml(trk.arquivoPet || `TRK${String(idx+1).padStart(4, '0')}.WAV`)}" data-trk-field="arquivoPet">
+            <label class="field-label-inline">Duração (seg)</label>
+            <input type="number" class="field-input-clean" style="max-width: 90px;" value="${trk.duracaoSegundos || 90}" data-trk-field="duracaoSegundos">
+          </div>
+          <div class="sub-accordion-box">
+            <span class="sub-header-title">Instrução Mecânica e Tátil do Robô</span>
+            <textarea class="textarea-roteiro" placeholder="Descreva a atividade física..." data-trk-field="instrucao">${escapeHtml(trk.instrucao || '')}</textarea>
+          </div>
+          <div class="item-actions-corner">
+            <button type="button" class="btn-action-circle download" data-action="download-file" title="Baixar">⬇</button>
+            <button type="button" class="btn-action-circle delete" data-action="delete" title="Excluir">🗑</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    card.querySelector('[data-action="move-up"]').addEventListener('click', () => moveItemInStory(storyIdx, 'trecks', idx, -1));
+    card.querySelector('[data-action="move-down"]').addEventListener('click', () => moveItemInStory(storyIdx, 'trecks', idx, 1));
+    
+    const downAction = () => triggerDownloadResource(trk.audioUrl, trk.arquivoPet || `TRK${String(idx+1).padStart(4, '0')}.WAV`, `FEFO Treck Instruction: ${trk.instrucao || ''}`);
+    card.querySelector('[data-action="quick-download"]').addEventListener('click', downAction);
+    card.querySelector('[data-action="download-audio"]').addEventListener('click', downAction);
+    card.querySelector('[data-action="download-file"]').addEventListener('click', downAction);
+
+    card.querySelector('[data-action="toggle-accordion"]').addEventListener('click', (e) => {
+      if (e.target.closest('.package-order-controls') || e.target.closest('[data-action="quick-download"]')) return;
+      card.classList.toggle('expanded');
+      card.classList.toggle('collapsed');
+    });
+
+    card.querySelectorAll('[data-trk-field]').forEach(inp => {
+      inp.addEventListener('input', (e) => {
+        trk[e.target.getAttribute('data-trk-field')] = e.target.value;
+      });
+    });
+
+    card.querySelector('[data-action="upload-audio"]').addEventListener('click', () => {
+      promptFileUpload('audio/*', (f, dataUrl) => {
+        trk.audioUrl = dataUrl;
+        renderCatalogFeed();
+        showToast('Áudio do Treck carregado!', 'success');
+      });
+    });
+
+    card.querySelector('[data-action="delete"]').addEventListener('click', () => {
+      story.trecks.splice(idx, 1);
+      renderCatalogFeed();
+    });
 
     return card;
+  }
+
+  function createDesafioCard(story, des, idx, storyIdx) {
+    const card = document.createElement('div');
+    card.className = 'accordion-item-card expanded';
+    card.innerHTML = `
+      <div class="accordion-header" data-action="toggle-accordion">
+        <div class="accordion-title-group">
+          <div class="package-order-controls" onclick="event.stopPropagation();">
+            <button type="button" class="btn-order-arrow" data-action="move-up">▲</button>
+            <button type="button" class="btn-order-arrow" data-action="move-down">▼</button>
+          </div>
+          <span class="accordion-title">DESAFIO ${idx + 1} - ${escapeHtml(des.titulo || 'MISSÃO')}</span>
+          <span class="status-badge-traffic ready">🟢 Interativo</span>
+          <button type="button" class="btn-header-download" data-action="quick-download" onclick="event.stopPropagation();">
+            ⬇ Baixar ${des.audioPergunta || 'a0002.wav'}
+          </button>
+        </div>
+        <span class="accordion-toggle-arrow">▲</span>
+      </div>
+      <div class="accordion-body">
+        <div class="side-vertical-badge" style="background-color: #FAF5FF; color: #7C3AED; border-color: #E9D5FF;">
+          DES ${idx + 1}
+        </div>
+        <div class="accordion-content-inner">
+          <div class="field-row-horizontal">
+            <label class="field-label-inline">Título da Missão</label>
+            <input type="text" class="field-input-clean" value="${escapeHtml(des.titulo || '')}" placeholder="Onde está o Card...?" data-des-field="titulo">
+          </div>
+          <div class="field-row-horizontal">
+            <label class="field-label-inline">Card Esperado</label>
+            <input type="text" class="field-input-clean field-input-mono" value="${escapeHtml(des.cardEsperado || `c${String(idx+1).padStart(4, '0')}.png`)}" data-des-field="cardEsperado">
+            <label class="field-label-inline">Áudio Pergunta</label>
+            <input type="text" class="field-input-clean field-input-mono" value="${escapeHtml(des.audioPergunta || 'a0002.wav')}" data-des-field="audioPergunta">
+            <button type="button" class="btn-mockup-download" data-action="download-audio">⬇ Baixar Áudio</button>
+          </div>
+          <div class="item-actions-corner">
+            <button type="button" class="btn-action-circle download" data-action="download-file" title="Baixar">⬇</button>
+            <button type="button" class="btn-action-circle delete" data-action="delete" title="Excluir">🗑</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    card.querySelector('[data-action="move-up"]').addEventListener('click', () => moveItemInStory(storyIdx, 'desafios', idx, -1));
+    card.querySelector('[data-action="move-down"]').addEventListener('click', () => moveItemInStory(storyIdx, 'desafios', idx, 1));
+    
+    const downAction = () => triggerDownloadResource(des.audioUrl, des.audioPergunta || 'a0002.wav', `FEFO Mission Challenge: ${des.titulo || ''}`);
+    card.querySelector('[data-action="quick-download"]').addEventListener('click', downAction);
+    card.querySelector('[data-action="download-audio"]').addEventListener('click', downAction);
+    card.querySelector('[data-action="download-file"]').addEventListener('click', downAction);
+
+    card.querySelector('[data-action="toggle-accordion"]').addEventListener('click', (e) => {
+      if (e.target.closest('.package-order-controls') || e.target.closest('[data-action="quick-download"]')) return;
+      card.classList.toggle('expanded');
+      card.classList.toggle('collapsed');
+    });
+
+    card.querySelectorAll('[data-des-field]').forEach(inp => {
+      inp.addEventListener('input', (e) => {
+        des[e.target.getAttribute('data-des-field')] = e.target.value;
+      });
+    });
+
+    card.querySelector('[data-action="delete"]').addEventListener('click', () => {
+      story.desafios.splice(idx, 1);
+      renderCatalogFeed();
+    });
+
+    return card;
+  }
+
+  function createLivrinhoCard(story, liv, idx, storyIdx) {
+    const card = document.createElement('div');
+    card.className = 'accordion-item-card expanded';
+    card.innerHTML = `
+      <div class="accordion-header" data-action="toggle-accordion">
+        <div class="accordion-title-group">
+          <div class="package-order-controls" onclick="event.stopPropagation();">
+            <button type="button" class="btn-order-arrow" data-action="move-up">▲</button>
+            <button type="button" class="btn-order-arrow" data-action="move-down">▼</button>
+          </div>
+          <span class="accordion-title">LIVRINHO ${String(idx + 1).padStart(2, '0')} - ${escapeHtml(liv.nome || 'EXEMPLO')}</span>
+          <span class="status-badge-traffic ${liv.pdfUrl ? 'ready' : 'empty'}">${liv.pdfUrl ? '🟢 PDF Pronto' : '🔴 Sem PDF'}</span>
+          <button type="button" class="btn-header-download" data-action="quick-download" onclick="event.stopPropagation();">
+            ⬇ Baixar PDF
+          </button>
+        </div>
+        <span class="accordion-toggle-arrow">▲</span>
+      </div>
+      <div class="accordion-body">
+        <div class="pdf-material-card-body" style="width: 100%;">
+          <div class="pdf-preview-box">
+            ${liv.capaUrl ? `<img src="${liv.capaUrl}" alt="Capa">` : `<span style="font-size: 2.25rem;">📖</span>`}
+          </div>
+          <div class="pdf-fields-col">
+            <div class="field-row-horizontal">
+              <label class="field-label-inline">Nome no Catálogo</label>
+              <input type="text" class="field-input-clean" value="${escapeHtml(liv.nome || '')}" placeholder="LIVRINHO..." data-liv-field="nome">
+              <button type="button" class="btn-mockup-mustard" data-action="upload-pdf">Selecionar PDF</button>
+              <button type="button" class="btn-mockup-download" data-action="download-pdf">⬇ Baixar PDF</button>
+            </div>
+          </div>
+          <div class="item-actions-corner">
+            <button type="button" class="btn-action-circle download" data-action="download-file" title="Baixar">⬇</button>
+            <button type="button" class="btn-action-circle delete" data-action="delete" title="Excluir">🗑</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    card.querySelector('[data-action="move-up"]').addEventListener('click', () => moveItemInStory(storyIdx, 'livrinhos', idx, -1));
+    card.querySelector('[data-action="move-down"]').addEventListener('click', () => moveItemInStory(storyIdx, 'livrinhos', idx, 1));
+    
+    const downAction = () => triggerDownloadResource(liv.pdfUrl, `${liv.nome || 'livrinho'}.pdf`, `FEFO PDF: ${liv.nome || ''}`);
+    card.querySelector('[data-action="quick-download"]').addEventListener('click', downAction);
+    card.querySelector('[data-action="download-pdf"]').addEventListener('click', downAction);
+    card.querySelector('[data-action="download-file"]').addEventListener('click', downAction);
+
+    card.querySelector('[data-action="toggle-accordion"]').addEventListener('click', (e) => {
+      if (e.target.closest('.package-order-controls') || e.target.closest('[data-action="quick-download"]')) return;
+      card.classList.toggle('expanded');
+      card.classList.toggle('collapsed');
+    });
+
+    card.querySelector('input[data-liv-field="nome"]').addEventListener('input', (e) => {
+      liv.nome = e.target.value;
+    });
+
+    card.querySelector('[data-action="upload-pdf"]').addEventListener('click', () => {
+      promptFileUpload('application/pdf', (f, dataUrl) => {
+        liv.pdfUrl = dataUrl;
+        liv.nomeArquivo = f.name;
+        renderCatalogFeed();
+        showToast(`PDF "${f.name}" carregado!`, 'success');
+      });
+    });
+
+    card.querySelector('[data-action="delete"]').addEventListener('click', () => {
+      story.livrinhos.splice(idx, 1);
+      renderCatalogFeed();
+    });
+
+    return card;
+  }
+
+  function createBobieCard(story, bob, idx, storyIdx) {
+    const card = document.createElement('div');
+    card.className = 'accordion-item-card expanded';
+    card.innerHTML = `
+      <div class="accordion-header" data-action="toggle-accordion">
+        <div class="accordion-title-group">
+          <div class="package-order-controls" onclick="event.stopPropagation();">
+            <button type="button" class="btn-order-arrow" data-action="move-up">▲</button>
+            <button type="button" class="btn-order-arrow" data-action="move-down">▼</button>
+          </div>
+          <span class="accordion-title">BOBIE GOD ${String(idx + 1).padStart(2, '0')} - ${escapeHtml(bob.nome || 'EXEMPLO')}</span>
+          <span class="status-badge-traffic ${bob.pdfUrl ? 'ready' : 'empty'}">${bob.pdfUrl ? '🟢 PDF Pronto' : '🔴 Sem PDF'}</span>
+          <button type="button" class="btn-header-download" data-action="quick-download" onclick="event.stopPropagation();">
+            ⬇ Baixar PDF
+          </button>
+        </div>
+        <span class="accordion-toggle-arrow">▲</span>
+      </div>
+      <div class="accordion-body">
+        <div class="pdf-material-card-body" style="width: 100%;">
+          <div class="pdf-preview-box">
+            ${bob.capaUrl ? `<img src="${bob.capaUrl}" alt="Capa">` : `<span style="font-size: 2.25rem;">🎨</span>`}
+          </div>
+          <div class="pdf-fields-col">
+            <div class="field-row-horizontal">
+              <label class="field-label-inline">Nome no Catálogo</label>
+              <input type="text" class="field-input-clean" value="${escapeHtml(bob.nome || '')}" placeholder="COLORIR..." data-bob-field="nome">
+              <button type="button" class="btn-mockup-mustard" data-action="upload-pdf">Selecionar PDF</button>
+              <button type="button" class="btn-mockup-download" data-action="download-pdf">⬇ Baixar PDF</button>
+            </div>
+          </div>
+          <div class="item-actions-corner">
+            <button type="button" class="btn-action-circle download" data-action="download-file" title="Baixar">⬇</button>
+            <button type="button" class="btn-action-circle delete" data-action="delete" title="Excluir">🗑</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    card.querySelector('[data-action="move-up"]').addEventListener('click', () => moveItemInStory(storyIdx, 'bobies', idx, -1));
+    card.querySelector('[data-action="move-down"]').addEventListener('click', () => moveItemInStory(storyIdx, 'bobies', idx, 1));
+    
+    const downAction = () => triggerDownloadResource(bob.pdfUrl, `${bob.nome || 'bobie_colorir'}.pdf`, `FEFO Coloring: ${bob.nome || ''}`);
+    card.querySelector('[data-action="quick-download"]').addEventListener('click', downAction);
+    card.querySelector('[data-action="download-pdf"]').addEventListener('click', downAction);
+    card.querySelector('[data-action="download-file"]').addEventListener('click', downAction);
+
+    card.querySelector('[data-action="toggle-accordion"]').addEventListener('click', (e) => {
+      if (e.target.closest('.package-order-controls') || e.target.closest('[data-action="quick-download"]')) return;
+      card.classList.toggle('expanded');
+      card.classList.toggle('collapsed');
+    });
+
+    card.querySelector('input[data-bob-field="nome"]').addEventListener('input', (e) => {
+      bob.nome = e.target.value;
+    });
+
+    card.querySelector('[data-action="upload-pdf"]').addEventListener('click', () => {
+      promptFileUpload('application/pdf,image/png,image/jpeg', (f, dataUrl) => {
+        bob.pdfUrl = dataUrl;
+        bob.nomeArquivo = f.name;
+        renderCatalogFeed();
+        showToast(`Material de colorir "${f.name}" carregado!`, 'success');
+      });
+    });
+
+    card.querySelector('[data-action="delete"]').addEventListener('click', () => {
+      story.bobies.splice(idx, 1);
+      renderCatalogFeed();
+    });
+
+    return card;
+  }
+
+  // ==========================================================================
+  // FUNÇÕES DE REORDENAÇÃO & GERENCIAMENTO DE ITENS
+  // ==========================================================================
+  function moveStory(storyIdx, delta) {
+    const newIdx = storyIdx + delta;
+    if (newIdx < 0 || newIdx >= catalogState.historinhas.length) return;
+    const temp = catalogState.historinhas[storyIdx];
+    catalogState.historinhas[storyIdx] = catalogState.historinhas[newIdx];
+    catalogState.historinhas[newIdx] = temp;
+    saveCatalogData(false);
+    renderCatalogFeed();
+    showToast('Ordem dos pacotes atualizada!', 'info');
+  }
+
+  function moveItemInStory(storyIdx, listKey, itemIdx, delta) {
+    const story = catalogState.historinhas[storyIdx];
+    if (!story || !story[listKey]) return;
+    const newIdx = itemIdx + delta;
+    if (newIdx < 0 || newIdx >= story[listKey].length) return;
+    const temp = story[listKey][itemIdx];
+    story[listKey][itemIdx] = story[listKey][newIdx];
+    story[listKey][newIdx] = temp;
+    saveCatalogData(false);
+    renderCatalogFeed();
+    showToast('Item reposicionado!', 'info');
+  }
+
+  function addNewPackage(targetEixoId = "eixo-01") {
+    const newNum = catalogState.historinhas.length + 1;
+    const newStory = createDefaultStory(newNum, targetEixoId);
+    catalogState.historinhas.push(newStory);
+    expandedStories.add(newStory.id);
+    saveCatalogData(false);
+    renderCatalogFeed();
+    
+    setTimeout(() => {
+      const el = document.getElementById(`pkg-${newStory.id}`);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+
+    showToast(`Novo Pacote criado no Eixo Selecionado!`, 'success');
+  }
+
+  function addNewItemToStory(story, type) {
+    if (!story[type]) story[type] = [];
+    const num = story[type].length + 1;
+
+    if (type === 'contos') {
+      story.contos.push({
+        id: `conto_${Date.now()}`,
+        nomeApp: `PARTE ${String(num).padStart(2, '0')}`,
+        arquivoPet: `a${String(num).padStart(4, '0')}.wav`,
+        arquivoPetManual: false,
+        audioUrl: "",
+        facePet: "f0001.raw",
+        roteiro: "",
+        trimmer: { inicio: 0, fim: 30, fadeIn: 0.2, fadeOut: 0.2, duracao: 30 },
+        status: "empty",
+        cardVinculado: {
+          nome: `CARD ${String(num).padStart(3, '0')}`,
+          comandoPet: `c${String(num).padStart(4, '0')}.png`,
+          imagemUrl: ""
+        }
+      });
+    } else if (type === 'musicas') {
+      story.musicas.push({
+        id: `mus_${Date.now()}`,
+        nomeApp: `MÚSICA ${String(num).padStart(2, '0')}`,
+        arquivoPet: `a${String(num + 10).padStart(4, '0')}.wav`,
+        arquivoPetManual: false,
+        audioUrl: "",
+        facePet: "f0001.raw",
+        roteiro: "",
+        trimmer: { inicio: 0, fim: 45, fadeIn: 0.2, fadeOut: 0.2, duracao: 45 },
+        status: "empty",
+        cardVinculado: {
+          nome: `CARD MÚSICA ${num}`,
+          comandoPet: `c${String(num + 10).padStart(4, '0')}.png`,
+          imagemUrl: ""
+        }
+      });
+    } else if (type === 'trecks') {
+      story.trecks.push({
+        id: `trk_${Date.now()}`,
+        nomeAcao: "Nova Ação Mecânica",
+        arquivoPet: `TRK${String(num).padStart(4, '0')}.WAV`,
+        duracaoSegundos: 90,
+        instrucao: ""
+      });
+    } else if (type === 'desafios') {
+      story.desafios.push({
+        id: `des_${Date.now()}`,
+        titulo: "Nova Missão Interativa",
+        cardEsperado: `c${String(num).padStart(4, '0')}.png`,
+        audioPergunta: `a${String(num + 1).padStart(4, '0')}.wav`,
+        facePet: "f0001.raw"
+      });
+    } else if (type === 'livrinhos') {
+      story.livrinhos.push({
+        id: `liv_${Date.now()}`,
+        nome: "NOVO LIVRINHO",
+        pdfUrl: "",
+        capaUrl: ""
+      });
+    } else if (type === 'bobies') {
+      story.bobies.push({
+        id: `bob_${Date.now()}`,
+        nome: "NOVO COLORIR",
+        pdfUrl: "",
+        capaUrl: ""
+      });
+    }
+
+    renderCatalogFeed();
+    showToast(`Novo item adicionado!`, 'success');
+  }
+
+  // ==========================================================================
+  // DOWNLOAD DIRETO DE ARQUIVOS / RECURSOS DO ITEM
+  // ==========================================================================
+  function triggerDownloadResource(urlOrBase64, filename, defaultFallbackText = "") {
+    if (urlOrBase64 && (urlOrBase64.startsWith('data:') || urlOrBase64.startsWith('http') || urlOrBase64.startsWith('/') || urlOrBase64.startsWith('.'))) {
+      const a = document.createElement('a');
+      a.href = urlOrBase64;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      showToast(`Baixando "${filename}"...`, 'success');
+    } else {
+      const content = defaultFallbackText || `FEFO Resource Package\nArquivo: ${filename}\nData: ${new Date().toISOString()}`;
+      const blob = new Blob([content], { type: 'application/octet-stream' });
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+      showToast(`Baixando especificação "${filename}"...`, 'info');
+    }
+  }
+
+  // ==========================================================================
+  // DOWNLOAD TOTAL DO PACOTE (MANIFESTO SD / JSON)
+  // ==========================================================================
+  function gerarBundleSD(targetStory = null) {
+    const storiesToExport = targetStory ? [targetStory] : catalogState.historinhas;
+    const bundleName = targetStory ? `bundle_sd_${targetStory.codigo || 'h01'}` : `bundle_sd_completo`;
+
+    const manifest = {
+      bundle_id: `pkg_${Date.now()}`,
+      versao: catalogState.catalogVersion || 'v4.001',
+      versao_codigo: catalogState.versionCode || 4001,
+      total_pacotes: storiesToExport.length,
+      pacotes: storiesToExport.map(story => ({
+        id: story.id,
+        codigo: story.codigo,
+        titulo: story.titulo,
+        eixoId: story.eixoId,
+        licencas: story.licencas,
+        estrutura_sdcard: {
+          audio_dir: "/usr/a/",
+          faces_dir: "/usr/f/",
+          cards_dir: "/usr/c/"
+        },
+        arquivos_audio: (story.contos || []).map((c, i) => ({
+          arquivo: c.arquivoPet || `a${String(i+1).padStart(4, '0')}.wav`,
+          tipo: "conto",
+          nome_app: c.nomeApp,
+          url: c.audioUrl || ""
+        })).concat((story.musicas || []).map((m, i) => ({
+          arquivo: m.arquivoPet || `a${String(i+11).padStart(4, '0')}.wav`,
+          tipo: "musica",
+          nome_app: m.nomeApp,
+          url: m.audioUrl || ""
+        }))),
+        arquivos_faces: [
+          { arquivo: "f0001.raw", nome: "Face Padrão CYD 480x320 RGB565" }
+        ],
+        arquivos_cards: (story.contos || []).map((c, i) => ({
+          card_id: `c${String(i+1).padStart(4, '0')}.png`,
+          uid_rfid: `AUTO_${String(i+1).padStart(3, '0')}`,
+          toca_audio: c.arquivoPet || `a${String(i+1).padStart(4, '0')}.wav`,
+          mostra_face: c.facePet || "f0001.raw"
+        })),
+        atividades_didaticas: (story.livrinhos || []).concat(story.bobies || []).map(item => ({
+          titulo: item.nome || item.nomeApp,
+          arquivo_download: item.pdfUrl || item.imagemUrl || "",
+          tipo: "pdf_impressao"
+        }))
+      }))
+    };
+
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(manifest, null, 2));
+    const a = document.createElement('a');
+    a.href = dataStr;
+    a.download = `${bundleName}_${manifest.versao}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    showToast(`📦 Download do pacote realizado com sucesso!`, 'success');
+  }
+
+  function exportCatalogJson() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(catalogState, null, 2));
+    const a = document.createElement('a');
+    a.href = dataStr;
+    a.download = `catalog-v4_${catalogState.catalogVersion || 'latest'}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
+  // ==========================================================================
+  // UTILITÁRIOS GLOBAIS
+  // ==========================================================================
+  function promptFileUpload(accept, callback) {
+    const input = document.getElementById('file-uploader-general');
+    if (!input) return;
+    input.accept = accept;
+    input.onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => callback(file, evt.target.result);
+      reader.readAsDataURL(file);
+      input.value = '';
+    };
+    input.click();
   }
 
   async function loadBufferForModule(item, file) {
@@ -867,665 +1651,9 @@
     return { cls: 'raw', icon: '🟡', label: 'Áudio Bruto' };
   }
 
-  function addNewConto() {
-    const story = getCurrentStory();
-    if (!story.contos) story.contos = [];
-    const num = story.contos.length + 1;
-    story.contos.push({
-      id: `conto_${Date.now()}`,
-      nomeApp: `PARTE ${num}`,
-      arquivoPet: `a${String(num).padStart(4, '0')}.wav`,
-      arquivoPetManual: false,
-      audioUrl: "",
-      facePet: `f${String(num).padStart(4, '0')}.raw`,
-      roteiro: "",
-      trimmer: { inicio: 0, fim: 30, fadeIn: 0.2, fadeOut: 0.2, duracao: 30 },
-      status: "empty",
-      cardVinculado: {
-        nome: `CARD ${String(num).padStart(3, '0')}`,
-        comandoPet: `c${String(num).padStart(4, '0')}.png`,
-        imagemUrl: ""
-      }
-    });
-    renderContosSection(story);
-    showToast(`Conto ${num} adicionado!`, 'success');
-  }
-
-  function addNewMusica() {
-    const story = getCurrentStory();
-    if (!story.musicas) story.musicas = [];
-    const num = story.musicas.length + 1;
-    story.musicas.push({
-      id: `mus_${Date.now()}`,
-      nomeApp: `MÚSICA ${num}`,
-      arquivoPet: `a${String(num + 10).padStart(4, '0')}.wav`,
-      arquivoPetManual: false,
-      audioUrl: "",
-      facePet: "f0001.raw",
-      roteiro: "",
-      trimmer: { inicio: 0, fim: 45, fadeIn: 0.2, fadeOut: 0.2, duracao: 45 },
-      status: "empty",
-      cardVinculado: {
-        nome: `CARD MÚSICA ${num}`,
-        comandoPet: `c${String(num + 10).padStart(4, '0')}.png`,
-        imagemUrl: ""
-      }
-    });
-    renderMusicasSection(story);
-    showToast(`Música ${num} adicionada com waveform e card!`, 'success');
-  }
-
-  // ==========================================================================
-  // SEÇÃO 3: TRECK-TRECK
-  // ==========================================================================
-  function renderTrecksSection(story) {
-    const container = document.getElementById('trecks-container');
-    container.innerHTML = '';
-
-    (story.trecks || []).forEach((trk, idx) => {
-      const card = document.createElement('div');
-      card.className = 'accordion-item-card expanded';
-      card.id = `card-treck-${idx}`;
-
-      card.innerHTML = `
-        <div class="accordion-header" data-action="toggle-accordion">
-          <div class="accordion-title-group">
-            <span class="accordion-title">TRECK-TRECK ${idx + 1} - ${escapeHtml(trk.nomeAcao || 'AÇÃO MECÂNICA')}</span>
-            <span class="status-badge-traffic ${trk.audioUrl ? 'ready' : 'empty'}">${trk.audioUrl ? '🟢 Configurado' : '🔴 Sem Áudio'}</span>
-          </div>
-          <span class="accordion-toggle-arrow">▲</span>
-        </div>
-
-        <div class="accordion-body">
-          <div class="side-vertical-badge" style="background-color: #ECFDF5; color: #059669; border-color: #A7F3D0;">
-            TRECK ${idx + 1}
-          </div>
-          <div class="accordion-content-inner">
-            <div class="field-row-horizontal">
-              <label class="field-label-inline">Nome da Ação</label>
-              <input type="text" class="field-input-clean" value="${escapeHtml(trk.nomeAcao || '')}" placeholder="Alongamento do Bichinho..." data-treck-field="nomeAcao">
-              <button type="button" class="btn-mockup-mustard" data-action="upload-treck-audio">Selecionar Áudio</button>
-            </div>
-            <div class="field-row-horizontal">
-              <label class="field-label-inline">Arquivo no PET</label>
-              <input type="text" class="field-input-clean field-input-mono" value="${escapeHtml(trk.arquivoPet || `TRK${String(idx+1).padStart(4, '0')}.WAV`)}" data-treck-field="arquivoPet">
-              <label class="field-label-inline">Duração (seg)</label>
-              <input type="number" class="field-input-clean" style="max-width: 90px;" value="${trk.duracaoSegundos || 90}" data-treck-field="duracaoSegundos">
-            </div>
-            <div class="sub-accordion-box">
-              <span class="sub-header-title">Instrução Mecânica e Tátil do Robô</span>
-              <textarea class="textarea-roteiro" placeholder="Descreva a atividade física e o movimento esperado da engrenagem do FEFO..." data-treck-field="instrucao">${escapeHtml(trk.instrucao || '')}</textarea>
-            </div>
-            <div class="item-actions-corner">
-              <button type="button" class="btn-action-circle delete" data-action="delete-treck-item">🗑</button>
-            </div>
-          </div>
-        </div>
-      `;
-
-      card.querySelector('[data-action="toggle-accordion"]').addEventListener('click', () => {
-        card.classList.toggle('expanded');
-        card.classList.toggle('collapsed');
-      });
-      card.querySelectorAll('[data-treck-field]').forEach(inp => {
-        inp.addEventListener('input', (e) => {
-          trk[e.target.getAttribute('data-treck-field')] = e.target.value;
-        });
-      });
-      card.querySelector('[data-action="upload-treck-audio"]').addEventListener('click', () => {
-        promptFileUpload('audio/*', (f, dataUrl) => {
-          trk.audioUrl = dataUrl;
-          renderTrecksSection(getCurrentStory());
-          showToast('Áudio do Treck-Treck adicionado!', 'success');
-        });
-      });
-      card.querySelector('[data-action="delete-treck-item"]').addEventListener('click', () => {
-        getCurrentStory().trecks.splice(idx, 1);
-        renderTrecksSection(getCurrentStory());
-      });
-
-      container.appendChild(card);
-    });
-  }
-
-  function addNewTreck() {
-    const story = getCurrentStory();
-    if (!story.trecks) story.trecks = [];
-    story.trecks.push({
-      id: `trk_${Date.now()}`,
-      nomeAcao: "Nova Ação Mecânica",
-      arquivoPet: `TRK${String(story.trecks.length + 1).padStart(4, '0')}.WAV`,
-      duracaoSegundos: 90,
-      instrucao: ""
-    });
-    renderTrecksSection(story);
-  }
-
-  // ==========================================================================
-  // SEÇÃO 4: DESAFIOS & ATIVIDADES INTERATIVAS
-  // ==========================================================================
-  function renderDesafiosSection(story) {
-    const container = document.getElementById('desafios-container');
-    container.innerHTML = '';
-
-    (story.desafios || []).forEach((des, idx) => {
-      const card = document.createElement('div');
-      card.className = 'accordion-item-card expanded';
-      card.id = `card-desafio-${idx}`;
-
-      card.innerHTML = `
-        <div class="accordion-header" data-action="toggle-accordion">
-          <div class="accordion-title-group">
-            <span class="accordion-title">DESAFIO ${idx + 1} - ${escapeHtml(des.titulo || 'MISSÃO')}</span>
-            <span class="status-badge-traffic ready">🟢 Interativo</span>
-          </div>
-          <span class="accordion-toggle-arrow">▲</span>
-        </div>
-        <div class="accordion-body">
-          <div class="side-vertical-badge" style="background-color: #FAF5FF; color: #7C3AED; border-color: #E9D5FF;">
-            DESAFIO ${idx + 1}
-          </div>
-          <div class="accordion-content-inner">
-            <div class="field-row-horizontal">
-              <label class="field-label-inline">Título da Missão</label>
-              <input type="text" class="field-input-clean" value="${escapeHtml(des.titulo || '')}" placeholder="Ex: Onde está o Card do Desjejum?" data-des-field="titulo">
-            </div>
-            <div class="field-row-horizontal">
-              <label class="field-label-inline">Card Esperado</label>
-              <input type="text" class="field-input-clean field-input-mono" value="${escapeHtml(des.cardEsperado || 'CARD0001')}" placeholder="CARD0001" data-des-field="cardEsperado">
-              <label class="field-label-inline">Áudio Pergunta</label>
-              <input type="text" class="field-input-clean field-input-mono" value="${escapeHtml(des.audioPergunta || 'A0002.WAV')}" placeholder="A0002.WAV" data-des-field="audioPergunta">
-            </div>
-            <div class="item-actions-corner">
-              <button type="button" class="btn-action-circle delete" data-action="delete-desafio-item">🗑</button>
-            </div>
-          </div>
-        </div>
-      `;
-
-      card.querySelector('[data-action="toggle-accordion"]').addEventListener('click', () => {
-        card.classList.toggle('expanded');
-        card.classList.toggle('collapsed');
-      });
-      card.querySelectorAll('[data-des-field]').forEach(inp => {
-        inp.addEventListener('input', (e) => {
-          des[e.target.getAttribute('data-des-field')] = e.target.value;
-        });
-      });
-      card.querySelector('[data-action="delete-desafio-item"]').addEventListener('click', () => {
-        getCurrentStory().desafios.splice(idx, 1);
-        renderDesafiosSection(getCurrentStory());
-      });
-
-      container.appendChild(card);
-    });
-  }
-
-  function addNewDesafio() {
-    const story = getCurrentStory();
-    if (!story.desafios) story.desafios = [];
-    story.desafios.push({
-      id: `des_${Date.now()}`,
-      titulo: "Novo Desafio com Card",
-      cardEsperado: "CARD0001",
-      audioPergunta: "A0002.WAV"
-    });
-    renderDesafiosSection(story);
-  }
-
-  // ==========================================================================
-  // SEÇÃO 5: LIVRINHOS ILUSTRADOS EM PDF
-  // ==========================================================================
-  function renderLivrinhosSection(story) {
-    const container = document.getElementById('livrinhos-container');
-    container.innerHTML = '';
-
-    (story.livrinhos || []).forEach((livro, idx) => {
-      const card = document.createElement('div');
-      card.className = 'accordion-item-card expanded';
-      card.id = `card-livro-${idx}`;
-
-      card.innerHTML = `
-        <div class="accordion-header" data-action="toggle-accordion">
-          <div class="accordion-title-group">
-            <span class="accordion-title">LIVRINHO ${String(idx + 1).padStart(2, '0')} - ${escapeHtml(livro.nome || 'EXEMPLO')}</span>
-            <span class="status-badge-traffic ${livro.pdfUrl ? 'ready' : 'empty'}">${livro.pdfUrl ? '🟢 PDF Pronto' : '🔴 Sem PDF'}</span>
-          </div>
-          <span class="accordion-toggle-arrow">▲</span>
-        </div>
-        <div class="accordion-body">
-          <div class="pdf-material-card-body" style="width: 100%;">
-            <div class="pdf-preview-box">
-              ${livro.capaUrl ? `<img src="${livro.capaUrl}" alt="Capa">` : `<span style="font-size: 2.25rem;">📖</span>`}
-            </div>
-            <div class="pdf-fields-col">
-              <div class="field-row-horizontal">
-                <label class="field-label-inline">Nome no Catálogo</label>
-                <input type="text" class="field-input-clean" value="${escapeHtml(livro.nome || '')}" placeholder="AVENTURAS DO FEFO" data-livro-field="nome">
-                <button type="button" class="btn-mockup-mustard" data-action="upload-livro-pdf">Selecionar PDF</button>
-              </div>
-            </div>
-            <div class="item-actions-corner">
-              <button type="button" class="btn-action-circle check" data-action="save-livro">✔</button>
-              <button type="button" class="btn-action-circle delete" data-action="delete-livro">🗑</button>
-            </div>
-          </div>
-        </div>
-      `;
-
-      card.querySelector('[data-action="toggle-accordion"]').addEventListener('click', () => {
-        card.classList.toggle('expanded');
-        card.classList.toggle('collapsed');
-      });
-      card.querySelector('input[data-livro-field="nome"]').addEventListener('input', (e) => {
-        livro.nome = e.target.value;
-      });
-      card.querySelector('[data-action="upload-livro-pdf"]').addEventListener('click', () => {
-        promptFileUpload('application/pdf', (file, dataUrl) => {
-          livro.pdfUrl = dataUrl;
-          livro.nomeArquivo = file.name;
-          renderLivrinhosSection(getCurrentStory());
-          showToast(`PDF do Livrinho "${file.name}" carregado!`, 'success');
-        });
-      });
-      card.querySelector('[data-action="save-livro"]').addEventListener('click', () => saveCatalogData(false));
-      card.querySelector('[data-action="delete-livro"]').addEventListener('click', () => {
-        getCurrentStory().livrinhos.splice(idx, 1);
-        renderLivrinhosSection(getCurrentStory());
-      });
-
-      container.appendChild(card);
-    });
-  }
-
-  function addNewLivrinho() {
-    const story = getCurrentStory();
-    if (!story.livrinhos) story.livrinhos = [];
-    story.livrinhos.push({
-      id: `livro_${Date.now()}`,
-      nome: "NOVO LIVRINHO ILUSTRADO",
-      pdfUrl: "",
-      capaUrl: ""
-    });
-    renderLivrinhosSection(story);
-  }
-
-  // ==========================================================================
-  // SEÇÃO 6: BOBIE GODS
-  // ==========================================================================
-  function renderBobiesSection(story) {
-    const container = document.getElementById('bobies-container');
-    container.innerHTML = '';
-
-    (story.bobies || []).forEach((bobie, idx) => {
-      const card = document.createElement('div');
-      card.className = 'accordion-item-card expanded';
-      card.id = `card-bobie-${idx}`;
-
-      card.innerHTML = `
-        <div class="accordion-header" data-action="toggle-accordion">
-          <div class="accordion-title-group">
-            <span class="accordion-title">BOBIE GOD ${String(idx + 1).padStart(2, '0')} - ${escapeHtml(bobie.nome || 'EXEMPLO')}</span>
-            <span class="status-badge-traffic ${bobie.pdfUrl ? 'ready' : 'empty'}">${bobie.pdfUrl ? '🟢 PDF Pronto' : '🔴 Sem PDF'}</span>
-          </div>
-          <span class="accordion-toggle-arrow">▲</span>
-        </div>
-        <div class="accordion-body">
-          <div class="pdf-material-card-body" style="width: 100%;">
-            <div class="pdf-preview-box">
-              ${bobie.capaUrl ? `<img src="${bobie.capaUrl}" alt="Capa">` : `<span style="font-size: 2.25rem;">🎨</span>`}
-            </div>
-            <div class="pdf-fields-col">
-              <div class="field-row-horizontal">
-                <label class="field-label-inline">Nome no Catálogo</label>
-                <input type="text" class="field-input-clean" value="${escapeHtml(bobie.nome || '')}" placeholder="AVENTURAS DO FEFO - COLORIR" data-bobie-field="nome">
-                <button type="button" class="btn-mockup-mustard" data-action="upload-bobie-pdf">Selecionar PDF</button>
-              </div>
-            </div>
-            <div class="item-actions-corner">
-              <button type="button" class="btn-action-circle check" data-action="save-bobie">✔</button>
-              <button type="button" class="btn-action-circle delete" data-action="delete-bobie">🗑</button>
-            </div>
-          </div>
-        </div>
-      `;
-
-      card.querySelector('[data-action="toggle-accordion"]').addEventListener('click', () => {
-        card.classList.toggle('expanded');
-        card.classList.toggle('collapsed');
-      });
-      card.querySelector('input[data-bobie-field="nome"]').addEventListener('input', (e) => {
-        bobie.nome = e.target.value;
-      });
-      card.querySelector('[data-action="upload-bobie-pdf"]').addEventListener('click', () => {
-        promptFileUpload('application/pdf,image/png,image/jpeg', (file, dataUrl) => {
-          bobie.pdfUrl = dataUrl;
-          bobie.nomeArquivo = file.name;
-          renderBobiesSection(getCurrentStory());
-          showToast(`Bobie God "${file.name}" carregado!`, 'success');
-        });
-      });
-      card.querySelector('[data-action="save-bobie"]').addEventListener('click', () => saveCatalogData(false));
-      card.querySelector('[data-action="delete-bobie"]').addEventListener('click', () => {
-        getCurrentStory().bobies.splice(idx, 1);
-        renderBobiesSection(getCurrentStory());
-      });
-
-      container.appendChild(card);
-    });
-  }
-
-  function addNewBobie() {
-    const story = getCurrentStory();
-    if (!story.bobies) story.bobies = [];
-    story.bobies.push({
-      id: `bobie_${Date.now()}`,
-      nome: "NOVO BOBIE GOD - COLORIR",
-      pdfUrl: "",
-      capaUrl: ""
-    });
-    renderBobiesSection(story);
-  }
-
-  // ==========================================================================
-  // RENDERIZAÇÃO DE WAVEFORM & BARRAS AMARELAS DE CORTE
-  // ==========================================================================
-  function drawWaveform(canvas, audioBuffer, trimmer) {
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const width = canvas.width = canvas.parentElement.clientWidth || 600;
-    const height = canvas.height = canvas.parentElement.clientHeight || 90;
-
-    // Fundo escuro do visualizador
-    ctx.fillStyle = '#090D16';
-    ctx.fillRect(0, 0, width, height);
-
-    // Linha central de guia
-    ctx.strokeStyle = '#1E293B';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(0, height / 2);
-    ctx.lineTo(width, height / 2);
-    ctx.stroke();
-
-    // 1. Desenhar a Onda Sonora Verde Neon
-    ctx.fillStyle = '#22C55E';
-
-    if (!audioBuffer) {
-      // Onda simulada estética suave antes de carregar o arquivo
-      const bars = Math.floor(width / 4);
-      for (let i = 0; i < bars; i++) {
-        const h = Math.sin(i * 0.15) * (height * 0.35) + Math.cos(i * 0.05) * (height * 0.25) + 15;
-        const x = i * 4;
-        const y = (height - h) / 2;
-        ctx.fillRect(x, y, 2.5, h);
-      }
-    } else {
-      const data = audioBuffer.getChannelData(0);
-      const step = Math.ceil(data.length / width);
-      const amp = height / 2;
-
-      for (let i = 0; i < width; i++) {
-        let min = 1.0;
-        let max = -1.0;
-        for (let j = 0; j < step; j++) {
-          const datum = data[(i * step) + j];
-          if (datum < min) min = datum;
-          if (datum > max) max = datum;
-        }
-        const y = (1 + min) * amp;
-        const h = Math.max(2, (max - min) * amp);
-        ctx.fillRect(i, y, 1.5, h);
-      }
-    }
-
-    // 2. Calcular Posições de Início e Fim
-    const totalDur = (audioBuffer && audioBuffer.duration) ? audioBuffer.duration : Math.max(10, trimmer?.fim || 30);
-    const startSec = Math.max(0, Math.min(totalDur, trimmer?.inicio || 0));
-    const endSec = Math.max(startSec + 0.05, Math.min(totalDur, trimmer?.fim || totalDur));
-
-    const sx = Math.max(0, Math.min(width, (startSec / totalDur) * width));
-    const ex = Math.max(0, Math.min(width, (endSec / totalDur) * width));
-
-    // 3. Regiões fora do corte sombreadas (escurecidas para dar foco no trecho ativo)
-    ctx.fillStyle = 'rgba(7, 13, 22, 0.75)';
-    if (sx > 0) ctx.fillRect(0, 0, sx, height);
-    if (ex < width) ctx.fillRect(ex, 0, width - ex, height);
-
-    // 4. Região cortada selecionada com leve brilho verde
-    ctx.fillStyle = 'rgba(34, 197, 94, 0.12)';
-    ctx.fillRect(sx, 0, ex - sx, height);
-
-    // 5. BARRAS AMARELAS DE CORTE (Conforme desenho do usuário no print)
-    const drawYellowBar = (xPos, isStart) => {
-      // Linha vertical amarela viva
-      ctx.strokeStyle = '#FACC15';
-      ctx.lineWidth = 3.5;
-      ctx.beginPath();
-      ctx.moveTo(xPos, 0);
-      ctx.lineTo(xPos, height);
-      ctx.stroke();
-
-      // Puxador circular superior idêntico ao desenho da caneta amarela
-      ctx.fillStyle = '#FACC15';
-      ctx.beginPath();
-      ctx.arc(xPos, 9, 6.5, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Borda contrastante no puxador
-      ctx.strokeStyle = '#92400E';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-
-      // Ponto inferior de apoio
-      ctx.fillStyle = '#FACC15';
-      ctx.beginPath();
-      ctx.arc(xPos, height - 7, 4, 0, Math.PI * 2);
-      ctx.fill();
-    };
-
-    drawYellowBar(sx, true);
-    drawYellowBar(ex, false);
-  }
-
-  // ==========================================================================
-  // UTILITÁRIOS GLOBAIS
-  // ==========================================================================
-  function syncCurrentStoryFromInputs() {
-    const story = getCurrentStory();
-    story.titulo = document.getElementById('story-title-input').value.trim();
-    story.eixoId = document.getElementById('eixo-selector').value;
-  }
-
-  function promptFileUpload(accept, callback) {
-    const input = document.getElementById('file-uploader-general');
-    input.accept = accept;
-    input.onchange = (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (evt) => callback(file, evt.target.result);
-      reader.readAsDataURL(file);
-      input.value = '';
-    };
-    input.click();
-  }
-
-  // ==========================================================================
-  // CHECKLIST DE PRONTIDÃO DO PACOTE (GLANCEABLE HEALTH CHECK)
-  // ==========================================================================
-  function updatePackageHealthCheck(story) {
-    if (!story) return;
-
-    // 1. Conto (aXXXX.wav)
-    const contos = story.contos || [];
-    const contoPronto = contos.find(c => (c.audioUrl || c.audioBuffer || (c.status === 'ready' || c.status === 'raw')));
-    const pillConto = document.getElementById('pill-conto');
-    if (pillConto) {
-      if (contos.length === 0) {
-        pillConto.className = 'health-pill empty';
-        pillConto.querySelector('.pill-dot').textContent = '🔴';
-        pillConto.querySelector('.pill-val').textContent = 'Sem conto';
-      } else if (contoPronto) {
-        pillConto.className = 'health-pill ok';
-        pillConto.querySelector('.pill-dot').textContent = '✅';
-        pillConto.querySelector('.pill-val').textContent = `${contoPronto.arquivoPet || 'a0001.wav'} (${contos.length})`;
-      } else {
-        pillConto.className = 'health-pill pending';
-        pillConto.querySelector('.pill-dot').textContent = '🟡';
-        pillConto.querySelector('.pill-val').textContent = 'Gravar áudio';
-      }
-    }
-
-    // 2. Faces (fXXXX.raw)
-    const pillFaces = document.getElementById('pill-faces');
-    if (pillFaces) {
-      const faceFound = contos.some(c => c.facePet) || (story.desafios || []).some(d => d.facePet);
-      if (faceFound) {
-        pillFaces.className = 'health-pill ok';
-        pillFaces.querySelector('.pill-dot').textContent = '✅';
-        pillFaces.querySelector('.pill-val').textContent = 'f0001.raw OK';
-      } else {
-        pillFaces.className = 'health-pill ok';
-        pillFaces.querySelector('.pill-dot').textContent = '✅';
-        pillFaces.querySelector('.pill-val').textContent = 'Padrão f0001';
-      }
-    }
-
-    // 3. Músicas (aXXXX.wav)
-    const musicas = story.musicas || [];
-    const musicasProntas = musicas.filter(m => (m.audioUrl || m.audioBuffer || m.status === 'ready')).length;
-    const pillMusicas = document.getElementById('pill-musicas');
-    if (pillMusicas) {
-      if (musicas.length === 0) {
-        pillMusicas.className = 'health-pill empty';
-        pillMusicas.querySelector('.pill-dot').textContent = '⚪';
-        pillMusicas.querySelector('.pill-val').textContent = '0 músicas';
-      } else if (musicasProntas === musicas.length) {
-        pillMusicas.className = 'health-pill ok';
-        pillMusicas.querySelector('.pill-dot').textContent = '✅';
-        pillMusicas.querySelector('.pill-val').textContent = `${musicasProntas} prontas`;
-      } else {
-        pillMusicas.className = 'health-pill pending';
-        pillMusicas.querySelector('.pill-dot').textContent = '🟡';
-        pillMusicas.querySelector('.pill-val').textContent = `${musicasProntas}/${musicas.length} prontas`;
-      }
-    }
-
-    // 4. Cards (cXXXX.png)
-    const cardsConto = contos.filter(c => c.cardVinculado && c.cardVinculado.comandoPet).length;
-    const cardsDesafio = (story.desafios || []).length;
-    const totalCards = cardsConto + cardsDesafio;
-    const pillCards = document.getElementById('pill-cards');
-    if (pillCards) {
-      if (totalCards === 0) {
-        pillCards.className = 'health-pill empty';
-        pillCards.querySelector('.pill-dot').textContent = '⚪';
-        pillCards.querySelector('.pill-val').textContent = '0 cards';
-      } else {
-        pillCards.className = 'health-pill ok';
-        pillCards.querySelector('.pill-dot').textContent = '✅';
-        pillCards.querySelector('.pill-val').textContent = `${totalCards} cards (c000X)`;
-      }
-    }
-
-    // 5. Atividades Didáticas (PDF / Docs)
-    const totalAtiv = (story.livrinhos || []).length + (story.bobies || []).length + (story.trecks || []).length;
-    const pillAtiv = document.getElementById('pill-atividades');
-    if (pillAtiv) {
-      if (totalAtiv === 0) {
-        pillAtiv.className = 'health-pill empty';
-        pillAtiv.querySelector('.pill-dot').textContent = '⚪';
-        pillAtiv.querySelector('.pill-val').textContent = '0 itens';
-      } else {
-        pillAtiv.className = 'health-pill ok';
-        pillAtiv.querySelector('.pill-dot').textContent = '✅';
-        pillAtiv.querySelector('.pill-val').textContent = `${totalAtiv} materiais`;
-      }
-    }
-
-    // Status Geral do Pacote
-    const badgeOverall = document.getElementById('health-overall-badge');
-    if (badgeOverall) {
-      if (contoPronto && totalCards > 0) {
-        badgeOverall.className = 'health-status-badge ready';
-        badgeOverall.textContent = '🟢 Pronto para Pacote SD & App';
-      } else {
-        badgeOverall.className = 'health-status-badge';
-        badgeOverall.textContent = '🟡 Rascunho / Em Edição';
-      }
-    }
-  }
-
-  // ==========================================================================
-  // GERADOR DE PACOTE SD & APP (BUNDLE MANIFEST BUILDER)
-  // ==========================================================================
-  function gerarBundleSD() {
-    const story = getCurrentStory();
-    if (!story) return;
-
-    const bundleId = `pkg_sd_${story.codigo || 'h01'}_${Date.now()}`;
-    const manifest = {
-      bundle_id: bundleId,
-      titulo: story.titulo,
-      versao: catalogState.catalogVersion || 'v4.001',
-      versao_codigo: catalogState.versionCode || 4001,
-      licencas: story.licencas,
-      estrutura_sdcard: {
-        audio_dir: "/usr/a/",
-        faces_dir: "/usr/f/",
-        cards_dir: "/usr/c/"
-      },
-      arquivos_audio: (story.contos || []).map((c, i) => ({
-        arquivo: c.arquivoPet || `a${String(i+1).padStart(4, '0')}.wav`,
-        tipo: "conto",
-        nome_app: c.nomeApp,
-        url: c.audioUrl || ""
-      })).concat((story.musicas || []).map((m, i) => ({
-        arquivo: m.arquivoPet || `a${String(i+11).padStart(4, '0')}.wav`,
-        tipo: "musica",
-        nome_app: m.nomeApp,
-        url: m.audioUrl || ""
-      }))),
-      arquivos_faces: [
-        { arquivo: "f0001.raw", nome: "Face Padrão CYD 480x320 RGB565" }
-      ],
-      arquivos_cards: (story.contos || []).map((c, i) => ({
-        card_id: `c${String(i+1).padStart(4, '0')}.png`,
-        uid_rfid: `AUTO_${String(i+1).padStart(3, '0')}`,
-        toca_audio: c.arquivoPet || `a${String(i+1).padStart(4, '0')}.wav`,
-        mostra_face: c.facePet || "f0001.raw"
-      })),
-      atividades_didaticas: (story.livrinhos || []).concat(story.bobies || []).map(item => ({
-        titulo: item.titulo || item.nomeApp,
-        arquivo_download: item.pdfUrl || item.imagemUrl || "",
-        tipo: "pdf_impressao"
-      }))
-    };
-
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(manifest, null, 2));
-    const a = document.createElement('a');
-    a.href = dataStr;
-    a.download = `bundle_sd_${story.codigo || 'h01'}_${manifest.versao}.json`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-
-    showToast(`📦 Manifesto do Pacote SD gerado para "${story.titulo}"!`, 'success');
-  }
-
-  function exportCatalogJson() {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(catalogState, null, 2));
-    const a = document.createElement('a');
-    a.href = dataStr;
-    a.download = `catalog-v4_${catalogState.catalogVersion || 'latest'}.json`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  }
-
   function showToast(msg, type = 'info') {
     const c = document.getElementById('v3-toast-container');
+    if (!c) return;
     const t = document.createElement('div');
     t.className = `v3-toast ${type}`;
     t.innerHTML = `<span>${type === 'success' ? '✅' : type === 'error' ? '⚠️' : 'ℹ️'}</span> <span>${escapeHtml(msg)}</span>`;

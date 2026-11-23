@@ -338,6 +338,348 @@ body.fefo-theme-v4 {
   padding: 0;
 }
 
+/* ==========================================================================
+   CABEÇALHO GERAL DO CATÁLOGO: VISÃO GERAL & BOTÃO NOVO PACOTE (OPÇÃO A)
+   ========================================================================== */
+.catalog-overview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 1.5rem 2rem;
+  margin-bottom: 1.75rem;
+  border: 1px solid #E2E8F0;
+  border-left: 6px solid #8B5CF6;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+}
+
+.overview-title {
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #0F172A;
+  margin-bottom: 0.25rem;
+  letter-spacing: -0.01em;
+}
+
+.overview-subtitle {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #64748B;
+}
+
+.btn-top-add-pacote {
+  padding: 0.75rem 1.4rem;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #FFFFFF;
+  background: linear-gradient(135deg, #F59E0B, #D97706);
+  border: 1px solid #FBBF24;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-top-add-pacote:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(217, 119, 6, 0.4);
+  filter: brightness(1.08);
+}
+
+/* ==========================================================================
+   1. EIXOS TEMÁTICOS (DESTAQUE MÁXIMO)
+   ========================================================================== */
+.eixos-master-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.eixo-card-wrapper {
+  background: #FFFFFF;
+  border-radius: 18px;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  transition: box-shadow 0.2s ease;
+}
+
+.eixo-card-wrapper:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.07);
+}
+
+.eixo-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.75rem;
+  background: #F8FAFC;
+  border-bottom: 1.5px solid #E2E8F0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.eixo-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.eixo-pin {
+  color: #EF4444;
+  font-size: 1.15rem;
+}
+
+.eixo-badge-icone {
+  font-size: 1.4rem;
+}
+
+.eixo-name {
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: #0F172A;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+.eixo-count-chip {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  background: #E2E8F0;
+  color: #334155;
+  border-radius: 999px;
+}
+
+.eixo-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.btn-add-pacote-eixo {
+  padding: 0.4rem 0.85rem;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #0369A1;
+  background: #E0F2FE;
+  border: 1px solid #BAE6FD;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-add-pacote-eixo:hover {
+  background: #0284C7;
+  color: #FFFFFF;
+}
+
+.eixo-toggle-arrow {
+  font-size: 0.9rem;
+  color: #64748B;
+  transition: transform 0.25s ease;
+}
+
+.eixo-card-wrapper.collapsed .eixo-toggle-arrow {
+  transform: rotate(-90deg);
+}
+
+.eixo-card-wrapper.collapsed .eixo-stories-container {
+  display: none;
+}
+
+.eixo-stories-container {
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  background: #FAF8F5;
+}
+
+/* ==========================================================================
+   2. PACOTES (SUBMISSOS AO EIXO TEMÁTICO - SANFONA FECHADA POR PADRÃO)
+   ========================================================================== */
+.package-card-wrapper {
+  background: #FFFFFF;
+  border-radius: 14px;
+  border: 1px solid #CBD5E1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+
+.package-card-wrapper.expanded {
+  border-color: #F59E0B;
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.12);
+}
+
+.package-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  background: #FFFFFF;
+  cursor: pointer;
+  user-select: none;
+  min-height: 52px;
+}
+
+.package-card-wrapper.expanded .package-header-bar {
+  background: #FFFBEB;
+  border-bottom: 1px solid #FDE68A;
+}
+
+.package-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.package-order-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.btn-order-arrow {
+  background: #F1F5F9;
+  border: 1px solid #CBD5E1;
+  border-radius: 4px;
+  color: #334155;
+  font-size: 0.65rem;
+  line-height: 1;
+  padding: 2px 5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-order-arrow:hover {
+  background: #0284C7;
+  color: #FFFFFF;
+  border-color: #0284C7;
+}
+
+.package-icon-folder {
+  font-size: 1.25rem;
+}
+
+.package-title-display {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #0F172A;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Semáforo de Status do Pacote: 🟢 PRONTO | 🟡 EM PROCESSO | 🔴 INCOMPLETO */
+.package-status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.package-status-chip.status-ready {
+  background: #D1FAE5;
+  color: #065F46;
+  border: 1px solid #34D399;
+}
+
+.package-status-chip.status-process {
+  background: #FEF3C7;
+  color: #92400E;
+  border: 1px solid #FBBF24;
+}
+
+.package-status-chip.status-incomplete {
+  background: #FEE2E2;
+  color: #991B1B;
+  border: 1px solid #F87171;
+}
+
+.package-meta-summary {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #64748B;
+  white-space: nowrap;
+}
+
+.package-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.btn-header-pkg-download {
+  padding: 0.35rem 0.75rem;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #0369A1;
+  background: #E0F2FE;
+  border: 1px solid #BAE6FD;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-header-pkg-download:hover {
+  background: #0284C7;
+  color: #FFFFFF;
+}
+
+.btn-toggle-package {
+  font-size: 0.9rem;
+  color: #475569;
+  transition: transform 0.25s ease;
+}
+
+.package-card-wrapper.collapsed .btn-toggle-package {
+  transform: rotate(-90deg);
+}
+
+.package-card-wrapper.collapsed .package-body-content {
+  display: none;
+}
+
+.package-body-content {
+  padding: 1.75rem 2rem 2.25rem 2rem;
+  background: #FFFFFF;
+}
+
+/* Botão de Download Total no Rodapé do Pacote */
+.btn-footer-download-total {
+  background: linear-gradient(135deg, #0284C7, #0369A1) !important;
+  color: #FFFFFF !important;
+  border: 1px solid #38BDF8 !important;
+  font-weight: 800 !important;
+}
+
+.btn-footer-download-total:hover {
+  background: linear-gradient(135deg, #0369A1, #075985) !important;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4) !important;
+}
+
 .v3-sheet-card {
   width: 100%;
   background: #FFFFFF;
@@ -1054,9 +1396,73 @@ body.fefo-theme-v4 {
   color: #FFFFFF;
 }
 
+.btn-action-circle.download {
+  background-color: #0284C7;
+  color: #FFFFFF;
+}
+
+.btn-action-circle.download:hover {
+  background-color: #0369A1;
+  box-shadow: 0 4px 10px rgba(2, 132, 199, 0.35);
+}
+
 .btn-action-circle.delete {
   background-color: #EF4444;
   color: #FFFFFF;
+}
+
+/* Botão Compacto de Download no Cabeçalho da Sanfona */
+.btn-header-download {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.65rem;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #0369A1;
+  background-color: #F0F9FF;
+  border: 1px solid #BAE6FD;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.btn-header-download:hover {
+  background-color: #0284C7;
+  border-color: #0284C7;
+  color: #FFFFFF;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
+}
+
+/* Botão de Download nos Formulários */
+.btn-mockup-download {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 700;
+  background-color: #0284C7;
+  color: #FFFFFF;
+  border: 1px solid #38BDF8;
+  border-radius: 8px;
+  padding: 0.65rem 1.15rem;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.btn-mockup-download:hover {
+  background-color: #0369A1;
+  box-shadow: 0 3px 8px rgba(2, 132, 199, 0.3);
+  transform: translateY(-1px);
 }
 
 /* ==========================================================================
