@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FEFO - Catálogo v4 | Gestor Pedagógico, Hardware & Bundles SD</title>
+  <link rel="stylesheet" href="admin-v4.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+</head>
+<body class="fefo-theme-v4">
+
+  <!-- BARRA SUPERIOR DE CONTROLE E NAVEGAÇÃO -->
+  <header class="v3-top-bar">
+    <div class="top-bar-container">
+      <div class="top-bar-left">
+        <a href="../index.html" class="btn-back-site" title="Voltar ao Site Oficial">🌐 Site</a>
+        <div class="brand-pill">
+          <span class="brand-icon">🤖</span>
+          <span class="brand-name">FEFO <span class="badge-v4">CATÁLOGO v4</span></span>
+        </div>
+        <!-- Seletor de Historinhas Existentes -->
+        <div class="story-selector-wrapper">
+          <label for="select-historinha" class="sr-only">Selecionar Historinha:</label>
+          <select id="select-historinha" class="select-historinha">
+            <!-- Preenchido via JS -->
+          </select>
+          <button type="button" class="btn-action-sm" id="btn-nova-historinha" title="Criar Nova Historinha">➕ Nova</button>
+        </div>
+      </div>
+
+      <div class="top-bar-right">
+        <!-- Badge de Sincronização em Nuvem (Multi-PC) -->
+        <div id="github-sync-pill" class="gh-sync-pill" title="Clique para gerenciar a conexão com o GitHub">
+          <span class="gh-cloud-icon">☁️</span>
+          <span class="gh-repo-name">elCortelini/fefo-v1</span>
+        </div>
+        <button type="button" class="btn-action-sm btn-cloud-refresh" id="btn-sync-cloud" title="Recarregar dados frescos da nuvem em tempo real">
+          🔄 Sincronizar Nuvem
+        </button>
+        <button type="button" class="btn-action-sm btn-bundle-sd" id="btn-gerar-bundle-sd" title="Exportar manifesto e estrutura de arquivos para SD Card (/usr/a, /usr/f, /usr/c)">
+          📦 Gerar Bundle SD
+        </button>
+        <input type="file" id="input-import-json" accept=".json" style="display: none;">
+        <button type="button" class="btn-action-sm" id="btn-import-catalog" title="Importar catalog-v4.json">📥 Importar</button>
+        <button type="button" class="btn-action-sm" id="btn-export-catalog" title="Baixar catalog-v4.json">💾 Baixar JSON</button>
+        <div class="version-badge" id="global-version-display" title="Versão Global do Catálogo">v4.001</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTAINER PRINCIPAL DO MOCKUP (DEGRADÊ ÂMBAR / AMARELO FEFO) -->
+  <main class="v3-main-container">
+    <div class="v3-sheet-card">
+
+      <!-- CABEÇALHO DO TEMA / HISTORINHA -->
+      <section class="sheet-header">
+        
+        <!-- Linha 1: Eixo Temático -->
+        <div class="eixo-header-row">
+          <div class="eixo-tag-badge">
+            <span class="pin-icon">📌</span>
+            <span class="eixo-label-prefix">EIXO TEMÁTICO:</span>
+            <select id="eixo-selector" class="eixo-select-inline">
+              <!-- Preenchido dinamicamente via JS com os 8 eixos -->
+            </select>
+          </div>
+        </div>
+
+        <!-- Linha 2: Título da Historinha & Licenças (Conforme Mockup) -->
+        <div class="story-title-row">
+          <div class="story-title-box">
+            <input type="text" id="story-title-input" class="story-title-input" value="Historinha 1 - O fefo vindo para terra" placeholder="Título da Historinha / Tema...">
+            <button type="button" class="btn-edit-title" id="btn-edit-title" title="Editar título">✏️</button>
+          </div>
+
+          <!-- Caixa de Licenças (Home, Escola, Clínica, Premium) -->
+          <div class="licenses-box">
+            <span class="licenses-title">Licenças</span>
+            <div class="licenses-options">
+              <label class="license-checkbox-label">
+                <input type="checkbox" id="lic-home" checked>
+                <span class="custom-check">✔</span> Home
+              </label>
+              <label class="license-checkbox-label">
+                <input type="checkbox" id="lic-escola" checked>
+                <span class="custom-check">✔</span> Escola
+              </label>
+              <label class="license-checkbox-label">
+                <input type="checkbox" id="lic-clinica" checked>
+                <span class="custom-check">✔</span> Clínica
+              </label>
+              <label class="license-checkbox-label">
+                <input type="checkbox" id="lic-premium" checked>
+                <span class="custom-check">✔</span> Premium
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====================================================================
+             CHECKLIST DO PACOTE - STATUS VISUAL RÁPIDO (SEM ENTRAR EM CADA ITEM)
+             ==================================================================== -->
+        <div class="package-health-card" id="package-health-card">
+          <div class="health-header">
+            <span class="health-title">📋 Checklist de Prontidão do Pacote</span>
+            <span class="health-status-badge" id="health-overall-badge">🟡 Em Edição / Rascunho</span>
+          </div>
+          <div class="health-pills-grid">
+            <div class="health-pill" id="pill-conto" title="Áudio da História (aXXXX.wav)">
+              <span class="pill-dot">⚪</span>
+              <span class="pill-label">Conto:</span>
+              <span class="pill-val">Pendente</span>
+            </div>
+            <div class="health-pill" id="pill-faces" title="Expressões Faciais (fXXXX.raw)">
+              <span class="pill-dot">⚪</span>
+              <span class="pill-label">Faces:</span>
+              <span class="pill-val">Pendente</span>
+            </div>
+            <div class="health-pill" id="pill-musicas" title="Músicas & Efeitos (aXXXX.wav)">
+              <span class="pill-dot">⚪</span>
+              <span class="pill-label">Músicas:</span>
+              <span class="pill-val">0 músicas</span>
+            </div>
+            <div class="health-pill" id="pill-cards" title="Cards Físicos / RFID (cXXXX.png + som)">
+              <span class="pill-dot">⚪</span>
+              <span class="pill-label">Cards:</span>
+              <span class="pill-val">0 cards</span>
+            </div>
+            <div class="health-pill" id="pill-atividades" title="Atividades Didáticas (PDF / Docs para Impressão)">
+              <span class="pill-dot">⚪</span>
+              <span class="pill-label">Atividades:</span>
+              <span class="pill-val">0 itens</span>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ====================================================================
+           1. SEÇÃO DE CONTOS (MÚLTIPLOS CONTOS DA HISTORINHA)
+           ==================================================================== -->
+      <section class="sheet-section" id="section-contos">
+        <div id="contos-container" class="items-accordion-container">
+          <!-- Renderizado dinamicamente via JS -->
+        </div>
+
+        <!-- Botão Verde Largo de Adicionar Conto -->
+        <div class="add-button-wrapper">
+          <button type="button" class="btn-add-section-item" id="btn-add-conto">
+            ADICIONAR NOVO CONTO
+          </button>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           2. SEÇÃO DE TRECK-TRECK (ATIVIDADES TÁTEIS & MECÂNICAS)
+           ==================================================================== -->
+      <section class="sheet-section" id="section-treck">
+        <div id="trecks-container" class="items-accordion-container">
+          <!-- Renderizado dinamicamente via JS -->
+        </div>
+
+        <!-- Botão Verde Largo de Adicionar Treck-Treck -->
+        <div class="add-button-wrapper">
+          <button type="button" class="btn-add-section-item" id="btn-add-treck">
+            ADICIONAR TRECK-TRECK
+          </button>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           3. SEÇÃO DE MÚSICAS & MINDFULNESS
+           ==================================================================== -->
+      <section class="sheet-section" id="section-musicas">
+        <div id="musicas-container" class="items-accordion-container">
+          <!-- Renderizado dinamicamente via JS -->
+        </div>
+
+        <!-- Botão Verde Largo de Adicionar Música -->
+        <div class="add-button-wrapper">
+          <button type="button" class="btn-add-section-item" id="btn-add-musica">
+            ADICIONAR NOVA MÚSICA
+          </button>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           4. SEÇÃO DE DESAFIOS & ATIVIDADES INTERATIVAS
+           ==================================================================== -->
+      <section class="sheet-section" id="section-desafios">
+        <div id="desafios-container" class="items-accordion-container">
+          <!-- Renderizado dinamicamente via JS -->
+        </div>
+
+        <!-- Botão Verde Largo de Adicionar Desafio -->
+        <div class="add-button-wrapper">
+          <button type="button" class="btn-add-section-item" id="btn-add-desafio">
+            ADICIONAR NOVO DESAFIO / ATIVIDADE
+          </button>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           5. SEÇÃO DE LIVRINHOS ILUSTRADOS EM PDF
+           ==================================================================== -->
+      <section class="sheet-section" id="section-livrinhos">
+        <div id="livrinhos-container" class="items-accordion-container">
+          <!-- Renderizado dinamicamente via JS -->
+        </div>
+
+        <!-- Botão Verde Largo de Adicionar Livrinho -->
+        <div class="add-button-wrapper">
+          <button type="button" class="btn-add-section-item" id="btn-add-livrinho">
+            ADICIONAR NOVO LIVRINHO
+          </button>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           6. SEÇÃO DE BOBIE GODS (LIVROS DE COLORIR / PERSONAGENS EM PDF)
+           ==================================================================== -->
+      <section class="sheet-section" id="section-bobies">
+        <div id="bobies-container" class="items-accordion-container">
+          <!-- Renderizado dinamicamente via JS -->
+        </div>
+
+        <!-- Botão Verde Largo de Adicionar Bobie God -->
+        <div class="add-button-wrapper">
+          <button type="button" class="btn-add-section-item" id="btn-add-bobie">
+            ADICIONAR NOVO BOBIE GOD
+          </button>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           RODAPÉ DE AÇÕES DA HISTORINHA (PUBLICAR, EXCLUIR, SALVAR)
+           ==================================================================== -->
+      <footer class="sheet-footer-actions">
+        <button type="button" class="btn-footer btn-publicar" id="btn-publicar-tema">
+          Publicar
+        </button>
+        <button type="button" class="btn-footer btn-excluir" id="btn-excluir-tema">
+          Excluir
+        </button>
+        <button type="button" class="btn-footer btn-salvar" id="btn-salvar-tema">
+          Salvar
+        </button>
+      </footer>
+
+    </div>
+  </main>
+
+  <!-- RECEPTÁCULO INVISÍVEL PARA UPLOAD DE ARQUIVOS -->
+  <input type="file" id="file-uploader-general" style="display: none;">
+
+  <!-- TOAST DE NOTIFICAÇÃO NÃO INTRUSIVO -->
+  <div class="v3-toast-container" id="v3-toast-container" aria-live="polite"></div>
+
+  <!-- SCRIPTS -->
+  <script src="github-sync.js"></script>
+  <script src="admin-v4.js"></script>
+</body>
+</html>

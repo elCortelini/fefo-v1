@@ -1,0 +1,1141 @@
+/* ==========================================================================
+   FEFO CATALOG ADMIN v3 - ESTILO FIEL AO MOCKUP OFICIAL
+   ========================================================================== */
+
+:root {
+  /* Paleta Base do Mockup */
+  --bg-gradient-top: #F97316;
+  --bg-gradient-mid: #FBBF24;
+  --bg-gradient-bottom: #F59E0B;
+
+  --card-bg: #FFFFFF;
+  --card-border: rgba(217, 119, 6, 0.2);
+  --card-radius: 16px;
+
+  /* Botões de Ação do Mockup */
+  --btn-mustard: #D97706;
+  --btn-mustard-hover: #B45309;
+  --btn-mustard-light: #FEF3C7;
+
+  --btn-green: #059669;
+  --btn-green-hover: #047857;
+  --btn-green-light: #D1FAE5;
+
+  --btn-blue: #3B82F6;
+  --btn-blue-hover: #2563EB;
+
+  --btn-red: #EF4444;
+  --btn-red-hover: #DC2626;
+
+  /* Textos & Bordas */
+  --text-main: #1F2937;
+  --text-muted: #4B5563;
+  --border-light: #E5E7EB;
+  --border-input: #D1D5DB;
+
+  /* Tipografia */
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body.fefo-theme-v3,
+body.fefo-theme-v4 {
+  font-family: var(--font-sans);
+  background: #111827; /* Fundo escuro externo para destacar a prancheta */
+  color: var(--text-main);
+  min-height: 100vh;
+  padding-bottom: 40px;
+}
+
+/* Rótulos acessíveis */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+/* ==========================================================================
+   BARRA SUPERIOR (TOP-BAR)
+   ========================================================================== */
+.v3-top-bar {
+  background-color: #1F2937;
+  border-bottom: 1px solid #374151;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 0.6rem 1.25rem;
+}
+
+.top-bar-container {
+  max-width: 1080px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.top-bar-left, .top-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.btn-back-site {
+  color: #9CA3AF;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.35rem 0.65rem;
+  background-color: #374151;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.btn-back-site:hover {
+  color: #FFFFFF;
+  background-color: #4B5563;
+}
+
+.brand-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #FFFFFF;
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+
+.badge-v3 {
+  background: linear-gradient(135deg, #0D9488, #3B82F6);
+  color: #FFFFFF;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  letter-spacing: 0.05em;
+}
+
+.badge-v4 {
+  background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+  color: #FFFFFF;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  letter-spacing: 0.06em;
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+}
+
+.btn-bundle-sd {
+  background: linear-gradient(135deg, #10B981, #059669) !important;
+  color: #FFFFFF !important;
+  border: 1px solid #34D399 !important;
+  font-weight: 700 !important;
+}
+
+.btn-bundle-sd:hover {
+  background: linear-gradient(135deg, #059669, #047857) !important;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+}
+
+/* ==========================================================================
+   CHECKLIST DE PRONTIDÃO DO PACOTE (GLANCEABLE HEALTH CARD)
+   ========================================================================== */
+.package-health-card {
+  margin-top: 1rem;
+  padding: 1rem 1.25rem;
+  background: #F8FAFC;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 12px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.health-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.health-title {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #334155;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.health-status-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background: #FEF3C7;
+  color: #92400E;
+  border: 1px solid #FCD34D;
+}
+
+.health-status-badge.ready {
+  background: #D1FAE5;
+  color: #065F46;
+  border-color: #6EE7B7;
+}
+
+.health-pills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 0.5rem;
+}
+
+.health-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.6rem;
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  transition: all 0.2s ease;
+}
+
+.health-pill.ok {
+  border-color: #10B981;
+  background: #F0FDF4;
+}
+
+.health-pill.pending {
+  border-color: #F59E0B;
+  background: #FFFBEB;
+}
+
+.health-pill.empty {
+  border-color: #E2E8F0;
+  opacity: 0.75;
+}
+
+.pill-dot {
+  font-size: 0.8rem;
+}
+
+.pill-label {
+  font-weight: 700;
+  color: #475569;
+}
+
+.pill-val {
+  font-weight: 600;
+  color: #0F172A;
+  margin-left: auto;
+}
+
+.story-selector-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.select-historinha {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+  background-color: #111827;
+  color: #F3F4F6;
+  border: 1px solid #4B5563;
+  padding: 0.35rem 0.65rem;
+  border-radius: 6px;
+  outline: none;
+  max-width: 280px;
+}
+
+.btn-action-sm {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.35rem 0.65rem;
+  border-radius: 6px;
+  border: 1px solid #4B5563;
+  background-color: #374151;
+  color: #F3F4F6;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-action-sm:hover {
+  background-color: #4B5563;
+}
+
+.version-badge {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #00FFCC;
+  background-color: #111827;
+  border: 1px solid #374151;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+}
+
+/* Sincronização em Nuvem (GitHub Multi-PC) */
+.gh-sync-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background-color: #064E3B;
+  color: #A7F3D0;
+  border: 1px solid #059669;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.gh-sync-pill:hover {
+  background-color: #065F46;
+  border-color: #10B981;
+}
+
+.btn-cloud-refresh {
+  background-color: #0D9488 !important;
+  color: #FFFFFF !important;
+  border-color: #14B8A6 !important;
+  font-weight: 700 !important;
+}
+
+.btn-cloud-refresh:hover {
+  background-color: #0F766E !important;
+}
+
+/* ==========================================================================
+   PRANCHETA PRINCIPAL COM O DEGRADÊ DO MOCKUP
+   ========================================================================== */
+.v3-main-container {
+  max-width: 960px;
+  margin: 1.5rem auto;
+  padding: 0 1rem;
+}
+
+.v3-sheet-card {
+  background: linear-gradient(180deg, #FDBA74 0%, #FDE047 30%, #F59E0B 100%);
+  border-radius: 20px;
+  padding: 1.5rem 1.75rem 2rem 1.75rem;
+  box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+/* ==========================================================================
+   CABEÇALHO DA HISTORINHA & EIXO TEMÁTICO
+   ========================================================================== */
+.sheet-header {
+  margin-bottom: 1.75rem;
+}
+
+.eixo-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.65rem;
+}
+
+.eixo-tag-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.95rem;
+  font-weight: 900;
+  color: #111827;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.pin-icon {
+  color: #EF4444;
+  font-size: 1.1rem;
+}
+
+.eixo-select-inline {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #111827;
+  background: transparent;
+  border: none;
+  border-bottom: 2px dashed #92400E;
+  padding: 0.15rem 0.4rem;
+  cursor: pointer;
+  outline: none;
+}
+
+/* Linha de Título e Licenças */
+.story-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.story-title-box {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 320px;
+}
+
+.story-title-input {
+  font-family: var(--font-sans);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #111827;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.2);
+  width: 100%;
+  padding: 0.25rem 0.1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.story-title-input:focus {
+  border-bottom-color: #111827;
+}
+
+.btn-edit-title {
+  background: #A7F3D0;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.9rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Caixa de Licenças do Mockup */
+.licenses-box {
+  background-color: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 12px;
+  padding: 0.4rem 0.85rem;
+  text-align: right;
+}
+
+.licenses-title {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #111827;
+  margin-bottom: 0.25rem;
+  text-transform: capitalize;
+}
+
+.licenses-options {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.license-checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #065F46;
+  cursor: pointer;
+}
+
+.license-checkbox-label input {
+  display: none;
+}
+
+.custom-check {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #059669;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 900;
+  color: transparent;
+  background-color: transparent;
+  transition: all 0.2s;
+}
+
+.license-checkbox-label input:checked + .custom-check {
+  background-color: #059669;
+  color: #FFFFFF;
+}
+
+/* ==========================================================================
+   ACORDEÕES E BLOCOS DE ITENS DO MOCKUP
+   ========================================================================== */
+.sheet-section {
+  margin-bottom: 2rem;
+}
+
+.items-accordion-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Card Principal do Item (Branco, Flutuante) */
+.accordion-item-card {
+  background-color: var(--card-bg);
+  border-radius: var(--card-radius);
+  border: 1px solid var(--card-border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  position: relative;
+  transition: all 0.25s ease;
+}
+
+/* Barra de Título / Cabeçalho do Acordeão */
+.accordion-header {
+  padding: 0.75rem 1.25rem;
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 1px solid transparent;
+}
+
+.accordion-item-card.expanded .accordion-header {
+  border-bottom-color: #F3F4F6;
+}
+
+.accordion-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.accordion-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #111827;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+/* Semáforo de Status */
+.status-badge-traffic {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.status-badge-traffic.ready {
+  background-color: #D1FAE5;
+  color: #065F46;
+}
+
+.status-badge-traffic.raw {
+  background-color: #FEF3C7;
+  color: #92400E;
+}
+
+.status-badge-traffic.empty {
+  background-color: #FEE2E2;
+  color: #991B1B;
+}
+
+.accordion-toggle-arrow {
+  font-size: 0.85rem;
+  color: #9CA3AF;
+  transition: transform 0.25s ease;
+}
+
+.accordion-item-card.collapsed .accordion-toggle-arrow {
+  transform: rotate(180deg);
+}
+
+.accordion-item-card.collapsed .accordion-body {
+  display: none;
+}
+
+/* Corpo do Item do Acordeão */
+.accordion-body {
+  display: flex;
+  position: relative;
+}
+
+/* Faixa Lateral Amarela do Conto ("CONTO 1") */
+.side-vertical-badge {
+  background-color: #FEF3C7;
+  border-right: 2px solid #FDE68A;
+  color: #D97706;
+  font-weight: 900;
+  font-size: 1.15rem;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  padding: 1.5rem 0.65rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.accordion-content-inner {
+  flex: 1;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+/* ==========================================================================
+   LINHAS DE CAMPOS DO MOCKUP
+   ========================================================================== */
+.field-row-horizontal {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.field-label-inline {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #374151;
+  white-space: nowrap;
+}
+
+.field-input-clean {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #111827;
+  border: 1px solid var(--border-input);
+  background-color: #FFFFFF;
+  border-radius: 8px;
+  padding: 0.6rem 0.85rem;
+  flex: 1;
+  outline: none;
+}
+
+.field-input-clean:focus {
+  border-color: #D97706;
+  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.15);
+}
+
+.field-input-mono {
+  font-family: var(--font-mono) !important;
+  font-weight: 700;
+}
+
+/* Botões Mostarda do Mockup */
+.btn-mockup-mustard {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 700;
+  background-color: #D97706;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  padding: 0.65rem 1.15rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.btn-mockup-mustard:hover {
+  background-color: #B45309;
+}
+
+/* Player de Áudio Nativo */
+.native-audio-player {
+  width: 100%;
+  height: 40px;
+  border-radius: 8px;
+  outline: none;
+}
+
+/* ==========================================================================
+   SUB-SEÇÃO: ACORDEÕES SANFONA INTERNOS (ROTEIRO, AJUSTA/CORTAR, CARD VINCULADO)
+   ========================================================================== */
+.sub-accordion-box {
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  background-color: #FAFAFA;
+  transition: all 0.2s ease;
+}
+
+.sub-accordion-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+  padding: 0.25rem 0;
+}
+
+.sub-accordion-header:hover .sub-header-title {
+  color: #B45309;
+}
+
+.sub-header-title {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #92400E;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.sub-arrow {
+  display: inline-block;
+  font-size: 0.75rem;
+  color: #92400E;
+  transition: transform 0.25s ease;
+}
+
+.sub-accordion-box.collapsed .sub-arrow {
+  transform: rotate(180deg);
+}
+
+.sub-accordion-box.collapsed .sub-accordion-body {
+  display: none;
+}
+
+.sub-accordion-body {
+  margin-top: 0.75rem;
+  animation: sub-accordion-open 0.2s ease-out;
+}
+
+@keyframes sub-accordion-open {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.textarea-roteiro {
+  width: 100%;
+  min-height: 70px;
+  border: 1px solid var(--border-input);
+  border-radius: 8px;
+  padding: 0.6rem 0.85rem;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  color: #1F2937;
+  resize: vertical;
+  outline: none;
+  background-color: #FFFFFF;
+}
+
+.textarea-roteiro:focus {
+  border-color: #D97706;
+  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.15);
+}
+
+/* ==========================================================================
+   SUB-SEÇÃO: WAVEFORM & AJUSTA/CORTAR (IDÊNTICO AO MOCKUP)
+   ========================================================================== */
+.waveform-tool-box {
+  background-color: #0F172A; /* Escuro profundo para destacar o verde neon */
+  border-radius: 12px;
+  padding: 1rem;
+  color: #FFFFFF;
+}
+
+.waveform-canvas-container {
+  width: 100%;
+  height: 90px;
+  background: #090D16;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 0.85rem;
+  border: 1px solid #1E293B;
+  position: relative;
+}
+
+.waveform-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Controles de Corte: Fade In, Início, Fim, Fade Out, Duração */
+.trimmer-controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.trimmer-param-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background-color: #1E293B;
+  padding: 0.35rem 0.65rem;
+  border-radius: 6px;
+  color: #94A3B8;
+}
+
+.trimmer-param-chip span.val {
+  font-family: var(--font-mono);
+  color: #22C55E;
+}
+
+.trimmer-param-chip input[type="number"] {
+  width: 55px;
+  background: #0F172A;
+  border: 1px solid #334155;
+  color: #22C55E;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.75rem;
+  padding: 0.15rem 0.3rem;
+  border-radius: 4px;
+  outline: none;
+}
+
+/* Botões do Cortador de Áudio */
+.trimmer-buttons-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.btn-trim-secondary {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 700;
+  background-color: #1E293B;
+  color: #F8FAFC;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 0.45rem 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-trim-secondary:hover {
+  background-color: #334155;
+}
+
+.btn-trim-apply {
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 800;
+  background-color: #10B981;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1.15rem;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+  transition: background-color 0.15s ease;
+}
+
+.btn-trim-apply:hover {
+  background-color: #059669;
+}
+
+/* ==========================================================================
+   SUB-SEÇÃO: CARD VINCULADO DO CONTO
+   ========================================================================== */
+.card-linked-box {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 0.85rem;
+  background-color: #FFFBEB;
+  border: 1px dashed #FCD34D;
+  border-radius: 12px;
+}
+
+.card-preview-thumbnail {
+  width: 70px;
+  height: 95px;
+  background-color: #FFFFFF;
+  border: 2px solid #E5E7EB;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+  flex-shrink: 0;
+}
+
+.card-preview-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.card-preview-placeholder {
+  font-size: 1.75rem;
+  color: #9CA3AF;
+}
+
+.card-fields-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+/* Ações de Confirmação & Exclusão do Card */
+.item-actions-corner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  align-self: flex-end;
+}
+
+.btn-action-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: transform 0.15s ease;
+}
+
+.btn-action-circle:hover {
+  transform: scale(1.08);
+}
+
+.btn-action-circle.check {
+  background-color: #10B981;
+  color: #FFFFFF;
+}
+
+.btn-action-circle.delete {
+  background-color: #EF4444;
+  color: #FFFFFF;
+}
+
+/* ==========================================================================
+   CARDS DE LIVRINHOS & BOBIE GODS
+   ========================================================================== */
+.pdf-material-card-body {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.25rem 1.5rem;
+}
+
+.pdf-preview-box {
+  width: 85px;
+  height: 110px;
+  background-color: #FFFFFF;
+  border: 2px solid #E5E7EB;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  flex-shrink: 0;
+}
+
+.pdf-preview-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pdf-fields-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+/* ==========================================================================
+   BOTÃO VERDE LARGO: ADICIONAR NOVO ITEM
+   ========================================================================== */
+.add-button-wrapper {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.btn-add-section-item {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  background-color: var(--btn-green);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 12px;
+  padding: 0.85rem 1.5rem;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(5, 150, 105, 0.3);
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-add-section-item:hover {
+  background-color: var(--btn-green-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(5, 150, 105, 0.35);
+}
+
+/* ==========================================================================
+   RODAPÉ DE AÇÕES DA HISTORINHA (PUBLICAR, EXCLUIR, SALVAR)
+   ========================================================================== */
+.sheet-footer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 2px dashed rgba(0, 0, 0, 0.15);
+}
+
+.btn-footer {
+  font-family: var(--font-sans);
+  font-size: 1.05rem;
+  font-weight: 800;
+  padding: 0.85rem 2.25rem;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.btn-footer:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+}
+
+.btn-publicar {
+  background-color: var(--btn-blue);
+  color: #FFFFFF;
+}
+
+.btn-publicar:hover {
+  background-color: var(--btn-blue-hover);
+}
+
+.btn-excluir {
+  background-color: var(--btn-red);
+  color: #FFFFFF;
+}
+
+.btn-excluir:hover {
+  background-color: var(--btn-red-hover);
+}
+
+.btn-salvar {
+  background-color: var(--btn-green);
+  color: #FFFFFF;
+}
+
+.btn-salvar:hover {
+  background-color: var(--btn-green-hover);
+}
+
+/* ==========================================================================
+   TOASTS DE NOTIFICAÇÃO
+   ========================================================================== */
+.v3-toast-container {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+
+.v3-toast {
+  background-color: #111827;
+  color: #FFFFFF;
+  padding: 0.85rem 1.25rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-left: 5px solid #10B981;
+  pointer-events: auto;
+  animation: toast-slide-in 0.25s ease-out;
+}
+
+.v3-toast.error { border-left-color: #EF4444; }
+.v3-toast.warning { border-left-color: #F59E0B; }
+.v3-toast.info { border-left-color: #3B82F6; }
+
+@keyframes toast-slide-in {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .v3-sheet-card {
+    padding: 1.25rem 1rem;
+  }
+  .story-title-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .licenses-box {
+    text-align: left;
+  }
+  .sheet-footer-actions {
+    flex-direction: column-reverse;
+  }
+  .btn-footer {
+    width: 100%;
+  }
+}
