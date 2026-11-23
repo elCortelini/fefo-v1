@@ -117,6 +117,101 @@
           "capaUrl": ""
         }
       ]
+    },
+    {
+      "id": "hist_1795464551440_488",
+      "codigo": "t01.02",
+      "titulo": "Historinha 2 - Nova Aventura do FEFO",
+      "eixoId": "eixo-01",
+      "licencas": {
+        "home": true,
+        "escola": true,
+        "clinica": true,
+        "premium": true
+      },
+      "contos": [
+        {
+          "id": "conto_1",
+          "nomeApp": "PARTE 01",
+          "arquivoPet": "a0001.wav",
+          "arquivoPetManual": false,
+          "audioUrl": "",
+          "facePet": "f0001.raw",
+          "roteiro": "Digite ou edite aqui o roteiro falado pelo FEFO...",
+          "trimmer": {
+            "inicio": 0,
+            "fim": 30,
+            "fadeIn": 0.2,
+            "fadeOut": 0.2,
+            "duracao": 30
+          },
+          "status": "empty",
+          "cardVinculado": {
+            "nome": "CARD 001",
+            "comandoPet": "c0001.png",
+            "imagemUrl": ""
+          }
+        }
+      ],
+      "musicas": [
+        {
+          "id": "mus_1",
+          "nomeApp": "CANÇÃO 01",
+          "arquivoPet": "a0011.wav",
+          "arquivoPetManual": false,
+          "audioUrl": "",
+          "facePet": "f0001.raw",
+          "roteiro": "Letra da música...",
+          "trimmer": {
+            "inicio": 0,
+            "fim": 45,
+            "fadeIn": 0.2,
+            "fadeOut": 0.2,
+            "duracao": 45
+          },
+          "status": "empty",
+          "cardVinculado": {
+            "nome": "CARD MÚSICA 1",
+            "comandoPet": "c0011.png",
+            "imagemUrl": ""
+          }
+        }
+      ],
+      "trecks": [
+        {
+          "id": "trk_1",
+          "nomeAcao": "Alongamento Tátil",
+          "arquivoPet": "TRK0001.WAV",
+          "duracaoSegundos": 60,
+          "instrucao": "Instruções físicas do robô...",
+          "audioUrl": ""
+        }
+      ],
+      "desafios": [
+        {
+          "id": "des_1",
+          "titulo": "Desafio do Card",
+          "cardEsperado": "c0001.png",
+          "audioPergunta": "a0002.wav",
+          "facePet": "f0001.raw"
+        }
+      ],
+      "livrinhos": [
+        {
+          "id": "livro_1",
+          "nome": "Livrinho Ilustrado",
+          "pdfUrl": "",
+          "capaUrl": ""
+        }
+      ],
+      "bobies": [
+        {
+          "id": "bobie_1",
+          "nome": "Livro de Colorir",
+          "pdfUrl": "",
+          "capaUrl": ""
+        }
+      ]
     }
   ]
 }
