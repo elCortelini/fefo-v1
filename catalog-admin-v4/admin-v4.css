@@ -85,7 +85,8 @@ body.fefo-theme-v4 {
 }
 
 .top-bar-container {
-  max-width: 1080px;
+  width: 90%;
+  max-width: 1750px;
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -331,15 +332,17 @@ body.fefo-theme-v4 {
    PRANCHETA PRINCIPAL COM O DEGRADÊ DO MOCKUP
    ========================================================================== */
 .v3-main-container {
-  max-width: 960px;
+  width: 90%;
+  max-width: 1750px;
   margin: 1.5rem auto;
-  padding: 0 1rem;
+  padding: 0;
 }
 
 .v3-sheet-card {
+  width: 100%;
   background: #FFFFFF;
   border-radius: 20px;
-  padding: 1.75rem 2rem 2.25rem 2rem;
+  padding: 2rem 2.5rem 2.5rem 2.5rem;
   border: 1px solid #E2E8F0;
   border-top: 5px solid #F59E0B; /* Destaque da assinatura âmbar oficial FEFO */
   box-shadow: 0 20px 45px -15px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.05);
@@ -506,8 +509,9 @@ body.fefo-theme-v4 {
 /* Layout Horizontal: Itens/Sanfona à Esquerda + Botão de Adicionar ao Lado */
 .section-row-layout {
   display: flex;
-  gap: 0.75rem;
+  gap: 1rem;
   align-items: flex-start;
+  width: 100%;
 }
 
 .section-row-layout .items-accordion-container {
@@ -515,7 +519,7 @@ body.fefo-theme-v4 {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.85rem;
 }
 
 /* Botão Compacto e Harmônico ao Lado da Sanfona (Alinhado à direita) */
@@ -702,10 +706,12 @@ body.fefo-theme-v4 {
 
 .accordion-content-inner {
   flex: 1;
-  padding: 1.25rem 1.5rem;
+  min-width: 0;
+  width: 100%;
+  padding: 1.35rem 2rem;
   display: flex;
   flex-direction: column;
-  gap: 1.15rem;
+  gap: 1.25rem;
 }
 
 /* ==========================================================================
@@ -714,7 +720,9 @@ body.fefo-theme-v4 {
 .field-row-horizontal {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.85rem;
+  width: 100%;
+  min-width: 0;
 }
 
 .field-label-inline {
@@ -722,6 +730,7 @@ body.fefo-theme-v4 {
   font-weight: 700;
   color: #374151;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .field-input-clean {
@@ -734,6 +743,7 @@ body.fefo-theme-v4 {
   border-radius: 8px;
   padding: 0.6rem 0.85rem;
   flex: 1;
+  min-width: 0;
   outline: none;
 }
 
@@ -759,6 +769,7 @@ body.fefo-theme-v4 {
   padding: 0.65rem 1.15rem;
   cursor: pointer;
   white-space: nowrap;
+  flex-shrink: 0;
   transition: all 0.15s ease;
   box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
