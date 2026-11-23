@@ -52,8 +52,8 @@
         <p class="overview-subtitle">8 Eixos Oficiais do Ecossistema FEFO com controle de pacotes, downloads e integração com firmware/app.</p>
       </div>
       <div class="overview-actions-box">
-        <button type="button" class="btn-top-add-pacote" id="btn-top-add-pacote" title="Adicionar Novo Pacote / Historinha">
-          ➕ Adicionar Novo Pacote
+        <button type="button" class="btn-top-add-eixo" id="btn-top-add-eixo" title="Adicionar Novo Eixo Temático">
+          ➕ ADICIONAR NOVO EIXO TEMÁTICO
         </button>
       </div>
     </div>
@@ -67,6 +67,51 @@
 
   <!-- RECEPTÁCULO INVISÍVEL PARA UPLOAD DE ARQUIVOS -->
   <input type="file" id="file-uploader-general" style="display: none;">
+
+  <!-- MODAL / DIALOG PARA CRIAR / EDITAR EIXO TEMÁTICO -->
+  <div id="modal-eixo-backdrop" class="modal-backdrop" style="display: none;">
+    <div class="modal-dialog modal-eixo-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-eixo-title">
+      <div class="modal-header">
+        <h3 id="modal-eixo-title" class="modal-title">🎨 Novo Eixo Temático</h3>
+        <button type="button" class="modal-close-btn" id="btn-close-modal-eixo" title="Fechar">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="modal-eixo-edit-id" value="">
+        <div class="form-group-modal">
+          <label for="modal-eixo-nome" class="modal-label">Nome do Eixo Temático:</label>
+          <input type="text" id="modal-eixo-nome" class="modal-input" placeholder="Ex: Expressão Corporal & Música" autocomplete="off">
+        </div>
+        <div class="form-group-modal">
+          <label class="modal-label">Ícone / Emoji Representativo:</label>
+          <div class="emoji-picker-container">
+            <input type="text" id="modal-eixo-icone" class="modal-input modal-input-icon" value="🎨" maxlength="4">
+            <div class="quick-emojis-list" id="quick-emojis-list">
+              <button type="button" class="btn-emoji-quick" data-emoji="🎨">🎨</button>
+              <button type="button" class="btn-emoji-quick" data-emoji="🎵">🎵</button>
+              <button type="button" class="btn-emoji-quick" data-emoji="🔢">🔢</button>
+              <button type="button" class="btn-emoji-quick" data-emoji="🧠">🧠</button>
+              <button type="button" class="btn-emoji-quick" data-emoji="🚀">🚀</button>
+              <button type="button" class="btn-emoji-quick" data-emoji="⭐">⭐</button>
+              <button type="button" class="btn-emoji-quick" data-emoji="🧩">🧩</button>
+              <button type="button" class="btn-emoji-quick" data-emoji="🌈">🌈</button>
+              <button type="button" class="btn-emoji-quick" data-emoji="🎭">🎭</button>
+              <button type="button" class="btn-emoji-quick" data-emoji="🌍">🌍</button>
+              <button type="button" class="btn-emoji-quick" data-emoji="💡">💡</button>
+              <button type="button" class="btn-emoji-quick" data-emoji="🧸">🧸</button>
+            </div>
+          </div>
+        </div>
+        <div class="form-group-modal">
+          <label for="modal-eixo-descricao" class="modal-label">Descrição Pedagógica (Opcional):</label>
+          <textarea id="modal-eixo-descricao" class="modal-textarea" rows="2" placeholder="Foco pedagógico, faixas etárias sugeridas e objetivos de desenvolvimento..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-modal-cancel" id="btn-cancel-modal-eixo">Cancelar</button>
+        <button type="button" class="btn-modal-save" id="btn-save-modal-eixo">Confirmar e Criar Eixo</button>
+      </div>
+    </div>
+  </div>
 
   <!-- TOAST DE NOTIFICAÇÃO NÃO INTRUSIVO -->
   <div class="v3-toast-container" id="v3-toast-container" aria-live="polite"></div>

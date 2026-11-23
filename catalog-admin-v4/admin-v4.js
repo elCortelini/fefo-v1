@@ -16,23 +16,24 @@
 
   const STORAGE_KEY = 'fefo_catalog_v4_state';
 
-  // 8 Eixos Temáticos Oficiais
-  const EIXOS_OFICIAIS = [
-    { id: "eixo-01", nome: "Rotina & Hábitos", icone: "⏰" },
-    { id: "eixo-02", nome: "Autocuidado & Higiene", icone: "🪥" },
-    { id: "eixo-03", nome: "Emoções & Autorregulação", icone: "💛" },
-    { id: "eixo-04", nome: "Alimentação Saudável", icone: "🍎" },
-    { id: "eixo-05", nome: "Socialização & Empatia", icone: "🤝" },
-    { id: "eixo-06", nome: "Movimento & Coordenação", icone: "🏃" },
-    { id: "eixo-07", nome: "Linguagem & Imaginação", icone: "📚" },
-    { id: "eixo-08", nome: "Ciência & Natureza", icone: "🌱" }
+  // 8 Eixos Temáticos Padrão do Ecossistema FEFO
+  const EIXOS_PADRAO = [
+    { id: "eixo-01", nome: "Rotina & Hábitos", icone: "⏰", descricao: "Organização diária, autonomia e transições suaves." },
+    { id: "eixo-02", nome: "Autocuidado & Higiene", icone: "🪥", descricao: "Escovação, banho, cuidados pessoais e saúde do corpo." },
+    { id: "eixo-03", nome: "Emoções & Autorregulação", icone: "💛", descricao: "Identificação de sentimentos, calma e respiração guiada." },
+    { id: "eixo-04", nome: "Alimentação Saudável", icone: "🍎", descricao: "Relação positiva com alimentos e novas texturas." },
+    { id: "eixo-05", nome: "Socialização & Empatia", icone: "🤝", descricao: "Compartilhar, cooperação, amizade e limites gentis." },
+    { id: "eixo-06", nome: "Movimento & Coordenação", icone: "🏃", descricao: "Motricidade ampla, dança, ritmo e coordenação motora fina." },
+    { id: "eixo-07", nome: "Linguagem & Imaginação", icone: "📚", descricao: "Vocabulário, rimas, contação de histórias e imaginação fértil." },
+    { id: "eixo-08", nome: "Ciência & Natureza", icone: "🌱", descricao: "Curiosidade sobre o mundo, animais, plantas e fenômenos naturais." }
   ];
 
-  // Estado Central do Catálogo v4
+  // Estado Central do Catálogo v4 (Eixos Dinâmicos + Pacotes Submissos)
   let catalogState = {
     schema: 4,
     catalogVersion: "v4.001",
     versionCode: 4001,
+    eixos: JSON.parse(JSON.stringify(EIXOS_PADRAO)),
     historinhas: []
   };
 
@@ -104,6 +105,13 @@
     if (loadedData) {
       catalogState.catalogVersion = loadedData.catalogVersion || "v4.001";
       catalogState.versionCode = loadedData.versionCode || 4001;
+
+      if (loadedData.eixos && Array.isArray(loadedData.eixos) && loadedData.eixos.length > 0) {
+        catalogState.eixos = loadedData.eixos;
+      } else {
+        catalogState.eixos = JSON.parse(JSON.stringify(EIXOS_PADRAO));
+      }
+
       if (loadedData.historinhas && Array.isArray(loadedData.historinhas)) {
         catalogState.historinhas = loadedData.historinhas;
       } else if (loadedData.temas) {
@@ -382,10 +390,204 @@
     const btnBundle = document.getElementById('btn-gerar-bundle-sd');
     if (btnBundle) btnBundle.addEventListener('click', () => gerarBundleSD(null));
 
-    // Botão Topo: Adicionar Novo Pacote (Opção A)
-    const btnTopAdd = document.getElementById('btn-top-add-pacote');
-    if (btnTopAdd) {
-      btnTopAdd.addEventListener('click', () => addNewPackage("eixo-01"));
+    // Botão Topo: Adicionar Novo Eixo Temático
+    const btnTopAddEixo = document.getElementById('btn-top-add-eixo') || document.getElementById('btn-top-add-pacote');
+    if (btnTopAddEixo) {
+      btnTopAddEixo.addEventListener('click', () => openEixoModal(null));
+    }
+
+    // Inicializa eventos do modal de Eixo Temático
+    initEixoModalEvents();
+  }
+
+  // ==========================================================================
+  // MODAL DE CRIAÇÃO / EDIÇÃO DE EIXO TEMÁTICO
+  // ==========================================================================
+  let modalEventsInitialized = false;
+  function initEixoModalEvents() {
+    if (modalEventsInitialized) return;
+    modalEventsInitialized = true;
+
+    const backdrop = document.getElementById('modal-eixo-backdrop');
+    const btnClose = document.getElementById('btn-close-modal-eixo');
+    const btnCancel = document.getElementById('btn-cancel-modal-eixo');
+    const btnSave = document.getElementById('btn-save-modal-eixo');
+    const emojisList = document.getElementById('quick-emojis-list');
+    const inputIcon = document.getElementById('modal-eixo-icone');
+    const inputNome = document.getElementById('modal-eixo-nome');
+
+    if (btnClose) btnClose.addEventListener('click', closeEixoModal);
+    if (btnCancel) btnCancel.addEventListener('click', closeEixoModal);
+
+    if (backdrop) {
+      backdrop.addEventListener('click', (e) => {
+        if (e.target === backdrop) closeEixoModal();
+      });
+    }
+
+    if (emojisList && inputIcon) {
+      emojisList.addEventListener('click', (e) => {
+        const btn = e.target.closest('.btn-emoji-quick');
+        if (btn) {
+          const emoji = btn.dataset.emoji;
+          if (emoji) inputIcon.value = emoji;
+        }
+      });
+    }
+
+    if (btnSave) {
+      btnSave.addEventListener('click', saveEixoFromModal);
+    }
+
+    if (inputNome) {
+      inputNome.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          saveEixoFromModal();
+        } else if (e.key === 'Escape') {
+          closeEixoModal();
+        }
+      });
+    }
+  }
+
+  function openEixoModal(eixoToEdit = null) {
+    const backdrop = document.getElementById('modal-eixo-backdrop');
+    const modalTitle = document.getElementById('modal-eixo-title');
+    const inputEditId = document.getElementById('modal-eixo-edit-id');
+    const inputNome = document.getElementById('modal-eixo-nome');
+    const inputIcon = document.getElementById('modal-eixo-icone');
+    const inputDesc = document.getElementById('modal-eixo-descricao');
+    const btnSave = document.getElementById('btn-save-modal-eixo');
+
+    if (!backdrop) return;
+
+    if (eixoToEdit) {
+      if (modalTitle) modalTitle.textContent = '✏️ Editar Eixo Temático';
+      if (inputEditId) inputEditId.value = eixoToEdit.id;
+      if (inputNome) inputNome.value = eixoToEdit.nome || '';
+      if (inputIcon) inputIcon.value = eixoToEdit.icone || '🎨';
+      if (inputDesc) inputDesc.value = eixoToEdit.descricao || '';
+      if (btnSave) btnSave.textContent = 'Salvar Alterações';
+    } else {
+      if (modalTitle) modalTitle.textContent = '🎨 Novo Eixo Temático';
+      if (inputEditId) inputEditId.value = '';
+      if (inputNome) inputNome.value = '';
+      if (inputIcon) inputIcon.value = '🎨';
+      if (inputDesc) inputDesc.value = '';
+      if (btnSave) btnSave.textContent = 'Confirmar e Criar Eixo';
+    }
+
+    backdrop.style.display = 'flex';
+    setTimeout(() => {
+      if (inputNome) inputNome.focus();
+    }, 100);
+  }
+
+  function closeEixoModal() {
+    const backdrop = document.getElementById('modal-eixo-backdrop');
+    if (backdrop) backdrop.style.display = 'none';
+  }
+
+  function saveEixoFromModal() {
+    const inputEditId = document.getElementById('modal-eixo-edit-id');
+    const inputNome = document.getElementById('modal-eixo-nome');
+    const inputIcon = document.getElementById('modal-eixo-icone');
+    const inputDesc = document.getElementById('modal-eixo-descricao');
+
+    const nome = (inputNome ? inputNome.value : '').trim();
+    const icone = (inputIcon ? inputIcon.value : '').trim() || '🎨';
+    const descricao = (inputDesc ? inputDesc.value : '').trim();
+    const editId = inputEditId ? inputEditId.value : '';
+
+    if (!nome) {
+      showToast('Por favor, informe o nome do Eixo Temático.', 'warning');
+      if (inputNome) inputNome.focus();
+      return;
+    }
+
+    if (!catalogState.eixos) {
+      catalogState.eixos = JSON.parse(JSON.stringify(EIXOS_PADRAO));
+    }
+
+    let targetId = '';
+    if (editId) {
+      // Edição de Eixo existente
+      const existing = catalogState.eixos.find(e => e.id === editId);
+      if (existing) {
+        existing.nome = nome;
+        existing.icone = icone;
+        existing.descricao = descricao;
+        targetId = existing.id;
+        showToast(`Eixo "${nome}" atualizado com sucesso!`, 'success');
+      }
+    } else {
+      // Criação de Novo Eixo Temático
+      const newIndex = catalogState.eixos.length + 1;
+      let newId = `eixo-${String(newIndex).padStart(2, '0')}`;
+      if (catalogState.eixos.some(e => e.id === newId)) {
+        newId = `eixo_${Date.now()}`;
+      }
+
+      const novoEixo = {
+        id: newId,
+        nome: nome,
+        icone: icone,
+        descricao: descricao
+      };
+
+      catalogState.eixos.push(novoEixo);
+      targetId = novoEixo.id;
+      showToast(`🎉 Novo Eixo Temático "${nome}" criado com sucesso!`, 'success');
+    }
+
+    saveCatalogData(false);
+    closeEixoModal();
+    renderCatalogFeed();
+
+    // Scroll e destaque suave no eixo
+    if (targetId) {
+      setTimeout(() => {
+        const el = document.getElementById(`eixo-card-${targetId}`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          el.classList.add('highlight-eixo');
+          setTimeout(() => el.classList.remove('highlight-eixo'), 2500);
+        }
+      }, 150);
+    }
+  }
+
+  function moveEixo(eixoIdx, delta) {
+    if (!catalogState.eixos) return;
+    const newIdx = eixoIdx + delta;
+    if (newIdx < 0 || newIdx >= catalogState.eixos.length) return;
+
+    const temp = catalogState.eixos[eixoIdx];
+    catalogState.eixos[eixoIdx] = catalogState.eixos[newIdx];
+    catalogState.eixos[newIdx] = temp;
+
+    saveCatalogData(false);
+    renderCatalogFeed();
+    showToast('Ordem dos Eixos Temáticos atualizada!', 'info');
+  }
+
+  function deleteEixo(eixoId) {
+    if (!catalogState.eixos) return;
+    const eixo = catalogState.eixos.find(e => e.id === eixoId);
+    if (!eixo) return;
+
+    const pacotesNoEixo = catalogState.historinhas.filter(h => h.eixoId === eixoId);
+    if (pacotesNoEixo.length > 0) {
+      showToast(`Este eixo possui ${pacotesNoEixo.length} pacote(s) vinculado(s). Mova ou exclua os pacotes antes de remover o eixo.`, 'error');
+      return;
+    }
+
+    if (confirm(`Tem certeza de que deseja excluir o eixo "${eixo.nome}"?`)) {
+      catalogState.eixos = catalogState.eixos.filter(e => e.id !== eixoId);
+      saveCatalogData(false);
+      renderCatalogFeed();
+      showToast(`Eixo "${eixo.nome}" excluído.`, 'info');
     }
   }
 
@@ -417,9 +619,11 @@
     if (!container) return;
     container.innerHTML = '';
 
-    EIXOS_OFICIAIS.forEach(eixo => {
+    const eixosList = (catalogState.eixos && catalogState.eixos.length > 0) ? catalogState.eixos : EIXOS_PADRAO;
+
+    eixosList.forEach((eixo, eixoIdx) => {
       // Filtra pacotes do eixo
-      const eixoStories = catalogState.historinhas.filter(h => h.eixoId === eixo.id || (!h.eixoId && eixo.id === 'eixo-01'));
+      const eixoStories = catalogState.historinhas.filter(h => h.eixoId === eixo.id || (!h.eixoId && eixo.id === eixosList[0]?.id));
 
       const eixoWrapper = document.createElement('div');
       eixoWrapper.className = 'eixo-card-wrapper';
@@ -429,11 +633,17 @@
         <div class="eixo-header-bar" data-action="toggle-eixo">
           <div class="eixo-title-group">
             <span class="eixo-pin">📌</span>
-            <span class="eixo-badge-icone">${eixo.icone}</span>
+            <span class="eixo-badge-icone">${escapeHtml(eixo.icone || '🎨')}</span>
             <span class="eixo-name">${escapeHtml(eixo.nome)}</span>
             <span class="eixo-count-chip">${eixoStories.length} ${eixoStories.length === 1 ? 'pacote' : 'pacotes'}</span>
           </div>
           <div class="eixo-actions-group">
+            <div class="eixo-order-controls">
+              <button type="button" class="btn-eixo-order" data-action="move-eixo-up" title="Mover Eixo para Cima">▲</button>
+              <button type="button" class="btn-eixo-order" data-action="move-eixo-down" title="Mover Eixo para Baixo">▼</button>
+            </div>
+            <button type="button" class="btn-eixo-edit" data-action="edit-eixo" title="Editar Nome e Ícone do Eixo">✏️</button>
+            <button type="button" class="btn-eixo-delete" data-action="delete-eixo" title="Excluir Eixo">🗑️</button>
             <button type="button" class="btn-add-pacote-eixo" data-action="add-story-eixo" title="Adicionar Pacote neste Eixo">
               ➕ Novo Pacote
             </button>
@@ -447,8 +657,30 @@
 
       // Evento de recolher/expandir o eixo
       eixoWrapper.querySelector('[data-action="toggle-eixo"]').addEventListener('click', (e) => {
-        if (e.target.closest('[data-action="add-story-eixo"]')) return;
+        if (e.target.closest('.eixo-actions-group')) return;
         eixoWrapper.classList.toggle('collapsed');
+      });
+
+      // Botões de reordenação de eixos (▲ / ▼)
+      eixoWrapper.querySelector('[data-action="move-eixo-up"]').addEventListener('click', (e) => {
+        e.stopPropagation();
+        moveEixo(eixoIdx, -1);
+      });
+      eixoWrapper.querySelector('[data-action="move-eixo-down"]').addEventListener('click', (e) => {
+        e.stopPropagation();
+        moveEixo(eixoIdx, 1);
+      });
+
+      // Botão de editar eixo
+      eixoWrapper.querySelector('[data-action="edit-eixo"]').addEventListener('click', (e) => {
+        e.stopPropagation();
+        openEixoModal(eixo);
+      });
+
+      // Botão de excluir eixo
+      eixoWrapper.querySelector('[data-action="delete-eixo"]').addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteEixo(eixo.id);
       });
 
       // Botão de adicionar pacote diretamente neste eixo
@@ -524,7 +756,7 @@
               <span class="pin-icon">📌</span>
               <span class="eixo-label-prefix">EIXO TEMÁTICO:</span>
               <select class="eixo-select-inline" data-field="eixoId">
-                ${EIXOS_OFICIAIS.map(e => `<option value="${e.id}" ${e.id === (story.eixoId || 'eixo-01') ? 'selected' : ''}>${e.icone} ${e.nome}</option>`).join('')}
+                ${(catalogState.eixos || EIXOS_PADRAO).map(e => `<option value="${e.id}" ${e.id === (story.eixoId || (catalogState.eixos && catalogState.eixos[0] ? catalogState.eixos[0].id : 'eixo-01')) ? 'selected' : ''}>${escapeHtml(e.icone || '🎨')} ${escapeHtml(e.nome)}</option>`).join('')}
               </select>
             </div>
           </div>
@@ -1417,9 +1649,11 @@
     showToast('Item reposicionado!', 'info');
   }
 
-  function addNewPackage(targetEixoId = "eixo-01") {
+  function addNewPackage(targetEixoId = null) {
+    const defaultEixo = (catalogState.eixos && catalogState.eixos[0]) ? catalogState.eixos[0].id : "eixo-01";
+    const finalEixoId = targetEixoId || defaultEixo;
     const newNum = catalogState.historinhas.length + 1;
-    const newStory = createDefaultStory(newNum, targetEixoId);
+    const newStory = createDefaultStory(newNum, finalEixoId);
     catalogState.historinhas.push(newStory);
     expandedStories.add(newStory.id);
     saveCatalogData(false);
