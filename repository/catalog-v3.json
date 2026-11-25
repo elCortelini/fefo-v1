@@ -2,7 +2,152 @@
   "schema": 4,
   "catalogVersion": "v3.001",
   "versionCode": 3001,
+  "eixos": [
+    {
+      "id": "eixo-01",
+      "nome": "Rotina & Hábitos",
+      "icone": "⏰",
+      "descricao": "Organização diária, autonomia e transições suaves."
+    },
+    {
+      "id": "eixo-02",
+      "nome": "Autocuidado & Higiene",
+      "icone": "🪥",
+      "descricao": "Escovação, banho, cuidados pessoais e saúde do corpo."
+    },
+    {
+      "id": "eixo-03",
+      "nome": "Emoções & Autorregulação",
+      "icone": "💛",
+      "descricao": "Identificação de sentimentos, calma e respiração guiada."
+    },
+    {
+      "id": "eixo-04",
+      "nome": "Alimentação Saudável",
+      "icone": "🍎",
+      "descricao": "Relação positiva com alimentos e novas texturas."
+    },
+    {
+      "id": "eixo-05",
+      "nome": "Socialização & Empatia",
+      "icone": "🤝",
+      "descricao": "Compartilhar, cooperação, amizade e limites gentis."
+    },
+    {
+      "id": "eixo-06",
+      "nome": "Movimento & Coordenação",
+      "icone": "🏃",
+      "descricao": "Motricidade ampla, dança, ritmo e coordenação motora fina."
+    },
+    {
+      "id": "eixo-07",
+      "nome": "Linguagem & Imaginação",
+      "icone": "📚",
+      "descricao": "Vocabulário, rimas, contação de histórias e imaginação fértil."
+    },
+    {
+      "id": "eixo-08",
+      "nome": "Ciência & Natureza",
+      "icone": "🌱",
+      "descricao": "Curiosidade sobre o mundo, animais, plantas e fenômenos naturais."
+    }
+  ],
   "historinhas": [
+    {
+      "id": "hist_1795464551440_488",
+      "codigo": "t01.02",
+      "titulo": "Historinha 2 - Nova Aventura do FEFO",
+      "eixoId": "eixo-01",
+      "licencas": {
+        "home": true,
+        "escola": true,
+        "clinica": true,
+        "premium": true
+      },
+      "contos": [
+        {
+          "id": "conto_1",
+          "nomeApp": "PARTE 01",
+          "arquivoPet": "a0001.wav",
+          "arquivoPetManual": false,
+          "audioUrl": "",
+          "facePet": "f0001.raw",
+          "roteiro": "Digite ou edite aqui o roteiro falado pelo FEFO...",
+          "trimmer": {
+            "inicio": 0,
+            "fim": 30,
+            "fadeIn": 0.2,
+            "fadeOut": 0.2,
+            "duracao": 30
+          },
+          "status": "empty",
+          "cardVinculado": {
+            "nome": "CARD 001",
+            "comandoPet": "c0001.png",
+            "imagemUrl": ""
+          }
+        }
+      ],
+      "musicas": [
+        {
+          "id": "mus_1",
+          "nomeApp": "CANÇÃO 01",
+          "arquivoPet": "a0011.wav",
+          "arquivoPetManual": false,
+          "audioUrl": "",
+          "facePet": "f0001.raw",
+          "roteiro": "Letra da música...",
+          "trimmer": {
+            "inicio": 0,
+            "fim": 45,
+            "fadeIn": 0.2,
+            "fadeOut": 0.2,
+            "duracao": 45
+          },
+          "status": "empty",
+          "cardVinculado": {
+            "nome": "CARD MÚSICA 1",
+            "comandoPet": "c0011.png",
+            "imagemUrl": ""
+          }
+        }
+      ],
+      "trecks": [
+        {
+          "id": "trk_1",
+          "nomeAcao": "Alongamento Tátil",
+          "arquivoPet": "TRK0001.WAV",
+          "duracaoSegundos": 60,
+          "instrucao": "Instruções físicas do robô...",
+          "audioUrl": ""
+        }
+      ],
+      "desafios": [
+        {
+          "id": "des_1",
+          "titulo": "Desafio do Card",
+          "cardEsperado": "c0001.png",
+          "audioPergunta": "a0002.wav",
+          "facePet": "f0001.raw"
+        }
+      ],
+      "livrinhos": [
+        {
+          "id": "livro_1",
+          "nome": "Livrinho Ilustrado",
+          "pdfUrl": "",
+          "capaUrl": ""
+        }
+      ],
+      "bobies": [
+        {
+          "id": "bobie_1",
+          "nome": "Livro de Colorir",
+          "pdfUrl": "",
+          "capaUrl": ""
+        }
+      ]
+    },
     {
       "id": "hist_1",
       "codigo": "t01.01",
@@ -113,101 +258,6 @@
         {
           "id": "bobie_1",
           "nome": "AVENTURAS DO FEFO - COLORIR",
-          "pdfUrl": "",
-          "capaUrl": ""
-        }
-      ]
-    },
-    {
-      "id": "hist_1795464551440_488",
-      "codigo": "t01.02",
-      "titulo": "Historinha 2 - Nova Aventura do FEFO",
-      "eixoId": "eixo-01",
-      "licencas": {
-        "home": true,
-        "escola": true,
-        "clinica": true,
-        "premium": true
-      },
-      "contos": [
-        {
-          "id": "conto_1",
-          "nomeApp": "PARTE 01",
-          "arquivoPet": "a0001.wav",
-          "arquivoPetManual": false,
-          "audioUrl": "",
-          "facePet": "f0001.raw",
-          "roteiro": "Digite ou edite aqui o roteiro falado pelo FEFO...",
-          "trimmer": {
-            "inicio": 0,
-            "fim": 30,
-            "fadeIn": 0.2,
-            "fadeOut": 0.2,
-            "duracao": 30
-          },
-          "status": "empty",
-          "cardVinculado": {
-            "nome": "CARD 001",
-            "comandoPet": "c0001.png",
-            "imagemUrl": ""
-          }
-        }
-      ],
-      "musicas": [
-        {
-          "id": "mus_1",
-          "nomeApp": "CANÇÃO 01",
-          "arquivoPet": "a0011.wav",
-          "arquivoPetManual": false,
-          "audioUrl": "",
-          "facePet": "f0001.raw",
-          "roteiro": "Letra da música...",
-          "trimmer": {
-            "inicio": 0,
-            "fim": 45,
-            "fadeIn": 0.2,
-            "fadeOut": 0.2,
-            "duracao": 45
-          },
-          "status": "empty",
-          "cardVinculado": {
-            "nome": "CARD MÚSICA 1",
-            "comandoPet": "c0011.png",
-            "imagemUrl": ""
-          }
-        }
-      ],
-      "trecks": [
-        {
-          "id": "trk_1",
-          "nomeAcao": "Alongamento Tátil",
-          "arquivoPet": "TRK0001.WAV",
-          "duracaoSegundos": 60,
-          "instrucao": "Instruções físicas do robô...",
-          "audioUrl": ""
-        }
-      ],
-      "desafios": [
-        {
-          "id": "des_1",
-          "titulo": "Desafio do Card",
-          "cardEsperado": "c0001.png",
-          "audioPergunta": "a0002.wav",
-          "facePet": "f0001.raw"
-        }
-      ],
-      "livrinhos": [
-        {
-          "id": "livro_1",
-          "nome": "Livrinho Ilustrado",
-          "pdfUrl": "",
-          "capaUrl": ""
-        }
-      ],
-      "bobies": [
-        {
-          "id": "bobie_1",
-          "nome": "Livro de Colorir",
           "pdfUrl": "",
           "capaUrl": ""
         }
