@@ -45,6 +45,70 @@
   <!-- CONTAINER PRINCIPAL: GESTÃO POR EIXOS TEMÁTICOS & PACOTES (v4) -->
   <main class="v3-main-container">
 
+    <!-- BARRA DE PESQUISA & FILTROS INTELIGENTES DE CONTEÚDO -->
+    <section class="catalog-search-filter-card" id="catalog-search-filter-card" aria-label="Pesquisa e Filtros do Catálogo">
+      <div class="search-main-row">
+        <div class="search-input-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="catalog-search-input" class="search-input" placeholder="Pesquisar por título, código (ex: t01.01), roteiro, arquivos (a0001.wav, c0001.png), músicas ou atividades..." autocomplete="off">
+          <button type="button" id="btn-clear-search-text" class="btn-clear-search" title="Limpar busca" style="display: none;">✕</button>
+        </div>
+        <div class="search-meta-box">
+          <span class="search-results-counter" id="search-results-counter">Mostrando 0 pacotes</span>
+          <button type="button" id="btn-reset-all-filters" class="btn-reset-filters" style="display: none;" title="Limpar todos os filtros">
+            🔄 Limpar Filtros
+          </button>
+        </div>
+      </div>
+
+      <!-- LINHA DE FILTROS RÁPIDOS POR CATEGORIA -->
+      <div class="search-filters-row">
+        <!-- Filtro por Eixo Temático -->
+        <div class="filter-group">
+          <label class="filter-group-label" for="filter-select-eixo">Eixo:</label>
+          <select id="filter-select-eixo" class="filter-select-eixo">
+            <option value="all">🎨 Todos os Eixos</option>
+            <!-- Eixos populados dinamicamente via JS -->
+          </select>
+        </div>
+
+        <!-- Filtro por Status -->
+        <div class="filter-group">
+          <label class="filter-group-label">Status:</label>
+          <div class="filter-pills-group" id="filter-status-pills">
+            <button type="button" class="filter-pill active" data-filter-status="all">Todos</button>
+            <button type="button" class="filter-pill pill-status-ready" data-filter-status="ready">🟢 Prontos</button>
+            <button type="button" class="filter-pill pill-status-process" data-filter-status="process">🟡 Em Processo</button>
+            <button type="button" class="filter-pill pill-status-incomplete" data-filter-status="incomplete">🔴 Incompletos</button>
+          </div>
+        </div>
+
+        <!-- Filtro por Conteúdo / Mídia -->
+        <div class="filter-group">
+          <label class="filter-group-label">Conteúdo:</label>
+          <div class="filter-pills-group" id="filter-media-pills">
+            <button type="button" class="filter-pill active" data-filter-media="all">Qualquer</button>
+            <button type="button" class="filter-pill" data-filter-media="contos">🎧 Contos</button>
+            <button type="button" class="filter-pill" data-filter-media="musicas">🎵 Músicas</button>
+            <button type="button" class="filter-pill" data-filter-media="cards">📇 Cards RFID</button>
+            <button type="button" class="filter-pill" data-filter-media="atividades">📄 Atividades</button>
+          </div>
+        </div>
+
+        <!-- Filtro por Licença -->
+        <div class="filter-group">
+          <label class="filter-group-label">Licença:</label>
+          <div class="filter-pills-group" id="filter-license-pills">
+            <button type="button" class="filter-pill active" data-filter-license="all">Todas</button>
+            <button type="button" class="filter-pill" data-filter-license="home">🏠 Home</button>
+            <button type="button" class="filter-pill" data-filter-license="escola">🏫 Escola</button>
+            <button type="button" class="filter-pill" data-filter-license="clinica">🩺 Clínica</button>
+            <button type="button" class="filter-pill" data-filter-license="premium">⭐ Premium</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- CABEÇALHO DO CATÁLOGO: TÍTULO & BOTÃO DE ADICIONAR PACOTE (OPÇÃO A) -->
     <div class="catalog-overview-header">
       <div class="overview-title-box">

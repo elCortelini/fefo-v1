@@ -40,6 +40,15 @@
   // Conjunto de IDs de pacotes expandidos (por padrão todos começam colapsados)
   const expandedStories = new Set();
 
+  // Estado da Barra de Pesquisa & Filtros Inteligentes
+  const searchFilterState = {
+    query: '',
+    status: 'all',
+    eixoId: 'all',
+    media: 'all',
+    license: 'all'
+  };
+
   // Web Audio Context compartilhado
   let audioCtx = null;
   function getAudioContext() {
@@ -57,6 +66,7 @@
   // ==========================================================================
   document.addEventListener('DOMContentLoaded', async () => {
     initTopBarEvents();
+    initSearchAndFilterEvents();
     
     // Tenta sincronizar primeiro da nuvem (GitHub REST API) para ter paridade entre todos os PCs
     await loadCatalogData(true);
@@ -592,6 +602,253 @@
   }
 
   // ==========================================================================
+  // BARRA DE PESQUISA & FILTROS INTELIGENTES DE CONTEÚDO
+  // ==========================================================================
+  let searchFilterEventsInitialized = false;
+
+  function initSearchAndFilterEvents() {
+    if (searchFilterEventsInitialized) return;
+    searchFilterEventsInitialized = true;
+
+    const searchInput = document.getElementById('catalog-search-input');
+    const btnClearText = document.getElementById('btn-clear-search-text');
+    const btnResetAll = document.getElementById('btn-reset-all-filters');
+    const selectEixo = document.getElementById('filter-select-eixo');
+
+    // Input de pesquisa por texto com busca instantânea
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        searchFilterState.query = e.target.value;
+        if (btnClearText) {
+          btnClearText.style.display = searchFilterState.query.trim() ? 'flex' : 'none';
+        }
+        renderCatalogFeed();
+      });
+
+      searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          clearSearchQuery();
+        }
+      });
+    }
+
+    // Botão Limpar Texto da Busca
+    if (btnClearText) {
+      btnClearText.addEventListener('click', () => {
+        clearSearchQuery();
+      });
+    }
+
+    // Botão Resetar Todos os Filtros
+    if (btnResetAll) {
+      btnResetAll.addEventListener('click', () => {
+        clearAllFilters();
+      });
+    }
+
+    // Select de Eixo Temático
+    if (selectEixo) {
+      selectEixo.addEventListener('change', (e) => {
+        searchFilterState.eixoId = e.target.value;
+        renderCatalogFeed();
+      });
+    }
+
+    // Pills de Status
+    const statusPillsContainer = document.getElementById('filter-status-pills');
+    if (statusPillsContainer) {
+      statusPillsContainer.addEventListener('click', (e) => {
+        const btn = e.target.closest('.filter-pill');
+        if (!btn) return;
+        const statusVal = btn.dataset.filterStatus;
+        if (!statusVal) return;
+
+        statusPillsContainer.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        searchFilterState.status = statusVal;
+        renderCatalogFeed();
+      });
+    }
+
+    // Pills de Mídia / Conteúdo
+    const mediaPillsContainer = document.getElementById('filter-media-pills');
+    if (mediaPillsContainer) {
+      mediaPillsContainer.addEventListener('click', (e) => {
+        const btn = e.target.closest('.filter-pill');
+        if (!btn) return;
+        const mediaVal = btn.dataset.filterMedia;
+        if (!mediaVal) return;
+
+        mediaPillsContainer.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        searchFilterState.media = mediaVal;
+        renderCatalogFeed();
+      });
+    }
+
+    // Pills de Licença
+    const licensePillsContainer = document.getElementById('filter-license-pills');
+    if (licensePillsContainer) {
+      licensePillsContainer.addEventListener('click', (e) => {
+        const btn = e.target.closest('.filter-pill');
+        if (!btn) return;
+        const licVal = btn.dataset.filterLicense;
+        if (!licVal) return;
+
+        licensePillsContainer.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        searchFilterState.license = licVal;
+        renderCatalogFeed();
+      });
+    }
+  }
+
+  function clearSearchQuery() {
+    const searchInput = document.getElementById('catalog-search-input');
+    const btnClearText = document.getElementById('btn-clear-search-text');
+    if (searchInput) {
+      searchInput.value = '';
+      searchInput.focus();
+    }
+    if (btnClearText) btnClearText.style.display = 'none';
+    searchFilterState.query = '';
+    renderCatalogFeed();
+  }
+
+  function clearAllFilters() {
+    searchFilterState.query = '';
+    searchFilterState.status = 'all';
+    searchFilterState.eixoId = 'all';
+    searchFilterState.media = 'all';
+    searchFilterState.license = 'all';
+
+    const searchInput = document.getElementById('catalog-search-input');
+    if (searchInput) searchInput.value = '';
+
+    const btnClearText = document.getElementById('btn-clear-search-text');
+    if (btnClearText) btnClearText.style.display = 'none';
+
+    const selectEixo = document.getElementById('filter-select-eixo');
+    if (selectEixo) selectEixo.value = 'all';
+
+    ['filter-status-pills', 'filter-media-pills', 'filter-license-pills'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.querySelectorAll('.filter-pill').forEach(p => {
+          if (p.dataset.filterStatus === 'all' || p.dataset.filterMedia === 'all' || p.dataset.filterLicense === 'all') {
+            p.classList.add('active');
+          } else {
+            p.classList.remove('active');
+          }
+        });
+      }
+    });
+
+    renderCatalogFeed();
+    showToast('Filtros redefinidos!', 'info');
+  }
+
+  function isFilterActive() {
+    return (
+      searchFilterState.query.trim() !== '' ||
+      searchFilterState.status !== 'all' ||
+      searchFilterState.eixoId !== 'all' ||
+      searchFilterState.media !== 'all' ||
+      searchFilterState.license !== 'all'
+    );
+  }
+
+  function normalizeText(str) {
+    if (!str || typeof str !== 'string') return '';
+    return str
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+  }
+
+  function updateFilterEixosDropdown() {
+    const selectEixo = document.getElementById('filter-select-eixo');
+    if (!selectEixo) return;
+
+    const currentVal = selectEixo.value || 'all';
+    const eixosList = (catalogState.eixos && catalogState.eixos.length > 0) ? catalogState.eixos : EIXOS_PADRAO;
+
+    let html = '<option value="all">🎨 Todos os Eixos</option>';
+    eixosList.forEach(e => {
+      html += `<option value="${e.id}" ${e.id === currentVal ? 'selected' : ''}>${escapeHtml(e.icone || '🎨')} ${escapeHtml(e.nome)}</option>`;
+    });
+
+    selectEixo.innerHTML = html;
+  }
+
+  function storyMatchesFilters(story) {
+    // 1. Filtro por Eixo
+    if (searchFilterState.eixoId !== 'all') {
+      const defaultEixo = (catalogState.eixos && catalogState.eixos[0]) ? catalogState.eixos[0].id : 'eixo-01';
+      const storyEixo = story.eixoId || defaultEixo;
+      if (storyEixo !== searchFilterState.eixoId) return false;
+    }
+
+    // 2. Filtro por Status
+    if (searchFilterState.status !== 'all') {
+      const st = calculateStoryStatus(story);
+      if (searchFilterState.status === 'ready' && st.cls !== 'status-ready') return false;
+      if (searchFilterState.status === 'process' && st.cls !== 'status-process') return false;
+      if (searchFilterState.status === 'incomplete' && st.cls !== 'status-incomplete') return false;
+    }
+
+    // 3. Filtro por Conteúdo / Mídia
+    if (searchFilterState.media !== 'all') {
+      if (searchFilterState.media === 'contos') {
+        const hasConto = (story.contos || []).length > 0;
+        if (!hasConto) return false;
+      } else if (searchFilterState.media === 'musicas') {
+        const hasMusica = (story.musicas || []).length > 0;
+        if (!hasMusica) return false;
+      } else if (searchFilterState.media === 'cards') {
+        const hasCards = ((story.desafios || []).length > 0) || ((story.contos || []).some(c => c.cardVinculado?.comandoPet));
+        if (!hasCards) return false;
+      } else if (searchFilterState.media === 'atividades') {
+        const hasAtiv = ((story.livrinhos || []).length > 0) || ((story.bobies || []).length > 0);
+        if (!hasAtiv) return false;
+      }
+    }
+
+    // 4. Filtro por Licença
+    if (searchFilterState.license !== 'all') {
+      if (!story.licencas || story.licencas[searchFilterState.license] !== true) {
+        return false;
+      }
+    }
+
+    // 5. Busca Textual Inteligente Multi-termo
+    const rawQuery = searchFilterState.query.trim();
+    if (rawQuery !== '') {
+      const terms = normalizeText(rawQuery).split(/\s+/).filter(Boolean);
+      
+      // Indexa todo o conteúdo pesquisável do pacote
+      const searchableParts = [
+        story.titulo || '',
+        story.codigo || '',
+        (story.contos || []).map(c => `${c.nomeApp || ''} ${c.arquivoPet || ''} ${c.facePet || ''} ${c.roteiro || ''} ${c.cardVinculado?.nome || ''} ${c.cardVinculado?.comandoPet || ''}`).join(' '),
+        (story.musicas || []).map(m => `${m.nomeApp || ''} ${m.arquivoPet || ''} ${m.facePet || ''} ${m.roteiro || ''} ${m.cardVinculado?.nome || ''} ${m.cardVinculado?.comandoPet || ''}`).join(' '),
+        (story.trecks || []).map(t => `${t.nomeAcao || ''} ${t.arquivoPet || ''} ${t.instrucao || ''}`).join(' '),
+        (story.desafios || []).map(d => `${d.titulo || ''} ${d.cardEsperado || ''} ${d.audioPergunta || ''} ${d.facePet || ''}`).join(' '),
+        (story.livrinhos || []).map(l => `${l.nome || ''} ${l.pdfUrl || ''}`).join(' '),
+        (story.bobies || []).map(b => `${b.nome || ''} ${b.pdfUrl || ''}`).join(' ')
+      ].join(' ');
+
+      const normalizedIndex = normalizeText(searchableParts);
+
+      // Todos os termos digitados devem existir no pacote
+      const matchesAllTerms = terms.every(t => normalizedIndex.includes(t));
+      if (!matchesAllTerms) return false;
+    }
+
+    return true;
+  }
+
+  // ==========================================================================
   // SEMÁFORO DE STATUS DO PACOTE (🟢 PRONTO | 🟡 EM PROCESSO | 🔴 INCOMPLETO)
   // ==========================================================================
   function calculateStoryStatus(story) {
@@ -619,15 +876,45 @@
     if (!container) return;
     container.innerHTML = '';
 
+    // Atualiza o dropdown de eixos nos filtros de pesquisa
+    updateFilterEixosDropdown();
+
     const eixosList = (catalogState.eixos && catalogState.eixos.length > 0) ? catalogState.eixos : EIXOS_PADRAO;
+    const totalStoriesCount = (catalogState.historinhas || []).length;
+    let filteredStoriesCount = 0;
+    const filterActive = isFilterActive();
+
+    // Atualiza botão de reset de filtros
+    const btnResetAll = document.getElementById('btn-reset-all-filters');
+    if (btnResetAll) {
+      btnResetAll.style.display = filterActive ? 'inline-flex' : 'none';
+    }
 
     eixosList.forEach((eixo, eixoIdx) => {
       // Filtra pacotes do eixo
       const eixoStories = catalogState.historinhas.filter(h => h.eixoId === eixo.id || (!h.eixoId && eixo.id === eixosList[0]?.id));
+      
+      // Aplica os filtros de pesquisa e mídia
+      const matchingStories = eixoStories.filter(story => storyMatchesFilters(story));
+      filteredStoriesCount += matchingStories.length;
+
+      // Se filtro ativo e nenhum pacote deu match neste eixo, oculta o card do eixo
+      if (filterActive && matchingStories.length === 0) {
+        return;
+      }
 
       const eixoWrapper = document.createElement('div');
       eixoWrapper.className = 'eixo-card-wrapper';
       eixoWrapper.id = `eixo-card-${eixo.id}`;
+
+      // Se pesquisa ativa, mantém o eixo aberto para conferir os resultados
+      if (filterActive && matchingStories.length > 0) {
+        eixoWrapper.classList.remove('collapsed');
+      }
+
+      const countLabel = filterActive 
+        ? `${matchingStories.length} ${matchingStories.length === 1 ? 'encontrado' : 'encontrados'}`
+        : `${eixoStories.length} ${eixoStories.length === 1 ? 'pacote' : 'pacotes'}`;
 
       eixoWrapper.innerHTML = `
         <div class="eixo-header-bar" data-action="toggle-eixo">
@@ -635,7 +922,7 @@
             <span class="eixo-pin">📌</span>
             <span class="eixo-badge-icone">${escapeHtml(eixo.icone || '🎨')}</span>
             <span class="eixo-name">${escapeHtml(eixo.nome)}</span>
-            <span class="eixo-count-chip">${eixoStories.length} ${eixoStories.length === 1 ? 'pacote' : 'pacotes'}</span>
+            <span class="eixo-count-chip">${countLabel}</span>
           </div>
           <div class="eixo-actions-group">
             <div class="eixo-order-controls">
@@ -691,14 +978,16 @@
 
       const storiesContainer = eixoWrapper.querySelector(`#stories-container-${eixo.id}`);
 
-      if (eixoStories.length === 0) {
+      const storiesToRender = filterActive ? matchingStories : eixoStories;
+
+      if (storiesToRender.length === 0) {
         storiesContainer.innerHTML = `
           <div style="text-align: center; padding: 1.5rem; color: #94A3B8; font-size: 0.85rem; font-weight: 600;">
-            Nenhum pacote neste eixo ainda. Clique em "➕ Novo Pacote" acima para adicionar.
+            ${filterActive ? 'Nenhum pacote neste eixo corresponde aos filtros ativos.' : 'Nenhum pacote neste eixo ainda. Clique em "➕ Novo Pacote" acima para adicionar.'}
           </div>
         `;
       } else {
-        eixoStories.forEach(story => {
+        storiesToRender.forEach(story => {
           const globalStoryIdx = catalogState.historinhas.indexOf(story);
           const pkgElement = createPackageElement(story, globalStoryIdx);
           storiesContainer.appendChild(pkgElement);
@@ -707,6 +996,37 @@
 
       container.appendChild(eixoWrapper);
     });
+
+    // Se houver filtros ativos e nenhum resultado encontrado em todo o catálogo
+    if (filterActive && filteredStoriesCount === 0) {
+      const emptyBox = document.createElement('div');
+      emptyBox.className = 'empty-search-state';
+      emptyBox.innerHTML = `
+        <span class="empty-search-icon">🔍</span>
+        <h3 class="empty-search-title">Nenhum pacote encontrado</h3>
+        <p class="empty-search-text">Não encontramos historinhas ou itens que correspondam à sua busca ou aos filtros selecionados.</p>
+        <button type="button" class="btn-reset-filters" style="display: inline-flex;" onclick="document.getElementById('btn-reset-all-filters').click()">
+          🔄 Limpar Filtros de Busca
+        </button>
+      `;
+      container.appendChild(emptyBox);
+    }
+
+    // Atualiza o contador de resultados no header da busca
+    const counterEl = document.getElementById('search-results-counter');
+    if (counterEl) {
+      if (filterActive) {
+        counterEl.innerHTML = `Mostrando <strong>${filteredStoriesCount}</strong> de <strong>${totalStoriesCount}</strong> pacotes`;
+        counterEl.style.borderColor = '#F59E0B';
+        counterEl.style.background = '#FEF3C7';
+        counterEl.style.color = '#B45309';
+      } else {
+        counterEl.innerHTML = `Total: <strong>${totalStoriesCount}</strong> pacotes no catálogo`;
+        counterEl.style.borderColor = '#E2E8F0';
+        counterEl.style.background = '#F1F5F9';
+        counterEl.style.color = '#334155';
+      }
+    }
   }
 
   // ==========================================================================
