@@ -792,9 +792,11 @@
     // 2. Filtro por Status
     if (searchFilterState.status !== 'all') {
       const st = calculateStoryStatus(story);
-      if (searchFilterState.status === 'ready' && st.cls !== 'status-ready') return false;
-      if (searchFilterState.status === 'process' && st.cls !== 'status-process') return false;
-      if (searchFilterState.status === 'incomplete' && st.cls !== 'status-incomplete') return false;
+      const currentKey = st.key; // 'em_producao', 'teste', 'pronto', 'publicado'
+      if (searchFilterState.status === 'em_producao' && currentKey !== 'em_producao') return false;
+      if (searchFilterState.status === 'teste' && currentKey !== 'teste') return false;
+      if (searchFilterState.status === 'pronto' && currentKey !== 'pronto') return false;
+      if (searchFilterState.status === 'publicado' && currentKey !== 'publicado') return false;
     }
 
     // 3. Filtro por Conteúdo / Mídia
@@ -849,9 +851,26 @@
   }
 
   // ==========================================================================
-  // SEMÁFORO DE STATUS DO PACOTE (🟢 PRONTO | 🟡 EM PROCESSO | 🔴 INCOMPLETO)
+  // SEMÁFORO DE STATUS DO PACOTE (🟡 EM PRODUÇÃO | 🧪 TESTE | 🟢 PRONTO | 🚀 PUBLICADO)
   // ==========================================================================
   function calculateStoryStatus(story) {
+    // 1. Se houver status explícito gravado no pacote, respeita-o
+    if (story.status) {
+      if (story.status === 'publicado') {
+        return { key: 'publicado', cls: 'status-publicado', icon: '🚀', label: 'PUBLICADO' };
+      }
+      if (story.status === 'pronto' || story.status === 'ready') {
+        return { key: 'pronto', cls: 'status-pronto', icon: '🟢', label: 'PRONTO' };
+      }
+      if (story.status === 'teste') {
+        return { key: 'teste', cls: 'status-teste', icon: '🧪', label: 'TESTE' };
+      }
+      if (story.status === 'em_producao' || story.status === 'process') {
+        return { key: 'em_producao', cls: 'status-producao', icon: '🟡', label: 'EM PRODUÇÃO' };
+      }
+    }
+
+    // 2. Cálculo inteligente baseado na prontidão dos arquivos
     const contos = story.contos || [];
     const musicas = story.musicas || [];
     const cards = (story.desafios || []).length + contos.filter(c => c.cardVinculado?.comandoPet).length;
@@ -860,12 +879,12 @@
     const musicasProntas = musicas.filter(m => m.audioUrl || m.status === 'ready').length;
 
     if (contosProntos > 0 && musicasProntas > 0 && cards > 0) {
-      return { cls: 'status-ready', icon: '🟢', label: 'PRONTO' };
+      return { key: 'pronto', cls: 'status-pronto', icon: '🟢', label: 'PRONTO' };
     }
     if (contosProntos > 0 || musicasProntas > 0 || contos.some(c => c.roteiro) || cards > 0) {
-      return { cls: 'status-process', icon: '🟡', label: 'EM PROCESSO' };
+      return { key: 'em_producao', cls: 'status-producao', icon: '🟡', label: 'EM PRODUÇÃO' };
     }
-    return { cls: 'status-incomplete', icon: '🔴', label: 'INCOMPLETO' };
+    return { key: 'em_producao', cls: 'status-producao', icon: '🟡', label: 'EM PRODUÇÃO' };
   }
 
   // ==========================================================================
@@ -1079,6 +1098,17 @@
                 ${(catalogState.eixos || EIXOS_PADRAO).map(e => `<option value="${e.id}" ${e.id === (story.eixoId || (catalogState.eixos && catalogState.eixos[0] ? catalogState.eixos[0].id : 'eixo-01')) ? 'selected' : ''}>${escapeHtml(e.icone || '🎨')} ${escapeHtml(e.nome)}</option>`).join('')}
               </select>
             </div>
+
+            <div class="status-tag-badge">
+              <span class="status-badge-icon">🏷️</span>
+              <span class="status-label-prefix">STATUS DO PACOTE:</span>
+              <select class="status-select-inline" data-field="status">
+                <option value="em_producao" ${status.key === 'em_producao' ? 'selected' : ''}>🟡 Em Produção</option>
+                <option value="teste" ${status.key === 'teste' ? 'selected' : ''}>🧪 Teste</option>
+                <option value="pronto" ${status.key === 'pronto' ? 'selected' : ''}>🟢 Pronto</option>
+                <option value="publicado" ${status.key === 'publicado' ? 'selected' : ''}>🚀 Publicado</option>
+              </select>
+            </div>
           </div>
 
           <div class="story-title-row">
@@ -1268,6 +1298,17 @@
       showToast(`Pacote movido para o eixo "${e.target.options[e.target.selectedIndex].text}"!`, 'info');
     });
 
+    // Seletor de Status Manual do Pacote
+    const statusSelect = pkg.querySelector('[data-field="status"]');
+    if (statusSelect) {
+      statusSelect.addEventListener('change', (e) => {
+        story.status = e.target.value;
+        saveCatalogData(false, story);
+        renderCatalogFeed();
+        showToast(`Status do pacote alterado para "${e.target.options[e.target.selectedIndex].text}"!`, 'info');
+      });
+    }
+
     // Licenças
     ['home', 'escola', 'clinica', 'premium'].forEach(lic => {
       const chk = pkg.querySelector(`[data-lic="${lic}"]`);
@@ -1285,7 +1326,10 @@
     });
 
     pkg.querySelector('[data-action="publish-package"]').addEventListener('click', () => {
+      story.status = 'publicado';
       saveCatalogData(true, story);
+      renderCatalogFeed();
+      showToast(`🚀 Pacote "${story.titulo}" PUBLICADO com sucesso! Disponibilizado no catálogo do Pet FEFO e no App.`, 'success');
     });
 
     // Exclusão Segura: só deleta de dentro do pacote

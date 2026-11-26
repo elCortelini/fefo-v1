@@ -540,13 +540,7 @@ body.fefo-theme-v4 {
   box-shadow: 0 2px 6px rgba(15, 23, 42, 0.15);
 }
 
-.filter-pill.pill-status-ready.active {
-  background: #10B981;
-  border-color: #059669;
-  color: #FFFFFF;
-  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
-}
-
+.filter-pill.pill-status-producao.active,
 .filter-pill.pill-status-process.active {
   background: #F59E0B;
   border-color: #D97706;
@@ -554,11 +548,26 @@ body.fefo-theme-v4 {
   box-shadow: 0 2px 6px rgba(245, 158, 11, 0.25);
 }
 
-.filter-pill.pill-status-incomplete.active {
-  background: #EF4444;
-  border-color: #DC2626;
+.filter-pill.pill-status-teste.active {
+  background: #8B5CF6;
+  border-color: #7C3AED;
   color: #FFFFFF;
-  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.25);
+  box-shadow: 0 2px 6px rgba(139, 92, 246, 0.25);
+}
+
+.filter-pill.pill-status-pronto.active,
+.filter-pill.pill-status-ready.active {
+  background: #10B981;
+  border-color: #059669;
+  color: #FFFFFF;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+}
+
+.filter-pill.pill-status-publicado.active {
+  background: #0284C7;
+  border-color: #0369A1;
+  color: #FFFFFF;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
 }
 
 /* Responsividade da Barra de Pesquisa */
@@ -915,16 +924,32 @@ body.fefo-theme-v4 {
   white-space: nowrap;
 }
 
+.package-status-chip.status-producao,
+.package-status-chip.status-em-producao,
+.package-status-chip.status-process {
+  background: #FEF3C7;
+  color: #92400E;
+  border: 1px solid #FBBF24;
+}
+
+.package-status-chip.status-teste {
+  background: #EDE9FE;
+  color: #5B21B6;
+  border: 1px solid #A78BFA;
+}
+
+.package-status-chip.status-pronto,
 .package-status-chip.status-ready {
   background: #D1FAE5;
   color: #065F46;
   border: 1px solid #34D399;
 }
 
-.package-status-chip.status-process {
-  background: #FEF3C7;
-  color: #92400E;
-  border: 1px solid #FBBF24;
+.package-status-chip.status-publicado {
+  background: #E0F2FE;
+  color: #0369A1;
+  border: 1px solid #38BDF8;
+  box-shadow: 0 1px 4px rgba(2, 132, 199, 0.2);
 }
 
 .package-status-chip.status-incomplete {
@@ -1018,7 +1043,9 @@ body.fefo-theme-v4 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.65rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.85rem;
 }
 
 .eixo-tag-badge {
@@ -1030,6 +1057,43 @@ body.fefo-theme-v4 {
   color: #111827;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+}
+
+.status-tag-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #0F172A;
+  background: #F8FAFC;
+  padding: 0.35rem 0.85rem;
+  border-radius: 10px;
+  border: 1.5px solid #CBD5E1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.status-badge-icon {
+  font-size: 1rem;
+}
+
+.status-label-prefix {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.status-select-inline {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #0F172A;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  outline: none;
 }
 
 .pin-icon {
