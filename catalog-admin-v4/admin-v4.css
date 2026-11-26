@@ -1959,6 +1959,19 @@ body.fefo-theme-v4 {
   background-color: var(--btn-blue-hover);
 }
 
+.btn-despublicar {
+  background: linear-gradient(135deg, #F59E0B, #D97706);
+  color: #FFFFFF;
+  border: 1px solid #FBBF24;
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.25);
+}
+
+.btn-despublicar:hover {
+  background: linear-gradient(135deg, #D97706, #B45309);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(217, 119, 6, 0.35);
+}
+
 .btn-excluir {
   background-color: var(--btn-red);
   color: #FFFFFF;

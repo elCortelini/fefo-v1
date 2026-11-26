@@ -1106,7 +1106,7 @@
                 <option value="em_producao" ${status.key === 'em_producao' ? 'selected' : ''}>🟡 Em Produção</option>
                 <option value="teste" ${status.key === 'teste' ? 'selected' : ''}>🧪 Teste</option>
                 <option value="pronto" ${status.key === 'pronto' ? 'selected' : ''}>🟢 Pronto</option>
-                <option value="publicado" ${status.key === 'publicado' ? 'selected' : ''}>🚀 Publicado</option>
+                ${status.key === 'publicado' ? '<option value="publicado" selected disabled>🚀 Publicado (Use botão abaixo para Despublicar)</option>' : ''}
               </select>
             </div>
           </div>
@@ -1253,9 +1253,15 @@
           <button type="button" class="btn-footer btn-salvar" data-action="save-package">
             💾 Salvar Pacote
           </button>
-          <button type="button" class="btn-footer btn-publicar" data-action="publish-package">
-            🚀 Publicar
-          </button>
+          ${status.key === 'publicado' ? `
+            <button type="button" class="btn-footer btn-despublicar" data-action="unpublish-package" title="Retirar este pacote do catálogo oficial do Pet FEFO e retornar para Em Produção">
+              ⏸️ Despublicar Pacote
+            </button>
+          ` : `
+            <button type="button" class="btn-footer btn-publicar" data-action="publish-package" title="Publicar pacote no catálogo oficial do Pet FEFO e App">
+              🚀 Publicar Pacote
+            </button>
+          `}
         </footer>
 
       </div>
@@ -1320,17 +1326,30 @@
       }
     });
 
-    // Ações do Rodapé
+    // Ações do Rodapé (Salvar, Publicar e Despublicar)
     pkg.querySelector('[data-action="save-package"]').addEventListener('click', () => {
       saveCatalogData(false, story);
     });
 
-    pkg.querySelector('[data-action="publish-package"]').addEventListener('click', () => {
-      story.status = 'publicado';
-      saveCatalogData(true, story);
-      renderCatalogFeed();
-      showToast(`🚀 Pacote "${story.titulo}" PUBLICADO com sucesso! Disponibilizado no catálogo do Pet FEFO e no App.`, 'success');
-    });
+    const btnPublish = pkg.querySelector('[data-action="publish-package"]');
+    if (btnPublish) {
+      btnPublish.addEventListener('click', () => {
+        story.status = 'publicado';
+        saveCatalogData(true, story);
+        renderCatalogFeed();
+        showToast(`🚀 Pacote "${story.titulo}" PUBLICADO com sucesso! Disponibilizado no catálogo do Pet FEFO e no App.`, 'success');
+      });
+    }
+
+    const btnUnpublish = pkg.querySelector('[data-action="unpublish-package"]');
+    if (btnUnpublish) {
+      btnUnpublish.addEventListener('click', () => {
+        story.status = 'em_producao';
+        saveCatalogData(false, story);
+        renderCatalogFeed();
+        showToast(`⏸️ Pacote "${story.titulo}" DESPUBLICADO! Retornado para 🟡 Em Produção.`, 'info');
+      });
+    }
 
     // Exclusão Segura: só deleta de dentro do pacote
     pkg.querySelector('[data-action="delete-package"]').addEventListener('click', () => {
